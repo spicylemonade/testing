@@ -1,0 +1,298 @@
+{
+  "version": "1.0",
+  "created_at": "2026-02-25T12:00:00Z",
+  "updated_at": "2026-02-25T22:49:12.849442+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-02-25T12:00:00Z",
+      "completed_at": "2026-02-25T22:49:12.849395+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "bfts": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and establish project scaffolding",
+          "acceptance_criteria": "A written document (in README.md or docs/) listing all directories, configuration files, and their purposes. A requirements.txt or pyproject.toml is created with core dependencies (numpy, scipy, networkx, requests, matplotlib). The figures/ and results/ directories are confirmed present.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct literature review on TSP heuristics for real road networks using web search",
+          "acceptance_criteria": "Search the web for at least 15 relevant papers covering: (a) classical TSP solvers (LKH-3, Concorde, EAX), (b) asymmetric TSP (ATSP) formulations and transformations, (c) neural combinatorial optimization (attention models, POMO, RRNCO), (d) hybrid learned+local-search approaches (UNiCS, Embed-LKH, ReEvo), and (e) real road network routing with OSRM. Produce a literature_review.md summarizing key findings, gaps, and opportunities.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted references",
+          "acceptance_criteria": "A sources.bib file exists at the repo root containing valid BibTeX entries for at least 10 relevant papers. Must include entries for: Helsgaun (LKH-3), Kwon et al. (POMO), the RRNCO framework (2025), Ammann et al. (LKH speed-up 2024), Embed-LKH (2024), ReEvo (NeurIPS 2024), and at least 4 additional works on ATSP heuristics or learned routing. Each entry has author, title, year, and venue fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Characterize the asymmetric TSP on real road networks versus Euclidean TSP",
+          "acceptance_criteria": "A written analysis (in literature_review.md or a separate problem_analysis.md) that: (1) quantifies typical asymmetry ratios in urban road networks (citing prior work), (2) explains why Euclidean-tuned heuristics degrade on ATSP instances, (3) describes the Jonker-Volgenant ATSP-to-TSP transformation and its computational overhead, and (4) identifies at least 3 properties of road networks (one-way streets, turn penalties, time-dependent costs) not captured by Euclidean models.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Survey OSRM Table API capabilities and design data extraction pipeline",
+          "acceptance_criteria": "Documentation of: (1) OSRM Table API endpoints for duration and distance matrices, (2) maximum supported matrix sizes and rate limits for self-hosted vs public instances, (3) Docker-based OSRM setup instructions for at least one city-scale OSM extract (e.g., Berlin, New York), and (4) a Python script design (pseudocode or spec) for extracting N\u00d7N asymmetric cost matrices from OSRM for N in {20, 50, 100, 200, 500}.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Identify candidate hybrid heuristic architectures from literature",
+          "acceptance_criteria": "A design document listing at least 3 candidate hybrid architectures for ATSP on road networks, each with: (a) construction method (greedy, attention-based, nearest-neighbor), (b) improvement method (LK-moves, or-opt, 2-opt adapted for asymmetric costs), (c) learned component (edge scoring, penalty weighting, move selection), and (d) expected strengths/weaknesses relative to LKH-3 on OSRM graphs. Must cite at least 5 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Set up OSRM Docker instance and implement benchmark instance generator",
+          "acceptance_criteria": "A working script (e.g., scripts/generate_instances.py) that: (1) starts OSRM via Docker with a city-scale OSM extract, (2) samples random geographic coordinates within a bounding box, (3) queries the OSRM Table API to produce asymmetric duration and distance matrices, and (4) serializes instances to a standard format (JSON or NumPy). Must generate at least 10 instances each for sizes N=20, 50, 100. All instances stored in data/ directory.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement nearest-neighbor and greedy baseline heuristics for ATSP",
+          "acceptance_criteria": "A Python module (e.g., src/baselines.py) implementing: (1) nearest-neighbor construction heuristic for asymmetric cost matrices, (2) greedy edge-insertion heuristic, and (3) random construction baseline. Each heuristic accepts an N\u00d7N cost matrix and returns a tour (permutation) and total cost. Unit tests verify correctness on a 5-node hand-crafted asymmetric instance.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Integrate LKH-3 solver as the primary baseline",
+          "acceptance_criteria": "A wrapper module (e.g., src/lkh_wrapper.py) that: (1) writes ATSP instances in TSPLIB format (ATSP section with FULL_MATRIX), (2) invokes LKH-3 binary with configurable parameters (RUNS, MAX_TRIALS, SEED), (3) parses the output tour, and (4) returns tour cost and runtime. Verified on at least 3 OSRM-derived instances of size N=50 with correct tour cost computation.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Define evaluation metrics and implement benchmarking harness",
+          "acceptance_criteria": "A benchmarking module (e.g., src/benchmark.py) that for each solver and instance computes: (1) tour cost (total asymmetric travel time), (2) wall-clock runtime in seconds, (3) optimality gap relative to best-known solution (or LKH-3 with high trial count), and (4) cost improvement percentage vs. nearest-neighbor baseline. Results are written to results/ as CSV files with columns: instance_id, solver, tour_cost, runtime_s, gap_pct, improvement_pct. A summary statistics function computes mean, median, std across instance sets.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Run baseline benchmarks and establish performance floor/ceiling",
+          "acceptance_criteria": "Baseline results CSV in results/baselines.csv covering nearest-neighbor, greedy, and LKH-3 (with 1 run and 10 runs) on all generated instances (N=20, 50, 100). Summary statistics documented showing: (a) LKH-3 (10 runs) as the ceiling, (b) nearest-neighbor as the floor, (c) the gap between them quantified as a percentage. Results reproduced from a single script invocation (e.g., scripts/run_baselines.sh).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Implement 2-opt and or-opt local search operators for asymmetric costs",
+          "acceptance_criteria": "A module (e.g., src/local_search.py) implementing: (1) asymmetric 2-opt (no reversal variant for directed tours), (2) or-opt (relocate segments of 1, 2, 3 nodes), both operating on asymmetric cost matrices. Each operator runs until no improving move exists. Unit tests confirm that applying local search to nearest-neighbor solutions on N=20 instances improves tour cost by at least 5% on average across 5 instances.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_013",
+          "description": "Develop learned edge-scoring model for asymmetric cost matrices",
+          "acceptance_criteria": "A neural network module that takes an N\u00d7N asymmetric cost matrix as input and outputs edge probabilities (N\u00d7N scores indicating likelihood each edge appears in optimal tour). Architecture uses either: (a) a graph attention network processing the asymmetric adjacency, or (b) a transformer with asymmetric positional encoding. Trained on OSRM instances (N=20, 50) using supervised learning from LKH-3 solutions. Achieves >60% precision@k for top-N predicted edges on held-out instances.",
+          "status": "pending",
+          "notes": "BFTS phase: automated experimentation. Compare against uniform random edge selection baseline.",
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement hybrid construction heuristic guided by learned edge scores",
+          "acceptance_criteria": "A construction heuristic (e.g., src/hybrid_constructor.py) that: (1) uses learned edge scores to bias a beam-search or sampling-based tour construction, (2) supports configurable beam width (1, 5, 10, 20), and (3) produces tours for asymmetric instances. On N=50 instances, beam-search with width 10 produces tours within 5% of LKH-3 (1 run) in less than 50% of LKH-3 runtime.",
+          "status": "pending",
+          "notes": "BFTS phase: vary beam widths, sampling temperatures, and model architectures.",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Design learned improvement operator that selects and applies LK-style moves",
+          "acceptance_criteria": "An improvement module that: (1) takes a tour and asymmetric cost matrix, (2) uses a learned policy to select which edges to remove/add (rather than exhaustive enumeration), (3) applies asymmetry-aware moves (no segment reversals). On N=50 instances, when initialized from nearest-neighbor, achieves solution quality within 2% of LKH-3 (1 run) while using at most 1/3 the number of move evaluations.",
+          "status": "pending",
+          "notes": "BFTS phase: experiment with RL-trained vs supervised move selection policies.",
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Combine construction and improvement into end-to-end hybrid solver",
+          "acceptance_criteria": "A unified solver (e.g., src/hybrid_solver.py) that pipelines: (1) learned construction (from item_014), (2) learned improvement (from item_015), and (3) optional multi-start with diverse initializations. On N=50 and N=100 OSRM instances, the hybrid solver achieves tour cost within 1% of LKH-3 (10 runs) or beats LKH-3 (1 run) by at least 0.5%. Runtime must be documented and compared.",
+          "status": "pending",
+          "notes": "BFTS phase: primary research target. Sweep over multi-start counts, improvement iterations.",
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Incorporate traffic-aware and time-dependent cost modeling",
+          "acceptance_criteria": "Extend the OSRM instance generator to produce time-varying cost matrices (e.g., peak vs off-peak durations using OSRM traffic profiles or synthetic perturbations). The hybrid solver handles time-dependent ATSP where edge costs depend on departure time. Evaluated on at least 5 time-dependent instances of size N=50, with results showing the hybrid solver adapts its tours to traffic patterns (different tours for peak vs off-peak).",
+          "status": "pending",
+          "notes": "BFTS phase: optional stretch goal. Can use synthetic time-multipliers if OSRM traffic data unavailable.",
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Explore LLM-evolved penalty heuristics for guided local search on ATSP",
+          "acceptance_criteria": "Implement a ReEvo-style pipeline that uses an LLM to evolve penalty functions for Guided Local Search (GLS) on asymmetric instances. The evolved penalties are evaluated on N=50 OSRM instances. At least 3 distinct penalty functions are generated and benchmarked. The best evolved penalty achieves solution quality competitive with (within 1% of) hand-tuned GLS penalties from the literature.",
+          "status": "pending",
+          "notes": "BFTS phase: uses LLM API calls. Compare against standard GLS with uniform penalties.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_019",
+          "description": "Run comprehensive benchmarks across all instance sizes and solvers",
+          "acceptance_criteria": "A results table (results/full_benchmark.csv) comparing all solvers (nearest-neighbor, greedy, 2-opt, or-opt, LKH-3 1-run, LKH-3 10-run, hybrid solver) on instances of size N=20, 50, 100, 200. Each configuration run on at least 10 instances with 3 random seeds. Columns include: instance_id, size, solver, seed, tour_cost, runtime_s, gap_vs_lkh10.",
+          "status": "pending",
+          "notes": "BFTS phase: automated benchmark execution. Ensure reproducibility via fixed seeds.",
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Statistical significance testing of hybrid solver vs LKH-3",
+          "acceptance_criteria": "For each instance size, perform paired Wilcoxon signed-rank tests comparing hybrid solver tour costs against LKH-3 (1-run and 10-run). Report p-values and effect sizes. Results stored in results/significance_tests.json. The hybrid solver must show statistically significant improvement (p < 0.05) over LKH-3 (1-run) on at least one instance size, OR document the gap with confidence intervals.",
+          "status": "pending",
+          "notes": "BFTS phase: automated statistical analysis.",
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Ablation study on hybrid solver components",
+          "acceptance_criteria": "Run ablation experiments removing each component: (a) learned edge scoring only, (b) learned improvement only, (c) multi-start only, (d) full hybrid. Results in results/ablation.csv showing the contribution of each component to final tour quality. At least N=50 instances used with 10 instances per configuration.",
+          "status": "pending",
+          "notes": "BFTS phase: systematically disable components and measure impact.",
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Evaluate scalability and runtime-quality tradeoff",
+          "acceptance_criteria": "Generate Pareto front plots (runtime vs solution quality) for each solver across instance sizes N=20, 50, 100, 200. Plots saved as figures/pareto_runtime_quality.png. For the hybrid solver, vary beam width and multi-start count to trace the Pareto front. Document the 'sweet spot' configuration where hybrid solver offers best quality-per-second relative to LKH-3.",
+          "status": "pending",
+          "notes": "BFTS phase: generate data points and visualization.",
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Cross-city generalization experiment",
+          "acceptance_criteria": "Generate OSRM instances from at least 2 different cities (e.g., Berlin and New York, or any two distinct OSM extracts). Train the learned components on City A instances and evaluate on City B instances. Report generalization gap (performance drop from in-distribution to out-of-distribution). Results in results/cross_city.csv.",
+          "status": "pending",
+          "notes": "BFTS phase: tests whether learned heuristics transfer across road network topologies.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Generate publication-quality figures and result tables",
+          "acceptance_criteria": "At least 5 figures saved in figures/: (1) bar chart comparing solver tour costs across instance sizes, (2) runtime comparison plot, (3) Pareto front (from item_022), (4) ablation component contributions, (5) asymmetry visualization showing cost matrix heatmap for sample instance. All figures have proper axis labels, legends, and use consistent styling. A LaTeX-compatible results table is generated.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Write comprehensive analysis comparing results to prior work",
+          "acceptance_criteria": "An analysis document (analysis.md or section in final report) that: (1) compares hybrid solver performance against LKH-3 with specific percentage improvements, (2) contextualizes results relative to RRNCO, Embed-LKH, and UNiCS findings from the literature, (3) discusses when the hybrid solver outperforms or underperforms and why, (4) cites at least 8 papers from sources.bib. Document is at least 1500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Document reproduction instructions and update README",
+          "acceptance_criteria": "README.md updated with: (1) project description and research question, (2) installation instructions (OSRM Docker setup, Python dependencies), (3) step-by-step reproduction commands for generating instances, running baselines, and running the hybrid solver, (4) summary of key results with link to figures. A user following the README can reproduce baseline results on a fresh machine.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Compile final research report with all sections",
+          "acceptance_criteria": "A final report (report.md or report.pdf) containing: (1) Abstract, (2) Introduction with problem motivation, (3) Related Work citing at least 10 papers from sources.bib, (4) Methods describing the hybrid solver architecture, (5) Experimental Setup, (6) Results with tables and figures, (7) Discussion of limitations and future work, (8) Conclusion. Report is at least 4000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
