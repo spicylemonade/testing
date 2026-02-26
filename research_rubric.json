@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-02-26T00:00:00Z",
+  "updated_at": "2026-02-26T09:26:54.204309+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-02-26T00:00:00Z",
+      "completed_at": "2026-02-26T09:26:54.204279+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and tooling",
+          "acceptance_criteria": "Markdown document (repo_analysis.md) listing all files, the semantic_scholar.py API client capabilities (search, citations, references, recommend, bibtex), system specs (1TB RAM, 20 cores), and how they connect to the research workflow.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive literature search on the Hadwiger-Nelson problem and chromatic number of the plane",
+          "acceptance_criteria": "Use web search and semantic_scholar.py to locate and summarize at least 15 papers spanning: (1) de Grey 2018 original 1581-vertex construction, (2) Heule 2018 SAT-based verification and 510-vertex reduction, (3) Exoo-Ismailescu 2018 survey on chromatic number of the plane, (4) Parts I-VI of the Polymath16 project, (5) Soifer's 'Mathematical Coloring Book', (6) Lov\u00e1sz 1978 Kneser graph proof and topological combinatorics, (7) Bachoc-Nebe-Oliveira-Vallentin LP/SDP bounds on measurable chromatic number, (8) Falconer 1981 measurable chromatic number \u22655, (9) Frankl-Wilson 1981 intersection theorems, (10) Shader 1976 and Chilakamarri 1995 on unit-distance embeddings of complete multipartite graphs. Each paper must have title, authors, year, key result, and relevance noted.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "File sources.bib exists at repo root with at least 15 valid BibTeX entries generated via semantic_scholar.py bibtex command or manual construction. Each entry must have author, title, year, and venue/journal fields. Must include entries for de Grey 2018, Heule 2018, Exoo-Ismailescu 2018, Lov\u00e1sz 1978, Falconer 1981, and all Polymath16 contributions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Deep-dive analysis of de Grey's compositional construction method",
+          "acceptance_criteria": "Technical document (degrey_analysis.md) that traces the full construction pipeline: (1) the Moser spindle (7 vertices, \u03c7=4) and its role as a 'forced monochromatic pair' gadget, (2) the Golomb graph (10 vertices) and its rotational symmetry, (3) how H-graph (copies of spindles) forces vertex-pair colorings, (4) the J\u2192K\u2192L\u2192M\u2192N chain of compositions, (5) the algebraic number field \u211a(\u221a3, \u221a11) in which all vertex coordinates live, (6) how the 'spin' operation (rotation by arccos(\u00b7)) creates new unit-distance edges. Must include explicit vertex-count at each stage.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Survey algebraic and topological obstructions relevant to \u03c7(\u211d\u00b2) \u2265 6",
+          "acceptance_criteria": "Document (obstructions_survey.md) covering: (1) why the Borsuk-Ulam theorem gives lower bounds via Kneser graph chromatic numbers, (2) Schrijver graphs and their unit-distance realizability, (3) the fractional chromatic number gap \u2014 \u03c7_f(\u211d\u00b2) \u2265 3.556 (Oliveira-Vallentin) vs \u03c7 \u2265 5, (4) Bukh's 2008 result on measurable list-chromatic number, (5) the DeCorte-Oliveira-Vallentin SDP hierarchy and its barriers, (6) why current LP/SDP bounds are stuck below 5 and what algebraic structure might break them. Must identify at least 3 concrete paths that could yield \u03c7 \u2265 6.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Implement core unit-distance graph infrastructure in Python",
+          "acceptance_criteria": "Module graph_core.py providing: (1) Point class with exact arithmetic using sympy or algebraic number fields to avoid floating-point error, (2) UnitDistanceGraph class that stores vertices and lazily computes edges via exact distance checks (|p-q|\u00b2 == 1), (3) adjacency list export, (4) graph union/product operations, (5) vertex count and edge count reporting. All distance checks must be exact (symbolic), not floating-point. Unit tests pass for Moser spindle (7V, 11E, \u03c7=4).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement SAT-based k-coloring verifier",
+          "acceptance_criteria": "Module sat_coloring.py that: (1) takes a UnitDistanceGraph and integer k, (2) encodes the k-coloring problem as a CNF formula (one-hot encoding: each vertex gets exactly one of k colors; each edge forbids same color), (3) calls pysat or an external SAT solver (CaDiCaL/Kissat preferred for performance), (4) returns SAT with a valid coloring or UNSAT with proof. Must verify: Moser spindle is 3-colorable=UNSAT, 4-colorable=SAT. Must handle graphs up to 50,000 vertices within 10 minutes on 20 cores.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Reproduce and verify de Grey's 510-vertex non-4-colorable graph",
+          "acceptance_criteria": "Script reproduce_degrey.py that: (1) constructs the 510-vertex graph from exact coordinates in \u211a(\u221a3, \u221a11), (2) verifies all claimed unit-distance edges are exactly distance 1, (3) runs the SAT solver from item_007 to confirm 4-coloring is UNSAT, (4) confirms 5-coloring is SAT. Runtime must be under 5 minutes. Output includes vertex count, edge count, and solver result. This establishes the baseline that \u03c7(\u211d\u00b2) \u2265 5 is machine-verified.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement graph-theoretic metrics for candidate evaluation",
+          "acceptance_criteria": "Module graph_metrics.py providing: (1) fractional chromatic number via LP relaxation (using scipy or PuLP), (2) clique number \u03c9(G) via exact search for small graphs / heuristic for large, (3) independence number \u03b1(G), (4) Hoffman bound \u03c7 \u2265 1 \u2212 \u03bb\u2081/\u03bb\u2099 from adjacency spectrum, (5) density |E|/|V|, (6) girth. Must correctly compute: Moser spindle \u03c9=3, Petersen graph \u03c7_f=3. These metrics guide the search \u2014 a 6-chromatic graph must have fractional chromatic number > 5.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Build gadget library of known 5-chromatic unit-distance subgraphs",
+          "acceptance_criteria": "Module gadgets.py containing constructor functions for at least 5 known 5-chromatic unit-distance graphs from the literature: (1) de Grey's 510-vertex graph, (2) Heule's 529-vertex graph, (3) Trimester variants from Polymath16, (4) Exoo's 5-chromatic constructions if available, (5) any published 5-critical unit-distance graphs. Each gadget must return a UnitDistanceGraph object. Catalog document (gadgets_catalog.md) lists each gadget's vertex count, edge count, chromatic number, fractional chromatic number, and the algebraic number field of its coordinates. All verified by SAT solver.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Develop forced-monochromatic-pair gadgets for 5-coloring regime",
+          "acceptance_criteria": "Implement forced_pairs.py that: (1) given a 5-coloring constraint, finds pairs of vertices in a unit-distance subgraph that MUST receive the same color in every valid 5-coloring (analogous to de Grey's technique for 4-colorings), (2) systematically identifies such pairs by running SAT solver with additional constraints and checking entailment, (3) catalogs at least 10 forced-monochromatic-pair gadgets with their inter-pair distance recorded. The key output is a table of (gadget, pair, forced_distance) triples. These are the building blocks for the 6-chromatic lift \u2014 if two forced-same-color vertices are exactly distance 1 apart, composition yields a contradiction.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Explore algebraic number field extensions for richer vertex coordinate spaces",
+          "acceptance_criteria": "Document (field_extensions.md) and module field_explorer.py that: (1) characterizes which unit distances are realizable in \u211a(\u221a3), \u211a(\u221a3,\u221a7), \u211a(\u221a3,\u221a7,\u221a11), \u211a(\u221a3,\u221a7,\u221a11,\u221a13) and other extensions, (2) counts the set of distinct unit-distance vectors in each ring (the 'spin group'), (3) identifies which extensions enable new gadget geometries impossible in \u211a(\u221a3,\u221a11), (4) provides coordinate generation functions. Must show that moving to a degree-8 or degree-16 extension over \u211a strictly increases the number of available spin angles, enabling denser local graphs. Cite Exoo-Ismailescu on distance-realizable number fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Investigate topological lower bound methods via Kneser/Schrijver graph embeddings",
+          "acceptance_criteria": "Module topo_bounds.py and document (topo_approach.md) that: (1) computes which Schrijver graphs SG(n,k) have chromatic number \u2265 6 (i.e., n \u2212 2k + 2 \u2265 6, so n \u2265 2k + 4), (2) for the smallest such cases (e.g., SG(10,3) with \u03c7=6), investigates whether the graph or a subgraph can be realized as a unit-distance graph in \u211d\u00b2, (3) uses the Borsuk-Ulam framework to identify which topological obstructions survive in the planar setting, (4) if full realization fails, identifies which non-realizable edges block it and whether relaxed embeddings (approximate unit distance) could work. Must produce a clear YES/NO feasibility assessment with mathematical justification for at least 3 Schrijver graph candidates.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Design spindle-of-spindles recursive composition framework",
+          "acceptance_criteria": "Module recursive_compose.py that: (1) takes a base 5-chromatic gadget G and a 'wiring template' (a small graph specifying how copies of G connect), (2) produces the composed graph by identifying forced-monochromatic pairs from item_011 with shared vertices, (3) checks whether the composition creates a 5-coloring obstruction using the SAT solver, (4) implements at least 3 composition strategies: direct spindle lifting (replace each vertex of a Moser spindle with a 5-chromatic gadget), product-based composition (tensor/categorical product), and the de Grey H\u2192J\u2192K chain generalized to 5-chromatic base. Must demonstrate that at least one strategy produces a graph with fractional chromatic number strictly exceeding the base gadget's.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Exploit the measurable chromatic number gap via probabilistic combinatorics",
+          "acceptance_criteria": "Document (measurable_gap.md) and module measurable_approach.py that: (1) implements the Frankl-Wilson intersection bound computation for unit-distance graphs in \u211d\u00b2, (2) uses the Bukh-Raigorodskii approach to construct explicit distance graphs with high fractional chromatic number, (3) tests whether the probabilistic method (Lov\u00e1sz Local Lemma / entropy compression) can prove that specific finite subgraphs of these constructions require 6 colors, (4) produces at least one candidate graph with fractional chromatic number > 5.0 (this is necessary but not sufficient for \u03c7 \u2265 6). Must compare results against the DeCorte-Oliveira-Vallentin SDP bound of \u03c7_f \u2265 3.556 cited in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Investigate non-Euclidean lifting and spectral graph theory approaches",
+          "acceptance_criteria": "Document (spectral_lifting.md) and experimental code that: (1) computes the adjacency spectrum of all gadgets from item_010, (2) uses Hoffman's bound to identify which gadgets are closest to chromatic tightness (Hoffman bound = actual \u03c7), (3) explores whether the unit-distance graph on the flat torus \u211d\u00b2/\u039b (for a lattice \u039b) has higher chromatic number than \u211d\u00b2 \u2014 this is a finite quotient amenable to exact computation, (4) if a torus coloring requires 6 colors, attempts to 'unfold' the obstruction back to a finite subgraph of \u211d\u00b2. Must produce spectral data for at least 5 gadgets and a feasibility assessment for the torus lifting approach.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Develop symmetry-aware SAT encoding with group-theoretic pruning",
+          "acceptance_criteria": "Module sym_sat.py that: (1) detects automorphisms of the candidate unit-distance graph using nauty/bliss or a Python binding, (2) adds symmetry-breaking clauses (lex-leader or orbital constraints) to the SAT encoding from item_007, (3) benchmarks the speedup on de Grey's 510-vertex graph (target: at least 3\u00d7 faster than naive encoding), (4) supports incremental solving \u2014 add edges one at a time and detect the exact edge that causes UNSAT (this identifies the 'critical edge' and the minimal non-5-colorable subgraph). Memory usage must stay under 50GB for graphs up to 100,000 vertices.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Systematic composition experiments: attempt to build 6-chromatic candidates",
+          "acceptance_criteria": "Script run_experiments.py that: (1) takes each composition strategy from item_014 and each gadget from item_010, (2) generates candidate composed graphs, (3) first filters by fractional chromatic number > 5.0 (fast LP check), (4) then runs 5-coloring SAT check on survivors, (5) logs all results to experiments_log.json with fields: strategy, base_gadget, vertex_count, edge_count, frac_chi, sat_result, runtime_seconds. Must run at least 50 distinct compositions. If any returns UNSAT for 5-coloring, flag it immediately as a potential \u03c7 \u2265 6 witness. All experiments must complete within 24 hours using at most 500GB RAM.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Evaluate topological and field-extension candidates",
+          "acceptance_criteria": "Run feasibility experiments from items 012 and 013: (1) for each new number field extension, generate the densest unit-distance graph on a grid of algebraic points (up to 10,000 vertices), compute its fractional chromatic number and SAT-check 5-colorability, (2) for each Schrijver graph candidate, attempt partial unit-distance realization and measure what fraction of edges are realizable, (3) record all results in topo_field_results.json. Must test at least 3 field extensions and 3 topological candidates. Compare all fractional chromatic numbers against the literature baseline (\u03c7_f \u2265 3.556).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Incremental minimal obstruction search on best candidates",
+          "acceptance_criteria": "For any candidate graph from items 018-019 that is not 5-colorable (or the closest near-miss), use the incremental SAT approach from item_017 to: (1) find the minimal non-5-colorable subgraph by iteratively removing vertices and re-checking, (2) report the minimal subgraph's vertex count, edge count, and structure, (3) verify the minimal subgraph independently with a second SAT solver (e.g., if CaDiCaL was primary, verify with Glucose or MiniSat), (4) if no UNSAT candidate exists, identify the candidate with the highest fractional chromatic number and document why 5-coloring succeeded \u2014 which structural feature allowed it. Results in minimal_obstruction_report.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Cross-validate all positive results with independent verification",
+          "acceptance_criteria": "For any graph claimed to be non-5-colorable: (1) export the graph in DIMACS format, (2) run at least 2 independent SAT solvers (from different solver families: CDCL, look-ahead, local search) on the 5-coloring CNF, (3) if UNSAT, extract and verify the DRAT/LRAT proof of unsatisfiability, (4) verify all vertex coordinates are exact algebraic numbers and all claimed unit-distance edges are exactly distance 1 using sympy rational arithmetic, (5) results documented in verification_report.md. If no non-5-colorable graph was found, apply this verification pipeline to the de Grey 510-vertex graph as a control to confirm the pipeline works.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Ablation study on composition parameters and gadget selection",
+          "acceptance_criteria": "Document (ablation_study.md) analyzing: (1) which base gadget produces the highest fractional chromatic number after composition, (2) which composition strategy (spindle lifting, product, chain) is most effective, (3) how vertex count scales with composition depth, (4) the relationship between the number of forced-monochromatic pairs and the fractional chromatic number gain, (5) sensitivity analysis \u2014 which single parameter change most affects the SAT result. Must include at least 3 plots (matplotlib) showing these relationships. Compare scaling behavior against de Grey's 4\u21925 construction as documented in the literature.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Write comprehensive results document with theoretical analysis",
+          "acceptance_criteria": "Document results.md containing: (1) executive summary of findings (did we find a 6-chromatic unit-distance graph? if not, how close did we get?), (2) detailed description of the best candidate graph(s) including vertex coordinates, edge list, and chromatic properties, (3) theoretical analysis of why each approach succeeded or failed, (4) comparison of all approaches tried with a summary table, (5) novel mathematical insights discovered during the research (e.g., new forced-monochromatic-pair gadgets, new algebraic constructions, new obstruction certificates). Must cite at least 10 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Identify concrete open sub-problems and future directions",
+          "acceptance_criteria": "Document future_work.md containing: (1) at least 5 specific, well-defined open problems that emerged from this research (e.g., 'Is the fractional chromatic number of the unit-distance graph of \u211a(\u221a3,\u221a7,\u221a11) > 5?'), (2) for each problem, an assessment of difficulty and suggested approach, (3) identification of computational bottlenecks that limited the search (e.g., SAT solver scaling) and proposed mitigations, (4) connections to adjacent open problems (e.g., chromatic number of \u211d\u00b3, list-chromatic number of the plane, circular chromatic number), (5) explicit conjectures based on experimental evidence. Must reference specific experimental results from Phase 4.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Package all code, data, and results for reproducibility",
+          "acceptance_criteria": "Repository contains: (1) requirements.txt with all Python dependencies pinned to exact versions, (2) a top-level run.sh script that reproduces all experiments from Phase 4 end-to-end, (3) all graph data exported in standard formats (DIMACS .col for graphs, JSON for coordinates), (4) sources.bib with at least 15 entries, (5) README.md updated with project description, setup instructions, and summary of results, (6) all intermediate data files referenced in experiments_log.json are present and loadable. A fresh clone + pip install + bash run.sh must complete without errors (possibly with long runtime for SAT checks).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
