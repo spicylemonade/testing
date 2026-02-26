@@ -101,26 +101,34 @@ def get_duration_matrix(
         matrix = np.where(matrix == None, np.inf, matrix)
         return matrix
 
-    # Batch mode: query subsets of sources/destinations
+    # Batch mode: send subsets of coordinates per query to avoid URL length limits.
+    # Each query contains only the union of source and destination coordinates.
     matrix = np.zeros((n, n), dtype=np.float64)
-    src_batches = list(range(0, n, batch_size))
-    dst_batches = list(range(0, n, batch_size))
+    half = batch_size // 2  # Split batch between sources and destinations
 
-    all_indices = list(range(n))
+    for src_start in range(0, n, half):
+        src_end = min(src_start + half, n)
+        src_global = list(range(src_start, src_end))
 
-    for src_start in src_batches:
-        src_end = min(src_start + batch_size, n)
-        src_indices = list(range(src_start, src_end))
+        for dst_start in range(0, n, half):
+            dst_end = min(dst_start + half, n)
+            dst_global = list(range(dst_start, dst_end))
 
-        for dst_start in dst_batches:
-            dst_end = min(dst_start + batch_size, n)
-            dst_indices = list(range(dst_start, dst_end))
+            # Build the subset of coordinates (union of src and dst)
+            # Use an ordered set to avoid duplicates
+            idx_set = list(dict.fromkeys(src_global + dst_global))
+            sub_coords = [coords[i] for i in idx_set]
+
+            # Map global indices to local indices in sub_coords
+            global_to_local = {g: l for l, g in enumerate(idx_set)}
+            local_sources = [global_to_local[g] for g in src_global]
+            local_dests = [global_to_local[g] for g in dst_global]
 
             data = _query_table(
                 osrm_url,
-                coords,
-                sources=src_indices,
-                destinations=dst_indices,
+                sub_coords,
+                sources=local_sources,
+                destinations=local_dests,
                 profile=profile,
                 timeout=timeout,
             )
