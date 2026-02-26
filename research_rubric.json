@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-02-26T00:00:00Z",
+  "updated_at": "2026-02-26T06:21:49.602448+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-02-26T00:00:00Z",
+      "completed_at": "2026-02-26T06:21:49.602422+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and initialize project skeleton with directory layout for src/, data/, experiments/, notebooks/, and docs/",
+          "acceptance_criteria": "Repository contains src/, data/, experiments/, notebooks/, docs/ directories with __init__.py files where applicable; a requirements.txt or pyproject.toml listing numpy, scipy, sympy, networkx, sage (optional), matplotlib, pandas, gudhi, scikit-tda, torch; and a README.md describing the project goal and directory purposes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive literature review of classical Collatz results using web search: Collatz (1937), Terras (1976) stopping times, Lagarias (1985) survey, Wirsching (1998) dynamical systems monograph, Applegate-Lagarias (1995) density results",
+          "acceptance_criteria": "A file docs/lit_review_classical.md exists summarizing each of the 5+ foundational results with key theorems stated, proof techniques identified, and limitations noted. At least 8 classical papers (pre-2010) cited in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Conduct literature review of modern approaches (2010-2026) using web search: Tao (2019) almost-all result, Mori (2024) operator theory / C*-algebras, (p,q)-adic spectral theory (Springer 2024), transfer operator spectral gap results, finite-state symbolic automaton model (arXiv:2506.21728), Petri net formalization, structural inverse tree proofs",
+          "acceptance_criteria": "A file docs/lit_review_modern.md exists with detailed summaries of at least 10 modern papers/preprints (2010-2026), organized by approach category (probabilistic, algebraic, spectral, computational, formal). Each entry includes: authors, year, key technique, main result, and identified gap. At least 12 modern references added to sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Survey computational and ML-based approaches: GPU verification to 2^71 (Barina 2025), efficient stopping time algorithms (Getachew-Assefa 2025), ML approaches (GNNs, symbolic regression, attention architectures), fractal and binary structure analyses",
+          "acceptance_criteria": "A file docs/lit_review_computational.md exists covering at least 6 computational/ML papers with reproducibility notes (code availability, datasets, reported metrics). sources.bib contains at least 20 total entries across all review documents.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Create and maintain sources.bib with BibTeX entries for all consulted sources, and produce a gap analysis identifying 3+ underexplored research directions not yet combined in the literature",
+          "acceptance_criteria": "sources.bib exists in repo root with valid BibTeX for at least 25 entries. A file docs/gap_analysis.md identifies at least 3 novel research directions with justification for why each is underexplored, referencing specific gaps between existing works. Directions must include: (1) spectral graph theory on the Collatz predecessor graph, (2) topological data analysis (persistent homology) of trajectory spaces, (3) information-theoretic contraction bounds via entropy arguments.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Implement core Collatz iteration engine in src/collatz_engine.py supporting: standard map T(n), shortcut map S(n), inverse map T^{-1}, trajectory computation, stopping time computation, and batch processing for ranges up to 10^9",
+          "acceptance_criteria": "src/collatz_engine.py exists with functions: collatz_step(n), shortcut_step(n), inverse_branches(n), trajectory(n, max_steps), stopping_time(n), total_stopping_time(n), batch_stopping_times(start, end). All functions have unit tests in tests/test_engine.py with 100% branch coverage. Batch processing handles n up to 10^9 in under 60 seconds on a single core.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement Collatz directed graph construction in src/collatz_graph.py: build predecessor/successor graphs, compute connected components, extract path records, and export to standard graph formats",
+          "acceptance_criteria": "src/collatz_graph.py provides: build_successor_graph(n_max), build_predecessor_tree(root, depth), find_path_records(n_max), export_graphml(graph, path). Predecessor tree for root=1, depth=30 contains all integers up to 2^20. Graph export produces valid GraphML readable by networkx. Unit tests verify correctness against known path records from the literature (e.g., n=27 has total stopping time 111).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement baseline statistical analysis module in src/statistics.py: stopping time distributions, trajectory length histograms, binary density analysis, and comparison metrics against Terras/Lagarias theoretical predictions",
+          "acceptance_criteria": "src/statistics.py provides: stopping_time_distribution(n_max) returning histogram data, binary_density_analysis(n_max) computing ratio of 1-bits vs stopping time, trajectory_statistics(n_max) computing mean/variance/skewness of stopping times. Outputs validated against known result that mean stopping time grows as ~6.95*log2(n). Comparison plots generated in notebooks/baseline_statistics.ipynb.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement 2-adic representation and arithmetic module in src/padic.py for encoding Collatz dynamics in the 2-adic integer ring",
+          "acceptance_criteria": "src/padic.py provides: PAdicInteger class with configurable precision (up to 2^1000), arithmetic operations (+, -, *, /), 2-adic valuation v_2(n), 2-adic norm |n|_2, Collatz map on 2-adic integers, and trajectory visualization. Unit tests verify: v_2(12)=2, |12|_2=1/4, and that the 2-adic Collatz map agrees with the integer Collatz map for all n < 10^6.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement transfer operator baseline in src/transfer_operator.py: construct the Perron-Frobenius operator for the Collatz map on finite-dimensional approximation spaces (\u2124/2^k \u2124 for k up to 20)",
+          "acceptance_criteria": "src/transfer_operator.py provides: build_transfer_matrix(k) constructing the 2^k \u00d7 2^k transfer matrix, compute_spectrum(matrix) returning eigenvalues sorted by magnitude, compute_invariant_density(matrix) returning the Perron eigenvector. For k=10, the leading eigenvalue is 1.0 (within 10^-12), the spectral gap (1 - |lambda_2|) is positive, and the invariant density is strictly positive. Results compared against theoretical predictions from the literature.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "NOVEL APPROACH 1 \u2014 Spectral Graph Theory on the Collatz Predecessor Graph: Compute the graph Laplacian spectrum of the Collatz predecessor tree truncated to depth D, analyze Fiedler value (algebraic connectivity) scaling with D, and derive rigorous bounds on connectivity that constrain the existence of divergent orbits",
+          "acceptance_criteria": "src/spectral_graph.py implements: build_laplacian(depth), compute_fiedler_value(depth), spectral_scaling_analysis(depth_range). Experiments run for depths D=10,12,...,30. A conjecture or theorem is stated relating Fiedler value scaling \u03bb_2(D) ~ f(D) to orbit boundedness. Results documented in experiments/spectral_graph_results.json with plots in notebooks/spectral_analysis.ipynb. The scaling law is novel (not found in surveyed literature) and compared against random tree baselines to demonstrate non-triviality.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "NOVEL APPROACH 2 \u2014 Persistent Homology of Collatz Trajectory Spaces: Embed Collatz trajectories as point clouds in log-scale feature spaces (log(n), stopping_time, binary_density, 2-adic_valuation), compute Vietoris-Rips persistent homology, and analyze persistence diagrams for topological signatures distinguishing convergent behavior",
+          "acceptance_criteria": "src/tda_analysis.py implements: embed_trajectories(n_max, features), compute_persistence(point_cloud, max_dim=2), persistence_statistics(diagrams). Persistence diagrams computed for n_max = 10^5 with at least 4 feature dimensions. Analysis identifies at least one persistent H_1 or H_2 feature with lifetime > 2*median lifetime, indicating non-trivial topological structure. Results compared to null model (random sequences with same marginal statistics). Documented in experiments/tda_results.json and notebooks/persistent_homology.ipynb.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "NOVEL APPROACH 3 \u2014 Information-Theoretic Contraction Bounds: Define a Shannon entropy functional H(n) over the binary representation of n, prove that E[H(T(n)) - H(n)] < 0 for the Collatz map T using combinatorial arguments on carry propagation, and connect this to Tao's logarithmic density framework",
+          "acceptance_criteria": "src/entropy_analysis.py implements: binary_entropy(n), expected_entropy_change(n_max), carry_propagation_analysis(n_max), lyapunov_exponent_estimate(n_max). A rigorous or semi-rigorous argument (documented in docs/entropy_contraction.md, minimum 2000 words) demonstrates that the expected per-step entropy change is negative with explicit constant (target: E[\u0394H] \u2248 -0.05 \u00b1 0.01 bits per step). Computational verification for n up to 10^7 confirms the bound. Connection to Tao's result explicitly stated with at least 3 specific references from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "NOVEL APPROACH 4 \u2014 Multi-Scale Transfer Operator with Wavelet Decomposition: Extend the baseline transfer operator by decomposing the invariant density into wavelet coefficients at multiple scales, proving that high-frequency components decay exponentially and establishing a refined spectral gap bound",
+          "acceptance_criteria": "src/multiscale_transfer.py implements: wavelet_decompose_density(density, levels), compute_decay_rates(coefficients), refined_spectral_gap(k, wavelet_type). For k=12..18 and Haar/Daubechies wavelets, the wavelet coefficient norms at level j decay as O(2^{-\u03b1j}) with measured \u03b1 > 0. The refined spectral gap bound is tighter than the baseline (item_010) by at least 10%. Results in experiments/multiscale_transfer_results.json. Analysis documented in docs/multiscale_analysis.md comparing to existing transfer operator literature.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "NOVEL APPROACH 5 \u2014 Neural Symbolic Regression for Stopping Time Bounds: Train a transformer-based symbolic regression model to discover closed-form expressions approximating stopping_time(n) as a function of computable features (bit_length, popcount, trailing_zeros, leading_pattern), then verify discovered expressions rigorously",
+          "acceptance_criteria": "src/symbolic_regression.py implements: extract_features(n), train_symbolic_model(data, epochs), extract_expressions(model), verify_expression(expr, n_max). Model trained on stopping times for n=1..10^6. At least one discovered expression achieves R^2 > 0.85 on held-out test set (n=10^6..2*10^6). Expression is stated in closed form and verified to hold (or approximately hold with bounded error) for all n up to 10^7. Novelty of the expression is confirmed by comparison to known bounds (Terras, Lagarias, Applegate-Lagarias). Documented in experiments/symbolic_regression_results.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "NOVEL SYNTHESIS \u2014 Cross-Method Integration: Prove or provide strong computational evidence that the spectral gap from the transfer operator (item_014) implies the negative entropy drift (item_013), and that the topological features from TDA (item_012) correspond to the spectral structure of the graph Laplacian (item_011)",
+          "acceptance_criteria": "docs/cross_method_synthesis.md (minimum 3000 words) presents: (1) A formal or semi-formal argument connecting spectral gap \u03bb to entropy drift rate \u0394H, with inequality \u0394H \u2264 -c*\u03bb for explicit constant c > 0; (2) Computational evidence that persistent H_1 features from TDA correlate (Spearman \u03c1 > 0.5) with eigenvalue gaps in the graph Laplacian; (3) At least 2 novel conjectures stated precisely in mathematical notation connecting these approaches. All claims supported by computational evidence from prior items.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_017",
+          "description": "Large-scale computational validation: Run all 5 novel approaches on extended ranges (n up to 10^8 for statistical methods, depth up to 35 for graph methods) and verify consistency of results across scales",
+          "acceptance_criteria": "experiments/large_scale_validation.json contains results for: spectral graph analysis (depths 10-35), TDA (n_max up to 10^6), entropy analysis (n up to 10^8), transfer operator (k up to 20), symbolic regression (verified to 10^8). All scaling laws and bounds from Phase 3 hold at extended scales with relative error < 5%. Runtime benchmarks recorded for each method.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Null model and control experiments: For each novel approach, construct appropriate null models (random trees for spectral, shuffled sequences for TDA, random maps for entropy, Erd\u0151s-R\u00e9nyi graphs for Laplacian) and demonstrate that Collatz-specific results are statistically significant",
+          "acceptance_criteria": "experiments/null_models.json contains results for at least 4 null model comparisons (one per novel approach). Each comparison includes: 100+ null model samples, p-values computed via permutation test, and effect sizes (Cohen's d > 0.5 or equivalent). All novel findings from Phase 3 are significant at p < 0.01 against their respective null models. Plots in notebooks/null_model_comparisons.ipynb.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Comparison against prior art: Benchmark novel approaches against the closest existing methods from the literature review (Tao's density bounds, Mori's operator formulation, Barina's computational verification, known stopping time estimates)",
+          "acceptance_criteria": "experiments/prior_art_comparison.json contains head-to-head comparisons: (1) entropy contraction rate vs Tao's implied logarithmic drift; (2) spectral gap bounds vs Mori's C*-algebra conditions; (3) symbolic regression bounds vs Terras/Lagarias stopping time estimates; (4) computational reach vs Barina's GPU verification. At least 2 of the 4 comparisons show measurable improvement or novel insight not present in prior work. Comparison table and discussion in docs/prior_art_comparison.md with specific citations from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Ablation studies on novel approaches: For the symbolic regression (item_015), ablate feature sets; for the transfer operator (item_014), ablate wavelet families; for TDA (item_012), ablate embedding dimensions and feature choices",
+          "acceptance_criteria": "experiments/ablation_studies.json contains: (1) symbolic regression ablations over at least 4 feature subsets with R^2 for each; (2) transfer operator ablations over at least 3 wavelet families with spectral gap for each; (3) TDA ablations over at least 3 embedding dimension choices with persistence statistics for each. Key findings: which features/parameters are most important, with rank ordering. Summary in notebooks/ablation_analysis.ipynb.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Robustness and generalization: Test all approaches on generalized Collatz maps (5n+1, 7n+1, 3n+d for d in {1,3,5}) to assess whether novel findings are specific to 3n+1 or reflect deeper structural properties of such maps",
+          "acceptance_criteria": "experiments/generalization.json contains results for at least 3 generalized maps. For each: spectral gap, entropy drift, TDA features, and symbolic regression expressions computed. Analysis identifies which findings are 3n+1-specific vs universal across the family. At least one novel observation about the generalized family is documented. Comparison in docs/generalization_analysis.md with references to Conway (1972) undecidability results and Lagarias surveys.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Write comprehensive research report (docs/research_report.md) synthesizing all findings, novel contributions, and their relationship to the state of the art",
+          "acceptance_criteria": "docs/research_report.md is a complete document (minimum 8000 words) containing: Abstract, Introduction (problem statement + motivation), Literature Review (summarizing Phase 1), Methods (5 novel approaches described formally), Results (all experiments from Phase 4), Discussion (interpretation, limitations, comparison to prior art), Conclusion (summary of contributions + future work). At least 30 citations from sources.bib referenced inline. All figures referenced from notebooks/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Produce publication-quality figures and visualizations for all key results",
+          "acceptance_criteria": "notebooks/figures.ipynb generates at least 10 publication-quality figures saved to docs/figures/: (1) Collatz predecessor tree visualization, (2) stopping time distribution, (3) spectral gap scaling plot, (4) persistence diagrams, (5) entropy drift histogram, (6) wavelet coefficient decay, (7) symbolic regression fit vs actual, (8) null model comparison box plots, (9) generalization heatmap across map families, (10) cross-method correlation matrix. All figures have axis labels, titles, legends, and use a consistent color scheme.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "State precisely all novel conjectures and partial results arising from this research, with formal mathematical notation",
+          "acceptance_criteria": "docs/novel_conjectures.md contains at least 5 precisely stated conjectures or theorems with: (1) formal statement in mathematical notation, (2) computational evidence summary, (3) proof sketch or proof (where available), (4) connection to existing open problems. Conjectures must include: Fiedler value scaling conjecture, entropy contraction theorem, spectral-gap-entropy connection, topological persistence conjecture, and at least one from symbolic regression. Each conjecture clearly marked as 'Conjecture' (unproven) or 'Theorem' (proven within the work).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Create reproducibility package: ensure all code is documented, all experiments are reproducible from a single script, and all data artifacts are version-controlled",
+          "acceptance_criteria": "A script run_all_experiments.sh exists that reproduces all experimental results from Phase 4 in sequence. Every Python file has module-level docstrings. A REPRODUCIBILITY.md file documents: Python version, package versions, hardware requirements, expected runtime per experiment, and random seed configuration. Running 'python -m pytest tests/' passes all tests with 0 failures. Running 'python -m py_compile src/*.py' succeeds for all source files.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
