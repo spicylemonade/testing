@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-02-26T00:00:00Z",
+  "updated_at": "2026-02-26T07:13:19.676469+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-02-26T00:00:00Z",
+      "completed_at": "2026-02-26T07:13:19.676430+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and initialize project skeleton",
+          "acceptance_criteria": "Create directory layout: src/ (core library), experiments/, data/, docs/. Write a README.md describing the project goal (lower-bounding the chromatic number of the plane, currently known to be in {5,6,7}). List all repo tooling (.archivara/semantic_scholar.py) and its capabilities.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive literature review on the Hadwiger-Nelson problem using web search and Semantic Scholar",
+          "acceptance_criteria": "Search for and summarize at least 15 key papers spanning: (a) de Grey 2018 original 1581-vertex graph and subsequent reductions by Heule/Parts, (b) Exoo-Ismailescu constructions and the Moser spindle family, (c) Falconer 1981 measurable chromatic number >= 5, (d) Bachoc-DeCorte-Oliveira-Vallentin SDP bounds on measurable chromatic number, (e) fractional chromatic number bounds (Cranston-Rabern, Scheinerman-Ullman), (f) algebraic number field structure of unit-distance graphs (ring Z[omega, sqrt(3), sqrt(11)]), (g) Borsuk-Ulam and topological combinatorics approaches to chromatic numbers. Produce a structured markdown summary in docs/literature_review.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "sources.bib in repo root contains at least 15 valid BibTeX entries covering: de Grey 2018 (arXiv:1804.02385), Heule 2018 SAT reduction, Parts 2020 further reductions, Exoo-Ismailescu 2018 survey, Soifer 2009 (Mathematical Coloring Book), Falconer 1981, Bachoc et al. 2014 SDP bounds, Oliveira-Vallentin 2010, Szegedy conjecture work, Matousek 2003 (Using the Borsuk-Ulam Theorem), Cranston-Rabern fractional bounds, the Polymath16 project wiki/papers, and at least 3 additional relevant references. Each entry must have author, title, year, and either journal/booktitle or arXiv ID.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Survey existing open-source codebases and tools for unit-distance graph construction and graph coloring",
+          "acceptance_criteria": "Identify and document at least 5 relevant code repositories or tools: (a) Marijn Heule's SAT-based chromatic number tools, (b) de Grey's original Moser-spindle composition code, (c) SageMath unit-distance graph utilities, (d) nauty/Traces for graph automorphism and canonical labeling, (e) DSDP/CSDP/Mosek for semidefinite programming. Document their capabilities, limitations, and how each could be used in docs/tools_survey.md. Add any associated papers to sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Formalize the algebraic number field framework underlying de Grey's construction",
+          "acceptance_criteria": "Write a detailed technical note in docs/algebraic_framework.md explaining: (1) how de Grey's graph embeds vertices in Q(omega, sqrt(3), sqrt(11)) where omega = e^{i*pi/3}, (2) why these specific irrationals arise from rotating/reflecting Moser spindles at specific angles, (3) the role of the 60-degree rotation group and its interaction with Euclidean distance constraints, (4) the ring-theoretic characterization of achievable unit distances. Include at least 5 citations from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Implement unit-distance graph data structure and basic operations",
+          "acceptance_criteria": "Python module src/unit_distance_graph.py providing: (a) UnitDistanceGraph class storing vertices as exact algebraic coordinates (using sympy or custom exact arithmetic over Q(omega, sqrt(3), sqrt(11))), (b) automatic edge computation from unit-distance constraint with exact verification, (c) graph export to DIMACS format for SAT solvers, (d) graph export to adjacency list for standard coloring algorithms, (e) vertex count, edge count, density metrics. All operations tested with the 7-vertex Moser spindle as validation (known chi=4).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement coloring verification and exact chromatic number computation for small graphs",
+          "acceptance_criteria": "Python module src/coloring.py providing: (a) brute-force k-coloring checker (backtracking, viable up to ~30 vertices), (b) DIMACS CNF encoder for graph k-colorability (for SAT solver integration), (c) greedy coloring heuristic with DSatur ordering, (d) coloring verification function that checks no monochromatic unit-distance pair exists. Validate: Moser spindle requires 4 colors, C5 (5-cycle) requires 3, Petersen graph requires 3.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Reproduce de Grey's 509-vertex graph (Parts reduction) and verify chi >= 5",
+          "acceptance_criteria": "Reconstruct the 509-vertex unit-distance graph from Parts 2020 (or the smallest known non-4-colorable unit-distance graph at time of research). Store vertex coordinates in data/parts509.json with exact algebraic representation. Verify: (a) all edges are exactly unit distance, (b) graph is not 4-colorable (via SAT solver or backtracking), (c) graph IS 5-colorable (exhibit an explicit 5-coloring). Log timing for verification. Compare against vertex/edge counts reported in the literature (item_002/003).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement Moser spindle composition and recursive graph-building operations",
+          "acceptance_criteria": "Python module src/composition.py providing: (a) Minkowski sum of two unit-distance graphs, (b) rotation of a graph by an arbitrary angle (exact arithmetic), (c) spindle composition: given graphs G1, G2 sharing identified vertex pairs, merge them, (d) the 'link' operation used by de Grey (attaching two copies of a graph via a shared vertex and its unit-distance neighbors). Validate by constructing the H graph (de Grey's 7-vertex building block) and the W graph (31-vertex intermediate) and confirming their chromatic properties.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement fractional chromatic number computation via LP relaxation",
+          "acceptance_criteria": "Python module src/fractional_chromatic.py that computes the fractional chromatic number chi_f(G) of a unit-distance graph G using: (a) the LP relaxation formulation (minimize sum of independent set variables subject to coverage constraints), (b) column generation approach for larger graphs (enumerate maximal independent sets lazily), (c) for small graphs (<50 vertices), enumerate all independent sets explicitly. Validate: chi_f(C5) = 5/2, chi_f(Petersen) = 5/2, chi_f(Kneser(5,2)) = 5/2. Compute chi_f for the Moser spindle and document the result.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Explore algebraic extensions beyond Q(omega, sqrt(3), sqrt(11)) to find richer unit-distance graph families",
+          "acceptance_criteria": "Investigate unit-distance graphs whose vertices require coordinates in larger algebraic number fields, specifically: (a) enumerate all quadratic/biquadratic extensions of Q(omega) that yield new unit-distance vertex positions not in de Grey's ring, (b) for each extension Q(omega, sqrt(p)) with p in {2, 5, 7, 13, 15, 19, 21, 23}, construct the maximal unit-distance graph on at most 200 vertices and compute its chromatic number, (c) document which extensions yield graphs with chi >= 5 and whether any produce strictly harder coloring instances than de Grey's ring. Write results to experiments/algebraic_extensions.json with at least 5 extensions tested.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Apply topological combinatorics (Borsuk-Ulam / equivariant methods) to derive chromatic lower bounds",
+          "acceptance_criteria": "Implement and evaluate the Lov\u00e1sz-Kneser theorem generalization approach: (a) for each unit-distance graph G constructed, compute its topological connectivity (or box-complex connectivity) using the neighborhood complex or Hom-complex, (b) implement the Babson-Kozlov theorem: chi(G) >= conn(Hom(K2, G)) + 3, computing Hom-complex connectivity for graphs up to ~50 vertices, (c) compare topological lower bounds against actual chromatic numbers for all constructed unit-distance graphs. Document whether topological bounds ever exceed 5 for any graph tested. Write analysis to docs/topological_bounds.md with citations to Matousek 2003 and Kozlov 2007 from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement SDP-based measurable chromatic number bounds following Bachoc-DeCorte-Oliveira-Vallentin",
+          "acceptance_criteria": "Implement the semidefinite programming approach for bounding the measurable chromatic number chi_m(R^2): (a) encode the distance-avoiding coloring problem as an SDP using Fourier analysis on R^2 (Bessel function kernel), (b) implement at least the level-1 and level-2 Lasserre hierarchy relaxations, (c) compute numerical bounds and compare against Bachoc et al.'s published bound of chi_m >= 5. Code in src/sdp_bounds.py. Explore whether adding new constraints (from de Grey-type graph structures as valid inequalities) tightens the bound beyond the published results. Document all SDP solver outputs with precision/tolerance information.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Investigate tile-based exclusion zones: enumerate forbidden distance sets for 5-colorings",
+          "acceptance_criteria": "For a hypothetical proper 5-coloring of the plane, derive necessary geometric constraints: (a) implement the 'excluded distance' computation \u2014 for each color class, which pairwise distances must be absent, (b) using the known fact that a 5-coloring (if it exists) cannot be measurable (Falconer), explore whether adding finite sets of forbidden distances (beyond unit distance) derived from small unit-distance graphs creates contradictions, (c) test at least 10 distinct sets of forbidden distances derived from subgraphs of the de Grey construction. Record which distance sets are self-contradictory for 5-colorings. Output results to experiments/forbidden_distances.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Develop spectral and Hoffman-bound analysis for unit-distance graphs",
+          "acceptance_criteria": "Python module src/spectral_bounds.py providing: (a) computation of the Hoffman (ratio) bound chi(G) >= 1 - lambda_max/lambda_min for all constructed unit-distance graphs, (b) computation of the Lov\u00e1sz theta function (SDP-based) as a sandwich bound between clique number and chromatic number, (c) for the infinite unit-distance graph, implement the continuous Hoffman bound using the known eigenvalue spectrum (Fourier transform of the unit-circle indicator). Compare spectral bounds against known chromatic number for at least 10 unit-distance graphs. Document whether any spectral bound exceeds 5.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Search for small non-5-colorable unit-distance graphs via constrained spindle composition with SAT",
+          "acceptance_criteria": "Develop a systematic search strategy: (a) use the composition operations from item_009 to generate candidate unit-distance graphs by combining 2-4 copies of the Moser spindle and its known extensions (H, J, K, L, M graphs from de Grey's paper) at various angles from an expanded set of rotations (beyond 60-degree multiples), (b) for each candidate graph, encode 5-colorability as SAT and test with a modern CDCL solver (e.g., CaDiCaL, Kissat), (c) generate at least 50 candidate graphs of size 50-300 vertices, (d) record the SAT/UNSAT status for 5-colorability of each candidate. Any UNSAT result (non-5-colorable) would be a major finding \u2014 document it with full vertex coordinates and a machine-verifiable proof. Write results to experiments/sat_search_results.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Investigate connections between list-chromatic number, correspondence chromatic number, and the plane",
+          "acceptance_criteria": "Explore whether list-coloring or DP-coloring (Dvorak-Postle correspondence coloring) provides stronger lower bounds: (a) compute the list-chromatic number ch(G) and DP-chromatic number chi_DP(G) for the Moser spindle, the 509-vertex Parts graph, and at least 5 other unit-distance graphs, (b) since ch(G) >= chi(G) and chi_DP(G) >= ch(G), determine if any unit-distance graph has ch > 5 or chi_DP > 5 (this wouldn't directly prove chi(plane) > 5 but would identify graphs with strong coloring rigidity), (c) document analysis and results in docs/list_coloring_analysis.md with at least 3 citations from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Run comprehensive experiments comparing all lower-bound techniques across graph families",
+          "acceptance_criteria": "Create a benchmark suite in experiments/benchmark_suite.py that: (a) runs all implemented lower-bound methods (exact chromatic via SAT, fractional chromatic, Hoffman bound, Lov\u00e1sz theta, topological connectivity bound) on a corpus of at least 20 unit-distance graphs of varying size (7 to 509 vertices), (b) produces a comparison table in experiments/bounds_comparison.csv with columns: graph_name, num_vertices, num_edges, chi_exact, chi_fractional, hoffman_bound, lovasz_theta, topological_bound, runtime_seconds, (c) identifies which technique gives the tightest bound for each graph. Results must be reproducible from a single script invocation.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Evaluate the SDP-based measurable chromatic number bound with tightened constraints",
+          "acceptance_criteria": "Run the SDP solver from item_013 with progressively tighter constraint sets: (a) baseline (Bachoc et al. constraints only), (b) baseline + clique inequalities from de Grey subgraphs, (c) baseline + distance-set exclusion constraints from item_014. Record the numerical lower bound achieved at each level (must be >= 5.0 to match published results). If any configuration produces a bound exceeding 5.5, investigate whether the improvement is due to numerical artifacts or genuine tightening. Document all results with solver precision info in experiments/sdp_results.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Evaluate algebraic extension families for non-5-colorable subgraphs",
+          "acceptance_criteria": "For the top 3 most promising algebraic extensions identified in item_011: (a) construct the full unit-distance graph on up to 500 vertices per extension, (b) test 5-colorability via SAT solver with a timeout of 1 hour per instance, (c) if any instance is UNSAT (non-5-colorable), produce a DRAT proof and independently verify it, (d) if all are SAT, record the number of 5-colorings found (if enumerable) as a measure of coloring rigidity. Store all results in experiments/extension_colorability.json. Compare against de Grey's construction in terms of graph density and coloring difficulty.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Conduct ablation study on composition operations and rotation angles",
+          "acceptance_criteria": "Systematically vary the parameters of the spindle composition search from item_016: (a) test rotation angles from 0 to 60 degrees in 1-degree increments (exact algebraic angles where cos(theta) is algebraic), (b) vary the number of composition layers (depth 1 through 4), (c) for each configuration, record: graph size, edge density, SAT solving time for 5-colorability, and the 4-colorability status. Produce a heatmap or scatter plot showing the relationship between composition parameters and coloring difficulty. Store structured results in experiments/ablation_study.json with at least 100 data points.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Test probabilistic constructions: random unit-distance graphs from algebraic lattices",
+          "acceptance_criteria": "Implement a random unit-distance graph generator in src/random_udg.py that: (a) samples n points from a given algebraic lattice (e.g., A2 lattice scaled to have unit-distance neighbors, or random points in Q(omega, sqrt(p)) within a bounded region), (b) connects all unit-distance pairs, (c) tests the resulting graph for k-colorability. Run at least 1000 trials each for n in {50, 100, 200, 500} and record: the fraction of graphs requiring 5 colors (i.e., not 4-colorable), the maximum chromatic number observed, and average graph density. Compare the difficulty of random constructions against structured (de Grey-type) constructions. Output to experiments/random_udg_results.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Synthesize all experimental results into a coherent analysis document",
+          "acceptance_criteria": "Write docs/analysis.md containing: (a) summary table of all lower-bound techniques and their best achieved bounds, (b) identification of the most promising direction for pushing the lower bound from 5 toward 6, (c) analysis of why current approaches fail to reach 6 (e.g., are all constructed graphs 5-colorable? do SDP bounds plateau below 6?), (d) comparison of our results against all prior work cited in sources.bib (minimum 10 explicit citations), (e) concrete conjectures or hypotheses for future work. Minimum 2000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Write reproducibility documentation and archive all experimental artifacts",
+          "acceptance_criteria": "Create docs/reproducibility.md documenting: (a) exact software dependencies with versions (requirements.txt or environment.yml), (b) step-by-step instructions to reproduce every experiment, (c) expected runtime and resource requirements for each experiment, (d) SHA256 hashes of all data files in data/. Ensure every figure, table, and numerical result in docs/analysis.md can be regenerated from the archived code and data. Verify by running the full pipeline from a clean state.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Produce a draft research report suitable for submission to a combinatorics or discrete mathematics venue",
+          "acceptance_criteria": "Write docs/report.tex (or docs/report.md) structured as an academic paper with: (a) Abstract summarizing the research question and main findings, (b) Introduction with problem history and motivation citing at least 8 references from sources.bib, (c) Methods section describing all implemented techniques, (d) Results section with all key experimental findings presented with tables/figures, (e) Discussion section analyzing the gap between current bounds and the target of 6, (f) Conclusion with specific open questions and conjectured approaches. Minimum 5000 words. All references must correspond to entries in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
