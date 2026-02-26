@@ -21,7 +21,7 @@ LKH_BINARY = os.environ.get(
 )
 
 # Scale factor: LKH uses integer distances, so we multiply float durations
-SCALE_FACTOR = 100  # 0.01 second precision for finer LKH discrimination
+SCALE_FACTOR = 1000  # 0.001 second precision for finer LKH discrimination
 
 
 def matrix_to_tsplib_atsp(matrix: np.ndarray, name: str = "instance") -> str:

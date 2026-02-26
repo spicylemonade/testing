@@ -402,6 +402,53 @@ def _or_opt_improve(
 
 
 # ---------------------------------------------------------------------------
+# Perturbation operators for Iterated Local Search (ILS)
+# ---------------------------------------------------------------------------
+
+def _double_bridge_perturb(tour: list[int], rng: np.random.RandomState) -> list[int]:
+    """
+    Double-bridge perturbation for ATSP.
+
+    Cuts tour into 4 segments at random points and reconnects as
+    S1 + S3 + S2 + S4, preserving segment directions (crucial for ATSP).
+    This is a standard perturbation for ILS on TSP that effectively escapes
+    local optima by creating a non-sequential reconnection.
+    """
+    n = len(tour)
+    if n < 8:
+        return tour[:]
+    # Pick 3 distinct cut points in [1, n-1]
+    cuts = sorted(rng.choice(range(1, n), size=3, replace=False))
+    a, b, c = int(cuts[0]), int(cuts[1]), int(cuts[2])
+    # Reconnect: S1 + S3 + S2 + S4 (no reversal, safe for ATSP)
+    return tour[:a] + tour[b:c] + tour[a:b] + tour[c:]
+
+
+def _segment_relocate_perturb(
+    tour: list[int], rng: np.random.RandomState, strength: int = 3,
+) -> list[int]:
+    """
+    Perturb tour by random segment relocations.
+
+    Each move extracts a short segment (1-3 nodes) and reinserts at a random
+    position, preserving segment direction (crucial for ATSP).
+    """
+    n = len(tour)
+    current = tour[:]
+    for _ in range(strength):
+        seg_len = int(rng.randint(1, min(4, max(2, n // 4)) + 1))
+        seg_start = int(rng.randint(0, n))
+        # Extract segment (handling wraparound)
+        indices_set = set((seg_start + j) % n for j in range(seg_len))
+        segment = [current[(seg_start + j) % n] for j in range(seg_len)]
+        remaining = [current[i] for i in range(n) if i not in indices_set]
+        # Insert at random position
+        pos = int(rng.randint(0, len(remaining) + 1))
+        current = remaining[:pos] + segment + remaining[pos:]
+    return current
+
+
+# ---------------------------------------------------------------------------
 # Main hybrid solver
 # ---------------------------------------------------------------------------
 
@@ -414,13 +461,13 @@ def solve_hybrid(
     use_initial_tours: bool = True,
 ) -> dict:
     """
-    Multi-configuration LKH-3 solver for ATSP on real road networks.
+    Multi-configuration LKH-3 solver with ILS for ATSP on real road networks.
 
     Phase 1: Generate asymmetry-aware initial tours (fast).
-    Phase 2: Warm-start LKH from best initial tours (10% time budget).
-    Phase 3: Multi-config LKH with diverse parameters and random seeds (80% budget).
-    Phase 4: Iterative refinement - use best solution as warm start for final runs.
-    Phase 5: Minimal or-opt-1 post-processing on best solution only.
+    Phase 2: Warm-start LKH from best initial tours (3% time budget).
+    Phase 3: Multi-config LKH with focused ATSP-specific parameters (68% budget).
+    Phase 4: Iterated Local Search - perturb best + warm-start LKH (24% budget).
+    Phase 5: Or-opt post-processing on best solution (remaining time).
     """
     from src.solvers.lkh_solver import solve_atsp as lkh_solve
 
@@ -428,49 +475,32 @@ def solve_hybrid(
     n = matrix.shape[0]
     rng = np.random.RandomState(seed)
 
-    # LKH configuration variants for search diversity
-    # Tuned weights: emphasize ATSP-specific patching/5-opt; use KICKS for perturbation
+    # Focused ATSP-specific LKH configurations
+    # Fewer configs than before → more seeds per config → better diversity
     configs = [
-        # Default ALPHA candidates with subgradient
-        {"label": "alpha_std", "extra_params": {
-            "SUBGRADIENT": "YES",
-        }, "weight": 0.12},
-        # Wide candidates for broader ATSP exploration
-        {"label": "wide_cands", "extra_params": {
-            "MAX_CANDIDATES": 12,
-            "SUBGRADIENT": "YES",
-        }, "weight": 0.12},
-        # Deep search with more trials per run
-        {"label": "deep", "max_trials": 1200, "runs": 1, "extra_params": {
-            "MAX_CANDIDATES": 8,
-            "SUBGRADIENT": "YES",
-        }, "weight": 0.14},
-        # Enhanced ATSP patching with kicks for escape
-        {"label": "patching", "extra_params": {
-            "PATCHING_A": 3,
-            "PATCHING_C": 3,
-            "KICKS": 1,
-        }, "weight": 0.14},
-        # 5-opt moves for deeper local search on ATSP
-        {"label": "deep_5opt", "max_trials": 1000, "runs": 1, "extra_params": {
-            "MOVE_TYPE": 5,
-            "MAX_CANDIDATES": 8,
-            "KICKS": 1,
-        }, "weight": 0.16},
         # Aggressive ATSP patching with 5-opt and wide candidates
         {"label": "atsp_aggressive", "max_trials": 1000, "runs": 1, "extra_params": {
-            "PATCHING_A": 5,
-            "PATCHING_C": 5,
-            "MOVE_TYPE": 5,
-            "MAX_CANDIDATES": 10,
-            "KICKS": 2,
-        }, "weight": 0.18},
-        # Very wide candidates with extra patching for diverse exploration
+            "PATCHING_A": 5, "PATCHING_C": 5, "MOVE_TYPE": 5,
+            "MAX_CANDIDATES": 10, "KICKS": 2,
+        }, "weight": 0.26},
+        # Deep 5-opt search with kicks for escape
+        {"label": "deep_5opt", "max_trials": 1200, "runs": 1, "extra_params": {
+            "MOVE_TYPE": 5, "MAX_CANDIDATES": 8, "KICKS": 1,
+            "SUBGRADIENT": "YES",
+        }, "weight": 0.24},
+        # Wide candidates with patching for diverse exploration
         {"label": "wide_patching", "max_trials": 800, "runs": 1, "extra_params": {
-            "MAX_CANDIDATES": 15,
-            "PATCHING_A": 4,
-            "PATCHING_C": 4,
+            "MAX_CANDIDATES": 15, "PATCHING_A": 4, "PATCHING_C": 4,
             "MOVE_TYPE": 5,
+        }, "weight": 0.20},
+        # Standard ATSP patching with kicks
+        {"label": "patching", "extra_params": {
+            "PATCHING_A": 3, "PATCHING_C": 3, "KICKS": 1,
+            "SUBGRADIENT": "YES",
+        }, "weight": 0.16},
+        # Alpha with wide candidates and subgradient (baseline diversity)
+        {"label": "alpha_wide", "extra_params": {
+            "MAX_CANDIDATES": 12, "SUBGRADIENT": "YES",
         }, "weight": 0.14},
     ]
 
@@ -488,8 +518,8 @@ def solve_hybrid(
         except Exception as e:
             print(f"  Initial tour generation failed: {e}")
 
-    # Phase 2: Warm-start LKH from best initial tours (5% budget)
-    warm_budget = time_limit * 0.05 if initial_tours else 0
+    # Phase 2: Warm-start LKH from best initial tours (3% budget)
+    warm_budget = time_limit * 0.03 if initial_tours else 0
     for init_tour in initial_tours:
         if time.perf_counter() - t0 > warm_budget:
             break
@@ -508,10 +538,9 @@ def solve_hybrid(
             if not warm_start_used:
                 break
 
-    # Phase 3: Multi-config LKH with random seeds (main search phase - 90% budget)
-    phase3_budget = time_limit * 0.90 - max(0, time.perf_counter() - t0 - warm_budget)
-    if phase3_budget < 5:
-        phase3_budget = time_limit * 0.90
+    # Phase 3: Multi-config LKH with random seeds (68% budget)
+    phase3_end = t0 + time_limit * 0.71
+    phase3_budget = time_limit * 0.68
 
     for config in configs:
         config_time = phase3_budget * config["weight"]
@@ -522,8 +551,7 @@ def solve_hybrid(
 
         while True:
             elapsed_config = time.perf_counter() - config_start
-            elapsed_total = time.perf_counter() - t0
-            if elapsed_config > config_time or elapsed_total > time_limit * 0.93:
+            if elapsed_config > config_time or time.perf_counter() > phase3_end:
                 break
 
             s = int(rng.randint(1, 100000))
@@ -560,39 +588,58 @@ def solve_hybrid(
     best_tour = list(population[0][1])
     best_cost = lkh_best_cost
 
-    # Phase 4: Iterative refinement - use best solution as warm start
-    remaining_for_refine = time_limit * 0.97 - (time.perf_counter() - t0)
-    if remaining_for_refine > 3.0:
-        refine_configs = [
-            {"PATCHING_A": 4, "PATCHING_C": 4, "MOVE_TYPE": 5, "KICKS": 1},
-            {"MAX_CANDIDATES": 15, "SUBGRADIENT": "YES"},
-        ]
-        for rc_extra in refine_configs:
-            if time.perf_counter() - t0 > time_limit * 0.97:
-                break
-            s = int(rng.randint(1, 100000))
-            try:
-                result = lkh_solve(
-                    matrix, max_trials=max_trials, runs=1, seed=s,
-                    initial_tour=best_tour,
-                    extra_params=rc_extra,
-                )
-                if result["cost"] < best_cost - 1e-10:
-                    best_cost = result["cost"]
-                    best_tour = list(result["tour"])
-                population.append((result["cost"], result["tour"]))
-                total_lkh_time += result["wall_time"]
-                seeds_tried += 1
-            except Exception as e:
-                print(f"  Refinement failed: {e}")
+    # Phase 4: Iterated Local Search - perturb best + warm-start LKH (24% budget)
+    # Key insight: double-bridge perturbation escapes local optima that LKH
+    # converges to, allowing exploration of different basins of attraction.
+    ils_end = t0 + time_limit * 0.96
+    ils_extra = {
+        "PATCHING_A": 5, "PATCHING_C": 5, "MOVE_TYPE": 5,
+        "KICKS": 1, "MAX_CANDIDATES": 10,
+    }
+    ils_trials = min(max_trials, 500)
+    ils_iters = 0
 
-    # Phase 5: Quick or-opt-1 on the single best solution (< 2s)
+    while time.perf_counter() < ils_end:
+        # Choose base: usually best, sometimes from top-3 for diversity
+        if ils_iters % 3 == 2 and len(population) >= 3:
+            base_idx = int(rng.randint(0, min(3, len(population))))
+            base_tour = list(population[base_idx][1])
+        else:
+            base_tour = best_tour
+
+        # Alternate perturbation strategies
+        if ils_iters % 2 == 0:
+            perturbed = _double_bridge_perturb(base_tour, rng)
+        else:
+            perturbed = _segment_relocate_perturb(base_tour, rng, strength=3)
+
+        s = int(rng.randint(1, 100000))
+        try:
+            result = lkh_solve(
+                matrix, max_trials=ils_trials, runs=1, seed=s,
+                initial_tour=perturbed,
+                extra_params=ils_extra,
+            )
+            if result["cost"] < best_cost - 1e-10:
+                best_cost = result["cost"]
+                best_tour = list(result["tour"])
+            population.append((result["cost"], result["tour"]))
+            total_lkh_time += result["wall_time"]
+            seeds_tried += 1
+        except Exception as e:
+            print(f"  ILS iteration {ils_iters} failed: {e}")
+        ils_iters += 1
+
+    # Re-sort population after ILS
+    population.sort(key=lambda x: x[0])
+
+    # Phase 5: Or-opt post-processing on best solution (remaining time)
     remaining = time_limit - (time.perf_counter() - t0)
-    if remaining > 1.0:
+    if remaining > 0.5:
         try:
             candidate = _or_opt_improve(
                 best_tour, matrix,
-                max_iters=50, time_limit=min(remaining * 0.8, 2.0),
+                max_iters=200, time_limit=min(remaining * 0.9, 5.0),
             )
             c = compute_tour_cost(candidate, matrix)
             if c < best_cost - 1e-10:
@@ -626,5 +673,6 @@ def solve_hybrid(
             "time_limit": time_limit,
             "use_initial_tours": use_initial_tours,
             "num_configs": len(configs),
+            "ils_iters": ils_iters,
         },
     }
