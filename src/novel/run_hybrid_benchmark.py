@@ -25,7 +25,7 @@ from src.benchmark_harness import load_all_instances, validate_tour, compute_tou
 from src.novel.asymmetric_ils import solve_hybrid
 
 # Node ID from environment or default
-NODE_ID = os.environ.get("NODE_ID", "2b4e4991")
+NODE_ID = os.environ.get("NODE_ID", "a25232d5")
 
 
 def load_baseline_lkh_costs(results_file: str) -> dict:
@@ -62,21 +62,24 @@ def main():
             print(f"  Baseline LKH-3 cost: {ref_cost:.1f}")
 
         # Configure solver based on instance size
-        # Reduced time limits to ensure full benchmark completes within 10 min
+        # Tuned time limits and params per size category
         if n <= 100:
+            # Small: more runs per seed (low overhead), moderate time
             config = dict(
-                max_trials=500, runs_per_seed=2,
-                time_limit=40, use_initial_tours=True,
+                max_trials=600, runs_per_seed=2,
+                time_limit=50, use_initial_tours=True,
             )
         elif n <= 250:
+            # Medium: single run per seed for more diversity
             config = dict(
-                max_trials=500, runs_per_seed=2,
-                time_limit=60, use_initial_tours=True,
+                max_trials=800, runs_per_seed=1,
+                time_limit=80, use_initial_tours=True,
             )
         else:
+            # Large: single run, high trials, extended time for max diversity
             config = dict(
-                max_trials=500, runs_per_seed=2,
-                time_limit=90, use_initial_tours=True,
+                max_trials=1000, runs_per_seed=1,
+                time_limit=140, use_initial_tours=True,
             )
 
         t0 = time.perf_counter()
