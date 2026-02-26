@@ -175,20 +175,126 @@ def _or_opt_1_pass(tour: list[int], matrix: np.ndarray) -> Optional[list[int]]:
     return None
 
 
+def _or_opt_k_pass(tour: list[int], matrix: np.ndarray, k: int = 2) -> Optional[list[int]]:
+    """
+    Or-opt-k: relocate a segment of k consecutive nodes.
+
+    For each segment of k nodes, try removing it and reinserting after every
+    other position. Accept the best improving move if any.
+    """
+    n = len(tour)
+    if n <= k + 2:
+        return None
+
+    best_gain = 1e-6
+    best_i = -1
+    best_j = -1
+
+    for i in range(n):
+        # Segment: tour[i], tour[i+1], ..., tour[(i+k-1)%n]
+        seg_start = i
+        seg_end = (i + k - 1) % n
+        prev_seg = (i - 1) % n
+        next_seg = (i + k) % n
+
+        # Cost of removing segment
+        cost_remove = matrix[tour[prev_seg], tour[seg_start]]
+        for s in range(k - 1):
+            cost_remove += matrix[tour[(i + s) % n], tour[(i + s + 1) % n]]
+        cost_remove += matrix[tour[seg_end], tour[next_seg]]
+
+        # Cost of bridge after removal
+        cost_bridge = matrix[tour[prev_seg], tour[next_seg]]
+        savings = cost_remove - cost_bridge
+
+        if savings < 1e-6:
+            continue
+
+        # Try inserting segment after each valid position
+        for j in range(n):
+            # Skip positions within or adjacent to the segment
+            in_segment = False
+            for s in range(k):
+                if j == (i + s) % n:
+                    in_segment = True
+                    break
+            if in_segment or j == prev_seg:
+                continue
+
+            j_next = (j + 1) % n
+            # Cost of inserting segment between j and j_next
+            cost_insert = (
+                matrix[tour[j], tour[seg_start]]
+                + matrix[tour[seg_end], tour[j_next]]
+                - matrix[tour[j], tour[j_next]]
+            )
+            # Add internal segment cost back
+            for s in range(k - 1):
+                cost_insert += matrix[tour[(i + s) % n], tour[(i + s + 1) % n]]
+
+            gain = savings - cost_insert + sum(
+                matrix[tour[(i + s) % n], tour[(i + s + 1) % n]] for s in range(k - 1)
+            )
+            # Simpler: gain = (removal savings) - (insertion penalty)
+            # removal saves: cost_remove - cost_bridge = savings
+            # insertion costs: matrix[j->seg_start] + matrix[seg_end->j_next] - matrix[j->j_next]
+            #                  + internal segment links (same as before)
+            # Net gain = savings - (matrix[j->seg_start] + matrix[seg_end->j_next] - matrix[j->j_next])
+            actual_gain = savings - (
+                matrix[tour[j], tour[seg_start]]
+                + matrix[tour[seg_end], tour[j_next]]
+                - matrix[tour[j], tour[j_next]]
+            )
+
+            if actual_gain > best_gain:
+                best_gain = actual_gain
+                best_i = i
+                best_j = j
+
+    if best_i < 0:
+        return None
+
+    # Apply the move: extract segment starting at best_i of length k, insert after best_j
+    # Build new tour by removing segment then inserting it
+    indices_to_remove = set((best_i + s) % n for s in range(k))
+    segment = [tour[(best_i + s) % n] for s in range(k)]
+    remaining = [tour[idx] for idx in range(n) if idx not in indices_to_remove]
+
+    # Find where to insert in the remaining tour
+    target_node = tour[best_j]
+    insert_pos = remaining.index(target_node) + 1
+    new_tour = remaining[:insert_pos] + segment + remaining[insert_pos:]
+
+    return new_tour
+
+
 def _or_opt_improve(
     tour: list[int], matrix: np.ndarray,
     max_iters: int = 200, time_limit: float = 10.0,
 ) -> list[int]:
-    """Apply or-opt-1 until convergence or time limit."""
+    """Apply or-opt-1, or-opt-2, or-opt-3 until convergence or time limit."""
     t0 = time.perf_counter()
     current = tour[:]
     for _ in range(max_iters):
         if time.perf_counter() - t0 > time_limit:
             break
+        # Try or-opt-1 first (fastest)
         improved = _or_opt_1_pass(current, matrix)
-        if improved is None:
-            break
-        current = improved
+        if improved is not None:
+            current = improved
+            continue
+        # Then or-opt-2
+        improved = _or_opt_k_pass(current, matrix, k=2)
+        if improved is not None:
+            current = improved
+            continue
+        # Then or-opt-3
+        improved = _or_opt_k_pass(current, matrix, k=3)
+        if improved is not None:
+            current = improved
+            continue
+        # No improvement found at any level
+        break
     return current
 
 
@@ -222,19 +328,24 @@ def solve_hybrid(
     # Note: CANDIDATE_SET_TYPE=NEAREST-NEIGHBOR doesn't work with EXPLICIT matrices
     configs = [
         # Default ALPHA candidates, balanced runs
-        {"label": "alpha_std", "extra_params": None, "weight": 0.35},
+        {"label": "alpha_std", "extra_params": None, "weight": 0.30},
         # More candidates per node for better ATSP coverage
         {"label": "wide_cands", "extra_params": {
             "MAX_CANDIDATES": 10,
-        }, "weight": 0.25},
+        }, "weight": 0.20},
         # Deeper search with more trials per run
         {"label": "deep", "max_trials": 1000, "runs": 1, "extra_params": {
             "MAX_CANDIDATES": 8,
-        }, "weight": 0.20},
+        }, "weight": 0.15},
         # Enhanced ATSP patching
         {"label": "patching", "extra_params": {
             "PATCHING_A": 3,
             "PATCHING_C": 3,
+        }, "weight": 0.15},
+        # 5-opt moves for deeper local search on ATSP
+        {"label": "deep_5opt", "max_trials": 500, "runs": 1, "extra_params": {
+            "MOVE_TYPE": 5,
+            "MAX_CANDIDATES": 7,
         }, "weight": 0.20},
     ]
 

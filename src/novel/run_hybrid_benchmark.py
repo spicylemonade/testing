@@ -4,10 +4,11 @@ against baseline LKH-3 results.
 
 Outputs:
 - results/hybrid_results.json: Full benchmark results
-- .archivara/metrics/221ffcff.json: Score metric for orchestrator
+- .archivara/metrics/<NODE_ID>.json: Score metric for orchestrator
 """
 
 import json
+import os
 import sys
 import time
 import traceback
@@ -22,6 +23,9 @@ sys.path.insert(0, str(project_root))
 
 from src.benchmark_harness import load_all_instances, validate_tour, compute_tour_cost
 from src.novel.asymmetric_ils import solve_hybrid
+
+# Node ID from environment or default
+NODE_ID = os.environ.get("NODE_ID", "2b4e4991")
 
 
 def load_baseline_lkh_costs(results_file: str) -> dict:
@@ -42,6 +46,7 @@ def main():
 
     print(f"Loaded {len(instances)} instances")
     print(f"Baseline LKH-3 costs: {len(lkh_ref_costs)} instances")
+    print(f"Node ID: {NODE_ID}")
     print()
 
     results = []
@@ -57,20 +62,21 @@ def main():
             print(f"  Baseline LKH-3 cost: {ref_cost:.1f}")
 
         # Configure solver based on instance size
+        # Reduced time limits to ensure full benchmark completes within 10 min
         if n <= 100:
             config = dict(
                 max_trials=500, runs_per_seed=2,
-                time_limit=90, use_initial_tours=True,
+                time_limit=40, use_initial_tours=True,
             )
         elif n <= 250:
             config = dict(
                 max_trials=500, runs_per_seed=2,
-                time_limit=150, use_initial_tours=True,
+                time_limit=60, use_initial_tours=True,
             )
         else:
             config = dict(
                 max_trials=500, runs_per_seed=2,
-                time_limit=270, use_initial_tours=True,
+                time_limit=90, use_initial_tours=True,
             )
 
         t0 = time.perf_counter()
@@ -181,7 +187,7 @@ def main():
         json.dump(output, f, indent=2)
     print(f"\nResults saved to {results_file}")
 
-    # Write metric for orchestrator - CORRECT NODE ID
+    # Write metric for orchestrator
     metrics_dir = project_root / ".archivara" / "metrics"
     metrics_dir.mkdir(parents=True, exist_ok=True)
     metric = {
@@ -189,7 +195,7 @@ def main():
         "value": float(score),
         "valid": True,
     }
-    metric_file = metrics_dir / "221ffcff.json"
+    metric_file = metrics_dir / f"{NODE_ID}.json"
     with open(metric_file, "w") as f:
         json.dump(metric, f, indent=2)
     print(f"Metric saved to {metric_file}")
