@@ -110,3 +110,60 @@ SIMD batching) would provide similar or larger speedups in a compiled language.
 The per-step operation count is similar across algorithms. The performance differences
 come from macro-level effects: empty-space skipping (reducing total steps), vectorization
 (amortizing loop overhead), and cache coherence (reducing memory latency).
+
+## Sensitivity Analysis
+
+### Density Sweep (5% to 95% occupancy)
+
+![Density Sweep](figures/density_sweep.png)
+
+Grid: 128^3, uniform random rays, 1K rays, 3 runs.
+
+| Density | DDA | Branchless | Cache-Aware | Hierarchical | Adaptive |
+|---------|-----|-----------|-------------|-------------|----------|
+| 5% | 7,284 | 9,767 | 9,700 | 5,139 | 5,190 |
+| 25% | 7,352 | 9,824 | 9,734 | 5,179 | 5,211 |
+| 50% | 7,335 | 9,800 | 9,736 | 5,175 | 5,218 |
+| 75% | 7,349 | 9,824 | 9,711 | 5,178 | 5,201 |
+| 95% | 7,331 | 9,823 | 9,703 | 5,153 | 5,198 |
+
+**Key finding:** With *random* occupancy, density has almost no effect on throughput.
+This is because random fill at any density >5% leaves very few completely empty 8^3
+bricks — the probability of an empty brick is (1-d)^512, which is essentially 0 for
+d ≥ 5%. The hierarchical and adaptive methods cannot skip any bricks, yet they pay the
+two-level dispatch overhead, making them slower than flat algorithms.
+
+**Crossover insight:** Hierarchical methods would overtake flat methods on *structured*
+sparse grids (e.g., sphere shells, surface voxels) where large contiguous regions are
+empty. In our earlier benchmarks, the hierarchical approach achieved 2.12x on a sphere
+shell (81% empty bricks) and 4.72x on a corner grid (98% empty bricks).
+
+### Ray Coherence Sweep
+
+![Coherence Sweep](figures/coherence_sweep.png)
+
+Grid: 128^3, density 0.3, 1K rays, 3 runs. Spread controls ray direction perturbation
+(lower = more coherent).
+
+| Spread | DDA | Branchless | Cache-Aware | Hierarchical | Adaptive |
+|--------|-----|-----------|-------------|-------------|----------|
+| 0.01 | 3,672 | 5,001 | 4,959 | 2,534 | 2,548 |
+| 0.10 | 3,753 | 5,131 | 5,099 | 2,603 | 2,624 |
+| 0.50 | 4,363 | 5,894 | 5,850 | 2,996 | 3,022 |
+| 1.00 | 5,321 | 7,097 | 7,061 | 3,674 | 3,714 |
+| 10.0 | 8,452 | 11,096 | 10,948 | 5,908 | 5,963 |
+
+**Key finding:** More coherent rays (lower spread) result in *lower* throughput because
+coherent rays traverse longer paths through the grid (all aimed in similar directions
+from one face to the other). Random rays (high spread) have shorter average paths
+because many miss or only clip the grid, increasing measured rays/second.
+
+**Relative performance is stable:** The ranking (branchless > cache-aware > DDA >
+adaptive > hierarchical) holds across all coherence levels. The branchless advantage
+(1.3-1.4x over DDA) is consistent regardless of coherence.
+
+**Coherent batching benefit:** When combined with the SIMD-vectorized batch approach
+(not shown in this scalar sweep), coherent distributions enable efficient batch
+processing: 10x over scalar DDA at spread=0.01, dropping to 0.7x at spread=10.0.
+The crossover from beneficial to overhead-dominated batching occurs at approximately
+spread=0.5 (see coherence_threshold_analysis.json).
