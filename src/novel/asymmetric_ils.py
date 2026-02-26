@@ -139,8 +139,55 @@ def _cheapest_insertion(matrix: np.ndarray, seed: int = 42) -> list[int]:
     return tour
 
 
+def _farthest_insertion(matrix: np.ndarray, seed: int = 42) -> list[int]:
+    """
+    Farthest insertion heuristic for ATSP.
+
+    Start from a random node, then repeatedly insert the node farthest from
+    the current partial tour at its cheapest insertion position.
+    """
+    n = matrix.shape[0]
+    rng = np.random.RandomState(seed)
+
+    start = rng.randint(0, n)
+    tour = [start]
+    in_tour = set(tour)
+
+    # Find the node farthest from start
+    dists = matrix[start].copy()
+    dists[start] = -np.inf
+    farthest = int(np.argmax(dists))
+    tour.append(farthest)
+    in_tour.add(farthest)
+
+    while len(tour) < n:
+        # Find farthest unvisited node (min distance to any tour node)
+        min_dist_to_tour = np.full(n, np.inf)
+        for t_node in tour:
+            min_dist_to_tour = np.minimum(min_dist_to_tour, matrix[t_node])
+        for t_node in in_tour:
+            min_dist_to_tour[t_node] = -np.inf
+        node = int(np.argmax(min_dist_to_tour))
+
+        # Find cheapest insertion position
+        best_cost = np.inf
+        best_pos = 0
+        for pos in range(len(tour)):
+            prev = tour[pos]
+            nxt = tour[(pos + 1) % len(tour)]
+            cost = matrix[prev, node] + matrix[node, nxt] - matrix[prev, nxt]
+            if cost < best_cost:
+                best_cost = cost
+                best_pos = pos + 1
+
+        tour.insert(best_pos, node)
+        in_tour.add(node)
+
+    return tour
+
+
 def _generate_initial_tours(
-    matrix: np.ndarray, max_tours: int = 10, seed: int = 42,
+    matrix: np.ndarray, max_tours: int = 12, seed: int = 42,
 ) -> list[list[int]]:
     """Generate diverse initial tours for LKH warm-starting."""
     rng = np.random.RandomState(seed)
@@ -148,22 +195,25 @@ def _generate_initial_tours(
     tours = []
 
     # Directed NN from multiple random starts
-    starts = sorted(set([0] + rng.choice(n, size=min(5, n), replace=False).tolist()))
-    for s in starts[:4]:
+    starts = sorted(set([0] + rng.choice(n, size=min(6, n), replace=False).tolist()))
+    for s in starts[:5]:
         tours.append(_directed_nn(matrix, start=s))
 
     # Asymmetry-penalized NN with different penalty weights
-    for pw in [0.15, 0.3, 0.6]:
+    for pw in [0.1, 0.25, 0.5, 0.8]:
         s = rng.randint(0, n)
         tours.append(_asymmetry_penalized_nn(matrix, start=s, penalty=pw))
 
-    # Inbound-aware NN from two different starts
-    tours.append(_inbound_aware_nn(matrix, start=0))
-    s = rng.randint(0, n)
-    tours.append(_inbound_aware_nn(matrix, start=s))
+    # Inbound-aware NN from multiple starts
+    for _ in range(3):
+        s = rng.randint(0, n)
+        tours.append(_inbound_aware_nn(matrix, start=s))
 
     # Cheapest insertion
     tours.append(_cheapest_insertion(matrix, seed=seed))
+
+    # Farthest insertion
+    tours.append(_farthest_insertion(matrix, seed=seed))
 
     # Deduplicate by cost (keep unique tours)
     seen_costs = set()
@@ -321,22 +371,33 @@ def _or_opt_improve(
     tour: list[int], matrix: np.ndarray,
     max_iters: int = 100, time_limit: float = 3.0,
 ) -> list[int]:
-    """Apply fast vectorized or-opt-1 until convergence or time limit.
+    """Apply or-opt-1 then or-opt-2 until convergence or time limit.
 
-    Only uses or-opt-1 (single node relocation) which is O(n^2) per pass
-    but vectorized with numpy. Skips expensive or-opt-k (k>1) passes which
-    empirically never improve LKH solutions on these instances.
+    Uses vectorized or-opt-1 (single node relocation) as primary move,
+    then tries or-opt-2 (segment relocation) if time remains.
     """
     t0 = time.perf_counter()
     current = tour[:]
+    # Phase 1: or-opt-1 (fast, vectorized)
     for _ in range(max_iters):
-        if time.perf_counter() - t0 > time_limit:
+        if time.perf_counter() - t0 > time_limit * 0.7:
             break
         improved = _or_opt_1_pass(current, matrix)
         if improved is not None:
             current = improved
             continue
         break
+    # Phase 2: or-opt-2 if time remains
+    remaining = time_limit - (time.perf_counter() - t0)
+    if remaining > 0.5:
+        for _ in range(max_iters // 2):
+            if time.perf_counter() - t0 > time_limit:
+                break
+            improved = _or_opt_k_pass(current, matrix, k=2)
+            if improved is not None:
+                current = improved
+                continue
+            break
     return current
 
 
@@ -368,35 +429,49 @@ def solve_hybrid(
     rng = np.random.RandomState(seed)
 
     # LKH configuration variants for search diversity
-    # Tuned weights: emphasize ATSP-specific configs over default alpha
+    # Tuned weights: emphasize ATSP-specific patching/5-opt; use KICKS for perturbation
     configs = [
-        # Default ALPHA candidates
-        {"label": "alpha_std", "extra_params": None, "weight": 0.18},
-        # Wide candidates for better ATSP coverage
+        # Default ALPHA candidates with subgradient
+        {"label": "alpha_std", "extra_params": {
+            "SUBGRADIENT": "YES",
+        }, "weight": 0.12},
+        # Wide candidates for broader ATSP exploration
         {"label": "wide_cands", "extra_params": {
-            "MAX_CANDIDATES": 10,
-        }, "weight": 0.14},
+            "MAX_CANDIDATES": 12,
+            "SUBGRADIENT": "YES",
+        }, "weight": 0.12},
         # Deep search with more trials per run
         {"label": "deep", "max_trials": 1200, "runs": 1, "extra_params": {
             "MAX_CANDIDATES": 8,
-        }, "weight": 0.16},
-        # Enhanced ATSP patching - moderate
+            "SUBGRADIENT": "YES",
+        }, "weight": 0.14},
+        # Enhanced ATSP patching with kicks for escape
         {"label": "patching", "extra_params": {
             "PATCHING_A": 3,
             "PATCHING_C": 3,
+            "KICKS": 1,
         }, "weight": 0.14},
         # 5-opt moves for deeper local search on ATSP
-        {"label": "deep_5opt", "max_trials": 800, "runs": 1, "extra_params": {
+        {"label": "deep_5opt", "max_trials": 1000, "runs": 1, "extra_params": {
             "MOVE_TYPE": 5,
-            "MAX_CANDIDATES": 7,
-        }, "weight": 0.18},
+            "MAX_CANDIDATES": 8,
+            "KICKS": 1,
+        }, "weight": 0.16},
         # Aggressive ATSP patching with 5-opt and wide candidates
-        {"label": "atsp_aggressive", "max_trials": 800, "runs": 1, "extra_params": {
+        {"label": "atsp_aggressive", "max_trials": 1000, "runs": 1, "extra_params": {
             "PATCHING_A": 5,
             "PATCHING_C": 5,
             "MOVE_TYPE": 5,
-            "MAX_CANDIDATES": 8,
-        }, "weight": 0.20},
+            "MAX_CANDIDATES": 10,
+            "KICKS": 2,
+        }, "weight": 0.18},
+        # Very wide candidates with extra patching for diverse exploration
+        {"label": "wide_patching", "max_trials": 800, "runs": 1, "extra_params": {
+            "MAX_CANDIDATES": 15,
+            "PATCHING_A": 4,
+            "PATCHING_C": 4,
+            "MOVE_TYPE": 5,
+        }, "weight": 0.14},
     ]
 
     population = []
@@ -413,8 +488,8 @@ def solve_hybrid(
         except Exception as e:
             print(f"  Initial tour generation failed: {e}")
 
-    # Phase 2: Warm-start LKH from best initial tours (10% budget)
-    warm_budget = time_limit * 0.10 if initial_tours else 0
+    # Phase 2: Warm-start LKH from best initial tours (5% budget)
+    warm_budget = time_limit * 0.05 if initial_tours else 0
     for init_tour in initial_tours:
         if time.perf_counter() - t0 > warm_budget:
             break
@@ -433,10 +508,10 @@ def solve_hybrid(
             if not warm_start_used:
                 break
 
-    # Phase 3: Multi-config LKH with random seeds (main search phase)
-    phase3_budget = time_limit * 0.82 - max(0, time.perf_counter() - t0 - warm_budget)
+    # Phase 3: Multi-config LKH with random seeds (main search phase - 90% budget)
+    phase3_budget = time_limit * 0.90 - max(0, time.perf_counter() - t0 - warm_budget)
     if phase3_budget < 5:
-        phase3_budget = time_limit * 0.82
+        phase3_budget = time_limit * 0.90
 
     for config in configs:
         config_time = phase3_budget * config["weight"]
@@ -489,8 +564,8 @@ def solve_hybrid(
     remaining_for_refine = time_limit * 0.97 - (time.perf_counter() - t0)
     if remaining_for_refine > 3.0:
         refine_configs = [
-            {"PATCHING_A": 4, "PATCHING_C": 4, "MOVE_TYPE": 5},
-            {"MAX_CANDIDATES": 12},
+            {"PATCHING_A": 4, "PATCHING_C": 4, "MOVE_TYPE": 5, "KICKS": 1},
+            {"MAX_CANDIDATES": 15, "SUBGRADIENT": "YES"},
         ]
         for rc_extra in refine_configs:
             if time.perf_counter() - t0 > time_limit * 0.97:
