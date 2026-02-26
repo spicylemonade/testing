@@ -131,3 +131,55 @@ Yoshida (1990) showed how to compose 2nd-order symplectic integrators (leapfrog)
 **Force algorithms:** We implement direct summation (exact baseline), NumPy-vectorized direct summation (performance), and Barnes-Hut quadtree (approximate, scalable).
 
 **Integrators:** We implement forward Euler (baseline), velocity-Verlet/leapfrog (workhorse), and Yoshida 4th-order (high-precision). This covers 1st, 2nd, and 4th order, both symplectic and non-symplectic.
+
+---
+
+# Survey of Open-Source N-Body Gravity Simulators
+
+## 1. REBOUND (Rein & Liu 2012)
+- **Language:** C core with Python bindings
+- **Integrators:** Leapfrog, WHFast (Wisdom-Holman), IAS15 (adaptive 15th-order), MERCURIUS (hybrid), SABA (high-order symplectic)
+- **Force algorithms:** Direct summation, Barnes-Hut tree
+- **Features:** Collision detection, MPI+OpenMP parallelization, periodic boundary conditions, REBOUNDx physics extensions
+- **License:** GPL v3
+- **URL:** https://github.com/hannorein/rebound
+
+## 2. GADGET-2 / GADGET-4 (Springel 2005)
+- **Language:** C
+- **Integrators:** Leapfrog with individual timesteps
+- **Force algorithms:** Barnes-Hut tree + PM (TreePM) for gravity, SPH for gas dynamics
+- **Features:** Massively parallel (MPI), cosmological simulations, adaptive mesh refinement
+- **License:** GPL v2
+- **URL:** https://wwwmpa.mpa-garching.mpg.de/gadget4/
+
+## 3. grav_sim (Alvin Ng)
+- **Language:** C core with Python API
+- **Integrators:** Multiple (tutorial-focused)
+- **Force algorithms:** Direct summation
+- **Features:** Beginner-friendly tutorial, clean code structure
+- **License:** Open source
+- **URL:** https://github.com/alvinng4/grav_sim
+
+## 4. pmocz/nbody-python (Philip Mocz)
+- **Language:** Python (NumPy vectorized)
+- **Integrators:** Leapfrog
+- **Force algorithms:** Vectorized direct summation with softening
+- **Features:** Minimal, educational, vectorized NumPy implementation
+- **License:** Open source
+- **URL:** https://github.com/pmocz/nbody-python
+
+## 5. N-body-Gravity-Simulator (jdlamstein)
+- **Language:** Python
+- **Integrators:** Leapfrog
+- **Force algorithms:** Direct summation
+- **Features:** Solar system initial conditions from NASA, trajectory visualization
+- **License:** Open source
+- **URL:** https://github.com/jdlamstein/N-body-Gravity-Simulator
+
+## 6. benrules2/nbody
+- **Language:** C++ and Python
+- **Integrators:** Multiple (Euler, Verlet)
+- **Force algorithms:** Direct summation
+- **Features:** Blog tutorial, performance comparison C++ vs Python
+- **License:** Open source
+- **URL:** https://github.com/benrules2/nbody
