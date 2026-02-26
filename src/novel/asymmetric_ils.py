@@ -481,6 +481,10 @@ def solve_hybrid(
     seed: int = 42,
     time_limit: float = 300.0,
     use_initial_tours: bool = True,
+    use_multiconfig: bool = True,
+    use_ils: bool = True,
+    use_oropt: bool = True,
+    ils_perturbation_types: str = "all",
 ) -> dict:
     """
     Multi-configuration LKH-3 solver with ILS for ATSP on real road networks.
@@ -490,6 +494,13 @@ def solve_hybrid(
     Phase 3: Multi-config LKH with focused ATSP-specific parameters (68% budget).
     Phase 4: Iterated Local Search - perturb best + warm-start LKH (24% budget).
     Phase 5: Or-opt post-processing on best solution (remaining time).
+
+    Ablation controls:
+        use_multiconfig: If False, use single default LKH config instead of 5.
+        use_ils: If False, skip ILS phase and give all remaining time to Phase 3.
+        use_oropt: If False, skip or-opt post-processing.
+        ils_perturbation_types: "all" uses all 3 perturbation types,
+            "double_bridge_only" uses only double-bridge.
     """
     from src.solvers.lkh_solver import solve_atsp as lkh_solve
 
@@ -573,10 +584,22 @@ def solve_hybrid(
             if not warm_start_used:
                 break
 
-    # Phase 3: Multi-config LKH with random seeds (62% budget)
-    # Reduced to give more time to ILS which shows better returns on large instances
-    phase3_end = t0 + time_limit * 0.64
-    phase3_budget = time_limit * 0.62
+    # Phase 3: Multi-config LKH with random seeds
+    # If ILS is disabled, give Phase 3 the full remaining time budget
+    if use_ils:
+        phase3_end = t0 + time_limit * 0.64
+        phase3_budget = time_limit * 0.62
+    else:
+        phase3_end = t0 + time_limit * 0.96
+        phase3_budget = time_limit * 0.94
+
+    # Ablation: single config uses just one default LKH config
+    if not use_multiconfig:
+        configs = [
+            {"label": "default", "max_trials": max_trials, "runs": 1, "extra_params": {
+                "PATCHING_A": 3, "PATCHING_C": 3, "MOVE_TYPE": 5,
+            }, "weight": 1.0},
+        ]
 
     for config in configs:
         config_time = phase3_budget * config["weight"]
@@ -627,7 +650,7 @@ def solve_hybrid(
     # Phase 4: Iterated Local Search with adaptive perturbation (32% budget)
     # Three perturbation types including ATSP-specific segment reversal.
     # Adaptive strength: increases when stuck, resets on improvement.
-    ils_end = t0 + time_limit * 0.96
+    ils_end = t0 + time_limit * 0.96 if use_ils else t0  # skip if disabled
     ils_extra = {
         "PATCHING_A": 5, "PATCHING_C": 5, "MOVE_TYPE": 5,
         "KICKS": 1, "MAX_CANDIDATES": 10,
@@ -645,15 +668,19 @@ def solve_hybrid(
         else:
             base_tour = best_tour
 
-        # Cycle through 3 perturbation strategies including ATSP-specific reversal
-        pert_type = ils_iters % 3
-        if pert_type == 0:
+        # Cycle through perturbation strategies
+        if ils_perturbation_types == "double_bridge_only":
             perturbed = _double_bridge_perturb(base_tour, rng)
-        elif pert_type == 1:
-            perturbed = _segment_relocate_perturb(base_tour, rng, strength=pert_strength)
         else:
-            # ATSP-specific: segment reversal changes costs due to asymmetry
-            perturbed = _segment_reversal_perturb(base_tour, rng, num_reversals=pert_strength)
+            # Full: cycle through 3 types including ATSP-specific reversal
+            pert_type = ils_iters % 3
+            if pert_type == 0:
+                perturbed = _double_bridge_perturb(base_tour, rng)
+            elif pert_type == 1:
+                perturbed = _segment_relocate_perturb(base_tour, rng, strength=pert_strength)
+            else:
+                # ATSP-specific: segment reversal changes costs due to asymmetry
+                perturbed = _segment_reversal_perturb(base_tour, rng, num_reversals=pert_strength)
 
         s = int(rng.randint(1, 100000))
         try:
@@ -684,7 +711,7 @@ def solve_hybrid(
 
     # Phase 5: Or-opt post-processing on best solution (remaining time)
     remaining = time_limit - (time.perf_counter() - t0)
-    if remaining > 0.5:
+    if use_oropt and remaining > 0.5:
         try:
             candidate = _or_opt_improve(
                 best_tour, matrix,
@@ -721,6 +748,10 @@ def solve_hybrid(
             "seed": seed,
             "time_limit": time_limit,
             "use_initial_tours": use_initial_tours,
+            "use_multiconfig": use_multiconfig,
+            "use_ils": use_ils,
+            "use_oropt": use_oropt,
+            "ils_perturbation_types": ils_perturbation_types,
             "num_configs": len(configs),
             "ils_iters": ils_iters,
         },
