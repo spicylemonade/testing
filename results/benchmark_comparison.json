@@ -1,0 +1,122 @@
+{
+  "force_evaluation_benchmark": [
+    {
+      "N": 100,
+      "bf_time_s": 0.0017,
+      "bh_time_s": 0.0522,
+      "bf_interactions": 9900,
+      "bh_interactions": 5192,
+      "bh_avg_interactions_per_particle": 51.9,
+      "rms_relative_error": 0.0009874492476820516,
+      "theta": 0.5
+    },
+    {
+      "N": 500,
+      "bf_time_s": 0.0215,
+      "bh_time_s": 0.6584,
+      "bf_interactions": 249500,
+      "bh_interactions": 62057,
+      "bh_avg_interactions_per_particle": 124.1,
+      "rms_relative_error": 0.002292206894548231,
+      "theta": 0.5
+    },
+    {
+      "N": 1000,
+      "bf_time_s": 0.0666,
+      "bh_time_s": 1.7828,
+      "bf_interactions": 999000,
+      "bh_interactions": 164085,
+      "bh_avg_interactions_per_particle": 164.1,
+      "rms_relative_error": 0.00323510914217732,
+      "theta": 0.5
+    },
+    {
+      "N": 5000,
+      "bf_time_s": 1.5286,
+      "bh_time_s": 14.8816,
+      "bf_interactions": 24995000,
+      "bh_interactions": 1337937,
+      "bh_avg_interactions_per_particle": 267.6,
+      "rms_relative_error": 0.0028539560722118354,
+      "theta": 0.5
+    }
+  ],
+  "simulation_benchmark": [
+    {
+      "N": 100,
+      "solver": "brute_force_vec",
+      "n_steps": 100,
+      "dt": 0.01,
+      "wall_clock_s": 0.07,
+      "energy_drift": 0.12740645334393402
+    },
+    {
+      "N": 100,
+      "solver": "barnes_hut",
+      "n_steps": 100,
+      "dt": 0.01,
+      "wall_clock_s": 5.28,
+      "energy_drift": 0.10934742894078851
+    },
+    {
+      "N": 500,
+      "solver": "brute_force_vec",
+      "n_steps": 100,
+      "dt": 0.01,
+      "wall_clock_s": 1.47,
+      "energy_drift": 0.0019567552731247634
+    },
+    {
+      "N": 500,
+      "solver": "barnes_hut",
+      "n_steps": 100,
+      "dt": 0.01,
+      "wall_clock_s": 66.75,
+      "energy_drift": 0.0015689038992768064
+    },
+    {
+      "N": 1000,
+      "solver": "brute_force_vec",
+      "n_steps": 100,
+      "dt": 0.01,
+      "wall_clock_s": 6.55,
+      "energy_drift": 0.0003715468627862668
+    },
+    {
+      "N": 1000,
+      "solver": "barnes_hut",
+      "n_steps": 100,
+      "dt": 0.01,
+      "wall_clock_s": 180.41,
+      "energy_drift": 0.00032381797490343387
+    }
+  ],
+  "scaling_analysis": [
+    {
+      "N_from": 100,
+      "N_to": 500,
+      "bf_time_exponent": 1.58,
+      "bh_time_exponent": 1.57,
+      "bh_interaction_exponent": 1.54
+    },
+    {
+      "N_from": 500,
+      "N_to": 1000,
+      "bf_time_exponent": 1.63,
+      "bh_time_exponent": 1.44,
+      "bh_interaction_exponent": 1.4
+    },
+    {
+      "N_from": 1000,
+      "N_to": 5000,
+      "bf_time_exponent": 1.95,
+      "bh_time_exponent": 1.32,
+      "bh_interaction_exponent": 1.3
+    }
+  ],
+  "notes": {
+    "brute_force": "NumPy-vectorized O(N^2) using broadcasting (C-level operations)",
+    "barnes_hut": "Pure Python tree traversal O(N log N) with quadrupole corrections",
+    "scaling_note": "BH interaction count scales sub-quadratically, confirming O(N log N). Wall-clock BH is slower due to Python overhead vs NumPy C kernels. In production (C/Fortran), BH would be faster for N > ~1000 (Barnes & Hut 1986, Springel 2005 GADGET-2)."
+  }
+}
