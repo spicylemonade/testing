@@ -167,3 +167,55 @@ adaptive > hierarchical) holds across all coherence levels. The branchless advan
 processing: 10x over scalar DDA at spread=0.01, dropping to 0.7x at spread=10.0.
 The crossover from beneficial to overhead-dominated batching occurs at approximately
 spread=0.5 (see coherence_threshold_analysis.json).
+
+## Scaling Analysis
+
+### Throughput vs Grid Size (Log-Log)
+
+![Scaling Throughput](figures/scaling_throughput.png)
+
+Grid sizes 16^3 to 512^3, density 0.3, uniform rays, 1K rays, 3 runs.
+
+| Grid Size | DDA | Branchless | Cache-Aware | Hierarchical | Adaptive |
+|-----------|-----|-----------|-------------|-------------|----------|
+| 16^3 | 24,429 | 32,716 | 32,388 | 22,265 | 22,351 |
+| 32^3 | 18,080 | 24,180 | 23,991 | 14,826 | 14,520 |
+| 64^3 | 12,110 | 16,282 | 16,188 | 9,157 | 9,189 |
+| 128^3 | 7,372 | 9,839 | 9,790 | 5,205 | 5,235 |
+| 256^3 | 4,140 | 5,503 | 5,500 | 2,782 | 2,811 |
+| 512^3 | 2,142 | 2,853 | 2,839 | 1,413 | 1,431 |
+
+### Empirical Scaling Exponents
+
+Fitted throughput ~ N^alpha using log-log linear regression:
+
+| Algorithm | Exponent (alpha) | Interpretation |
+|-----------|-----------------|----------------|
+| DDA | -0.704 | Better than O(N^-1) |
+| Branchless | -0.707 | Better than O(N^-1) |
+| Cache-Aware | -0.705 | Better than O(N^-1) |
+| Hierarchical | -0.799 | Closer to O(N^-1) |
+| Adaptive Hybrid | -0.793 | Closer to O(N^-1) |
+
+**Voxels/ray scaling:** O(N^1.03), confirming that average path length scales
+linearly with grid side length (as expected from theory).
+
+**Theory vs practice:** The theoretical per-ray complexity is O(N) (number of
+voxels traversed grows linearly with grid side length). This predicts throughput
+~ N^{-1}. Our measured exponent (~-0.7) is better than -1.0, likely because:
+1. Python function call overhead (fixed per ray, independent of N) becomes
+   relatively smaller for larger N
+2. NumPy array creation overhead amortizes over longer traversals
+
+**Flat algorithms maintain near-constant per-voxel cost:** The DDA, branchless,
+and cache-aware algorithms all scale at alpha ≈ -0.70, showing that their
+per-step cost is truly constant. The hierarchical/adaptive methods have a
+steeper exponent (-0.80) because their per-step overhead from two-level dispatch
+grows with grid size (more bricks to traverse at coarse level).
+
+### Path Length vs Grid Size
+
+![Voxels per Ray](figures/scaling_voxels_per_ray.png)
+
+Average voxels/ray scales as O(N^1.03), confirming the expected linear relationship
+between grid side length and average traversal length for uniform random rays.
