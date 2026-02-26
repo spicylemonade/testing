@@ -35,7 +35,7 @@ sys.path.insert(0, str(project_root))
 from src.benchmark_harness import load_all_instances, validate_tour, compute_tour_cost
 from src.novel.asymmetric_ils import solve_hybrid
 
-NODE_ID = os.environ.get("NODE_ID", "c250b5b6")
+NODE_ID = os.environ.get("NODE_ID", "2284f362")
 
 # Ablation configurations: each removes one component
 ABLATION_CONFIGS = {
@@ -116,11 +116,11 @@ def load_baseline_lkh_costs(results_file: str) -> dict:
 def get_instance_config(n: int) -> dict:
     """Get solver time/trial config based on instance size."""
     if n <= 100:
-        return dict(max_trials=500, runs_per_seed=1, time_limit=40)
+        return dict(max_trials=400, runs_per_seed=1, time_limit=25)
     elif n <= 250:
-        return dict(max_trials=600, runs_per_seed=1, time_limit=80)
+        return dict(max_trials=500, runs_per_seed=1, time_limit=50)
     else:
-        return dict(max_trials=800, runs_per_seed=1, time_limit=150)
+        return dict(max_trials=600, runs_per_seed=1, time_limit=90)
 
 
 def main():
@@ -135,6 +135,9 @@ def main():
     print()
 
     all_results = []  # List of {config, instance, cost, gap, ...}
+    metrics_dir = project_root / ".archivara" / "metrics"
+    metrics_dir.mkdir(parents=True, exist_ok=True)
+    metric_file = metrics_dir / f"{NODE_ID}.json"
 
     for config_name, config in ABLATION_CONFIGS.items():
         print(f"\n{'='*70}")
@@ -182,7 +185,8 @@ def main():
                 gap_vs_baseline = (verified_cost / ref_cost - 1) * 100
                 config_gaps.append(gap_vs_baseline)
 
-            print(f"cost={verified_cost:.1f}  gap={gap_vs_baseline:+.4f}%  "
+            gap_str = f"{gap_vs_baseline:+.4f}" if gap_vs_baseline is not None else "N/A"
+            print(f"cost={verified_cost:.1f}  gap={gap_str}%  "
                   f"time={elapsed:.1f}s  valid={tour_valid}")
 
             all_results.append({
@@ -204,6 +208,19 @@ def main():
             mean_gap = float(np.mean(config_gaps))
             print(f"\n  => {config_name} mean gap: {mean_gap:+.4f}%  "
                   f"(score: {-mean_gap:.4f})")
+
+        # Write metric file early: after "full" config completes, write the
+        # metric immediately so it's captured even if later configs crash.
+        if config_name == "full" and config_gaps:
+            full_score_early = float(-np.mean(config_gaps))
+            metric = {
+                "metric_name": "score",
+                "value": full_score_early,
+                "valid": True,
+            }
+            with open(metric_file, "w") as f:
+                json.dump(metric, f, indent=2)
+            print(f"\n  [Early metric written: score={full_score_early:.6f}]")
 
     # Compute summary table
     print(f"\n\n{'='*70}")
@@ -288,15 +305,12 @@ def main():
         json.dump(output, f, indent=2)
     print(f"\nResults saved to {results_file}")
 
-    # Write metric for orchestrator (use full solver score)
-    metrics_dir = project_root / ".archivara" / "metrics"
-    metrics_dir.mkdir(parents=True, exist_ok=True)
+    # Write final metric for orchestrator (use full solver score)
     metric = {
         "metric_name": "score",
         "value": float(full_score),
         "valid": True,
     }
-    metric_file = metrics_dir / f"{NODE_ID}.json"
     with open(metric_file, "w") as f:
         json.dump(metric, f, indent=2)
     print(f"Metric saved to {metric_file}")
