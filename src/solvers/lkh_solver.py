@@ -49,6 +49,22 @@ def matrix_to_tsplib_atsp(matrix: np.ndarray, name: str = "instance") -> str:
     return "\n".join(lines)
 
 
+def _write_initial_tour_file(tour_0indexed: list, n: int, filepath: str):
+    """Write TSPLIB tour file for LKH initial tour (n-node, 1-indexed)."""
+    lines = [
+        "NAME: initial",
+        "TYPE: TOUR",
+        f"DIMENSION: {n}",
+        "TOUR_SECTION",
+    ]
+    for node in tour_0indexed:
+        lines.append(str(node + 1))
+    lines.append("-1")
+    lines.append("EOF")
+    with open(filepath, "w") as f:
+        f.write("\n".join(lines))
+
+
 def write_par_file(
     problem_file: str,
     tour_file: str,
@@ -56,6 +72,8 @@ def write_par_file(
     runs: int = 5,
     time_limit: float = 0,
     seed: int = 42,
+    initial_tour_file: str = None,
+    extra_params: dict = None,
 ) -> str:
     """Generate LKH-3 parameter file content."""
     lines = [
@@ -67,6 +85,11 @@ def write_par_file(
     ]
     if time_limit > 0:
         lines.append(f"TIME_LIMIT = {time_limit}")
+    if initial_tour_file:
+        lines.append(f"INITIAL_TOUR_FILE = {initial_tour_file}")
+    if extra_params:
+        for k, v in extra_params.items():
+            lines.append(f"{k} = {v}")
     return "\n".join(lines)
 
 
@@ -121,6 +144,8 @@ def solve_atsp(
     seed: int = 42,
     lkh_binary: str = LKH_BINARY,
     verbose: bool = False,
+    initial_tour: list = None,
+    extra_params: dict = None,
 ) -> dict:
     """
     Solve an ATSP instance using LKH-3.
@@ -161,9 +186,17 @@ def solve_atsp(
         with open(problem_file, "w") as f:
             f.write(tsplib_content)
 
+        # Write initial tour file if provided
+        initial_tour_file_path = None
+        if initial_tour is not None:
+            initial_tour_file_path = os.path.join(tmpdir, "initial.tour")
+            _write_initial_tour_file(initial_tour, n, initial_tour_file_path)
+
         # Write parameter file
         par_content = write_par_file(
-            problem_file, tour_file, max_trials, runs, time_limit, seed
+            problem_file, tour_file, max_trials, runs, time_limit, seed,
+            initial_tour_file=initial_tour_file_path,
+            extra_params=extra_params,
         )
         with open(par_file, "w") as f:
             f.write(par_content)

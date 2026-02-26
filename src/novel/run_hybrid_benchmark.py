@@ -1,10 +1,10 @@
 """
-Run the hybrid AE-ILS solver on all ATSP benchmark instances and compare
+Run the hybrid multi-config solver on all ATSP benchmark instances and compare
 against baseline LKH-3 results.
 
 Outputs:
 - results/hybrid_results.json: Full benchmark results
-- .archivara/metrics/668d2252.json: Score metric for orchestrator
+- .archivara/metrics/221ffcff.json: Score metric for orchestrator
 """
 
 import json
@@ -57,24 +57,20 @@ def main():
             print(f"  Baseline LKH-3 cost: {ref_cost:.1f}")
 
         # Configure solver based on instance size
-        # Key: use runs=1 per seed with many seeds for maximum diversity
         if n <= 100:
             config = dict(
-                max_trials=500, runs=1, max_lkh_seeds=50,
-                ils_iterations=50, ils_no_improve=20,
-                time_limit=120,
+                max_trials=500, runs_per_seed=2,
+                time_limit=90, use_initial_tours=True,
             )
         elif n <= 250:
             config = dict(
-                max_trials=500, runs=1, max_lkh_seeds=40,
-                ils_iterations=30, ils_no_improve=15,
-                time_limit=180,
+                max_trials=500, runs_per_seed=2,
+                time_limit=150, use_initial_tours=True,
             )
         else:
             config = dict(
-                max_trials=500, runs=1, max_lkh_seeds=30,
-                ils_iterations=20, ils_no_improve=10,
-                time_limit=300,
+                max_trials=500, runs_per_seed=2,
+                time_limit=270, use_initial_tours=True,
             )
 
         t0 = time.perf_counter()
@@ -84,7 +80,7 @@ def main():
             print(f"  FAILED: {e}")
             traceback.print_exc()
             results.append({
-                "instance": name, "n": n, "solver": "hybrid_ae_ils",
+                "instance": name, "n": n, "solver": "hybrid_multiconfig",
                 "status": "error", "error": str(e),
             })
             continue
@@ -98,6 +94,7 @@ def main():
         print(f"  LKH best:      {result['lkh_cost']:.1f}")
         print(f"  Tour valid:    {tour_valid}")
         print(f"  Seeds tried:   {result.get('seeds_tried', '?')}")
+        print(f"  Warm starts:   {result.get('warm_starts', '?')}")
         print(f"  Population:    {result.get('population_size', '?')}")
         print(f"  Total time:    {elapsed:.1f}s")
 
@@ -116,7 +113,7 @@ def main():
             "n": n,
             "city": inst.get("city", ""),
             "city_type": inst.get("city_type", ""),
-            "solver": "hybrid_ae_ils",
+            "solver": "hybrid_multiconfig",
             "status": "ok" if tour_valid else "invalid_tour",
             "cost": float(verified_cost),
             "lkh_cost": float(result["lkh_cost"]),
@@ -127,6 +124,7 @@ def main():
             "lkh_time": float(result.get("lkh_time", 0)),
             "population_size": result.get("population_size", 0),
             "seeds_tried": result.get("seeds_tried", 0),
+            "warm_starts": result.get("warm_starts", 0),
             "params": result.get("params", {}),
         })
 
@@ -150,7 +148,7 @@ def main():
 
         # Score: negative gap = improvement (positive score)
         score = -mean_gap
-        print(f"\nScore (negative mean gap = improvement): {score:.4f}")
+        print(f"\nScore (negative mean gap = improvement): {score:.6f}")
     else:
         score = 0.0
         mean_gap = 0.0
@@ -160,9 +158,10 @@ def main():
     output = {
         "metadata": {
             "generated_at": datetime.now(timezone.utc).isoformat(),
-            "solver": "hybrid_ae_ils",
+            "solver": "hybrid_multiconfig",
             "num_instances": len(instances),
-            "description": "Multi-seed LKH + vectorized asymmetric local search + edge-frequency + ILS",
+            "description": "Multi-config LKH (ALPHA + NN candidates + deep search + patching) "
+                           "with asymmetry-aware warm starts and or-opt post-processing",
         },
         "results": results,
         "summary": {
@@ -182,7 +181,7 @@ def main():
         json.dump(output, f, indent=2)
     print(f"\nResults saved to {results_file}")
 
-    # Write metric for orchestrator
+    # Write metric for orchestrator - CORRECT NODE ID
     metrics_dir = project_root / ".archivara" / "metrics"
     metrics_dir.mkdir(parents=True, exist_ok=True)
     metric = {
@@ -190,11 +189,11 @@ def main():
         "value": float(score),
         "valid": True,
     }
-    metric_file = metrics_dir / "668d2252.json"
+    metric_file = metrics_dir / "221ffcff.json"
     with open(metric_file, "w") as f:
         json.dump(metric, f, indent=2)
     print(f"Metric saved to {metric_file}")
-    print(f"Score: {score:.4f}")
+    print(f"Score: {score:.6f}")
 
 
 if __name__ == "__main__":
