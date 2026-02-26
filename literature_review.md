@@ -282,3 +282,120 @@ The idea mirrors the Surface Area Heuristic used in BVH construction for ray tra
 | Spatial Hash | Flat | 1 | Variable | Yes | Excellent |
 | Brickmap | Flat+brick | 1-2 | ~0.8 | Yes | Good |
 
+---
+
+## 3. SIMD, GPU, and Branchless Optimization Techniques
+
+### 3.1 GPU-Mapped Grid Traversal — Es & Isler (2007)
+
+**Reference:** Es & Isler, "Accelerated Regular Grid Traversals using Extended Anisotropic Chessboard Distance Fields on a GPU," 2007 \cite{es2007accelerated}
+
+**Algorithm Overview:**
+Es & Isler extend the DDA grid traversal to GPUs by using anisotropic chessboard distance fields to skip empty cells. Each cell stores the minimum distance to the nearest occupied cell, allowing multi-voxel jumps during traversal. The method maps naturally to GPU fragment/compute shaders where each thread processes one ray.
+
+**Key Performance Characteristics:**
+- Distance fields enable O(1)-per-skip empty space jumps
+- GPU parallelism processes millions of rays simultaneously
+- Anisotropic distance provides tighter bounds than isotropic variants
+
+---
+
+### 3.2 Branchless DDA Implementations
+
+**Reference:** Branchless Voxel Raycasting (Shadertoy) \cite{branchlessdda2016}
+
+**Algorithm Overview:**
+The standard Amanatides-Woo DDA uses nested if-else branches to select the stepping axis. Branchless variants replace these with vectorized min/max operations:
+
+```
+// Branchless axis selection
+mask = (tMax.x < tMax.y) & (tMax.x < tMax.z)  // bitmask approach
+// OR equivalently:
+axis = argmin(tMax)  // select minimum component
+voxel[axis] += step[axis]
+tMax[axis] += tDelta[axis]
+```
+
+**Performance Characteristics:**
+- Eliminates 2-3 conditional branches per step
+- On GPUs: may provide moderate benefit since hardware already has conditional-move instructions
+- On CPUs: can reduce branch misprediction penalty by ~15-20% for incoherent rays
+- Caveat: branchless versions sometimes run ~40% slower on mobile GPUs due to computing both branches
+
+**Tradeoffs:**
+- Most beneficial for incoherent ray distributions (random directions)
+- For coherent rays, branch prediction already works well → minimal benefit
+- Slightly more arithmetic per step (computing all 3 axes then selecting)
+
+---
+
+### 3.3 Axis-Normalized Ray-Box Intersection with SIMD
+
+**Reference:** Friederichs, "Axis-Normalized Ray-Box Intersection," 2025 \cite{friederichs2025raybox}
+
+**Algorithm Overview:**
+Modern SIMD approaches normalize the ray direction to exploit vectorized min/max instructions for ray-AABB intersection tests. By pre-normalizing the ray such that the dominant axis has unit direction, the intersection computation reduces to fewer operations, and SIMD (SSE/AVX) processes 4/8 rays simultaneously.
+
+**Key Optimizations:**
+- Pre-compute 1/direction for all rays in a batch
+- Use SIMD `_mm_min_ps` / `_mm_max_ps` for slab intersection
+- Batch ray-box tests: 4 rays per SSE register, 8 per AVX
+- Combined with grid traversal: test ray-brick intersection for 4-8 rays simultaneously
+
+---
+
+### 3.4 MultiDDA and XBrickMap Bitmask-Based Hierarchical Skipping
+
+**Reference:** VoxelRT Project (dubiousconst282) \cite{dubiousconst2024sparse64}
+
+**Algorithm Overview:**
+MultiDDA uses two nested DDA loops: an outer loop at coarse block level (e.g., 8³ bricks) and an inner loop at voxel level. XBrickMap extends this with 64-bit occupancy bitmasks per brick, enabling multi-voxel skips within occupied bricks via popcount/tzcnt instructions.
+
+**Key Features:**
+- Two-level DDA: coarse (brick) + fine (voxel)
+- 64-bit bitmask per brick: each bit = one 4³ sub-block occupancy
+- Hardware popcount: O(1) to find next occupied sub-block
+- Primary ray performance: competitive with tree-based methods
+- Incoherent ray performance: degraded due to SIMD lane divergence when entering inner loop
+
+**Performance (VoxelRT benchmarks):**
+- MultiDDA: 8898 cycles/ray baseline → 7052 with bitmask coalescing (21% faster)
+- Sparse 64-tree: further improvement for complex scenes
+- Cache benefit from brick-aligned memory layout (brick fits in 1-2 cache lines)
+
+---
+
+### 3.5 Cache-Aware Memory Layouts: Morton/Z-Order and Hilbert Curves
+
+**Key Concept:**
+Space-filling curves map 3D voxel coordinates to 1D memory addresses while preserving spatial locality. This reduces cache misses during traversal since neighboring voxels in 3D space are stored nearby in memory.
+
+**Morton (Z-Order) Curve:**
+- Bit-interleaving of (x, y, z) coordinates
+- Fast encoding/decoding: bit shifts + masks, or hardware BMI2 PDEP/PEXT
+- Good spatial locality with occasional discontinuities at Z-boundaries
+- Most popular choice for voxel engines and SVOs
+
+**Hilbert Curve:**
+- Continuous space-filling (no jumps between consecutive points)
+- ~10-30% fewer cache misses than Morton in traversal benchmarks
+- More expensive to compute (state-machine encoding)
+- Net throughput often similar to Morton due to higher encoding overhead
+
+**Practical Recommendation:**
+- **Morton Z-order** is the default choice: fast, simple, substantial cache benefit
+- **Block-linear (tiled) layouts** — small tiles (4³ or 8³) in linear order, tiles arranged in Morton order — provide the best practical balance
+- Hilbert order reserved for streaming/sequential access patterns
+
+---
+
+## SIMD/GPU Optimization Summary
+
+| Technique | Benefit | Best For | Overhead |
+|-----------|---------|----------|----------|
+| Branchless DDA | Reduces branch misprediction | Incoherent rays | Slight compute increase |
+| SIMD batch ray-box | 4-8× throughput per instruction | Ray-AABB tests | Ray batching setup |
+| Bitmask skipping | Multi-voxel jumps via popcount | Sparse grids | Bitmask maintenance |
+| Morton layout | 30-50% fewer cache misses | Large grids (≥256³) | Encoding overhead |
+| GPU parallelism | Millions of rays in parallel | All distributions | Memory bandwidth |
+
