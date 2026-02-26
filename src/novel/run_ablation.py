@@ -35,7 +35,7 @@ sys.path.insert(0, str(project_root))
 from src.benchmark_harness import load_all_instances, validate_tour, compute_tour_cost
 from src.novel.asymmetric_ils import solve_hybrid
 
-NODE_ID = os.environ.get("NODE_ID", "2284f362")
+NODE_ID = os.environ.get("NODE_ID", "d9a8041c")
 
 # Ablation configurations: each removes one component
 ABLATION_CONFIGS = {
