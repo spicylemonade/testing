@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-02-26T00:00:00Z",
+  "updated_at": "2026-02-26T19:34:48.363662+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-02-26T00:00:00Z",
+      "completed_at": "2026-02-26T19:34:48.363640+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and define project skeleton",
+          "acceptance_criteria": "Written document (ANALYSIS.md or notes field) listing all existing repo files, available tools (.archivara/semantic_scholar.py), and a proposed directory layout for the gravity simulation (e.g., src/, tests/, data/, docs/).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Literature review: classical N-body gravitational simulation methods",
+          "acceptance_criteria": "Search the web and Semantic Scholar for papers on N-body gravitational simulation, covering at minimum: (1) direct-summation O(N^2), (2) Barnes-Hut tree algorithm, (3) Fast Multipole Method (FMM). Summarize each approach with complexity and trade-offs. At least 5 papers identified and annotated.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Literature review: numerical integration schemes for orbital mechanics",
+          "acceptance_criteria": "Search for and review papers on symplectic integrators, leapfrog/Stormer-Verlet, Runge-Kutta (RK4), and Yoshida higher-order methods for Hamiltonian systems. Summarize energy-conservation properties and order of accuracy for each. At least 5 papers identified.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Survey existing open-source gravity simulators and code repositories",
+          "acceptance_criteria": "Search GitHub and the web for at least 5 existing open-source N-body or gravity simulation codebases (e.g., REBOUND, Gadget, nbody.py). Document language, integrator used, feature set, and license for each.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "File sources.bib exists at repo root containing valid BibTeX entries for at least 10 relevant papers and resources cited during the literature review (items 002-004). Each entry must have title, author, year, and URL/DOI fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Initialize project with dependencies and configuration",
+          "acceptance_criteria": "A working Python project with a requirements.txt (or pyproject.toml) listing numpy as a core dependency. Project structure has src/ with an __init__.py, tests/ directory, and a main entry point (e.g., main.py or sim.py). Running `python -c 'import numpy'` succeeds.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement core data structures for particle/body representation",
+          "acceptance_criteria": "A Body or Particle class/dataclass storing mass, position (2D or 3D vector), and velocity vector. A System class holding a collection of bodies. Unit test verifying construction of a 3-body system with known masses and positions passes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement brute-force O(N^2) gravitational force computation",
+          "acceptance_criteria": "Function computing pairwise gravitational forces F = G*m1*m2/r^2 with softening parameter epsilon to avoid singularities. Unit test verifying force between two known masses at known distance matches analytical result to within 1e-6 relative error.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement Euler and leapfrog (Stormer-Verlet) integrators",
+          "acceptance_criteria": "Two integrator functions: (1) forward Euler, (2) leapfrog/velocity-Verlet. Each takes a system and timestep dt, returns updated positions and velocities. Both produce correct circular orbit for a known 2-body Kepler problem over 10 orbits (position error < 10% for Euler, < 1% for leapfrog).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement energy and momentum conservation metrics",
+          "acceptance_criteria": "Functions computing total kinetic energy, total gravitational potential energy, total linear momentum, and total angular momentum of a system. Unit test verifying a 2-body Kepler orbit conserves total energy to within 0.1% over 100 orbits using the leapfrog integrator.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Run baseline benchmarks on brute-force solver with timing",
+          "acceptance_criteria": "Script that runs the O(N^2) brute-force solver for N = 10, 50, 100, 500, 1000 particles for 100 timesteps each, recording wall-clock time and energy drift. Results saved to a JSON or CSV file (benchmark_baseline.json). Timing confirms O(N^2) scaling (doubling N roughly quadruples time).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Implement Barnes-Hut tree-based approximate force computation",
+          "acceptance_criteria": "A quadtree (2D) or octree (3D) spatial partitioning structure with a configurable opening angle theta. Force computation approximates distant clusters as single point masses. For theta=0.5 and N=1000, forces agree with brute-force to within 1% RMS relative error.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement adaptive timestep control",
+          "acceptance_criteria": "Timestep adapts based on the minimum of (softening_length / max_velocity) and (softening_length / max_acceleration)^0.5 across all particles. Test showing adaptive stepping achieves comparable energy conservation to fixed-step leapfrog but with at least 30% fewer total force evaluations on a collapsing cluster test case.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement a higher-order symplectic integrator (Yoshida 4th-order)",
+          "acceptance_criteria": "4th-order Yoshida symplectic integrator implemented using the standard coefficient decomposition. On a 2-body Kepler orbit test, energy drift over 1000 orbits is at least 100x smaller than leapfrog at the same computational cost (adjusted for the 3 sub-steps per Yoshida step).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement NumPy-vectorized force computation for the brute-force solver",
+          "acceptance_criteria": "Rewrite O(N^2) force calculation using pure NumPy broadcasting (no Python for-loops over particles). Wall-clock speedup of at least 5x over the loop-based version for N=1000. Results match loop-based version to machine precision.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Add simple real-time or batch visualization of particle trajectories",
+          "acceptance_criteria": "A plotting module using matplotlib that renders particle positions as a scatter plot, with optional trail lines. Can produce either a static PNG snapshot or an animated GIF/MP4 of the simulation. At least one visualization saved to disk for a 3-body figure-eight orbit or solar-system-like configuration.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_017",
+          "description": "Benchmark Barnes-Hut vs brute-force across particle counts",
+          "acceptance_criteria": "Run both solvers for N = 100, 500, 1000, 5000 particles for 100 timesteps. Record wall-clock time and energy drift. Results saved to benchmark_comparison.json. Barnes-Hut must demonstrate sub-quadratic scaling (e.g., N=5000 at least 3x faster than brute-force). Compare performance against prior work cited in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Compare integrator accuracy across Euler, leapfrog, and Yoshida methods",
+          "acceptance_criteria": "Run all three integrators on (1) a 2-body Kepler orbit and (2) a Pythagorean 3-body problem for 1000 time units. Record energy drift |dE/E0| over time as a time series. Produce a log-scale plot showing energy drift vs time for all three methods. Yoshida must show lowest drift at comparable step counts.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Test accuracy vs theta parameter for Barnes-Hut approximation",
+          "acceptance_criteria": "Run Barnes-Hut with theta = 0.3, 0.5, 0.7, 1.0 on a 1000-particle Plummer sphere for 100 timesteps. Record RMS force error relative to brute-force and energy drift for each theta. Produce a plot of accuracy vs speed trade-off. Results saved to theta_sweep.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Run canonical test problems: Kepler orbit, figure-eight 3-body, Plummer sphere collapse",
+          "acceptance_criteria": "Three predefined initial-condition generators for: (1) Kepler 2-body elliptical orbit (e=0.5), (2) figure-eight 3-body choreography (Chenciner-Montgomery solution), (3) Plummer sphere with N=500. Each runs for sufficient time and produces a trajectory visualization. Kepler orbit closes to within 1% of initial position after one period.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Convergence study: energy conservation vs timestep size",
+          "acceptance_criteria": "For the leapfrog and Yoshida integrators, run a 2-body orbit with dt = 0.1, 0.01, 0.001, 0.0001. Plot maximum |dE/E0| vs dt on a log-log scale. Confirm expected convergence orders (2nd for leapfrog, 4th for Yoshida) by measuring the slope. Results saved to convergence_study.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Write comprehensive README with usage instructions and examples",
+          "acceptance_criteria": "README.md updated with: project description, installation instructions, usage examples (at least 3 command-line invocations), explanation of available integrators and force algorithms, and sample output images or plots. Must reference at least 3 papers from sources.bib for algorithmic background.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Compile experimental results into a summary report",
+          "acceptance_criteria": "A RESULTS.md file summarizing all experiments from Phase 4 with embedded plots or plot references: (1) brute-force vs Barnes-Hut scaling, (2) integrator energy drift comparison, (3) theta accuracy trade-off, (4) convergence study slopes. Each section cites relevant prior work from sources.bib for comparison.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Ensure full test suite passes with at least 80% code coverage",
+          "acceptance_criteria": "Running `python -m pytest tests/ --cov=src --cov-report=term` passes all tests with zero failures and reports at least 80% line coverage across the src/ directory. Tests cover force computation, all integrators, energy metrics, Barnes-Hut tree construction, and initial condition generators.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Final sources.bib validation and citation completeness check",
+          "acceptance_criteria": "sources.bib contains at least 10 BibTeX entries. Every algorithm implemented (brute-force, Barnes-Hut, leapfrog, Yoshida) has at least one corresponding citation. Every experimental comparison references relevant prior work. All entries have valid BibTeX syntax (parseable by bibtexparser or similar).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
