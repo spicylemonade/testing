@@ -399,3 +399,68 @@ Space-filling curves map 3D voxel coordinates to 1D memory addresses while prese
 | Morton layout | 30-50% fewer cache misses | Large grids (≥256³) | Encoding overhead |
 | GPU parallelism | Millions of rays in parallel | All distributions | Memory bandwidth |
 
+---
+
+## 4. Open-Source Implementations, Benchmarks, and Datasets
+
+### 4.1 cgyurgyik/fast-voxel-traversal-algorithm
+
+**URL:** https://github.com/cgyurgyik/fast-voxel-traversal-algorithm \cite{cgyurgyik2020fvta}
+
+- **Language:** C++
+- **Algorithm:** Amanatides & Woo DDA (direct implementation)
+- **Grid size limits:** Arbitrary (template-based value_type)
+- **Features:** Clean implementation with Grid3D and Ray classes; includes detailed algorithm overview document
+- **Status:** Public archive (read-only, no longer maintained)
+- **Performance:** Not benchmarked; prototype implementation
+
+### 4.2 francisengelmann/fast_voxel_traversal
+
+**URL:** https://github.com/francisengelmann/fast_voxel_traversal \cite{engelmann2016fvt}
+
+- **Language:** Python (NumPy)
+- **Algorithm:** Amanatides & Woo DDA
+- **Grid size limits:** Memory-limited (Python/NumPy arrays)
+- **Features:** Given start and end points in 3D, returns list of traversed voxel IDs; simple and pedagogical
+- **Performance:** Python-speed; useful for correctness validation but not performance benchmarking
+
+### 4.3 dubiousconst282/VoxelRT
+
+**URL:** https://github.com/dubiousconst282/VoxelRT \cite{dubiousconst2024sparse64}
+
+- **Language:** C#, GLSL (compute shaders)
+- **Algorithm:** MultiDDA, XBrickMap, Sparse 64-Tree
+- **Grid size limits:** Tested up to ~8K resolution (358M voxels, 224 MB)
+- **Features:** Multiple traversal backends (brickmap, tree64), GPU ray tracing, bitmask acceleration, real-time rendering
+- **Performance:** ~7000-9000 cycles/ray on GPU; competitive with state-of-the-art voxel renderers
+
+### 4.4 OpenVDB/NanoVDB
+
+**URL:** https://github.com/AcademySoftwareFoundation/openvdb \cite{museth2021nanovdb}
+
+- **Language:** C++/CUDA (NanoVDB: also C99, OpenCL, GLSL, HLSL)
+- **Algorithm:** VDB tree (3-level + leaf, branching 32³→16³→8³→voxel) with built-in ray traversal
+- **Grid size limits:** Effectively unlimited (sparse representation, tested with 188M+ unique voxels)
+- **Features:** Industry-standard sparse volumetric data structure; NanoVDB provides GPU-portable read-only version; includes ray marching utilities, HDDA traversal, min/max metadata for empty-space skipping
+- **Performance:** GPU path tracing at 61ms for Disney Cloud (188M voxels, 1920×1080, 4 spp on RTX 3090); CPU NanoVDB faster than OpenVDB due to cache-friendly contiguous layout
+
+### 4.5 risteon/voxel-traversal
+
+**URL:** https://github.com/risteon/voxel-traversal
+
+- **Language:** C++ with Eigen
+- **Algorithm:** Amanatides & Woo DDA (derived from cgyurgyik)
+- **Grid size limits:** Tested with real LiDAR data (nuScenes dataset)
+- **Features:** Clean C++17, Eigen vectorization, timing utilities
+- **Performance:** Benchmarked on nuScenes LiDAR point clouds
+
+### Standard Benchmark Scenarios
+
+1. **Random ray throughput test:** Fire N random rays through a grid of size M³ at various occupancy densities. Measure rays/second. This is the standard micro-benchmark used across most implementations.
+
+2. **Scene-based rendering benchmark:** Voxelize a standard 3D model (Stanford Bunny, Stanford Dragon, Bistro scene) at various resolutions and measure primary ray tracing framerate. Used by VoxelRT, NanoVDB, and ESVO papers.
+
+### Novel Cross-Domain Connection: Medical Imaging
+
+Siddon's algorithm and its derivatives are extensively used in medical imaging for radiation therapy dose calculation \cite{siddon1985fast}. The GPU-accelerated 3D-DDA traversal has been applied to radiation dose computation, suggesting a cross-pollination opportunity: techniques from real-time rendering (bitmask skipping, hierarchical grids) could accelerate medical imaging workloads, and vice versa, the strict correctness requirements of medical imaging could inform better numerical stability guarantees for rendering traversal algorithms.
+
