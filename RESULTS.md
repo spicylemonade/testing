@@ -1,5 +1,50 @@
 # Experimental Results
 
+## Executive Summary
+
+This project implements and benchmarks seven voxel grid traversal algorithms in
+Python, culminating in a novel **Adaptive Hybrid Traversal** that combines
+hierarchical empty-space skipping with branchless DDA and density-based strategy
+selection.
+
+**Key findings across 500+ benchmark configurations:**
+
+1. **Branchless DDA** (1.33x over standard DDA) is the fastest single-ray scalar
+   algorithm. Replacing nested if-else axis selection with comparison masking
+   eliminates unnecessary branching overhead even in Python's interpreter.
+
+2. **SIMD-vectorized batch DDA** achieves **6.65x** over scalar DDA in count-only
+   mode by processing thousands of rays simultaneously via NumPy array operations.
+   Full result collection is limited to 0.81x due to Python list construction overhead.
+
+3. **Hierarchical DDA** with 8^3 bricks achieves **2.1-4.7x** on *structured* sparse
+   grids (sphere shells, surface voxels) by skipping empty bricks entirely. On randomly
+   sparse grids, the benefit disappears because random fill leaves no empty bricks.
+
+4. **Adaptive Hybrid** achieves the best throughput on mixed sparse/dense grids by
+   selecting traversal strategy per-brick. It adds ~0.3x overhead on dense grids vs
+   flat DDA but provides 2.1x speedup on sparse regions.
+
+5. **Coherent ray batching** with direction-based clustering achieves **10x** over
+   scalar DDA on highly coherent ray distributions (spread ≤ 0.01). The batching
+   crossover occurs at spread ~0.5; beyond this, sorting overhead dominates.
+
+6. **Scaling:** All algorithms exhibit throughput ~ N^{-0.7} (better than the
+   theoretical O(N^{-1})) because Python's fixed per-ray overhead becomes relatively
+   smaller for larger N. Voxels/ray scales as O(N^1.03), confirming linear path length.
+
+**Fastest algorithm per scenario:**
+
+| Scenario | Best Algorithm | Speedup vs DDA |
+|----------|---------------|----------------|
+| Dense, single-ray | Branchless DDA | 1.33x |
+| Sparse (structured) | Hierarchical / Adaptive | 2.1-4.7x |
+| Batch (count-only) | SIMD DDA | 6.65x |
+| Coherent batch | Coherent batch (count) | 10x |
+| Mixed sparse/dense | Adaptive Hybrid | 2.1x sparse, 0.7x dense |
+
+---
+
 ## Baseline Performance (DDA and Bresenham)
 
 | Algorithm | Grid Size | Rays | Distribution | Throughput (rays/s) | Avg Voxels/Ray |
@@ -219,3 +264,20 @@ grows with grid size (more bricks to traverse at coarse level).
 
 Average voxels/ray scales as O(N^1.03), confirming the expected linear relationship
 between grid side length and average traversal length for uniform random rays.
+
+## Practical Guidance: When to Use Which Algorithm
+
+| Your Scenario | Recommended Algorithm | Why |
+|---------------|----------------------|-----|
+| Simple, one-off ray casting | **Branchless DDA** | Fastest scalar, no setup cost |
+| Dense/uniform grid, single rays | **Branchless DDA** | 1.33x over DDA, no overhead for empty-skip |
+| Sparse grid with large empty regions | **Adaptive Hybrid** | 2-4.7x from brick skipping |
+| Batch of many rays, count-only | **SIMD DDA batch** | 6.65x via NumPy vectorization |
+| Coherent ray bundle (spread < 0.5) | **Coherent batch (count)** | 7-10x with direction clustering |
+| Large grid (256+), need full results | **Branchless DDA** | Scales well, no Python overhead from batching |
+| Mixed sparse/dense grid | **Adaptive Hybrid** | Never worse than 0.7x on dense, 2x+ on sparse |
+| Porting to C/CUDA | **Adaptive Hybrid** | Design translates well; expect much larger gains |
+
+**General rule of thumb:** Start with branchless DDA. If your grid has structured
+sparsity (>50% empty bricks), upgrade to adaptive hybrid. If you process many rays
+at once and only need counts, use SIMD batch mode.
