@@ -59,9 +59,75 @@ Springel (2005) developed GADGET-2, a massively parallel TreeSPH code combining 
 | FMM | O(N) | O(N) | Approximate (p-dependent) |
 | Dehnen | O(N) | O(N) | Approximate |
 
+---
+
+# Numerical Integration Schemes for Orbital Mechanics
+
+## 6. Forward Euler — 1st Order
+
+The simplest explicit integrator: x(t+dt) = x(t) + v(t)*dt, v(t+dt) = v(t) + a(t)*dt.
+
+**Order:** 1st order — error O(dt)
+**Symplectic:** No
+**Energy conservation:** Poor — energy drifts secularly (typically grows), making it unsuitable for long integrations
+**Use case:** Educational baseline; demonstrates why higher-order methods are needed
+
+## 7. Leapfrog / Velocity-Verlet / Størmer-Verlet — 2nd Order
+
+The leapfrog method staggers position and velocity updates. The velocity-Verlet variant computes both at the same timestep:
+1. v(t + dt/2) = v(t) + a(t)*dt/2  (half kick)
+2. x(t + dt) = x(t) + v(t + dt/2)*dt  (drift)
+3. a(t + dt) = F(x(t + dt))/m  (force evaluation)
+4. v(t + dt) = v(t + dt/2) + a(t + dt)*dt/2  (half kick)
+
+**Key references:**
+- Verlet, L. (1967) "Computer Experiments on Classical Fluids." Phys. Rev., 159, 98.
+- Hairer, Lubich & Wanner (2006) "Geometric Numerical Integration" — comprehensive treatment of symplectic methods.
+
+**Order:** 2nd order — error O(dt²)
+**Symplectic:** Yes — preserves phase-space volume
+**Energy conservation:** Excellent — energy oscillates around true value with bounded error O(dt²), no secular drift
+**Time-reversible:** Yes
+**Use case:** Workhorse integrator for N-body simulations. Best balance of simplicity, accuracy, and conservation.
+
+## 8. Classical Runge-Kutta (RK4) — 4th Order
+
+The standard 4th-order Runge-Kutta method uses 4 force evaluations per step to achieve 4th-order accuracy.
+
+**Order:** 4th order — error O(dt⁴)
+**Symplectic:** No
+**Energy conservation:** Better short-term accuracy than leapfrog, but energy drifts secularly over long integrations
+**Use case:** General-purpose ODE integration; not ideal for Hamiltonian systems due to lack of symplecticity
+
+## 9. Yoshida 4th-Order Symplectic — 4th Order
+
+Yoshida (1990) showed how to compose 2nd-order symplectic integrators (leapfrog) with specific coefficients to obtain higher-order symplectic methods. The 4th-order scheme uses 3 leapfrog sub-steps with coefficients:
+- c₁ = c₄ = 1/(2(2-2^{1/3}))
+- c₂ = c₃ = (1-2^{1/3})/(2(2-2^{1/3}))
+- d₁ = d₃ = 1/(2-2^{1/3})
+- d₂ = -2^{1/3}/(2-2^{1/3})
+
+**Key references:**
+- Yoshida, H. (1990) "Construction of higher order symplectic integrators." Phys. Lett. A, 150, 262-268.
+- Forest, E. & Ruth, R.D. (1990) "Fourth-order symplectic integration." Physica D, 43, 105-117.
+
+**Order:** 4th order — error O(dt⁴)
+**Symplectic:** Yes
+**Energy conservation:** Excellent — energy error bounded O(dt⁴), no secular drift. ~100x better than leapfrog at same step count.
+**Cost:** 3 force evaluations per step (vs 1 for leapfrog)
+**Use case:** High-precision orbital mechanics where long-term conservation matters
+
+## Integrator Comparison
+
+| Method | Order | Symplectic | Force Evals/Step | Energy Drift |
+|--------|-------|-----------|-----------------|-------------|
+| Forward Euler | 1 | No | 1 | Secular (grows) |
+| Leapfrog/Verlet | 2 | Yes | 1 | Bounded O(dt²) |
+| RK4 | 4 | No | 4 | Secular (slow) |
+| Yoshida 4th | 4 | Yes | 3 | Bounded O(dt⁴) |
+
 ## Design Choice for This Project
 
-For a minimal gravity simulation, we implement:
-1. **Direct summation** as the baseline (exact reference)
-2. **Barnes-Hut quadtree** as the primary approximate method (good balance of complexity and accuracy)
-3. Both loop-based and NumPy-vectorized versions of direct summation for performance comparison
+**Force algorithms:** We implement direct summation (exact baseline), NumPy-vectorized direct summation (performance), and Barnes-Hut quadtree (approximate, scalable).
+
+**Integrators:** We implement forward Euler (baseline), velocity-Verlet/leapfrog (workhorse), and Yoshida 4th-order (high-precision). This covers 1st, 2nd, and 4th order, both symplectic and non-symplectic.
