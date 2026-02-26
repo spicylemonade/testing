@@ -187,33 +187,30 @@ def _farthest_insertion(matrix: np.ndarray, seed: int = 42) -> list[int]:
 
 
 def _generate_initial_tours(
-    matrix: np.ndarray, max_tours: int = 12, seed: int = 42,
+    matrix: np.ndarray, max_tours: int = 8, seed: int = 42,
 ) -> list[list[int]]:
     """Generate diverse initial tours for LKH warm-starting."""
     rng = np.random.RandomState(seed)
     n = matrix.shape[0]
     tours = []
 
-    # Directed NN from multiple random starts
-    starts = sorted(set([0] + rng.choice(n, size=min(6, n), replace=False).tolist()))
-    for s in starts[:5]:
+    # Directed NN from multiple random starts (3 tours)
+    starts = sorted(set([0] + rng.choice(n, size=min(4, n), replace=False).tolist()))
+    for s in starts[:3]:
         tours.append(_directed_nn(matrix, start=s))
 
-    # Asymmetry-penalized NN with different penalty weights
-    for pw in [0.1, 0.25, 0.5, 0.8]:
+    # Asymmetry-penalized NN with focused penalty weights (2 tours)
+    for pw in [0.25, 0.5]:
         s = rng.randint(0, n)
         tours.append(_asymmetry_penalized_nn(matrix, start=s, penalty=pw))
 
-    # Inbound-aware NN from multiple starts
-    for _ in range(3):
+    # Inbound-aware NN from multiple starts (2 tours)
+    for _ in range(2):
         s = rng.randint(0, n)
         tours.append(_inbound_aware_nn(matrix, start=s))
 
-    # Cheapest insertion
+    # Cheapest insertion (1 tour)
     tours.append(_cheapest_insertion(matrix, seed=seed))
-
-    # Farthest insertion
-    tours.append(_farthest_insertion(matrix, seed=seed))
 
     # Deduplicate by cost (keep unique tours)
     seen_costs = set()
@@ -448,6 +445,31 @@ def _segment_relocate_perturb(
     return current
 
 
+def _segment_reversal_perturb(
+    tour: list[int], rng: np.random.RandomState, num_reversals: int = 2,
+) -> list[int]:
+    """
+    ATSP-specific perturbation: reverse random segments.
+
+    Unlike symmetric TSP, reversing a segment in ATSP changes costs because
+    edge (i->j) != edge (j->i) on real road networks. This exploits the
+    asymmetric structure to explore solution space regions that standard
+    perturbations (double-bridge, relocate) cannot reach.
+    """
+    n = len(tour)
+    current = tour[:]
+    for _ in range(num_reversals):
+        seg_len = int(rng.randint(3, max(4, n // 5) + 1))
+        start = int(rng.randint(0, n))
+        # Get segment indices (handling wraparound)
+        indices = [(start + j) % n for j in range(seg_len)]
+        values = [current[idx] for idx in indices]
+        values.reverse()
+        for idx, val in zip(indices, values):
+            current[idx] = val
+    return current
+
+
 # ---------------------------------------------------------------------------
 # Main hybrid solver
 # ---------------------------------------------------------------------------
@@ -475,33 +497,45 @@ def solve_hybrid(
     n = matrix.shape[0]
     rng = np.random.RandomState(seed)
 
-    # Focused ATSP-specific LKH configurations
-    # Fewer configs than before → more seeds per config → better diversity
+    # ATSP-specific LKH configurations exploiting population-based crossover,
+    # backbone identification, and backtracking search strategies.
+    # Key innovations:
+    # - POPULATION_SIZE enables LKH-3's internal crossover (IPT) between
+    #   diverse solutions, finding better combinations than single-run search.
+    # - BACKBONE_TRIALS identifies "fixed" edges appearing in many good
+    #   solutions, focusing search on the variable structure.
+    # - BACKTRACKING enables deeper exploration of neighborhoods.
     configs = [
-        # Aggressive ATSP patching with 5-opt and wide candidates
-        {"label": "atsp_aggressive", "max_trials": 1000, "runs": 1, "extra_params": {
+        # Config 1: Aggressive patching with population-based crossover
+        {"label": "atsp_pop", "max_trials": 1000, "runs": 1, "extra_params": {
             "PATCHING_A": 5, "PATCHING_C": 5, "MOVE_TYPE": 5,
             "MAX_CANDIDATES": 10, "KICKS": 2,
-        }, "weight": 0.26},
-        # Deep 5-opt search with kicks for escape
-        {"label": "deep_5opt", "max_trials": 1200, "runs": 1, "extra_params": {
+            "POPULATION_SIZE": 5,
+        }, "weight": 0.25},
+        # Config 2: Deep search with backbone edge identification
+        {"label": "deep_backbone", "max_trials": 1200, "runs": 1, "extra_params": {
             "MOVE_TYPE": 5, "MAX_CANDIDATES": 8, "KICKS": 1,
             "SUBGRADIENT": "YES",
-        }, "weight": 0.24},
-        # Wide candidates with patching for diverse exploration
-        {"label": "wide_patching", "max_trials": 800, "runs": 1, "extra_params": {
+            "BACKBONE_TRIALS": 5,
+        }, "weight": 0.22},
+        # Config 3: Wide candidates with backtracking for thorough local search
+        {"label": "wide_bt", "max_trials": 800, "runs": 1, "extra_params": {
             "MAX_CANDIDATES": 15, "PATCHING_A": 4, "PATCHING_C": 4,
             "MOVE_TYPE": 5,
+            "BACKTRACKING": "YES",
         }, "weight": 0.20},
-        # Standard ATSP patching with kicks
-        {"label": "patching", "extra_params": {
+        # Config 4: Patching + population for crossover diversity
+        {"label": "patching_pop", "extra_params": {
             "PATCHING_A": 3, "PATCHING_C": 3, "KICKS": 1,
             "SUBGRADIENT": "YES",
-        }, "weight": 0.16},
-        # Alpha with wide candidates and subgradient (baseline diversity)
-        {"label": "alpha_wide", "extra_params": {
+            "POPULATION_SIZE": 5,
+        }, "weight": 0.18},
+        # Config 5: Enhanced alpha-values with more ascent candidates
+        {"label": "alpha_ascent", "extra_params": {
             "MAX_CANDIDATES": 12, "SUBGRADIENT": "YES",
-        }, "weight": 0.14},
+            "KICKS": 2,
+            "ASCENT_CANDIDATES": 10,
+        }, "weight": 0.15},
     ]
 
     population = []
@@ -514,12 +548,13 @@ def solve_hybrid(
     initial_tours = []
     if use_initial_tours:
         try:
-            initial_tours = _generate_initial_tours(matrix, max_tours=8, seed=seed)
+            initial_tours = _generate_initial_tours(matrix, seed=seed)
         except Exception as e:
             print(f"  Initial tour generation failed: {e}")
 
-    # Phase 2: Warm-start LKH from best initial tours (3% budget)
-    warm_budget = time_limit * 0.03 if initial_tours else 0
+    # Phase 2: Warm-start LKH from best initial tours (2% budget)
+    # Reduced from 3%: warm-starts rarely succeed per empirical data
+    warm_budget = time_limit * 0.02 if initial_tours else 0
     for init_tour in initial_tours:
         if time.perf_counter() - t0 > warm_budget:
             break
@@ -538,9 +573,10 @@ def solve_hybrid(
             if not warm_start_used:
                 break
 
-    # Phase 3: Multi-config LKH with random seeds (68% budget)
-    phase3_end = t0 + time_limit * 0.71
-    phase3_budget = time_limit * 0.68
+    # Phase 3: Multi-config LKH with random seeds (62% budget)
+    # Reduced to give more time to ILS which shows better returns on large instances
+    phase3_end = t0 + time_limit * 0.64
+    phase3_budget = time_limit * 0.62
 
     for config in configs:
         config_time = phase3_budget * config["weight"]
@@ -588,9 +624,9 @@ def solve_hybrid(
     best_tour = list(population[0][1])
     best_cost = lkh_best_cost
 
-    # Phase 4: Iterated Local Search - perturb best + warm-start LKH (24% budget)
-    # Key insight: double-bridge perturbation escapes local optima that LKH
-    # converges to, allowing exploration of different basins of attraction.
+    # Phase 4: Iterated Local Search with adaptive perturbation (32% budget)
+    # Three perturbation types including ATSP-specific segment reversal.
+    # Adaptive strength: increases when stuck, resets on improvement.
     ils_end = t0 + time_limit * 0.96
     ils_extra = {
         "PATCHING_A": 5, "PATCHING_C": 5, "MOVE_TYPE": 5,
@@ -598,20 +634,26 @@ def solve_hybrid(
     }
     ils_trials = min(max_trials, 500)
     ils_iters = 0
+    no_improve_count = 0
+    pert_strength = 2  # Adaptive: starts low, grows when stuck
 
     while time.perf_counter() < ils_end:
         # Choose base: usually best, sometimes from top-3 for diversity
-        if ils_iters % 3 == 2 and len(population) >= 3:
+        if ils_iters % 4 == 3 and len(population) >= 3:
             base_idx = int(rng.randint(0, min(3, len(population))))
             base_tour = list(population[base_idx][1])
         else:
             base_tour = best_tour
 
-        # Alternate perturbation strategies
-        if ils_iters % 2 == 0:
+        # Cycle through 3 perturbation strategies including ATSP-specific reversal
+        pert_type = ils_iters % 3
+        if pert_type == 0:
             perturbed = _double_bridge_perturb(base_tour, rng)
+        elif pert_type == 1:
+            perturbed = _segment_relocate_perturb(base_tour, rng, strength=pert_strength)
         else:
-            perturbed = _segment_relocate_perturb(base_tour, rng, strength=3)
+            # ATSP-specific: segment reversal changes costs due to asymmetry
+            perturbed = _segment_reversal_perturb(base_tour, rng, num_reversals=pert_strength)
 
         s = int(rng.randint(1, 100000))
         try:
@@ -623,6 +665,13 @@ def solve_hybrid(
             if result["cost"] < best_cost - 1e-10:
                 best_cost = result["cost"]
                 best_tour = list(result["tour"])
+                no_improve_count = 0
+                pert_strength = max(2, pert_strength - 1)  # Reset on improvement
+            else:
+                no_improve_count += 1
+                if no_improve_count >= 3:
+                    pert_strength = min(6, pert_strength + 1)  # Intensify
+                    no_improve_count = 0
             population.append((result["cost"], result["tour"]))
             total_lkh_time += result["wall_time"]
             seeds_tried += 1

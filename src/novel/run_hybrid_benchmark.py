@@ -25,7 +25,7 @@ from src.benchmark_harness import load_all_instances, validate_tour, compute_tou
 from src.novel.asymmetric_ils import solve_hybrid
 
 # Node ID from environment or default
-NODE_ID = os.environ.get("NODE_ID", "082aab06")
+NODE_ID = os.environ.get("NODE_ID", "96d65801")
 
 
 def load_baseline_lkh_costs(results_file: str) -> dict:
@@ -67,19 +67,19 @@ def main():
             # Small: LKH finds optimal quickly; moderate time for ILS exploration
             config = dict(
                 max_trials=700, runs_per_seed=1,
-                time_limit=55, use_initial_tours=True,
+                time_limit=60, use_initial_tours=True,
             )
         elif n <= 250:
-            # Medium: extended time for ILS phase to escape local optima
+            # Medium: increased time for deeper ILS exploration
             config = dict(
                 max_trials=800, runs_per_seed=1,
-                time_limit=110, use_initial_tours=True,
+                time_limit=130, use_initial_tours=True,
             )
         else:
             # Large: max time for ILS - biggest improvement opportunity
             config = dict(
                 max_trials=1000, runs_per_seed=1,
-                time_limit=200, use_initial_tours=True,
+                time_limit=240, use_initial_tours=True,
             )
 
         t0 = time.perf_counter()
