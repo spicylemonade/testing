@@ -1,19 +1,12 @@
 """
-Asymmetry-Exploiting Iterated Local Search (AE-ILS) for ATSP on road networks.
+Hybrid ATSP solver for real road networks.
 
-Hybrid approach combining:
-1. Multi-seed LKH-3 for solution diversity (different local optima)
-2. Asymmetric local search operators (or-opt, node swap, asym-2opt)
-3. Edge-frequency guided construction from population of LKH solutions
-4. Iterated perturbation with asymmetry-guided double-bridge
-
-The key insight is that LKH-3's Jonker-Volgenant ATSP→STSP transformation
-loses directional cost information. By collecting diverse LKH solutions and
-applying ATSP-native operators, we can escape LKH's local optima.
+Multi-seed LKH-3 with numpy-vectorized asymmetry-aware local search.
+Exploits directional cost asymmetry that LKH's Jonker-Volgenant
+STSP transformation cannot capture.
 
 References:
 - Helsgott (2017) LKH-3 via J-V transformation [helsgott2017]
-- Nagata & Kobayashi (2013) EAX crossover for TSP [nagata2013]
 - Vu et al. (2019) Bounded asymmetry in road networks [vu2019]
 """
 
@@ -24,199 +17,178 @@ import numpy as np
 
 
 def compute_tour_cost(tour: list[int], matrix: np.ndarray) -> float:
-    """Compute total directed tour cost."""
-    n = len(tour)
-    cost = 0.0
-    for i in range(n):
-        cost += matrix[tour[i], tour[(i + 1) % n]]
-    return cost
+    """Compute total directed tour cost using numpy."""
+    t = np.array(tour)
+    return float(np.sum(matrix[t, np.roll(t, -1)]))
 
 
 # ---------------------------------------------------------------------------
-# Local search operators
+# Numpy-vectorized local search operators
 # ---------------------------------------------------------------------------
 
-def _or_opt_1_pass(tour: list[int], matrix: np.ndarray) -> bool:
-    """Find and apply the best single-node relocation."""
+def _vectorized_or_opt_1(tour: list[int], matrix: np.ndarray) -> bool:
+    """
+    Single-node relocation using numpy broadcasting.
+
+    For each node, evaluates ALL relocation targets simultaneously.
+    Builds an (n x n) gain matrix and picks the best move.
+    """
     n = len(tour)
-    best_gain = 1e-10
-    best_remove = -1
-    best_insert = -1
+    t = np.array(tour)
+    t_next = np.roll(t, -1)
+    t_prev = np.roll(t, 1)
 
-    for i in range(n):
-        p = tour[(i - 1) % n]
-        c = tour[i]
-        s = tour[(i + 1) % n]
-        saving = matrix[p, c] + matrix[c, s] - matrix[p, s]
+    # Savings from removing each node i
+    savings = matrix[t_prev, t] + matrix[t, t_next] - matrix[t_prev, t_next]
 
-        for j in range(n):
-            if j == i or j == (i - 1) % n:
-                continue
-            a = tour[j]
-            b = tour[(j + 1) % n]
-            if b == c:
-                continue
-            cost = matrix[a, c] + matrix[c, b] - matrix[a, b]
-            gain = saving - cost
-            if gain > best_gain:
-                best_gain = gain
-                best_remove = i
-                best_insert = j
+    # Insertion cost: inserting node t[i] between t[j] and t_next[j]
+    M_jt = matrix[np.ix_(t, t)]           # (n,n): [j,i] = matrix[t[j], t[i]]
+    M_tn = matrix[np.ix_(t, t_next)]      # (n,n): [i,j] = matrix[t[i], t_next[j]]
+    edge_cost = matrix[t, t_next]          # (n,):  [j] = matrix[t[j], t_next[j]]
 
-    if best_remove >= 0:
-        node = tour.pop(best_remove)
-        ins = best_insert - (1 if best_insert > best_remove else 0)
-        tour.insert(ins + 1, node)
+    ins_cost = M_jt + M_tn.T - edge_cost[:, np.newaxis]
+    gains = savings[np.newaxis, :] - ins_cost
+
+    # Mask: can't insert at own position or predecessor
+    idx = np.arange(n)
+    gains[idx, idx] = -np.inf
+    gains[(idx - 1) % n, idx] = -np.inf
+
+    best_flat = int(gains.argmax())
+    j_best, i_best = divmod(best_flat, n)
+    best_gain = gains[j_best, i_best]
+
+    if best_gain > 1e-6:
+        node = tour[i_best]
+        after_node = tour[j_best]
+        tour.pop(i_best)
+        after_pos = tour.index(after_node)
+        tour.insert(after_pos + 1, node)
         return True
     return False
 
 
-def _or_opt_k_pass(tour: list[int], matrix: np.ndarray, k: int) -> bool:
-    """Find and apply the best k-node segment relocation (no reversal)."""
+def _vectorized_2opt(tour: list[int], matrix: np.ndarray) -> bool:
+    """
+    Asymmetric 2-opt using cumulative sums for O(1) per-pair evaluation.
+
+    For ATSP, reversing a segment changes cost since matrix[a,b] != matrix[b,a].
+    Precomputes cumulative forward-reverse difference for instant gain evaluation.
+    """
     n = len(tour)
-    if k >= n - 1:
+    if n < 4:
         return False
 
-    best_gain = 1e-10
-    best_start = -1
-    best_insert = -1
+    t = np.array(tour)
+    t_next = np.roll(t, -1)
 
-    for i in range(n - k + 1):
-        seg_first = tour[i]
-        seg_last = tour[i + k - 1]
-        pred = tour[(i - 1) % n]
-        succ = tour[(i + k) % n]
-        saving = (
-            matrix[pred, seg_first]
-            + matrix[seg_last, succ]
-            - matrix[pred, succ]
-        )
+    edge_fwd = matrix[t, t_next]
+    edge_rev = matrix[t_next, t]
+    diff = edge_fwd - edge_rev
 
-        for j in range(n):
-            if i - 1 <= j < i + k:
-                continue
-            a = tour[j]
-            b = tour[(j + 1) % n]
-            if i <= (j + 1) % n < i + k:
-                continue
-            cost = matrix[a, seg_first] + matrix[seg_last, b] - matrix[a, b]
-            gain = saving - cost
-            if gain > best_gain:
-                best_gain = gain
-                best_start = i
-                best_insert = j
+    dc = np.zeros(n + 1)
+    dc[1:] = np.cumsum(diff)
 
-    if best_start >= 0:
-        seg = tour[best_start:best_start + k]
-        del tour[best_start:best_start + k]
-        ins = best_insert
-        if ins >= best_start + k:
-            ins -= k
+    # gain[i,j] = P[i] + Q[j] - R[i,j]
+    P = edge_fwd - dc[1:]       # shape (n,)
+    Q = edge_fwd + dc[:n]       # shape (n,)
+
+    R = matrix[np.ix_(t, t)] + matrix[np.ix_(t_next, t_next)]
+
+    gains = P[:, np.newaxis] + Q[np.newaxis, :] - R
+
+    # Valid only for j >= i+2
+    mask = np.triu(np.ones((n, n), dtype=bool), k=2)
+    gains[~mask] = -np.inf
+
+    best_flat = int(gains.argmax())
+    i_best, j_best = divmod(best_flat, n)
+    best_gain = gains[i_best, j_best]
+
+    if best_gain > 1e-6:
+        tour[i_best + 1:j_best + 1] = tour[i_best + 1:j_best + 1][::-1]
+        return True
+    return False
+
+
+def _vectorized_or_opt_k(tour: list[int], matrix: np.ndarray, k: int) -> bool:
+    """
+    k-node segment relocation using numpy broadcasting.
+
+    Relocates a contiguous segment of k nodes to the best insertion point.
+    Uses non-wrapping segments only (misses at most k-1 out of n segments).
+    """
+    n = len(tour)
+    if k >= n - 1 or n < k + 2:
+        return False
+
+    t = np.array(tour)
+    t_next = np.roll(t, -1)
+
+    # Non-wrapping segments: i = 0..n-k
+    ns = n - k + 1
+
+    seg_first = t[:ns]
+    seg_last_indices = np.arange(k - 1, k - 1 + ns)
+    seg_last = t[seg_last_indices]
+
+    pred = np.roll(t, 1)[:ns]
+    succ_indices = np.arange(k, k + ns) % n
+    succ = t[succ_indices]
+
+    savings = matrix[pred, seg_first] + matrix[seg_last, succ] - matrix[pred, succ]
+
+    M_j_sf = matrix[np.ix_(t, seg_first)]       # (n, ns)
+    M_sl_jn = matrix[np.ix_(seg_last, t_next)]   # (ns, n)
+    base = matrix[t, t_next]                      # (n,)
+
+    ins_cost = M_j_sf + M_sl_jn.T - base[:, np.newaxis]
+    gains = savings[np.newaxis, :] - ins_cost
+
+    # Mask positions overlapping with segment
+    seg_idx = np.arange(ns)
+    for off in range(-1, k):
+        invalid_j = (seg_idx + off) % n
+        gains[invalid_j, seg_idx] = -np.inf
+
+    best_flat = int(gains.argmax())
+    j_best, i_best = divmod(best_flat, ns)
+    best_gain = gains[j_best, i_best]
+
+    if best_gain > 1e-6:
+        seg_start = i_best
+        seg = tour[seg_start:seg_start + k]
+        after_node = tour[j_best]
+        del tour[seg_start:seg_start + k]
+        after_pos = tour.index(after_node)
         for off, nd in enumerate(seg):
-            tour.insert(ins + 1 + off, nd)
+            tour.insert(after_pos + 1 + off, nd)
         return True
     return False
 
 
-def _node_swap_pass(tour: list[int], matrix: np.ndarray) -> bool:
-    """Find and apply the best swap of two non-adjacent nodes."""
-    n = len(tour)
-    best_gain = 1e-10
-    best_i = -1
-    best_j = -1
-
-    for i in range(n):
-        pi = tour[(i - 1) % n]
-        ci = tour[i]
-        si = tour[(i + 1) % n]
-
-        for j in range(i + 2, n):
-            if j == (i - 1) % n or (j + 1) % n == i:
-                continue
-            pj = tour[(j - 1) % n]
-            cj = tour[j]
-            sj = tour[(j + 1) % n]
-            if pj == ci or sj == ci or pi == cj or si == cj:
-                continue
-
-            old = (
-                matrix[pi, ci] + matrix[ci, si]
-                + matrix[pj, cj] + matrix[cj, sj]
-            )
-            new = (
-                matrix[pi, cj] + matrix[cj, si]
-                + matrix[pj, ci] + matrix[ci, sj]
-            )
-            gain = old - new
-            if gain > best_gain:
-                best_gain = gain
-                best_i = i
-                best_j = j
-
-    if best_i >= 0:
-        tour[best_i], tour[best_j] = tour[best_j], tour[best_i]
-        return True
-    return False
-
-
-def _asym_2opt_pass(tour: list[int], matrix: np.ndarray) -> bool:
-    """
-    Asymmetric 2-opt: reverse a segment, accounting for changed costs
-    due to asymmetry. In road networks, the reversed direction can be cheaper.
-    """
-    n = len(tour)
-    best_gain = 1e-10
-    best_i = -1
-    best_j = -1
-
-    for i in range(n - 2):
-        for j in range(i + 2, min(i + 50, n)):  # limit range for speed
-            if j == n - 1 and i == 0:
-                continue
-
-            # Edges being removed
-            old_e = matrix[tour[i], tour[i + 1]] + matrix[tour[j], tour[(j + 1) % n]]
-            # Edges being added
-            new_e = matrix[tour[i], tour[j]] + matrix[tour[i + 1], tour[(j + 1) % n]]
-
-            # Segment cost change: forward vs reversed
-            seg_fwd = sum(matrix[tour[k], tour[k + 1]] for k in range(i + 1, j))
-            seg_rev = sum(matrix[tour[k + 1], tour[k]] for k in range(i + 1, j))
-
-            gain = (old_e + seg_fwd) - (new_e + seg_rev)
-            if gain > best_gain:
-                best_gain = gain
-                best_i = i
-                best_j = j
-
-    if best_i >= 0:
-        tour[best_i + 1:best_j + 1] = tour[best_i + 1:best_j + 1][::-1]
-        return True
-    return False
-
-
-def _local_search(tour: list[int], matrix: np.ndarray, time_limit: float = 30.0) -> list[int]:
-    """Apply all operators until no improvement."""
+def _fast_local_search(
+    tour: list[int], matrix: np.ndarray, time_limit: float = 30.0
+) -> list[int]:
+    """Apply vectorized operators until convergence or time limit."""
     t0 = time.perf_counter()
     for _ in range(200):
         if time.perf_counter() - t0 > time_limit:
             break
-        if _or_opt_1_pass(tour, matrix):
+        if _vectorized_or_opt_1(tour, matrix):
             continue
-        if _or_opt_k_pass(tour, matrix, k=2):
+        if _vectorized_or_opt_k(tour, matrix, k=2):
             continue
-        if _or_opt_k_pass(tour, matrix, k=3):
+        if _vectorized_or_opt_k(tour, matrix, k=3):
             continue
-        if _node_swap_pass(tour, matrix):
-            continue
-        if _asym_2opt_pass(tour, matrix):
+        if _vectorized_2opt(tour, matrix):
             continue
         break
     return tour
 
 
 # ---------------------------------------------------------------------------
-# Perturbation strategies
+# Perturbation
 # ---------------------------------------------------------------------------
 
 def _double_bridge(tour: list[int], rng: np.random.RandomState) -> list[int]:
@@ -232,19 +204,19 @@ def _asymmetry_guided_perturb(
 ) -> list[int]:
     """Break high-asymmetry edges preferentially."""
     n = len(tour)
-    ratios = []
-    for i in range(n):
-        a, b = tour[i], tour[(i + 1) % n]
-        fwd, bwd = matrix[a, b], matrix[b, a]
-        ratio = max(fwd, bwd) / (min(fwd, bwd) + 1e-10)
-        ratios.append((ratio, i))
-    ratios.sort(reverse=True)
+    t = np.array(tour)
+    t_next = np.roll(t, -1)
+    fwd = matrix[t, t_next]
+    bwd = matrix[t_next, t]
+    ratios = np.maximum(fwd, bwd) / (np.minimum(fwd, bwd) + 1e-10)
 
-    top = [r[1] for r in ratios[:min(8, len(ratios))]]
-    if len(top) < 3:
+    top_k = min(8, n)
+    top_indices = np.argpartition(ratios, -top_k)[-top_k:]
+
+    if len(top_indices) < 3:
         return _double_bridge(tour, rng)
 
-    chosen = sorted(rng.choice(top, size=3, replace=False))
+    chosen = sorted(rng.choice(top_indices, size=3, replace=False))
     cuts = [int(c) + 1 for c in chosen]
     cuts = sorted(set(max(1, min(c, n - 1)) for c in cuts))
     while len(cuts) < 3:
@@ -258,71 +230,55 @@ def _asymmetry_guided_perturb(
 
 
 # ---------------------------------------------------------------------------
-# Edge-frequency guided construction (from population of solutions)
+# Edge-frequency guided construction
 # ---------------------------------------------------------------------------
 
 def _build_freq_matrix(tours: list[list[int]], n: int) -> np.ndarray:
     """Build directed edge frequency matrix from a population of tours."""
     freq = np.zeros((n, n), dtype=np.float64)
     for tour in tours:
-        m = len(tour)
-        for i in range(m):
-            freq[tour[i], tour[(i + 1) % m]] += 1
+        t = np.array(tour)
+        t_next = np.roll(t, -1)
+        freq[t, t_next] += 1
     return freq
 
 
 def _greedy_from_frequencies(
     freq: np.ndarray, matrix: np.ndarray, alpha: float = 0.5
 ) -> list[int]:
-    """
-    Construct a tour using edge frequencies as guidance.
-    Score = alpha * normalized_freq + (1 - alpha) * (1 / normalized_cost)
-    """
+    """Construct a tour using edge frequencies as guidance."""
     n = freq.shape[0]
     max_freq = freq.max() + 1e-10
     max_cost = matrix.max() + 1e-10
 
-    # Start from node 0
     tour = [0]
-    visited = {0}
+    visited = np.zeros(n, dtype=bool)
+    visited[0] = True
 
     for _ in range(n - 1):
         current = tour[-1]
-        best_score = -np.inf
-        best_next = -1
-
-        for j in range(n):
-            if j in visited:
-                continue
-            f_score = freq[current, j] / max_freq
-            c_score = 1.0 - matrix[current, j] / max_cost
-            score = alpha * f_score + (1 - alpha) * c_score
-            if score > best_score:
-                best_score = score
-                best_next = j
-
-        if best_next < 0:
-            # Shouldn't happen, but fallback
-            remaining = list(set(range(n)) - visited)
-            best_next = remaining[0]
-
+        f_score = freq[current] / max_freq
+        c_score = 1.0 - matrix[current] / max_cost
+        scores = alpha * f_score + (1 - alpha) * c_score
+        scores[visited] = -np.inf
+        best_next = int(scores.argmax())
         tour.append(best_next)
-        visited.add(best_next)
+        visited[best_next] = True
 
     return tour
 
 
 # ---------------------------------------------------------------------------
-# Main solver: AE-ILS with population
+# ILS post-optimization
 # ---------------------------------------------------------------------------
 
 def solve_ae_ils(
     matrix: np.ndarray,
     initial_tour: Optional[list[int]] = None,
-    max_iterations: int = 100,
-    max_no_improve: int = 30,
+    max_iterations: int = 50,
+    max_no_improve: int = 20,
     seed: int = 42,
-    time_limit: float = 120.0,
+    time_limit: float = 60.0,
 ) -> dict:
     """Asymmetry-Exploiting Iterated Local Search."""
     t0 = time.perf_counter()
@@ -334,19 +290,18 @@ def solve_ae_ils(
     else:
         tour = list(range(n))
 
-    initial_cost = compute_tour_cost(tour, matrix)
-
     # Initial local search
-    tour = _local_search(tour, matrix, time_limit=min(time_limit * 0.3, 30.0))
+    ls_budget = min(time_limit * 0.3, 15.0)
+    tour = _fast_local_search(tour, matrix, time_limit=ls_budget)
     best_tour = tour[:]
     best_cost = compute_tour_cost(best_tour, matrix)
 
     no_improve = 0
     improvements = 0
-    iteration = 0
 
     for iteration in range(max_iterations):
-        if time.perf_counter() - t0 > time_limit or no_improve >= max_no_improve:
+        elapsed = time.perf_counter() - t0
+        if elapsed > time_limit or no_improve >= max_no_improve:
             break
 
         if iteration % 3 == 0:
@@ -357,7 +312,9 @@ def solve_ae_ils(
         remaining = time_limit - (time.perf_counter() - t0)
         if remaining < 0.5:
             break
-        perturbed = _local_search(perturbed, matrix, time_limit=min(remaining * 0.5, 15.0))
+        perturbed = _fast_local_search(
+            perturbed, matrix, time_limit=min(remaining * 0.3, 10.0)
+        )
         perturbed_cost = compute_tour_cost(perturbed, matrix)
 
         if perturbed_cost < best_cost - 1e-10:
@@ -371,7 +328,6 @@ def solve_ae_ils(
     return {
         "tour": best_tour,
         "cost": best_cost,
-        "initial_cost": initial_cost,
         "wall_time": time.perf_counter() - t0,
         "n": n,
         "solver": "ae_ils",
@@ -381,69 +337,108 @@ def solve_ae_ils(
 
 
 # ---------------------------------------------------------------------------
-# Hybrid solver: Multi-seed LKH + Edge-Frequency + AE-ILS
+# Main hybrid solver
 # ---------------------------------------------------------------------------
 
 def solve_hybrid(
     matrix: np.ndarray,
     max_trials: int = 500,
-    runs: int = 5,
-    num_seeds: int = 5,
-    ils_iterations: int = 50,
-    ils_no_improve: int = 20,
+    runs: int = 1,
+    max_lkh_seeds: int = 50,
+    ils_iterations: int = 30,
+    ils_no_improve: int = 15,
     seed: int = 42,
-    time_limit: float = 600.0,
+    time_limit: float = 300.0,
 ) -> dict:
     """
     Hybrid solver for ATSP on real road networks.
 
-    Phase 1: Run LKH-3 with multiple seeds for solution diversity.
-    Phase 2: Build edge-frequency matrix from population, construct
-             new candidates using frequency-guided greedy.
-    Phase 3: Apply AE-ILS to best candidates with asymmetric operators
-             and asymmetry-guided perturbation.
+    Phase 1: Run LKH-3 with many random seeds for solution diversity.
+             Uses most of the time budget since LKH is compiled C.
+    Phase 2: Numpy-vectorized local search exploiting asymmetry.
+    Phase 3: Edge-frequency guided construction from population.
+    Phase 4: ILS post-optimization with asymmetry-guided perturbation.
     """
     from src.solvers.lkh_solver import solve_atsp as lkh_solve
 
     t0 = time.perf_counter()
     n = matrix.shape[0]
+    base_rng = np.random.RandomState(seed)
+
+    phase1_budget = time_limit * 0.85
+    phase2_end = time_limit * 0.92
+    phase3_end = time_limit * 0.97
 
     # Phase 1: Collect diverse LKH solutions
-    base_rng = np.random.RandomState(seed)
-    seeds = [int(base_rng.randint(1, 100000)) for _ in range(num_seeds)]
-
-    population = []  # (cost, tour)
+    population = []
     total_lkh_time = 0.0
+    seeds_tried = 0
 
-    for s in seeds:
-        if time.perf_counter() - t0 > time_limit * 0.7:
+    while seeds_tried < max_lkh_seeds:
+        elapsed = time.perf_counter() - t0
+        if elapsed > phase1_budget:
             break
-        lkh_result = lkh_solve(matrix, max_trials=max_trials, runs=runs, seed=s)
-        total_lkh_time += lkh_result["wall_time"]
-        population.append((lkh_result["cost"], lkh_result["tour"]))
+
+        s = int(base_rng.randint(1, 100000))
+        # First few seeds use more runs for higher quality
+        current_runs = min(runs + 2, 5) if seeds_tried < 3 else runs
+        try:
+            lkh_result = lkh_solve(
+                matrix, max_trials=max_trials, runs=current_runs, seed=s,
+            )
+            total_lkh_time += lkh_result["wall_time"]
+            population.append((lkh_result["cost"], lkh_result["tour"]))
+        except Exception as e:
+            print(f"  LKH seed {s} failed: {e}")
+        seeds_tried += 1
+
+    if not population:
+        # Fallback: nearest-neighbor
+        tour = list(range(n))
+        cost = compute_tour_cost(tour, matrix)
+        return {
+            "tour": tour, "cost": cost, "lkh_cost": cost,
+            "improvement_pct": 0.0, "wall_time": time.perf_counter() - t0,
+            "lkh_time": 0.0, "n": n, "solver": "hybrid_ae_ils",
+            "population_size": 0, "params": {},
+        }
 
     population.sort(key=lambda x: x[0])
     lkh_best_cost = population[0][0]
     best_cost = lkh_best_cost
     best_tour = list(population[0][1])
 
-    # Phase 2: Edge-frequency guided construction
-    if len(population) >= 2:
+    # Phase 2: Vectorized local search on best solutions
+    for rank, (pop_cost, pop_tour) in enumerate(population[:3]):
+        remaining = (t0 + time_limit * phase2_end) - time.perf_counter()
+        if remaining < 1.0:
+            break
+        ls_budget = min(remaining / (3 - rank), 20.0)
+        candidate = _fast_local_search(list(pop_tour), matrix, time_limit=ls_budget)
+        c = compute_tour_cost(candidate, matrix)
+        if c < best_cost - 1e-10:
+            best_cost = c
+            best_tour = candidate
+
+    # Phase 3: Edge-frequency construction
+    if len(population) >= 3:
         freq = _build_freq_matrix([t for _, t in population], n)
         for alpha in [0.3, 0.5, 0.7]:
-            if time.perf_counter() - t0 > time_limit * 0.8:
+            remaining = (t0 + time_limit * phase3_end) - time.perf_counter()
+            if remaining < 1.0:
                 break
             candidate = _greedy_from_frequencies(freq, matrix, alpha=alpha)
-            remaining = time_limit - (time.perf_counter() - t0)
-            candidate = _local_search(candidate, matrix, time_limit=min(remaining * 0.1, 15.0))
+            candidate = _fast_local_search(
+                candidate, matrix, time_limit=min(remaining / 3, 10.0)
+            )
             c = compute_tour_cost(candidate, matrix)
             if c < best_cost - 1e-10:
                 best_cost = c
                 best_tour = candidate
 
-    # Phase 3: AE-ILS on best solution
+    # Phase 4: ILS post-optimization
     remaining = time_limit - (time.perf_counter() - t0)
-    if remaining > 5.0:
+    if remaining > 3.0:
         ils_result = solve_ae_ils(
             matrix,
             initial_tour=best_tour,
@@ -455,23 +450,6 @@ def solve_hybrid(
         if ils_result["cost"] < best_cost - 1e-10:
             best_cost = ils_result["cost"]
             best_tour = ils_result["tour"]
-
-    # Also try AE-ILS on other population members
-    for _, pop_tour in population[1:3]:
-        remaining = time_limit - (time.perf_counter() - t0)
-        if remaining < 5.0:
-            break
-        ils_r = solve_ae_ils(
-            matrix,
-            initial_tour=list(pop_tour),
-            max_iterations=max(ils_iterations // 2, 10),
-            max_no_improve=max(ils_no_improve // 2, 5),
-            seed=seed + 1,
-            time_limit=min(remaining * 0.3, 30.0),
-        )
-        if ils_r["cost"] < best_cost - 1e-10:
-            best_cost = ils_r["cost"]
-            best_tour = ils_r["tour"]
 
     wall_time = time.perf_counter() - t0
 
@@ -486,12 +464,14 @@ def solve_hybrid(
         "n": n,
         "solver": "hybrid_ae_ils",
         "population_size": len(population),
+        "seeds_tried": seeds_tried,
         "params": {
             "lkh_max_trials": max_trials,
             "lkh_runs": runs,
-            "num_seeds": num_seeds,
+            "max_lkh_seeds": max_lkh_seeds,
             "ils_iterations": ils_iterations,
             "ils_no_improve": ils_no_improve,
             "seed": seed,
+            "time_limit": time_limit,
         },
     }

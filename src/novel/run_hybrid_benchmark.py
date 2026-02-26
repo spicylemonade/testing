@@ -4,13 +4,13 @@ against baseline LKH-3 results.
 
 Outputs:
 - results/hybrid_results.json: Full benchmark results
-- .archivara/metrics/497da4b9.json: Score metric for orchestrator
+- .archivara/metrics/668d2252.json: Score metric for orchestrator
 """
 
 import json
-import os
 import sys
 import time
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -57,37 +57,48 @@ def main():
             print(f"  Baseline LKH-3 cost: {ref_cost:.1f}")
 
         # Configure solver based on instance size
+        # Key: use runs=1 per seed with many seeds for maximum diversity
         if n <= 100:
             config = dict(
-                max_trials=500, runs=5, num_seeds=5,
-                ils_iterations=100, ils_no_improve=30,
+                max_trials=500, runs=1, max_lkh_seeds=50,
+                ils_iterations=50, ils_no_improve=20,
                 time_limit=120,
             )
         elif n <= 250:
             config = dict(
-                max_trials=500, runs=5, num_seeds=4,
-                ils_iterations=50, ils_no_improve=20,
+                max_trials=500, runs=1, max_lkh_seeds=40,
+                ils_iterations=30, ils_no_improve=15,
                 time_limit=180,
             )
         else:
             config = dict(
-                max_trials=500, runs=3, num_seeds=3,
-                ils_iterations=30, ils_no_improve=15,
+                max_trials=500, runs=1, max_lkh_seeds=30,
+                ils_iterations=20, ils_no_improve=10,
                 time_limit=300,
             )
 
         t0 = time.perf_counter()
-        result = solve_hybrid(inst["matrix"], seed=42, **config)
+        try:
+            result = solve_hybrid(inst["matrix"], seed=42, **config)
+        except Exception as e:
+            print(f"  FAILED: {e}")
+            traceback.print_exc()
+            results.append({
+                "instance": name, "n": n, "solver": "hybrid_ae_ils",
+                "status": "error", "error": str(e),
+            })
+            continue
         elapsed = time.perf_counter() - t0
 
         # Validate tour
         tour_valid = validate_tour(result["tour"], n)
         verified_cost = compute_tour_cost(result["tour"], inst["matrix"])
 
-        print(f"  Hybrid cost:   {result['cost']:.1f}")
-        print(f"  Verified cost: {verified_cost:.1f}")
+        print(f"  Hybrid cost:   {verified_cost:.1f}")
         print(f"  LKH best:      {result['lkh_cost']:.1f}")
         print(f"  Tour valid:    {tour_valid}")
+        print(f"  Seeds tried:   {result.get('seeds_tried', '?')}")
+        print(f"  Population:    {result.get('population_size', '?')}")
         print(f"  Total time:    {elapsed:.1f}s")
 
         gap_vs_baseline = None
@@ -115,6 +126,7 @@ def main():
             "wall_time": float(elapsed),
             "lkh_time": float(result.get("lkh_time", 0)),
             "population_size": result.get("population_size", 0),
+            "seeds_tried": result.get("seeds_tried", 0),
             "params": result.get("params", {}),
         })
 
@@ -137,7 +149,7 @@ def main():
         print(f"Worse:    {worse}/{len(all_gaps)}")
 
         # Score: negative gap = improvement (positive score)
-        score = -mean_gap  # positive means we beat LKH baseline
+        score = -mean_gap
         print(f"\nScore (negative mean gap = improvement): {score:.4f}")
     else:
         score = 0.0
@@ -150,7 +162,7 @@ def main():
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "solver": "hybrid_ae_ils",
             "num_instances": len(instances),
-            "description": "Multi-seed LKH + Edge-frequency construction + AE-ILS post-optimization",
+            "description": "Multi-seed LKH + vectorized asymmetric local search + edge-frequency + ILS",
         },
         "results": results,
         "summary": {
@@ -178,7 +190,7 @@ def main():
         "value": float(score),
         "valid": True,
     }
-    metric_file = metrics_dir / "497da4b9.json"
+    metric_file = metrics_dir / "668d2252.json"
     with open(metric_file, "w") as f:
         json.dump(metric, f, indent=2)
     print(f"Metric saved to {metric_file}")
