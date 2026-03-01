@@ -1,0 +1,300 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-01T00:00:00Z",
+  "updated_at": "2026-03-01T10:55:51.073784+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-01T00:00:00Z",
+      "completed_at": "2026-03-01T10:55:51.073756+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure, existing algorithm implementations (Dijkstra, A*, BALT-H), benchmark infrastructure, and test suite to understand the codebase foundation",
+          "acceptance_criteria": "Written document listing all modules (src/graph.py, src/dijkstra.py, src/astar.py, src/novel_algorithm.py, src/benchmark.py, etc.), their purposes, interconnections, and how the existing BALT-H result (practical 4.08x speedup) differs from the new goal of worst-case asymptotic improvement",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive web-based literature review on SSSP algorithms, covering classical bounds, recent breakthroughs, and the current frontier",
+          "acceptance_criteria": "Literature review document covering at minimum: (1) Fredman-Tarjan 1987 Fibonacci heap bound, (2) Thorup 1999 linear-time undirected SSSP, (3) Thorup 2004 directed integer-weight SSSP, (4) Pettie-Ramachandran 2005 optimal comparison-based MST and SSSP connections, (5) Bernstein-Nanongkai-Wulff-Nilsen FOCS 2022 negative-weight near-linear SSSP, (6) Bringmann-Cassis-Fischer FOCS 2023 improved negative-weight SSSP, (7) Chen-Kyng-Liu-Peng-Gutenberg-Sachdeva FOCS 2022 min-cost flow, (8) Haeupler-Hladik-Rozhon-Tarjan-Tetek FOCS 2024 universal optimality of Dijkstra, (9) Duan-Mao-Mao-Shu-Yin STOC 2025 breaking the sorting barrier with O(m log^{2/3} n). Each entry must include authors, venue, year, and key result",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Deep study of the Duan-Mao-Mao-Shu-Yin STOC 2025 paper that achieves O(m log^{2/3} n) for directed non-negative SSSP, which is the true current best bound breaking the sorting barrier",
+          "acceptance_criteria": "Technical summary (at least 1000 words) explaining: (1) the comparison-addition model definition, (2) what the sorting barrier is and why Dijkstra cannot break it, (3) Duan et al.'s key insight of decoupling distance computation from distance ordering, (4) their use of shortest-path tree structure and batch relaxation, (5) the role of auxiliary data structures, (6) why the bound is O(m log^{2/3} n) specifically, (7) the gap between this theoretical result and practical performance (crossover at ~10^{67} vertices)",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Analyze key algorithmic techniques across the SSSP literature that enable sub-Dijkstra bounds: low-diameter decomposition, price functions/potentials, hop-limited paths, scaling, beyond-worst-case heaps, and batch relaxation",
+          "acceptance_criteria": "Technical document with a section for each technique containing: (1) formal definition, (2) which papers use it and how, (3) computational cost, (4) potential for combination with other techniques. Must cover at least 6 distinct techniques with concrete complexity formulas",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Identify open problems, conjectured lower bounds, and viable research directions for further improving SSSP complexity beyond O(m log^{2/3} n)",
+          "acceptance_criteria": "Document listing at least 5 specific open problems with references, including: (1) whether O(m) directed SSSP is achievable in the comparison-addition model, (2) whether the log^{2/3} factor in Duan et al. can be reduced, (3) the status of deterministic near-linear negative-weight SSSP, (4) SSSP in word RAM vs comparison-addition models, (5) connections to circuit complexity or other lower-bound barriers. Each problem must cite the relevant prior work that establishes it as open",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Create and maintain sources.bib with BibTeX entries for all consulted academic sources, ensuring comprehensive citation of prior work",
+          "acceptance_criteria": "sources.bib file in repo root containing at least 15 valid BibTeX entries covering: Fredman-Tarjan 1987, Thorup 1999, Thorup 2004, Pettie-Ramachandran 2005, Bernstein-Nanongkai-Wulff-Nilsen 2022, Bringmann-Cassis-Fischer 2023, Chen et al. 2022, Haeupler et al. 2024, Duan et al. 2025, and at least 6 additional relevant papers discovered during the review. Each entry must have correct author, title, year, and venue fields",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement Dijkstra's algorithm with a true Fibonacci heap (not binary heap) to establish the precise O(m + n log n) baseline with exact operation counting",
+          "acceptance_criteria": "Implementation in src/ that: (1) uses a Fibonacci heap with O(1) amortized decrease-key and O(log n) amortized extract-min, (2) counts exact number of comparisons, additions, and heap operations separately, (3) passes all existing correctness tests in tests/test_dijkstra.py, (4) returns both shortest-path distances and operation counts",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Build an operation-counting framework that precisely tracks comparisons, additions, and memory accesses in the comparison-addition model",
+          "acceptance_criteria": "Instrumented wrapper or decorator system that: (1) counts comparison operations (on edge weights and distances), (2) counts addition operations, (3) counts heap operations (insert, extract-min, decrease-key) with per-operation cost breakdown, (4) produces per-run CSV output with columns: n, m, graph_type, total_ops, comparisons, additions, heap_ops, extract_mins, decrease_keys. Must be usable with any SSSP algorithm implementation",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement graph generators covering worst-case families for SSSP: adversarial Dijkstra inputs, sparse random graphs, dense graphs, layered DAGs, and expander-like structures",
+          "acceptance_criteria": "At least 6 graph generator functions in src/graph.py or a new module, including: (1) adversarial Dijkstra inputs where Fibonacci heap advantage is maximized, (2) sparse Erdos-Renyi G(n, c/n) near the connectivity threshold, (3) dense graphs with m = Theta(n^2), (4) layered DAGs with controlled diameter, (5) grid/lattice graphs, (6) graphs with planted shortest-path tree structure. Each generator must accept n as parameter and return a Graph object compatible with the benchmark framework",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Profile the Fibonacci-heap Dijkstra baseline to establish exact operation counts across all graph families and identify where operations concentrate",
+          "acceptance_criteria": "CSV results file with operation counts for at least 5 graph families at sizes n in {10^3, 10^4, 10^5, 10^6}, showing: (1) total operations scale as O(m + n log n) empirically (verify via regression), (2) breakdown of extract-min vs decrease-key operations, (3) identification of which graph families maximize total operations. Results must include at least 3 trials per configuration with median and standard deviation",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Implement a reference version of a sorting-barrier-breaking approach (simplified Duan et al. or related) to serve as a comparison point beyond Dijkstra",
+          "acceptance_criteria": "Implementation (even simplified or for restricted graph classes) that: (1) demonstrates provably fewer comparisons than Dijkstra on at least one graph family, (2) passes correctness tests against Dijkstra on test graphs up to n=10^4, (3) includes documentation explaining which aspects of the full Duan et al. algorithm are implemented vs simplified, (4) operation counts recorded in the same CSV format as item_010",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Formalize the computational model for the novel algorithm: specify exactly which operations are counted, what oracle access is assumed, and how the complexity claim is stated",
+          "acceptance_criteria": "Formal document specifying: (1) the computational model (comparison-addition, word RAM, or hybrid), (2) precise definition of the operation measure, (3) any assumptions on edge weights (integer, real, bounded, non-negative), (4) whether the algorithm is deterministic or randomized, (5) statement of the target complexity bound with all parameters defined. Must reference how this model relates to those used in Fredman-Tarjan 1987, Duan et al. 2025, and Thorup 2004",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Design the core novel algorithmic idea that achieves asymptotically fewer operations than O(m + n log n), with a clear description of the key insight that differentiates it from prior work",
+          "acceptance_criteria": "Algorithm design document containing: (1) high-level intuition (at least 500 words) explaining why the approach can beat the sorting barrier, (2) detailed pseudocode for all subroutines, (3) explicit identification of which technique(s) from Phase 1 are combined or extended and what is genuinely new, (4) comparison table showing how this approach differs from Dijkstra, Thorup, Duan et al., and BNW on at least 4 dimensions (model, weights, determinism, complexity)",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Prove correctness of the novel algorithm: the output shortest-path distances match those of Dijkstra for all valid inputs in the specified model",
+          "acceptance_criteria": "Formal correctness proof containing: (1) precise statement of the correctness theorem, (2) loop invariants for all iterative components, (3) proof that the invariants are maintained, (4) proof of termination, (5) handling of edge cases (disconnected graphs, zero-weight edges, parallel edges). The proof must be self-contained and reference specific line numbers in the pseudocode from item_013",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Prove the worst-case complexity bound of the novel algorithm, showing it is asymptotically strictly less than O(m + n log n)",
+          "acceptance_criteria": "Formal complexity analysis containing: (1) precise statement of the complexity theorem (e.g., O(m + n log^c n) for c < 1, or O(m * alpha(n)), etc.), (2) amortized or worst-case analysis of each subroutine, (3) accounting for all operations in the model specified in item_012, (4) explicit comparison showing the bound is o(m + n log n) for all m and n, (5) discussion of whether the bound is tight or if further improvement seems possible",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement the novel algorithm in Python, integrated with the existing repository's Graph data structure and benchmark framework",
+          "acceptance_criteria": "Implementation in src/ that: (1) accepts a Graph object and source vertex, returns distance dictionary, (2) includes the operation-counting instrumentation from item_008, (3) is importable and callable from the benchmark and test infrastructure, (4) handles directed graphs with non-negative weights, (5) includes inline comments mapping code to pseudocode steps from item_013, (6) code is under 500 lines (excluding comments)",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Validate correctness of the implementation by testing against Dijkstra on diverse graph instances, including adversarial cases",
+          "acceptance_criteria": "Test file in tests/ with at least 20 test cases covering: (1) all 6 graph families from item_009, (2) small exhaustive tests (n <= 8, all possible graphs), (3) medium random tests (n = 100-1000, at least 100 random instances), (4) large stress tests (n = 10^4-10^5, at least 10 instances), (5) edge cases: single vertex, disconnected graph, graph with one edge, complete graph. All tests pass with exact distance agreement (within floating-point tolerance 1e-9)",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Identify and resolve edge cases, numerical issues, or degenerate graph structures where the novel algorithm might fail or degrade",
+          "acceptance_criteria": "Document listing: (1) at least 3 identified edge cases or degenerate inputs, (2) for each, whether the algorithm handles it correctly and within the claimed bound, (3) any modifications made to the algorithm to handle edge cases, (4) regression tests added for each identified case. If any edge case causes the algorithm to exceed its claimed bound, this must be explicitly noted with an analysis of when it occurs",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_019",
+          "description": "Run comprehensive benchmarks comparing the novel algorithm against Dijkstra (binary heap), Dijkstra (Fibonacci heap), and the reference sorting-barrier-breaking implementation from item_011",
+          "acceptance_criteria": "CSV results file with at least 500 benchmark runs covering: (1) all 6 graph families, (2) sizes n in {10^3, 3*10^3, 10^4, 3*10^4, 10^5}, (3) at least 3 trials per configuration, (4) columns: algorithm, graph_type, n, m, total_ops, comparisons, additions, wall_time_ms, nodes_expanded. Must include both operation counts (theoretical metric) and wall-clock time (practical metric)",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Fit empirical operation counts to theoretical complexity formulas and verify the novel algorithm achieves the claimed asymptotic bound",
+          "acceptance_criteria": "Analysis showing: (1) log-log regression of operation count vs n for each graph family, (2) fitted exponent for the novel algorithm is strictly less than the fitted exponent for Dijkstra, (3) R^2 values for all regressions above 0.95, (4) explicit numerical comparison: e.g., 'On sparse graphs (m=O(n)), novel algorithm uses cn^{alpha} operations with alpha = X < 1+epsilon, vs Dijkstra's cn log n'. Results must be reproducible with fixed random seeds",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Test scalability of the novel algorithm from n=10^3 to n=10^6, measuring both operation count growth rate and wall-clock time",
+          "acceptance_criteria": "Scalability CSV with data points at n in {10^3, 2*10^3, 5*10^3, 10^4, 2*10^4, 5*10^4, 10^5, 2*10^5, 5*10^5, 10^6} for at least 2 graph families (one sparse, one dense). Must show: (1) operation count growth rate, (2) wall-clock time growth rate, (3) memory usage at each scale, (4) crossover point (if any) where novel algorithm becomes faster than Dijkstra in operation count",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Evaluate performance on real-world graph datasets (road networks, social networks, web graphs) to assess practical relevance",
+          "acceptance_criteria": "Results on at least 2 real-world graphs (e.g., from DIMACS challenge, SNAP, or similar repositories) showing: (1) correctness verified against Dijkstra, (2) operation counts and wall-clock times, (3) comparison to baselines. If the novel algorithm is slower in practice (as expected for theoretical improvements), document the practical overhead factor and estimate the graph size at which the asymptotic advantage would dominate",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Compare experimental results against the empirical findings reported in prior work, especially the experimental evaluation of Duan et al. 2025 and Cassis et al. SEA 2025",
+          "acceptance_criteria": "Comparison document with: (1) table comparing operation counts of novel algorithm vs bounds reported in Duan et al. and other papers from sources.bib, (2) analysis of where the novel approach improves and where it does not relative to existing work, (3) identification of graph families where the improvement is most/least pronounced, (4) at least 3 specific numerical comparisons with cited prior results",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Write formal algorithm description with complete pseudocode, suitable for inclusion in a research paper",
+          "acceptance_criteria": "Document in research/ containing: (1) algorithm name and one-paragraph summary, (2) complete pseudocode for all subroutines using consistent notation, (3) step-by-step English explanation of each phase, (4) worked example on a small graph (n <= 8) showing all intermediate state, (5) complexity summary table listing time, space, and preprocessing costs",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Write complete correctness and complexity proofs in publication-ready form, consolidating items 014 and 015 with any revisions from experimentation",
+          "acceptance_criteria": "Proof document in research/ containing: (1) all theorems and lemmas numbered, (2) correctness proof revised to reflect the final implementation (not just the initial design), (3) complexity proof with all constants made explicit where possible, (4) comparison theorem stating precisely how the bound improves on Fredman-Tarjan and Duan et al., (5) discussion of optimality: is the bound tight, and what would a matching lower bound look like? All citations reference entries in sources.bib",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Generate publication-quality figures comparing the novel algorithm to baselines across all experimental dimensions",
+          "acceptance_criteria": "At least 5 figures in figures/ (both PNG at 300 DPI and PDF): (1) operation count vs n for all algorithms on sparse graphs (log-log plot with fitted lines), (2) operation count vs n on dense graphs, (3) speedup ratio (Dijkstra ops / novel ops) across graph families (bar chart or heatmap), (4) scalability plot showing growth rate from n=10^3 to 10^6, (5) breakdown of operation types (comparisons vs additions vs heap ops) for both algorithms. All figures must have axis labels, legends, and captions",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Write comprehensive research report (REPORT.md) documenting the full contribution: motivation, related work, algorithm, proofs, experiments, and conclusions",
+          "acceptance_criteria": "REPORT.md in repo root with at least 3000 words containing sections: (1) Abstract with precise complexity claim, (2) Introduction motivating the problem and stating the result, (3) Related Work citing at least 10 papers from sources.bib with specific comparisons, (4) Algorithm description with pseudocode, (5) Correctness and Complexity analysis, (6) Experimental Evaluation with figure references, (7) Discussion of limitations and practical considerations, (8) Conclusion with future directions. Must clearly state what is novel vs what builds on prior work",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_028",
+          "description": "Document limitations, failure cases, open questions, and concrete future work directions arising from this research",
+          "acceptance_criteria": "LIMITATIONS.md in repo root covering: (1) graph families or parameter regimes where the novel algorithm's advantage is smallest or nonexistent, (2) practical overhead analysis: constant factors, memory usage, implementation complexity, (3) assumptions that limit applicability (weight types, graph structure, computational model), (4) at least 3 concrete open questions raised by this work, (5) at least 3 future research directions with specific next steps. Must reference relevant entries in sources.bib",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 28,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 28
+  }
+}
