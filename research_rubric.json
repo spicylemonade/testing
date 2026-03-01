@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-01T00:00:00Z",
+  "updated_at": "2026-03-01T08:54:42.780078+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-01T00:00:00Z",
+      "completed_at": "2026-03-01T08:54:42.780052+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and available tooling",
+          "acceptance_criteria": "Written document (in README.md or separate ARCHITECTURE.md) listing all files and directories, their purposes, available tools (e.g. semantic_scholar.py commands), and the data pipeline from input graphs to benchmark results. Must cover .archivara/, figures/, results/ directories and .gitattributes LFS configuration.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Define the shortest path problem scope and variants under investigation",
+          "acceptance_criteria": "A formal problem definition document (problem_definition.md) specifying: (1) which shortest path variants are in scope (SSSP, APSP, point-to-point, dynamic, etc.), (2) graph types considered (directed/undirected, weighted/unweighted, sparse/dense, static/dynamic), (3) target computational complexity improvements over existing algorithms, and (4) at least 3 specific research questions to guide the investigation.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Conduct literature review of classical shortest path algorithms",
+          "acceptance_criteria": "Search the web (using semantic_scholar.py and web search) for foundational shortest path papers. Must cover at minimum: Dijkstra's algorithm (1959), Bellman-Ford (1958), Floyd-Warshall (1962), A* search (Hart et al. 1968), bidirectional search, and Fibonacci heap optimizations (Fredman & Tarjan 1987). Each algorithm's time/space complexity must be documented. At least 8 classical papers added to sources.bib with complete BibTeX entries.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Conduct literature review of modern and state-of-the-art shortest path techniques",
+          "acceptance_criteria": "Search the web for papers published 2010-2026 on advanced shortest path methods. Must cover at minimum: contraction hierarchies (Geisberger et al.), hub labeling (Abraham et al.), transit nodes, ALT algorithm (landmarks + triangle inequality), customizable route planning, and any GPU/parallel approaches. Must include at least 2 papers on graph neural network or learning-based approaches to pathfinding. At least 10 modern papers added to sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Survey existing open-source implementations and benchmark suites",
+          "acceptance_criteria": "Search the web for open-source shortest path libraries and benchmarks. Must identify and document at least 5 existing implementations (e.g. NetworkX, igraph, LEDA, Boost Graph Library, OSRM) with their performance characteristics. Must identify at least 2 standard benchmark graph datasets (e.g. DIMACS challenge graphs, OpenStreetMap road networks, SNAP datasets). Document findings in a file benchmark_survey.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Create and populate sources.bib with all consulted references",
+          "acceptance_criteria": "sources.bib exists in the repo root and contains valid BibTeX entries for at least 15 relevant papers total (combining classical and modern). Each entry must include: author, title, year, and venue/journal. Entries must be generated using semantic_scholar.py bibtex command or manually formatted. The file must be parseable by standard BibTeX tools.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement core graph data structures supporting weighted directed and undirected graphs",
+          "acceptance_criteria": "A Python module (src/graph.py) implementing: (1) adjacency list representation with O(1) neighbor lookup, (2) support for weighted edges (non-negative and general weights), (3) graph I/O for at least 2 standard formats (edge list, DIMACS), (4) random graph generators (Erdos-Renyi, grid, scale-free), (5) unit tests in tests/test_graph.py with at least 10 test cases all passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement Dijkstra's algorithm as primary baseline",
+          "acceptance_criteria": "A Python module (src/dijkstra.py) implementing: (1) standard Dijkstra with binary heap, (2) Dijkstra with Fibonacci heap or decrease-key optimization, (3) bidirectional Dijkstra. All three variants must produce correct shortest path distances verified against brute-force on graphs up to 1000 nodes. Unit tests in tests/test_dijkstra.py with at least 12 test cases covering edge cases (disconnected graphs, zero-weight edges, single node, self-loops).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement A* search as secondary baseline",
+          "acceptance_criteria": "A Python module (src/astar.py) implementing A* with at least 2 admissible heuristics (e.g. Euclidean distance for spatial graphs, landmark-based). Must produce optimal paths verified against Dijkstra on the same inputs. Must include unit tests in tests/test_astar.py with at least 8 test cases including grid graphs and random geometric graphs.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Define performance metrics and benchmarking infrastructure",
+          "acceptance_criteria": "A benchmarking module (src/benchmark.py) that measures: (1) wall-clock execution time with high-resolution timer, (2) number of nodes expanded/relaxed, (3) peak memory usage, (4) path optimality (distance ratio vs. true shortest path). Must support automated runs across multiple graph sizes (100, 1K, 10K, 100K, 1M nodes) and output results as CSV files to results/ directory. Must include a configuration file (benchmark_config.json) specifying graph types and size ranges.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Profile baselines and establish performance reference points",
+          "acceptance_criteria": "Run benchmarks on Dijkstra (all variants) and A* across at least 3 graph types (random sparse, random dense, grid) at 5 different scales. Results saved to results/baseline_results.csv. A profiling report (results/baseline_profile.md) identifying the top 3 computational bottlenecks in each baseline algorithm with percentage of total runtime. Must include comparison against published complexity bounds from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Analyze bottlenecks and identify opportunities for algorithmic improvement",
+          "acceptance_criteria": "A written analysis (research/bottleneck_analysis.md) identifying: (1) which operations dominate runtime in baselines (heap operations, edge relaxations, memory access patterns), (2) at least 3 specific opportunities for improvement with theoretical justification, (3) comparison of these opportunities against techniques described in the literature review (referencing at least 5 papers from sources.bib). Must propose a concrete hypothesis for achieving speedup.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Design novel algorithmic approach combining insights from literature and bottleneck analysis",
+          "acceptance_criteria": "A design document (research/algorithm_design.md) describing: (1) the core algorithmic idea with pseudocode, (2) theoretical time and space complexity analysis with proofs or proof sketches, (3) conditions under which the algorithm is expected to outperform baselines, (4) explicit comparison to at least 3 related approaches from sources.bib explaining what is novel, (5) identification of at least 2 potential failure modes or worst-case scenarios.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement the novel shortest path algorithm",
+          "acceptance_criteria": "A Python module (src/novel_algorithm.py) implementing the designed algorithm. Must: (1) follow the same interface as baseline implementations (same input/output format), (2) include inline documentation explaining key algorithmic decisions, (3) pass correctness tests verifying output matches Dijkstra on at least 50 random graphs of varying sizes and types, (4) have unit tests in tests/test_novel.py with at least 15 test cases.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement algorithmic optimizations and data structure enhancements",
+          "acceptance_criteria": "At least 2 concrete optimizations applied to the novel algorithm, such as: specialized priority queue, graph preprocessing/pruning, cache-friendly data layout, lazy evaluation, or hierarchical decomposition. Each optimization must be implemented as a togglable option. Performance improvement from each optimization must be measured independently. Results documented in research/optimizations.md with before/after measurements.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Formal correctness verification of the novel algorithm",
+          "acceptance_criteria": "Correctness verified through: (1) mathematical proof or proof sketch that the algorithm produces optimal shortest paths (in research/correctness_proof.md), (2) exhaustive testing on all graphs up to 8 nodes, (3) randomized testing on 1000 random graphs with 100-10000 nodes comparing against Dijkstra, (4) edge case testing (negative weights if applicable, disconnected components, very large weights, duplicate edges). All tests pass with zero failures. Test script in tests/test_correctness_exhaustive.py.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_017",
+          "description": "Design comprehensive experiment suite with statistical rigor",
+          "acceptance_criteria": "An experiment plan (research/experiment_plan.md) specifying: (1) independent variables (graph size, density, type, query distribution), (2) dependent variables (runtime, nodes expanded, memory, path quality), (3) at least 4 graph families to test (road networks, social networks, grid/mesh, scale-free), (4) number of trials per configuration (minimum 10 for statistical significance), (5) statistical tests to be used (e.g. paired t-test, Wilcoxon signed-rank), (6) hardware specification and environment control.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Run experiments on synthetic benchmark graphs",
+          "acceptance_criteria": "Execute benchmarks on synthetic graphs: (1) Erdos-Renyi random graphs at 5 density levels, (2) grid graphs from 100x100 to 1000x1000, (3) scale-free (Barabasi-Albert) graphs at 5 sizes, (4) complete graphs up to feasible size. Results saved to results/synthetic_results.csv with columns: algorithm, graph_type, num_nodes, num_edges, avg_runtime_ms, std_runtime_ms, avg_nodes_expanded, peak_memory_mb. At least 500 individual benchmark runs completed.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Run experiments on real-world graph datasets",
+          "acceptance_criteria": "Execute benchmarks on at least 2 real-world graph datasets (e.g. DIMACS road networks, SNAP social networks, OpenStreetMap extracts). Results saved to results/realworld_results.csv in the same format as synthetic results. Must include at least 100 random source-target queries per dataset. Dataset sources and download procedures documented in data/README.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Compare novel algorithm performance against baselines and prior work",
+          "acceptance_criteria": "A comparison table (results/comparison.csv) showing speedup ratios of the novel algorithm vs. each baseline (Dijkstra variants, A*) across all graph types and sizes. Must compute: (1) geometric mean speedup across all benchmarks, (2) best-case and worst-case speedup, (3) break-even point (graph size where novel algorithm becomes faster). Results must be compared against performance numbers reported in at least 3 papers from sources.bib. Comparison analysis written in results/comparison_analysis.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Perform scalability analysis with increasing graph sizes",
+          "acceptance_criteria": "Generate scaling plots showing runtime vs. graph size (log-log scale) for all algorithms. Must demonstrate empirical complexity growth rate by fitting curves and reporting exponents. Results saved to results/scalability_results.csv. Scaling analysis must cover at least 6 orders of magnitude in graph size (10 to 10M nodes, or maximum feasible). Must identify the crossover point where novel algorithm outperforms baselines.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Generate publication-quality figures and visualizations",
+          "acceptance_criteria": "At least 5 figures saved to figures/ directory as PNG and PDF: (1) runtime comparison bar chart across graph types, (2) scalability log-log plot with fitted complexity curves, (3) nodes-expanded comparison showing search efficiency, (4) speedup heatmap across graph type and size, (5) memory usage comparison. All figures must have labeled axes, legends, titles, and use colorblind-friendly palettes. Figure generation script in src/plot_results.py.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Write comprehensive research report",
+          "acceptance_criteria": "A research report (REPORT.md) of at least 2000 words containing: (1) Abstract summarizing the problem, approach, and key results, (2) Introduction with motivation and research questions, (3) Related Work section citing at least 10 papers from sources.bib, (4) Methodology describing the novel algorithm with pseudocode, (5) Experimental Setup, (6) Results with embedded figures, (7) Discussion interpreting the results and comparing to prior work, (8) Conclusion with key findings. Must be well-structured with proper section headings.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Document limitations, failure cases, and future research directions",
+          "acceptance_criteria": "A section in REPORT.md (or separate LIMITATIONS.md) documenting: (1) at least 3 specific graph types or scenarios where the novel algorithm does NOT outperform baselines, with explanations, (2) theoretical limitations of the approach, (3) at least 5 concrete future research directions with brief descriptions of how each could extend the work, (4) comparison of the approach's limitations against those of related methods from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Ensure full reproducibility with documentation and automation",
+          "acceptance_criteria": "The repository must include: (1) requirements.txt or pyproject.toml listing all Python dependencies with pinned versions, (2) a Makefile or run.sh script that executes the full pipeline (install deps, run benchmarks, generate figures, produce report) in a single command, (3) updated README.md with project overview, installation instructions, usage examples, and how to reproduce all results, (4) all tests passing (run via pytest), (5) no hardcoded absolute paths in any source file.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
