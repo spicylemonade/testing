@@ -1,0 +1,71 @@
+{
+  "sub_problem": "batch priority queue operations without full sorting",
+  "timestamp": "2026-03-01T21:00:00Z",
+  "associations": [
+    {"concept": "B-tree batch insertions", "domain": "databases", "surprise_rating": 0.4, "structural_reason": "B-trees amortize insert cost via buffered writes; batch PQ can buffer decrease-keys and process in groups"},
+    {"concept": "Tournament trees for merge sort", "domain": "sorting algorithms", "surprise_rating": 0.3, "structural_reason": "Tournament trees find min in O(1) but full sorting costs O(n log n); extracting only the top-k elements costs O(n + k log n)"},
+    {"concept": "Cache-oblivious priority queues", "domain": "external memory", "surprise_rating": 0.6, "structural_reason": "Van Emde Boas layout achieves O(log_B n) amortized cost per operation by exploiting memory hierarchy; analogous to exploiting distance-hierarchy"},
+    {"concept": "Soft heaps (Chazelle)", "domain": "approximate data structures", "surprise_rating": 0.8, "structural_reason": "Soft heaps allow O(1) amortized extract-min at the cost of corrupting some entries. If we tolerate approximate ordering (distances within epsilon), we can process batches faster and correct later."},
+    {"concept": "Parallel prefix sums for batched minimum", "domain": "parallel algorithms", "surprise_rating": 0.5, "structural_reason": "Prefix-min on sorted arrays finds batch minimums in O(n/B) time per batch of B elements; batched decrease-key can be structured as prefix-min on distance arrays"}
+  ],
+  "forced_bridges": [
+    {
+      "concept_a": "Soft heaps", "domain_a": "data structures",
+      "concept_b": "Frontier reduction", "domain_b": "graph algorithms",
+      "connection_type": "functional",
+      "explanation": "Soft heaps provide O(1) amortized operations by allowing epsilon-corruption of min ordering. If frontier reduction allows approximate partitioning (vertices assigned to wrong distance buckets with probability epsilon), the inter-partition correction cost remains bounded while partition computation becomes O(m) instead of O(m log n).",
+      "intermediate_concepts": ["approximate shortest paths", "bucket-based Dijkstra"],
+      "confidence": 0.75,
+      "potential_insight": "Use soft-heap-like corruption-tolerant partitioning in frontier reduction. Allow O(epsilon * n) vertices to be in wrong partitions, then fix them in a correction pass. If epsilon = 1/polylog(n), correction costs O(m/polylog(n)) per round."
+    },
+    {
+      "concept_a": "Batch parallel prefix", "domain_a": "parallel algorithms",
+      "concept_b": "Dijkstra's relaxation", "domain_b": "graph algorithms",
+      "connection_type": "structural",
+      "explanation": "Dijkstra processes one vertex at a time. Batch processing B vertices simultaneously is analogous to parallel prefix on B processors. The 'communication cost' (inter-batch corrections) maps to prefix-sum depth O(log B).",
+      "intermediate_concepts": ["bulk synchronous parallel", "superstep-based algorithms"],
+      "confidence": 0.70,
+      "potential_insight": "Process frontier in batches of B = n/log n vertices. Within each batch, relaxations proceed in parallel (no ordering needed). Inter-batch corrections need O(log B) rounds. Total comparisons: O(m + n log n / log B * log B) = O(m + n log n). Need smarter batching to break the barrier."
+    },
+    {
+      "concept_a": "Radix sort", "domain_a": "integer sorting",
+      "concept_b": "Distance bucketing", "domain_b": "graph algorithms",
+      "connection_type": "mathematical",
+      "explanation": "Radix sort processes digits from least significant to most significant, achieving O(n * d) where d is the number of digits. For distances, 'digits' correspond to distance ranges at different granularities. Processing distances from coarsest to finest granularity avoids explicit sorting.",
+      "intermediate_concepts": ["bucket decomposition", "Thorup's integer priority queue"],
+      "confidence": 0.65,
+      "potential_insight": "Decompose distances into O(log log n) 'significance levels'. Process from coarsest to finest. At each level, vertices in the same bucket need only O(1) comparisons to order. Total comparisons: O(m + n log log n). But this requires distance structure knowledge — works best when distances are structured."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "combination": "Bloom filters for distance propagation tracking",
+      "triggers_novel_association": true,
+      "novel_associations": ["Track which vertices have been relaxed recently using space-efficient Bloom filters; skip re-relaxation of settled vertices without full hash table overhead"],
+      "emergent_insight": "Approximate membership testing (Bloom filters) can accelerate the correction phase of frontier reduction by quickly identifying which vertices need re-processing."
+    },
+    {
+      "combination": "Wavelet trees for priority queue operations",
+      "triggers_novel_association": true,
+      "novel_associations": ["Wavelet trees support rank/select in O(log sigma) time; for a priority queue with sigma distinct priority levels, this gives O(log sigma) extract-min"],
+      "emergent_insight": "If distances cluster into sigma << n distinct approximate levels, a wavelet-tree-based PQ achieves O(log sigma) per operation instead of O(log n)."
+    }
+  ],
+  "steering_directions": [
+    {
+      "direction": "Implement soft-heap-based approximate frontier partitioning",
+      "rationale": "Soft heaps allow O(1) amortized operations with bounded corruption. Using them for frontier partitioning reduces the per-level cost from O(m log n) to O(m), at the cost of O(epsilon*n) misclassified vertices per level.",
+      "first_step": "Implement a soft heap and measure the corruption rate on shortest-path distance distributions from the benchmark graphs."
+    },
+    {
+      "direction": "Adaptive batch sizes based on local graph structure",
+      "rationale": "Uniform batching doesn't exploit structural variation. Regions with low effective diameter (expander-like) can use large batches; high-diameter regions need small batches.",
+      "first_step": "Compute the local expansion profile of benchmark graphs and correlate with optimal batch size."
+    },
+    {
+      "direction": "Hierarchical distance bucketing with lazy refinement",
+      "rationale": "Like radix sort processing digits, process distances at decreasing granularity. Initial coarse buckets computed in O(m) time; refine only buckets that affect the shortest-path DAG structure.",
+      "first_step": "Implement a 2-level bucket system: coarse buckets of width Delta, fine buckets within each coarse bucket. Measure how many fine-bucket operations are needed."
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "symbolic_name": "WavefrontPropagation",
+    "description": "SSSP relaxation as a wavefront expanding through a medium with spatially varying refractive index. Dijkstra's algorithm corresponds to Huygens' principle — the wavefront advances to the nearest unvisited point. Breaking the sorting barrier means finding shortcuts in wavefront propagation analogous to geometric optics approximations (ray tracing) that skip detailed wave simulation.",
+    "domains": ["optics", "graph algorithms", "computational geometry"],
+    "mathematical_formalization": "Define refractive index n(v) = local edge density around vertex v. Wavefront speed c(v) = 1/n(v). Eikonal equation: |∇d(x)| = n(x). Dijkstra solves the discrete eikonal equation exactly; fast marching methods exploit spatial coherence for O(N log N) on grids. On graphs, 'spatial coherence' translates to locality in shortest-path DAG structure.",
+    "analogical_connections": [
+      {"target_domain": "seismology", "connection": "First-arrival traveltime computation uses fast marching; graph SSSP is the discrete analog", "strength": 0.85},
+      {"target_domain": "level set methods", "connection": "Narrow-band level sets only update near the front, analogous to frontier-reduction", "strength": 0.90}
+    ]
+  },
+  {
+    "symbolic_name": "EntropyBudgetedExploration",
+    "description": "View SSSP as an information-theoretic problem: we need log(n!) bits to determine the full distance ordering, but only O(n log n) bits to determine the distances themselves. The gap suggests that computing distances might not require full sorting. An entropy-budgeted algorithm allocates 'information bits' to different graph regions proportionally to their structural complexity, spending fewer bits on well-structured regions.",
+    "domains": ["information theory", "graph algorithms", "data compression"],
+    "mathematical_formalization": "Let H(G,s) = entropy of the distance distribution from source s. For graphs with bounded local treewidth k, H(G,s) = O(n log k). Total comparison information needed: I(distances) ≤ H(G,s) + o(n log n). This bounds the number of comparisons below the sorting barrier when the graph has exploitable structure.",
+    "analogical_connections": [
+      {"target_domain": "source coding", "connection": "Huffman coding allocates bits proportionally to probability; analogously allocate relaxation work to vertex subsets by their distance-entropy", "strength": 0.75},
+      {"target_domain": "compressed sensing", "connection": "Sparse recovery from fewer measurements than dimensions; shortest paths from fewer comparisons than full sorting", "strength": 0.70}
+    ]
+  },
+  {
+    "symbolic_name": "HierarchicalCoarsening",
+    "description": "Recursive graph coarsening/contraction as used in algebraic multigrid. Coarsen the graph into O(log n) levels where level i has n/2^i vertices. Solve SSSP on the coarsest level exactly, then iteratively refine. The key insight: inter-level corrections require only local relaxation (few decrease-key operations per vertex), bypassing global sorting.",
+    "domains": ["multigrid methods", "graph algorithms", "linear algebra"],
+    "mathematical_formalization": "Let G_0 = G, G_{i+1} = Coarsen(G_i) with |V(G_{i+1})| ≤ |V(G_i)|/2. SSSP(G_0, s) = Refine(SSSP(G_1, π(s)), G_0) where Refine costs O(m_i · α(log n)) per level for some sub-logarithmic correction factor α. Total: O(m · Σ_{i=0}^{log n} α(i)/2^i) = O(m · f(log n)) for f = o(log n).",
+    "analogical_connections": [
+      {"target_domain": "algebraic multigrid", "connection": "V-cycle and W-cycle iteration for solving Laplacian systems; graph SSSP can leverage similar hierarchical correction structure", "strength": 0.80},
+      {"target_domain": "fast multipole method", "connection": "Hierarchical decomposition of interactions; long-range distance influences handled at coarse level, local corrections at fine level", "strength": 0.75}
+    ]
+  },
+  {
+    "symbolic_name": "PhaseTransitionExploitation",
+    "description": "Random graphs exhibit phase transitions in shortest-path structure: below a density threshold, the shortest-path DAG is tree-like and SSSP is easy; above it, the DAG becomes complex but distances concentrate. Exploit phase-transition-like structure in general graphs by identifying 'easy' and 'hard' vertex subsets and using different strategies for each.",
+    "domains": ["statistical physics", "random graph theory", "graph algorithms"],
+    "mathematical_formalization": "Partition V = V_easy ∪ V_hard where V_easy has bounded shortest-path DAG degree (average in-degree ≤ Δ). For v ∈ V_easy, distances can be computed with O(Δ) relaxations. For V_hard, use full Dijkstra. If |V_hard| = o(n), total comparisons = o(n log n). The partition is computable in O(m) time via local degree counting in the residual graph.",
+    "analogical_connections": [
+      {"target_domain": "percolation theory", "connection": "Giant component emergence at p_c; analogous to threshold where shortest-path structure simplifies", "strength": 0.65},
+      {"target_domain": "satisfiability", "connection": "Easy-hard-easy transition in random SAT; vertex classification by local difficulty", "strength": 0.60}
+    ]
+  },
+  {
+    "symbolic_name": "SpectralDistanceEstimation",
+    "description": "Use spectral properties of the graph Laplacian to obtain distance estimates that serve as good initial guesses, reducing the number of decrease-key operations. The first k eigenvectors of the Laplacian embed the graph in R^k; Euclidean distances in this embedding approximate shortest-path distances. If k = O(sqrt(log n)), the approximation is good enough that Dijkstra starting from spectral estimates needs only o(n log n) corrections.",
+    "domains": ["spectral graph theory", "dimensionality reduction", "graph algorithms"],
+    "mathematical_formalization": "Let L = D - A be the graph Laplacian with eigenvalues 0 = λ_1 ≤ ... ≤ λ_n and eigenvectors φ_1, ..., φ_n. Define spectral distance: d_k(u,v) = √(Σ_{i=1}^k (φ_i(u) - φ_i(v))^2 / λ_i). Use d_k as initial distance estimate. Number of decrease-keys needed: O(n · gap(k, G)) where gap depends on spectral gap and embedding quality.",
+    "analogical_connections": [
+      {"target_domain": "manifold learning", "connection": "Diffusion maps approximate geodesic distances; spectral SSSP initialization is the graph-theoretic analog", "strength": 0.80},
+      {"target_domain": "preconditioning", "connection": "Spectral estimates as preconditioners for the distance computation, reducing iteration count", "strength": 0.85}
+    ]
+  },
+  {
+    "symbolic_name": "BatchedLazyPropagation",
+    "description": "Instead of processing vertices one at a time (as in Dijkstra), process them in batches of size B. Within a batch, distances are approximately correct. After each batch, propagate corrections lazily. This amortizes the cost of priority queue operations: one extract-min per batch rather than per vertex.",
+    "domains": ["amortized analysis", "lazy evaluation", "graph algorithms"],
+    "mathematical_formalization": "Process vertices in distance-ordered batches of size B = n^ε for some 0 < ε < 1. Within batch i, relax all edges from batch vertices. Corrections: a vertex in batch i may need re-relaxation at most O(log(n)/B) times across all subsequent batches. Total operations: O(m + n/B · B log B + n · log(n)/B · m/n) = O(m + n log B + m log(n)/B). Optimal B = sqrt(m log n / n) gives O(m + sqrt(mn log n)).",
+    "analogical_connections": [
+      {"target_domain": "cache-oblivious algorithms", "connection": "Batched processing for cache efficiency; distance batching for comparison efficiency", "strength": 0.70},
+      {"target_domain": "bulk synchronous parallel", "connection": "BSP supersteps as batches; inter-superstep communication as correction propagation", "strength": 0.65}
+    ]
+  },
+  {
+    "symbolic_name": "TopologicalFiltration",
+    "description": "Build a filtration (nested sequence of subgraphs) G_0 ⊂ G_1 ⊂ ... ⊂ G_k = G ordered by edge weight. SSSP distances in G_i inform distances in G_{i+1} with bounded corrections. This is analogous to persistent homology where topological features persist across filtration levels. The algorithmic gain: corrections between levels are sparse.",
+    "domains": ["algebraic topology", "persistent homology", "graph algorithms"],
+    "mathematical_formalization": "Let w_1 ≤ w_2 ≤ ... ≤ w_m be sorted edge weights. Define G_i = (V, {e : w(e) ≤ w_i}). If d_i(s,v) = SSSP distance in G_i, then d_{i+1}(s,v) ≤ d_i(s,v) and d_{i+1} differs from d_i at most at vertices reachable from the newly added edge. Number of vertices affected per step: O(diameter(G_i)). Total corrections: O(Σ diam(G_i)) which for well-structured graphs is o(n log n).",
+    "analogical_connections": [
+      {"target_domain": "persistent homology", "connection": "Tracking birth/death of shortest-path tree edges across weight thresholds, analogous to Betti number tracking", "strength": 0.75},
+      {"target_domain": "dynamic graph algorithms", "connection": "Edge insertion as filtration step; dynamic SSSP maintenance as filtration-based SSSP", "strength": 0.80}
+    ]
+  },
+  {
+    "symbolic_name": "RecursiveFrontierPartitioning",
+    "description": "The Duan et al. approach partitions vertices into 'settled' (distance known) and 'frontier' (distance uncertain). The key innovation: recursively partition the frontier itself into sub-frontiers of geometrically decreasing size, solving each with a simpler sub-problem. This is analogous to divide-and-conquer in sorting but applied to the distance ordering.",
+    "domains": ["divide and conquer", "graph algorithms", "recursive algorithms"],
+    "mathematical_formalization": "Let F_0 = V \\ {s}. Partition F_i into F_{i,1}, ..., F_{i,k_i} where |F_{i,j}| ≤ |F_i|/2. Solve SSSP restricted to each F_{i,j} recursively. Cross-partition corrections: O(m/k_i) per partition. Recurrence: T(n, m) = k · T(n/k, m/k) + O(m). With k = n^{1/r}, depth r = log log n: T(n, m) = O(m log log n). Further refinement via Duan-Mao achieves O(m sqrt(log n)).",
+    "analogical_connections": [
+      {"target_domain": "merge sort", "connection": "Recursive partitioning + merging; frontier-reduction is recursive partitioning + correction", "strength": 0.90},
+      {"target_domain": "separator-based algorithms", "connection": "Balanced separators enable divide-and-conquer on graphs; frontier partition is a distance-based separator", "strength": 0.85}
+    ]
+  },
+  {
+    "symbolic_name": "PotentialFunctionGuidance",
+    "description": "A* search uses a potential function (heuristic) to guide exploration toward the target. For SSSP (all targets), use a global potential function computed cheaply (e.g., from a spanning tree or low-diameter decomposition) to reduce the effective number of relaxations. Good potentials make most edges 'tight' (zero reduced cost), leaving only a sparse set of non-tight edges to process.",
+    "domains": ["heuristic search", "reduced costs", "graph algorithms"],
+    "mathematical_formalization": "Let π: V → R be a potential function with π(s) = 0. Reduced weight: w_π(u,v) = w(u,v) + π(u) - π(v). If π approximates true distances within additive ε, then only edges with w_π(u,v) < ε need processing. Number of non-tight edges: |{(u,v) : w_π(u,v) < ε}|. From a BFS/LDD-based potential: this count is O(m/polylog(n)) for appropriate ε.",
+    "analogical_connections": [
+      {"target_domain": "Johnson's algorithm", "connection": "Reweighting with potentials to eliminate negative weights; here reweighting to reduce effective graph size", "strength": 0.90},
+      {"target_domain": "preconditioning", "connection": "Good preconditioner (potential) reduces iteration count (relaxation count)", "strength": 0.85}
+    ]
+  },
+  {
+    "symbolic_name": "LocalitySensitiveRelaxation",
+    "description": "In many graphs, shortest paths exhibit strong locality: most of the path lies within a small neighborhood of its endpoints. Exploit this by performing relaxation in a locality-sensitive order — processing local neighborhoods before global connections. This reduces the number of distance updates that cross neighborhood boundaries.",
+    "domains": ["locality-sensitive hashing", "graph partitioning", "graph algorithms"],
+    "mathematical_formalization": "Partition V into clusters C_1, ..., C_k of diameter at most D in the shortest-path metric. SSSP within each cluster: O(|E(C_i)| + |C_i| log |C_i|). Inter-cluster corrections: one round of Bellman-Ford on the contracted graph (k nodes, O(m/D) inter-cluster edges). Total: O(m + n log(n/k) + k · m/D). With k = sqrt(n), D = sqrt(n): O(m + n log(sqrt(n)) + sqrt(n) · m/sqrt(n)) = O(m + n/2 · log n + m) = O(m + n log n / 2). Constant factor improvement; deeper recursion on clustering needed.",
+    "analogical_connections": [
+      {"target_domain": "cache-oblivious algorithms", "connection": "Memory hierarchy exploitation through spatial locality; distance computation through graph locality", "strength": 0.75},
+      {"target_domain": "domain decomposition", "connection": "PDE solvers partition the domain into subdomains with interface conditions; graph SSSP partitions into clusters with boundary corrections", "strength": 0.80}
+    ]
+  }
+]
