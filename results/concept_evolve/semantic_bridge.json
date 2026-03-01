@@ -1,0 +1,103 @@
+{
+  "nodes": {
+    "info_compression": {"label": "Information-Theoretic Distance Compression", "domain": "information theory"},
+    "partial_order": {"label": "Topological Sorting Bypass via Partial Orders", "domain": "order theory"},
+    "thermo_relax": {"label": "Thermodynamic Relaxation Analogy", "domain": "statistical mechanics"},
+    "recursive_decomp": {"label": "Recursive Subproblem Decomposition", "domain": "algorithm design"},
+    "spectral_sparsify": {"label": "Graph Sparsification via Spectral Methods", "domain": "spectral graph theory"},
+    "bit_parallel": {"label": "Bit-Parallel Distance Propagation", "domain": "word-RAM"},
+    "lazy_eval": {"label": "Lazy Evaluation and Deferred Computation", "domain": "functional programming"},
+    "separator_trees": {"label": "Hierarchical Decomposition via Separator Trees", "domain": "graph decomposition"},
+    "sampling_pivots": {"label": "Sampling-Based Pivot Selection", "domain": "randomized algorithms"},
+    "potential_fn": {"label": "Amortized Potential Function Design", "domain": "amortized analysis"}
+  },
+  "edges": [
+    {
+      "source": "info_compression",
+      "target": "recursive_decomp",
+      "type": "mathematical_isomorphism",
+      "confidence": 0.85,
+      "description": "Distance entropy determines optimal interval granularity in recursive decomposition. Low-entropy distance distributions yield shallow recursion trees."
+    },
+    {
+      "source": "partial_order",
+      "target": "sampling_pivots",
+      "type": "structural_analogy",
+      "confidence": 0.9,
+      "description": "Pivot sampling reveals the structure of the partial order without computing it explicitly. Pivots are antichains in the distance partial order."
+    },
+    {
+      "source": "thermo_relax",
+      "target": "lazy_eval",
+      "type": "functional_analogy",
+      "confidence": 0.75,
+      "description": "Hot edges (far from equilibrium) need immediate processing; cold edges can be deferred. Temperature schedule = batch processing schedule."
+    },
+    {
+      "source": "recursive_decomp",
+      "target": "separator_trees",
+      "type": "structural_analogy",
+      "confidence": 0.8,
+      "description": "Recursive interval decomposition on distances mirrors recursive separator decomposition on graph structure. Both create a tree of subproblems."
+    },
+    {
+      "source": "spectral_sparsify",
+      "target": "sampling_pivots",
+      "type": "mathematical_isomorphism",
+      "confidence": 0.7,
+      "description": "Spectral sparsification via random sampling and pivot-based distance sampling both use random sampling to preserve structural properties with fewer elements."
+    },
+    {
+      "source": "bit_parallel",
+      "target": "lazy_eval",
+      "type": "functional_analogy",
+      "confidence": 0.65,
+      "description": "Both reduce per-operation overhead: bit-parallelism by packing, lazy evaluation by batching. Combined: batch updates and process batches with bit-parallel operations."
+    },
+    {
+      "source": "potential_fn",
+      "target": "thermo_relax",
+      "type": "mathematical_isomorphism",
+      "confidence": 0.8,
+      "description": "The amortized potential function IS the thermodynamic free energy. Minimizing total work = minimizing free energy of the algorithm's state space."
+    },
+    {
+      "source": "info_compression",
+      "target": "bit_parallel",
+      "type": "structural_analogy",
+      "confidence": 0.7,
+      "description": "Entropy-coded distances use fewer bits, enabling more distances per word in bit-parallel operations."
+    },
+    {
+      "source": "sampling_pivots",
+      "target": "recursive_decomp",
+      "type": "structural_analogy",
+      "confidence": 0.95,
+      "description": "Sampled pivots define the interval boundaries for recursive decomposition. This is the core mechanism of Duan et al. 2023/2025."
+    },
+    {
+      "source": "partial_order",
+      "target": "potential_fn",
+      "type": "mathematical_isomorphism",
+      "confidence": 0.75,
+      "description": "The partial order on vertices by distance defines a natural potential function. Width of partial order bounds the potential increase per operation."
+    }
+  ],
+  "bridge_chains": [
+    {
+      "chain": ["info_compression", "recursive_decomp", "sampling_pivots"],
+      "description": "Information-theoretic analysis of distance distributions -> optimal interval sizes for recursive decomposition -> sampling rate for pivots. This chain connects compression theory to concrete algorithm parameters.",
+      "actionable_insight": "Measure the empirical entropy of distance distributions on test graphs. If H(D) << log n, use finer intervals (more pivots) to exploit the structure."
+    },
+    {
+      "chain": ["thermo_relax", "lazy_eval", "bit_parallel"],
+      "description": "Thermodynamic temperature schedule -> deferred batch processing -> bit-parallel batch execution. This chain suggests a concrete algorithm: maintain a temperature that determines batch size, process batches with word-level parallelism.",
+      "actionable_insight": "Design a 'cooling schedule' for SSSP: initially process edges in large batches with coarse distance granularity, progressively refine to smaller batches with finer granularity."
+    },
+    {
+      "chain": ["partial_order", "potential_fn", "recursive_decomp"],
+      "description": "Partial order width analysis -> potential function bounding PQ operations -> recursive decomposition depth. This chain shows that graphs with narrow distance partial orders enable shallow recursion with few total PQ operations.",
+      "actionable_insight": "For the novel algorithm, design the potential function to track partial order width, not just heap size. This could yield tighter amortized bounds."
+    }
+  ]
+}

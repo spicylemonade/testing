@@ -1,0 +1,69 @@
+{
+  "associations": [
+    {
+      "concept": "Wavelet transform multi-resolution",
+      "domain": "signal processing",
+      "surprise_rating": 0.7,
+      "structural_reason": "Multi-resolution analysis processes signals at different scales simultaneously. SSSP could process distances at coarse scale first (identifying approximate distance intervals) then refine. This is structurally identical to the recursive interval decomposition in Duan et al., but the wavelet framing suggests using overlapping intervals (redundant wavelets) for smoother boundaries."
+    },
+    {
+      "concept": "TCP congestion control (AIMD)",
+      "domain": "networking",
+      "surprise_rating": 0.8,
+      "structural_reason": "TCP's additive-increase multiplicative-decrease is an online algorithm that converges to fair bandwidth allocation without global coordination. SSSP edge relaxation is similar: each vertex locally updates its distance. AIMD's convergence analysis (via Lyapunov functions) could provide new potential function designs for SSSP amortized analysis."
+    },
+    {
+      "concept": "Enzyme kinetics (Michaelis-Menten)",
+      "domain": "biochemistry",
+      "surprise_rating": 0.85,
+      "structural_reason": "Enzyme catalysis has a saturation curve: rate increases linearly with substrate concentration until saturation. Priority queue operations in Dijkstra might exhibit similar saturation: beyond a certain graph density, the PQ is always full and operations are maximally expensive. Below saturation, operations are cheaper. This suggests density-adaptive algorithm switching."
+    },
+    {
+      "concept": "Fractal dimension of graphs",
+      "domain": "fractal geometry",
+      "surprise_rating": 0.75,
+      "structural_reason": "The fractal dimension of a graph measures how the number of vertices within distance r scales with r. Graphs with low fractal dimension (like road networks) have structured shortest paths that can be exploited. This connects to separator-based decomposition: low fractal dimension implies small separators."
+    },
+    {
+      "concept": "Quorum systems in distributed computing",
+      "domain": "distributed systems",
+      "surprise_rating": 0.65,
+      "structural_reason": "A quorum system ensures that any two operations see overlapping subsets. In SSSP, 'quorum' could mean: any two distance intervals must share at least one pivot vertex. This ensures correctness of interval-based decomposition without requiring global synchronization."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "combination": "Topological data analysis (persistent homology) + priority queue design",
+      "triggers_novel_association": true,
+      "novel_associations": [
+        "Persistent homology tracks topological features across scales. A 'persistent priority queue' could track distance features across scales of precision, naturally implementing the recursive decomposition.",
+        "Betti numbers of the sub-level sets of the distance function count connected components at each distance threshold — these are exactly the intervals in the Duan et al. decomposition."
+      ],
+      "emergent_insight": "The barcode diagram from persistent homology of the distance function directly encodes the optimal interval decomposition for SSSP. Short bars = intervals that can be processed cheaply; long bars = intervals requiring full Dijkstra. This could guide adaptive pivot selection."
+    },
+    {
+      "combination": "Error-correcting codes + graph edge relaxation",
+      "triggers_novel_association": true,
+      "novel_associations": [
+        "Edge relaxation is like error correction: tentative distances are 'noisy' estimates that get progressively corrected. The minimum distance of the code = minimum number of edge relaxations needed to correct any single vertex's distance.",
+        "LDPC codes use sparse parity-check matrices — analogous to sparse graphs. The iterative decoding algorithm (belief propagation) is structurally similar to Bellman-Ford relaxation."
+      ],
+      "emergent_insight": "Belief propagation on graphs converges in O(diameter) rounds for trees and near-linear work for sparse graphs. For SSSP, a belief-propagation-style algorithm could achieve near-linear time on graphs with bounded expansion, bypassing the PQ entirely."
+    },
+    {
+      "combination": "Auction algorithms (Bertsekas) + shortest path relaxation",
+      "triggers_novel_association": true,
+      "novel_associations": [
+        "Bertsekas' auction algorithm solves assignment problems by having agents 'bid' for objects. In SSSP, vertices could 'bid' for their final distance value, with edges acting as communication channels.",
+        "The epsilon-scaling technique in auction algorithms progressively refines prices (distances) from coarse to fine — structurally identical to the multi-scale approach in recent SSSP algorithms."
+      ],
+      "emergent_insight": "Epsilon-scaling from auction algorithms provides a principled way to set the Delta parameter in interval-based SSSP decomposition. Start with large Delta (coarse approximation), halve Delta repeatedly. This is exactly the approach that yields O(m sqrt(log n)) bounds."
+    }
+  ],
+  "dominant_frame": "The dominant frame is 'priority queue optimization' — most SSSP research focuses on making the PQ faster. The blind spot is that the PQ might be the wrong abstraction entirely. The Duan et al. breakthrough partially escaped this frame by using partial-order PQs. The next breakthrough might abandon PQs altogether in favor of batch/bulk distance propagation (like BFS but with weighted edges).",
+  "blind_spots": [
+    "Over-focus on worst-case analysis; practical graphs have structure (small-world, low highway dimension) that typical worst-case bounds ignore",
+    "Assumption that all edges need explicit relaxation; many edges are 'useless' (relaxation doesn't improve any distance) and could be pre-filtered",
+    "Single-source framing; the all-pairs or batched-multi-source perspective might yield better algorithms due to shared substructure"
+  ]
+}
