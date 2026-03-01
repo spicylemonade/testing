@@ -1,0 +1,60 @@
+{
+  "associations": [
+    {
+      "concept": "Multigrid V-cycle",
+      "domain": "numerical linear algebra",
+      "surprise_rating": 0.6,
+      "structural_reason": "Multigrid solves Laplacian systems in O(m) time by recursive coarsening — the exact same structural pattern needed to solve SSSP faster than sorting. The V-cycle's 'restrict-solve-interpolate' maps to 'coarsen-solve-refine' for shortest paths."
+    },
+    {
+      "concept": "Fibonacci heap amortization via potential method",
+      "domain": "amortized analysis",
+      "surprise_rating": 0.3,
+      "structural_reason": "The Fibonacci heap achieves O(1) amortized decrease-key via a potential function counting marked nodes. Breaking the sorting barrier may require a new potential function that accounts for graph structure, not just heap structure."
+    },
+    {
+      "concept": "Low-diameter decomposition (LDD) as distance oracle",
+      "domain": "distributed algorithms",
+      "surprise_rating": 0.7,
+      "structural_reason": "LDDs from distributed computing decompose graphs into low-diameter clusters with few inter-cluster edges. This is exactly the structure needed for locality-sensitive SSSP: solve within clusters cheaply, correct across cluster boundaries."
+    },
+    {
+      "concept": "Seismic first-arrival computation on unstructured meshes",
+      "domain": "geophysics/computational science",
+      "surprise_rating": 0.8,
+      "structural_reason": "Geophysicists compute first-arrival times (= shortest paths in continuous media) on unstructured meshes using fast sweeping methods that exploit the limited angular dependence of wavefronts. The angular decomposition idea translates to directional decomposition of graph SSSP."
+    },
+    {
+      "concept": "Sparse recovery / compressed sensing",
+      "domain": "signal processing",
+      "surprise_rating": 0.75,
+      "structural_reason": "If shortest-path distances have a sparse representation in some basis (e.g., the first few eigenvectors of the Laplacian capture most of the distance information), then fewer than n log n measurements (comparisons) suffice to recover all distances."
+    }
+  ],
+  "dominant_frame": "Recursive decomposition with sub-logarithmic correction costs",
+  "blind_spots": [
+    "Over-reliance on divide-and-conquer; may miss additive combinatorics techniques",
+    "Assumption that graph structure is the only lever; weight distribution structure is under-explored",
+    "Focus on worst-case bounds may miss instance-optimal algorithms that are faster on typical inputs"
+  ],
+  "anomaly_results": [
+    {
+      "combination": "Apply error-correcting code decoding to shortest-path computation",
+      "triggers_novel_association": true,
+      "novel_associations": ["Syndrome decoding identifies errors in a codeword with bounded Hamming distance; analogously, identify vertices whose current distance estimate is 'wrong' (above true distance) with bounded work"],
+      "emergent_insight": "Treat the initial distance estimates (e.g., from a spanning tree) as a 'noisy codeword' and use algebraic decoding-like techniques to correct only the erroneous entries. If the spanning-tree distances are close to optimal for most vertices, correction is sparse."
+    },
+    {
+      "combination": "Map SSSP to a flow problem and use interior point methods",
+      "triggers_novel_association": true,
+      "novel_associations": ["SSSP is dual to a flow problem; interior point methods solve LP relaxations in O~(m sqrt(n)) iterations; recent breakthroughs achieve O~(m) for maximum flow"],
+      "emergent_insight": "The recent Laplacian-based maximum flow algorithms (Chen et al. 2022) achieve near-linear time by solving a sequence of Laplacian systems. Since SSSP is the LP dual of a unit flow problem, a similar approach might yield near-linear SSSP via Laplacian solvers."
+    },
+    {
+      "combination": "Use topological sorting of the shortest-path DAG as a partial order to avoid full sorting",
+      "triggers_novel_association": true,
+      "novel_associations": ["The shortest-path DAG has a topological order that coincides with the distance ordering; computing this topological order requires only O(m) edge examinations if the DAG is known"],
+      "emergent_insight": "If we can incrementally build the shortest-path DAG without fully sorting vertices by distance, we bypass the sorting barrier. The DAG structure is determined by which edges are tight; finding tight edges is equivalent to computing distances. But the observation that DAG topology (not metric distance values) suffices for ordering may enable graph-structure-based shortcuts."
+    }
+  ]
+}

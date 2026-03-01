@@ -1,0 +1,42 @@
+{
+  "nodes": {
+    "WavefrontPropagation": {"domain": "optics/graph algorithms", "type": "analogy"},
+    "EntropyBudgetedExploration": {"domain": "information theory/graph algorithms", "type": "theoretical_framework"},
+    "HierarchicalCoarsening": {"domain": "multigrid/graph algorithms", "type": "algorithmic_technique"},
+    "PhaseTransitionExploitation": {"domain": "statistical physics/graph algorithms", "type": "structural_insight"},
+    "SpectralDistanceEstimation": {"domain": "spectral theory/graph algorithms", "type": "algorithmic_technique"},
+    "BatchedLazyPropagation": {"domain": "amortized analysis/graph algorithms", "type": "algorithmic_technique"},
+    "TopologicalFiltration": {"domain": "algebraic topology/graph algorithms", "type": "structural_framework"},
+    "RecursiveFrontierPartitioning": {"domain": "divide-and-conquer/graph algorithms", "type": "core_technique"},
+    "PotentialFunctionGuidance": {"domain": "heuristic search/graph algorithms", "type": "algorithmic_technique"},
+    "LocalitySensitiveRelaxation": {"domain": "graph partitioning/graph algorithms", "type": "algorithmic_technique"}
+  },
+  "edges": [
+    {"source": "HierarchicalCoarsening", "target": "RecursiveFrontierPartitioning", "type": "structural_analogy", "confidence": 0.90, "description": "Both decompose the problem hierarchically; coarsening levels ↔ frontier partition depth"},
+    {"source": "RecursiveFrontierPartitioning", "target": "BatchedLazyPropagation", "type": "functional_analogy", "confidence": 0.85, "description": "Frontier partitions define natural batches; lazy propagation handles inter-partition corrections"},
+    {"source": "PotentialFunctionGuidance", "target": "SpectralDistanceEstimation", "type": "mathematical_isomorphism", "confidence": 0.80, "description": "Spectral embedding provides the potential function; both reduce effective problem size"},
+    {"source": "WavefrontPropagation", "target": "LocalitySensitiveRelaxation", "type": "structural_analogy", "confidence": 0.85, "description": "Wavefront propagation is inherently local; LSR formalizes and exploits this locality"},
+    {"source": "EntropyBudgetedExploration", "target": "PhaseTransitionExploitation", "type": "mathematical_isomorphism", "confidence": 0.75, "description": "Entropy bounds determine phase of computational difficulty; phase transitions mark entropy discontinuities"},
+    {"source": "TopologicalFiltration", "target": "HierarchicalCoarsening", "type": "structural_analogy", "confidence": 0.80, "description": "Filtration levels ↔ coarsening levels; both build nested approximations"},
+    {"source": "BatchedLazyPropagation", "target": "PotentialFunctionGuidance", "type": "functional_analogy", "confidence": 0.70, "description": "Potentials define batch boundaries (equi-potential surfaces); lazy propagation handles corrections within batches"},
+    {"source": "SpectralDistanceEstimation", "target": "HierarchicalCoarsening", "type": "mathematical_isomorphism", "confidence": 0.75, "description": "Spectral coarsening (top eigenvectors) naturally defines the multigrid hierarchy for graphs"},
+    {"source": "PhaseTransitionExploitation", "target": "LocalitySensitiveRelaxation", "type": "metaphorical_transfer", "confidence": 0.65, "description": "Phase transition identifies which regions are 'local' (easy) vs 'global' (hard)"}
+  ],
+  "bridge_chains": [
+    {
+      "chain": ["HierarchicalCoarsening", "SpectralDistanceEstimation", "PotentialFunctionGuidance"],
+      "insight": "Spectral coarsening provides both the multigrid hierarchy and the potential functions. The coarsest level gives a global potential; each refinement level adds local corrections. This three-concept bridge suggests: compute spectral potentials at coarse levels, use them to guide fine-level SSSP, achieving sub-logarithmic correction cost per level.",
+      "novelty_score": 0.85
+    },
+    {
+      "chain": ["RecursiveFrontierPartitioning", "BatchedLazyPropagation", "EntropyBudgetedExploration"],
+      "insight": "Frontier partitioning creates batches; entropy analysis of each batch determines its computational budget. Batches with low distance-entropy (well-ordered distances) are processed cheaply; high-entropy batches get more comparisons. This adaptive budgeting could improve the log^{2/3}(n) factor in Duan et al. by spending fewer comparisons on easy partitions.",
+      "novelty_score": 0.80
+    },
+    {
+      "chain": ["TopologicalFiltration", "WavefrontPropagation", "LocalitySensitiveRelaxation"],
+      "insight": "Build a weight-based filtration, propagate wavefronts within each filtration level using locality-sensitive ordering. New edges added at each filtration level cause only local wavefront perturbations. This suggests: SSSP via incremental wavefront maintenance across a filtration, with O(m) total perturbation cost + O(n · f(log n)) for wavefront reordering.",
+      "novelty_score": 0.75
+    }
+  ]
+}
