@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from src.baselines.dijkstra_fib import dijkstra_fibonacci
 from src.baselines.dmmsy import dmmsy_sssp
+from src.novel.sssp import hop_guided_sssp
 from src.benchmarks.graph_gen import GENERATORS, generate
 
 
@@ -22,6 +23,7 @@ def _timeout_handler(signum, frame):
 ALGORITHMS = {
     'dijkstra_fib': dijkstra_fibonacci,
     'dmmsy': dmmsy_sssp,
+    'hop_guided': hop_guided_sssp,
 }
 
 
