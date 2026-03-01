@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-01T10:45:00Z",
+  "updated_at": "2026-03-01T10:41:27.600055+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-01T10:45:00Z",
+      "completed_at": "2026-03-01T10:41:27.600015+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure, available tooling, and research infrastructure",
+          "acceptance_criteria": "Written document (STRUCTURE.md) listing all modules (.archivara/semantic_scholar.py, .archivara/concept_evolve.py), their purposes, available CLI commands, and how they connect to support the research workflow",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Define the SSSP problem scope, computational model, and precise research questions",
+          "acceptance_criteria": "Written document (PROBLEM.md) that (1) formally defines the SSSP problem on weighted directed graphs, (2) states the comparison-based and word-RAM computational models under consideration, (3) lists at least 5 concrete research questions including whether o(m + n log n) is achievable and under what assumptions, and (4) defines what constitutes a valid improvement (worst-case, amortized, expected)",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Classical SSSP literature review: search the web for foundational papers on Dijkstra's algorithm, Fibonacci heaps, and priority-queue-based approaches",
+          "acceptance_criteria": "Written summary (literature/classical_sssp.md) covering at least: Dijkstra (1959), Fredman & Tarjan Fibonacci heaps (1987), Brodal strict Fibonacci heaps (1996), Thorup (2004) undirected linear-time SSSP, Pettie & Ramachandran (2005) optimal comparison-based SSSP. Each entry includes: problem setting, key technique, complexity result, and computational model. Web search must be used to find and verify each paper's results",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Modern SSSP literature review: search the web for 2019-2026 breakthroughs on near-linear SSSP for directed graphs",
+          "acceptance_criteria": "Written summary (literature/modern_sssp.md) covering at least: Bernstein, Nanongkai & Wulff-Nilsen (2022) near-linear SSSP via hop-constrained techniques, Bringmann et al. (2023) negative-weight SSSP, Haeupler et al. (2024) universally-optimal SSSP, any 2025-2026 follow-up work found via web search. Must identify the exact complexity bounds achieved, graph classes covered, and open gaps. Must use web search and Semantic Scholar to find the latest results",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Survey lower bounds, conditional hardness results, and computational model limitations for SSSP",
+          "acceptance_criteria": "Written summary (literature/lower_bounds.md) covering: (1) comparison-based lower bound of Omega(m + n log n) and its proof sketch, (2) word-RAM model advantages that bypass this bound, (3) any known conditional lower bounds from SETH/OMv/APSP-hardness, (4) fine-grained complexity results relating SSSP to other problems. At least 5 relevant papers cited",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Survey open-source SSSP implementations and experimental benchmarks, and create sources.bib",
+          "acceptance_criteria": "(1) Written summary (literature/implementations.md) of at least 5 open-source SSSP implementations (e.g., LEDA, Boost Graph, DIMACS challenge entries, NetworkX, graph-tool) with their algorithmic choices and benchmark results. (2) sources.bib created in repo root with valid BibTeX entries for at least 15 relevant papers consulted across items 003-006. Each entry must have title, author, year, and venue/journal fields",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement core graph data structures: adjacency list, edge-weighted digraph, and graph generators",
+          "acceptance_criteria": "Python module (src/graph.py) with: (1) WeightedDigraph class using adjacency-list representation, (2) methods for add_edge, neighbors, edge_count, node_count, (3) graph generators for random sparse (Erdos-Renyi), random dense, grid/lattice, and scale-free (Barabasi-Albert) graphs with configurable weight distributions (uniform, exponential, integer), (4) DIMACS format reader for real-world benchmark graphs, (5) at least 10 unit tests passing in tests/test_graph.py",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement baseline SSSP algorithms: Dijkstra with binary heap, Dijkstra with Fibonacci heap, and Bellman-Ford",
+          "acceptance_criteria": "Python module (src/baselines.py) with: (1) dijkstra_binary_heap(graph, source) using heapq \u2014 O(m log n), (2) dijkstra_fibonacci_heap(graph, source) using a proper Fibonacci heap implementation \u2014 O(m + n log n), (3) bellman_ford(graph, source) \u2014 O(mn), (4) all three return identical distance arrays on the same inputs, (5) Fibonacci heap implementation either from scratch (src/fibonacci_heap.py) or from a well-documented library, (6) at least 15 unit tests in tests/test_baselines.py including negative-weight tests for Bellman-Ford and correctness cross-validation between all three",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement modern baseline: Dial's algorithm and radix-heap-based SSSP for integer weights",
+          "acceptance_criteria": "Python module (src/modern_baselines.py) with: (1) Dial's algorithm (bucket-based) for non-negative integer weights \u2014 O(m + nC), (2) radix-heap-based Dijkstra \u2014 O(m + n sqrt(log C)), (3) correctness verified against Dijkstra on at least 100 random integer-weight graphs, (4) at least 10 unit tests in tests/test_modern_baselines.py",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Define benchmarking infrastructure with configurable metrics and profiling",
+          "acceptance_criteria": "Python module (src/benchmark.py) with: (1) BenchmarkSuite class that runs an algorithm on a graph instance and measures wall-clock time, number of priority-queue operations (insert, decrease-key, extract-min), number of edge relaxations, peak memory usage, (2) support for multiple runs with statistical reporting (mean, median, stddev, min, max), (3) CSV/JSON output of results, (4) configurable graph-size sweeps (n from 1K to 1M, varying m/n ratios), (5) at least 5 unit tests",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Run baseline benchmarks and establish reference performance profiles",
+          "acceptance_criteria": "Benchmark results saved in results/baselines/ as CSV files showing: (1) wall-clock time vs n for all baseline algorithms on sparse (m=4n), medium (m=n*sqrt(n)), and dense (m=n^2/10) random graphs with n in {1000, 2000, 5000, 10000, 20000, 50000}, (2) priority-queue operation counts for Dijkstra variants, (3) at least 3 runs per configuration for statistical validity, (4) summary table in results/baselines/SUMMARY.md identifying the empirical crossover points between algorithms",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Bottleneck analysis: profile existing SSSP algorithms to identify where O(n log n) operations are spent and potential avenues for improvement",
+          "acceptance_criteria": "Written analysis (analysis/bottleneck.md) with: (1) detailed operation-count breakdown of Dijkstra+Fibonacci-heap showing that the n extract-min operations dominate, (2) identification of graph families where the gap between O(m + n log n) and actual runtime is largest/smallest, (3) analysis of how BNW 2022 avoids the priority-queue bottleneck via hop-constrained shortest paths, (4) at least 3 specific technical hypotheses for how to reduce the n log n term, supported by experimental evidence from Phase 2 benchmarks",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Design the novel SSSP algorithm with formal pseudocode and complexity analysis",
+          "acceptance_criteria": "Written algorithm design document (analysis/algorithm_design.md) containing: (1) complete pseudocode for the novel algorithm, (2) a clear description of the key insight that avoids the Omega(n log n) comparison-based barrier (must exploit word-RAM, randomization, or structural decomposition), (3) formal complexity claim with target bound of o(m + n log n) stated precisely (e.g., O(m + n log n / log log n), O(m + n log^{2/3} n), or O(m alpha(n))), (4) proof sketch of correctness, (5) identification of the specific graph class and weight domain where the improvement holds, (6) comparison table against all algorithms from the literature review showing where this fits",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement the novel SSSP algorithm",
+          "acceptance_criteria": "Python module (src/novel_sssp.py) with: (1) complete implementation of the algorithm designed in item_013, (2) the implementation must produce correct shortest-path distances matching Dijkstra on every test case, (3) verified on at least 500 random graphs of varying sizes (n=100 to n=50000) and densities, (4) zero correctness failures, (5) clear inline comments mapping code to pseudocode steps from item_013",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Formal correctness proof and complexity analysis of the novel algorithm",
+          "acceptance_criteria": "Written document (analysis/correctness_proof.md) with: (1) formal proof of correctness (loop invariants, termination argument, optimality substructure), (2) rigorous worst-case complexity analysis showing o(m + n log n) operations under the claimed model, (3) explicit statement of any assumptions (word size, weight range, randomization), (4) comparison of the complexity bound against Fredman-Tarjan O(m + n log n) showing the asymptotic improvement factor",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement 2 algorithmic optimizations or variants of the novel algorithm",
+          "acceptance_criteria": "(1) At least 2 distinct optimizations implemented as togglable flags in src/novel_sssp.py (e.g., lazy evaluation, batch decrease-key, cache-oblivious memory layout, SIMD-friendly data structure), (2) each optimization has a clear hypothesis for why it improves performance, (3) micro-benchmarks in results/optimizations/ showing the effect of each optimization individually and combined, (4) correctness preserved \u2014 all optimizations pass the same 500+ graph test suite from item_014",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_017",
+          "description": "Design comprehensive experiment suite covering synthetic and real-world-proxy graphs",
+          "acceptance_criteria": "Written experiment plan (experiments/EXPERIMENT_PLAN.md) with: (1) at least 6 synthetic graph families (sparse random, dense random, grid, scale-free, small-world, road-network-like planar), (2) at least 3 real-world-proxy graph types (DIMACS benchmark graphs, or generated from real-world degree distributions), (3) parameter ranges for n (1K to 100K+) and m/n ratios (2 to n/10), (4) weight distributions to test (uniform random, exponential, integer 1-C for various C, adversarial), (5) at least 3 repetitions per configuration, (6) explicit hypotheses about where the novel algorithm will outperform baselines",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Run synthetic benchmarks: novel algorithm vs all baselines across the full experiment suite",
+          "acceptance_criteria": "Results saved in results/synthetic/ with: (1) at least 800 total benchmark runs across all algorithm-graph combinations, (2) CSV files with columns: algorithm, graph_family, n, m, weight_dist, trial, wall_time_ms, pq_operations, edge_relaxations, peak_memory_kb, (3) no correctness failures (all algorithms produce identical distances), (4) preliminary analysis showing speedup ratios of novel algorithm vs Dijkstra+Fibonacci-heap",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Run real-world-proxy benchmarks and stress tests",
+          "acceptance_criteria": "Results saved in results/realworld/ with: (1) benchmarks on at least 4 real-world-proxy graph instances (road-network-like, social-network-like, web-graph-like, biological-network-like), (2) at least 200 total benchmark runs, (3) stress tests with adversarial weight distributions designed to trigger worst-case behavior, (4) correctness verified on all instances",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Scalability analysis: measure empirical growth rates and compare to theoretical predictions",
+          "acceptance_criteria": "Results saved in results/scaling/ with: (1) log-log plots of wall-clock time vs n for each algorithm on at least 3 graph families, with n ranging over at least 5 orders of magnitude or as large as feasible (1K to 100K+), (2) empirical growth-rate exponents fitted via least-squares regression, (3) comparison of empirical exponents to theoretical predictions (e.g., does the novel algorithm empirically grow slower than m + n log n?), (4) analysis document results/scaling/SCALING.md discussing whether the theoretical improvement is observable in practice and at what scale it manifests",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Head-to-head comparison against prior work cited in the literature review",
+          "acceptance_criteria": "Results saved in results/comparison/ with: (1) comparison table showing the novel algorithm's empirical speedup (or slowdown) vs each baseline algorithm from Phase 2 across all graph families, (2) geometric mean speedup computed across all configurations, (3) identification of graph families where the novel algorithm wins vs loses, (4) comparison against the complexity bounds from papers cited in sources.bib, (5) written analysis (results/comparison/COMPARISON.md) of at least 500 words discussing where the novel algorithm fits in the landscape of prior work",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Generate publication-quality figures summarizing all experimental results",
+          "acceptance_criteria": "At least 6 figures saved as PNG in results/figures/: (1) runtime vs n for all algorithms on sparse graphs, (2) runtime vs n for all algorithms on dense graphs, (3) speedup heatmap (algorithm x graph_family), (4) priority-queue operation count comparison, (5) scalability log-log plot with fitted growth curves, (6) bar chart of geometric mean speedup across all configurations. All figures must have labeled axes, legends, and be suitable for inclusion in a research paper",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Write comprehensive research report with full results and analysis",
+          "acceptance_criteria": "Written report (RESULTS.md) of at least 2500 words containing: (1) executive summary of the novel algorithm and its complexity improvement, (2) problem background referencing at least 10 papers from sources.bib, (3) algorithm description with pseudocode, (4) correctness argument summary, (5) complete experimental results with embedded figures, (6) analysis of when the novel algorithm outperforms/underperforms baselines, (7) comparison to state-of-the-art bounds from BNW 2022 and other recent work",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Document limitations, failure cases, open problems, and future research directions",
+          "acceptance_criteria": "Section in RESULTS.md or standalone document (analysis/LIMITATIONS.md) covering: (1) at least 3 specific limitations of the novel algorithm (e.g., constant factor overhead, graph-class restrictions, weight-domain assumptions), (2) at least 2 identified failure cases or adversarial inputs, (3) at least 3 concrete future research directions (e.g., extending to APSP, parallel/distributed variants, practical engineering improvements), (4) honest assessment of whether the theoretical improvement translates to practical gains",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Create reproducibility package: requirements, Makefile, comprehensive README, and validate sources.bib",
+          "acceptance_criteria": "(1) requirements.txt listing all Python dependencies with pinned versions, (2) Makefile with targets: install, test, benchmark, figures, clean, (3) README.md rewritten with: project overview, installation instructions, usage examples, description of the novel algorithm, and how to reproduce all results, (4) sources.bib validated to contain at least 15 BibTeX entries with no duplicate keys and no missing required fields, (5) all tests pass (pytest tests/ returns 0 failures), (6) complete test suite with at least 40 tests covering graph structures, all algorithms, and benchmark infrastructure",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
