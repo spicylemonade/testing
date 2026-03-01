@@ -235,3 +235,102 @@ class TestOperationCounting:
         assert counter.extract_mins > 0
         assert counter.total_ops > 0
         assert expanded > 0
+
+
+# === Tests 23-31: Edge case regression tests (item_018) ===
+
+class TestEdgeCaseRegression:
+    """Regression tests for identified edge cases."""
+
+    def test_self_loops(self):
+        g = Graph(4)
+        g.add_edge(0, 0, 5.0)
+        g.add_edge(0, 1, 3.0)
+        g.add_edge(1, 1, 2.0)
+        g.add_edge(1, 2, 4.0)
+        d1, _, _ = dijkstra_binary(g, 0)
+        d2, _, _ = hibra(g, 0)
+        assert_distances_match(d1, d2, 4)
+
+    def test_parallel_edges(self):
+        g = Graph(4)
+        g.add_edge(0, 1, 10.0)
+        g.add_edge(0, 1, 3.0)
+        g.add_edge(0, 1, 20.0)
+        g.add_edge(1, 2, 5.0)
+        g.add_edge(1, 2, 1.0)
+        d1, _, _ = dijkstra_binary(g, 0)
+        d2, _, _ = hibra(g, 0)
+        assert_distances_match(d1, d2, 4)
+        assert d2[1] == 3.0
+        assert d2[2] == 4.0
+
+    def test_long_chain(self):
+        n = 5000
+        g = Graph(n)
+        for i in range(n - 1):
+            g.add_edge(i, i + 1, 1.0)
+        d1, _, _ = dijkstra_binary(g, 0)
+        d2, _, _ = hibra(g, 0)
+        assert_distances_match(d1, d2, n)
+        assert d2[n - 1] == n - 1
+
+    def test_star_graph(self):
+        n = 1000
+        g = Graph(n)
+        for i in range(1, n):
+            g.add_edge(0, i, float(i))
+        d1, _, _ = dijkstra_binary(g, 0)
+        d2, _, _ = hibra(g, 0)
+        assert_distances_match(d1, d2, n)
+
+    def test_no_outgoing_from_source(self):
+        g = Graph(5)
+        g.add_edge(1, 2, 1.0)
+        g.add_edge(2, 3, 1.0)
+        d, _, _ = hibra(g, 0)
+        assert d[0] == 0
+        for i in range(1, 5):
+            assert d[i] == INF
+
+    def test_all_equal_weights(self):
+        rng = random.Random(42)
+        n = 200
+        g = Graph(n)
+        for _ in range(3 * n):
+            u, v = rng.randint(0, n - 1), rng.randint(0, n - 1)
+            if u != v:
+                g.add_edge(u, v, 1.0)
+        d1, _, _ = dijkstra_binary(g, 0)
+        d2, _, _ = hibra(g, 0)
+        assert_distances_match(d1, d2, n)
+
+    def test_k_boundary_small_n(self):
+        for nn in [2, 3, 4, 8, 15, 16, 17]:
+            g = Graph(nn)
+            for i in range(nn - 1):
+                g.add_edge(i, i + 1, 1.0)
+            d1, _, _ = dijkstra_binary(g, 0)
+            d2, _, _ = hibra(g, 0)
+            assert_distances_match(d1, d2, nn)
+
+    def test_large_weights(self):
+        g = Graph(4)
+        g.add_edge(0, 1, 1e15)
+        g.add_edge(1, 2, 1e15)
+        g.add_edge(0, 2, 1e16)
+        d, _, _ = hibra(g, 0)
+        assert d[2] == 2e15
+
+    def test_mixed_zero_nonzero_weights(self):
+        rng = random.Random(99)
+        n = 100
+        g = Graph(n)
+        for _ in range(4 * n):
+            u, v = rng.randint(0, n - 1), rng.randint(0, n - 1)
+            if u != v:
+                w = 0 if rng.random() < 0.3 else rng.uniform(0.01, 100)
+                g.add_edge(u, v, w)
+        d1, _, _ = dijkstra_binary(g, 0)
+        d2, _, _ = hibra(g, 0)
+        assert_distances_match(d1, d2, n)
