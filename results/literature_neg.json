@@ -1,0 +1,334 @@
+{
+  "topic": "Single-Source Shortest Paths (SSSP) with Negative Weights",
+  "search_date": "2026-03-01",
+  "search_queries": {
+    "semantic_scholar": [
+      "negative weight shortest path near linear",
+      "Bernstein Nanongkai Wulff-Nilsen shortest path",
+      "Bringmann Cassis Fischer shortest path",
+      "low diameter decomposition shortest path directed",
+      "Goldberg Radzik heuristic Bellman-Ford shortest path",
+      "algorithm engineering SSSP negative edge weights Cassis"
+    ],
+    "web_search": [
+      "negative weight SSSP near-linear time 2022 2023 FOCS Bernstein Nanongkai",
+      "Bringmann Cassis Fischer negative weight shortest path FOCS 2023",
+      "SEA 2025 negative weight shortest path practical implementation algorithm engineering",
+      "Goldberg Radzik 1993 shortest paths negative edges algorithm",
+      "Gabow Tarjan 1989 scaling shortest paths negative weights SIAM",
+      "Johnson 1977 reweighting all-pairs shortest paths algorithm",
+      "Bellman 1958 Ford 1956 shortest path algorithm dynamic programming",
+      "Fineman 2024 STOC negative real weights shortest path",
+      "Huang Jin Quanrud faster single source shortest paths negative real weights proper hop distance 2024",
+      "faster negative weight shortest paths low diameter decomposition arxiv 2024 2025",
+      "near-optimal directed low diameter decomposition Bringmann Fischer Haeupler Latypov ICALP 2025",
+      "Haeupler Jiang Saranurak deterministic negative weight shortest paths path covers 2025",
+      "Goldberg 1995 scaling algorithm shortest paths negative weights SIAM"
+    ]
+  },
+  "papers": [
+    {
+      "key": "bellman1958",
+      "title": "On a Routing Problem",
+      "authors": "Richard Bellman",
+      "year": 1958,
+      "venue": "Quarterly of Applied Mathematics, Vol. 16, No. 1, pp. 87-90",
+      "result": "O(mn) SSSP with negative weights (no negative cycles)",
+      "technique": "Dynamic programming / relaxation-based approach. Iteratively relaxes all edges for (n-1) rounds. In each round, for every edge (u,v), update dist(v) = min(dist(v), dist(u) + w(u,v)). After (n-1) rounds, all shortest paths with at most (n-1) edges are found. An additional round detects negative cycles. Also attributed to Ford (1956) and Moore (1959).",
+      "model": "comparison-addition (general weights)",
+      "semantic_scholar_id": null,
+      "arxiv_id": null,
+      "notes": "The foundational algorithm for SSSP with negative weights. Independently discovered by Shimbel (1955), Ford (1956), Bellman (1958), and Moore (1959). The O(mn) bound stood as the best for real-weighted graphs with negative edges for nearly 70 years until Fineman (STOC 2024). Widely used in practice via distance-vector routing protocols (RIP)."
+    },
+    {
+      "key": "johnson1977",
+      "title": "Efficient Algorithms for Shortest Paths in Sparse Networks",
+      "authors": "Donald B. Johnson",
+      "year": 1977,
+      "venue": "Journal of the ACM, Vol. 24, No. 1, pp. 1-13",
+      "result": "O(V^2 log V + VE) all-pairs shortest paths with negative weights (no negative cycles)",
+      "technique": "Price function / reweighting technique. (1) Add auxiliary vertex q with zero-weight edges to all vertices. (2) Run Bellman-Ford from q to compute potentials h(v). (3) Reweight each edge (u,v) as w'(u,v) = w(u,v) + h(u) - h(v), making all weights non-negative. (4) Run Dijkstra from each vertex on the reweighted graph. (5) Recover original distances via d(u,v) = d'(u,v) + h(v) - h(u). The reweighting preserves shortest paths because for any s-t path, all intermediate h() values telescope.",
+      "model": "comparison-addition (general weights)",
+      "semantic_scholar_id": null,
+      "arxiv_id": null,
+      "notes": "Introduced the price function / potential reweighting technique that is fundamental to all subsequent negative-weight SSSP work. The concept that a valid price function phi makes all reduced costs w_phi(u,v) = w(u,v) + phi(u) - phi(v) non-negative is central to the Bernstein-Nanongkai-Wulff-Nilsen framework. Faster than Floyd-Warshall for sparse graphs."
+    },
+    {
+      "key": "gabow1989",
+      "title": "Faster Scaling Algorithms for Network Problems",
+      "authors": "Harold N. Gabow, Robert E. Tarjan",
+      "year": 1989,
+      "venue": "SIAM Journal on Computing, Vol. 18, No. 5, pp. 1013-1036",
+      "result": "O(m * sqrt(n) * log(nN)) for assignment/min-cost flow; implies O(m * sqrt(n) * log W) SSSP with negative integer weights",
+      "technique": "Bit-scaling technique for network optimization. Processes edge weights bit by bit from most significant to least significant. In each scaling phase, solves an approximate problem where weights are known to a certain precision, then refines. Uses the structure of integer weights to reduce the negative-weight SSSP problem to O(log W) iterations of a simpler problem. Each iteration involves finding shortest paths in a graph with bounded negative weights.",
+      "model": "word-RAM (integer weights, negative allowed)",
+      "semantic_scholar_id": "7157fd1dd9b973c21392550fc6f859ebe2359abc",
+      "arxiv_id": null,
+      "notes": "Established the O(m * sqrt(n) * log W) barrier for negative-weight SSSP that stood for over 30 years until Bernstein-Nanongkai-Wulff-Nilsen (2022). The scaling technique is conceptually foundational: the modern near-linear algorithms by Bernstein et al. and Bringmann et al. are also scaling algorithms, but replace the sqrt(n) factor with polylog(n) via low-diameter decompositions."
+    },
+    {
+      "key": "goldberg1995",
+      "title": "Scaling Algorithms for the Shortest Paths Problem",
+      "authors": "Andrew V. Goldberg",
+      "year": 1995,
+      "venue": "SIAM Journal on Computing, Vol. 24, No. 3, pp. 494-504",
+      "result": "O(m * sqrt(n) * log N) SSSP with negative integer weights, where N is magnitude of most negative weight",
+      "technique": "Scaling approach for shortest paths specifically. Processes weights bit by bit. At each scaling phase, a feasible price function from the previous phase is used as a warm start. The key insight: given a feasible price function p, the reduced cost graph has non-negative weights, so Dijkstra can solve SSSP. Each scaling phase requires O(m * sqrt(n)) work via Hungarian-method-style augmentation. Terminates after O(log N) scaling phases.",
+      "model": "word-RAM (integer weights, negative allowed)",
+      "semantic_scholar_id": "66edc6deb8c26c88c445ff81bfd3f25a9b17a2f8",
+      "arxiv_id": null,
+      "notes": "Complementary to Gabow-Tarjan 1989 with a cleaner presentation focused specifically on shortest paths. The price function / feasibility framework introduced here directly influenced the SPmain structure in Bernstein et al. 2022."
+    },
+    {
+      "key": "goldberg1993",
+      "title": "A Heuristic Improvement of the Bellman-Ford Algorithm",
+      "authors": "Andrew V. Goldberg, Tomasz Radzik",
+      "year": 1993,
+      "venue": "Applied Mathematics Letters, Vol. 6, pp. 3-6",
+      "result": "O(mn) worst-case SSSP with negative weights; significantly faster in practice than Bellman-Ford",
+      "technique": "Improved Bellman-Ford with topological ordering heuristic. Instead of relaxing all edges in arbitrary order, the algorithm identifies the subgraph of 'active' vertices (those whose distances decreased) and processes them in a topological order of SCCs. This avoids redundant relaxations and dramatically improves practical performance while maintaining the O(mn) worst-case bound. Also known as the GOR algorithm.",
+      "model": "comparison-addition (general weights)",
+      "semantic_scholar_id": "98c05561e8f1ed3608cd2313de39180c4c3c16a6",
+      "arxiv_id": null,
+      "notes": "The de facto practical standard for SSSP with negative weights for over 30 years. Extensively evaluated in Cherkassky-Goldberg-Radzik 1996. Implemented in NetworkX (goldberg_radzik). The SEA 2025 paper by Cassis et al. uses GOR as the primary baseline, finding the new near-linear algorithms can be up to 100x faster on hard instances."
+    },
+    {
+      "key": "cherkassky1996",
+      "title": "Shortest Paths Algorithms: Theory and Experimental Evaluation",
+      "authors": "Boris V. Cherkassky, Andrew V. Goldberg, Tomasz Radzik",
+      "year": 1996,
+      "venue": "Mathematical Programming, Vol. 73, pp. 129-174",
+      "result": "Comprehensive experimental study of shortest path algorithms including negative-weight variants",
+      "technique": "Systematic experimental evaluation of multiple SSSP algorithms across natural problem classes. Identifies strengths and weaknesses of various approaches (Bellman-Ford variants, GOR, SPFA, etc.) on different graph structures. Introduces the SPLIB benchmark suite with generators and hard instances for testing shortest path algorithms.",
+      "model": "N/A (experimental study)",
+      "semantic_scholar_id": "bc7f7f3e28aa404f9c1dd3e9a8a3ef20898bb96b",
+      "arxiv_id": null,
+      "notes": "Highly influential experimental study with 570+ citations. The benchmark instances from this work (and the Cherkassky-Goldberg 2009 extension) are used by the SEA 2025 paper as the primary test suite. Established that GOR is the overall fastest practical algorithm for negative-weight SSSP."
+    },
+    {
+      "key": "bernstein2022",
+      "title": "Negative-Weight Single-Source Shortest Paths in Near-linear Time",
+      "authors": "Aaron Bernstein, Danupon Nanongkai, Christian Wulff-Nilsen",
+      "year": 2022,
+      "venue": "FOCS 2022 (63rd IEEE Symposium on Foundations of Computer Science), pp. 600-611; Journal of the ACM 2025",
+      "result": "O(m log^8(n) log W) randomized SSSP with negative integer weights",
+      "technique": "SPmain framework with scaling + low-diameter decomposition (LDD). The algorithm is a scaling algorithm that processes weights bit by bit. The key innovation is using LDDs on directed graphs: (1) Decompose the graph into low-diameter SCCs by cutting O(m log^2(n) / D) edges. (2) Within each SCC, shortest paths have hop-length O(D). (3) Use a 'price function fixing' procedure (FixDAGEdges) to handle inter-component edges. (4) Recursive structure: SPmain calls ElimNeg (which eliminates negative edges using LDD), which calls itself recursively with smaller diameter parameter. The LDD is computed by running Dijkstra on the graph with a virtual source. Randomized rounding is used to convert real-valued price functions to integer ones while maintaining feasibility.",
+      "model": "word-RAM (integer weights, negative allowed, randomized)",
+      "semantic_scholar_id": "d3ac165d96ca33f3eeb151ba740f85e0626f504c",
+      "arxiv_id": "2203.03456",
+      "notes": "A landmark breakthrough. First algorithm to break the O(m sqrt(n) log W) barrier from 1989. The algorithm is purely combinatorial (no continuous optimization). Key conceptual insight: LDD, which only works for non-negative weights, can be bootstrapped to handle negative weights via the scaling framework. The SPmain framework has become the template for all subsequent improvements. 55+ citations. Best Paper Award nomination at FOCS 2022."
+    },
+    {
+      "key": "bringmann2023",
+      "title": "Negative-Weight Single-Source Shortest Paths in Near-Linear Time: Now Faster!",
+      "authors": "Karl Bringmann, Alejandro Cassis, Nick Fischer",
+      "year": 2023,
+      "venue": "FOCS 2023 (64th IEEE Symposium on Foundations of Computer Science), pp. 515-538",
+      "result": "O(m log^2(n) log(nW) log log n) randomized SSSP with negative integer weights",
+      "technique": "Improves Bernstein et al. 2022 by nearly six log factors. Key improvements: (1) Replace priority queue in Dijkstra with a more efficient structure (easy log shaving). (2) Design a new negative-cycle detection algorithm reminiscent of noisy binary search, analyzed via drift analysis. (3) New construction for computing directed LDDs more efficiently. (4) Streamlined recursive structure that reduces the number of recursive levels in SPmain. The algorithm retains the overall SPmain framework but with tighter analysis and cleaner subroutines.",
+      "model": "word-RAM (integer weights, negative allowed, randomized)",
+      "semantic_scholar_id": "85b581165a3eb3cde734f534300a44ee8b6a858f",
+      "arxiv_id": "2304.05279",
+      "notes": "The current best sequential randomized bound for negative-weight SSSP with integer weights (up to the Li-Mowry-Rao improvement which shaves another log factor). The simplification makes the algorithm more amenable to practical implementation (see Cassis et al. SEA 2025). 26+ citations."
+    },
+    {
+      "key": "cassis2025",
+      "title": "Algorithm Engineering of SSSP with Negative Edge Weights",
+      "authors": "Alejandro Cassis, Andreas Karrenbauer, Andre Nusser, Paolo Luigi Rinaldi",
+      "year": 2025,
+      "venue": "SEA 2025 (23rd International Symposium on Experimental Algorithms), LIPIcs Vol. 338, pp. 10:1-10:20",
+      "result": "First practical implementation of near-linear negative-weight SSSP; up to ~100x faster than Goldberg-Radzik on hardest instances",
+      "technique": "Practical implementation of Bringmann-Cassis-Fischer 2023 algorithm. Key engineering decisions: (1) SCC decomposition as preprocessing via Kosaraju-Sharir algorithm. (2) Use LazyDijkstra for price function computation on graphs with few negative edges per path. (3) Empirical parameter tuning for the recursive decomposition depth and LDD diameter parameter. (4) Comparison against GOR (Goldberg-Radzik) baseline on Cherkassky-Goldberg benchmark instances. Found that on hard instance types, the near-linear algorithm is faster by up to almost two orders of magnitude.",
+      "model": "N/A (algorithm engineering / experimental study)",
+      "semantic_scholar_id": null,
+      "arxiv_id": "2502.11999",
+      "notes": "First extensive investigation toward making the Bringmann et al. 2023 algorithm practical. Demonstrates that the recent theoretical breakthroughs are not merely theoretical curiosities but can yield significant practical speedups on hard instances. DOI: 10.4230/LIPIcs.SEA.2025.10."
+    },
+    {
+      "key": "fineman2024",
+      "title": "Single-Source Shortest Paths with Negative Real Weights in O-tilde(m n^{8/9}) Time",
+      "authors": "Jeremy T. Fineman",
+      "year": 2024,
+      "venue": "STOC 2024 (56th ACM Symposium on Theory of Computing), Best Paper Award",
+      "result": "O-tilde(m n^{8/9}) randomized SSSP with negative real weights",
+      "technique": "First sub-Bellman-Ford algorithm for real-valued negative weights (not requiring integrality). Uses hop-limited SSSP, price functions for reweighting, and a notion of 'betweenness' to incrementally eliminate negative edges. The algorithm samples random vertex subsets, computes bounded-hop shortest paths, and uses the resulting price functions to neutralize negative edges. Unlike the scaling approach of Bernstein et al. (which requires integer weights for bit-scaling), this works for arbitrary real weights.",
+      "model": "comparison-addition (real weights, negative allowed, randomized)",
+      "semantic_scholar_id": "36781fef1d7ccef626d70ee6dd0cc60edf4dda0d",
+      "arxiv_id": "2311.02520",
+      "notes": "Broke the 70-year-old O(mn) Bellman-Ford barrier for real-weighted graphs. Won Best Paper Award at STOC 2024. Opened a new line of research on negative real-weight SSSP that led to rapid subsequent improvements by Huang-Jin-Quanrud and Li-Li-Rao-Zhang."
+    },
+    {
+      "key": "huang2025",
+      "title": "Faster Single-Source Shortest Paths with Negative Real Weights via Proper Hop Distance",
+      "authors": "Yufan Huang, Peter Jin, Kent Quanrud",
+      "year": 2025,
+      "venue": "SODA 2025 (36th ACM-SIAM Symposium on Discrete Algorithms), pp. 5239-5244",
+      "result": "O-tilde(m n^{4/5}) randomized SSSP with negative real weights",
+      "technique": "Builds on Fineman's hop-reduction framework with a refined notion of 'proper hop distance' that more efficiently measures progress toward eliminating negative edges. Improves the exponent from 8/9 to 4/5. The same authors subsequently improved to O-tilde(m n^{3/4} + m^{4/5} n) via bootstrapping hop reducers.",
+      "model": "comparison-addition (real weights, negative allowed, randomized)",
+      "semantic_scholar_id": "d6e314985b2a39a3c7aadf31bbd1fcd23e8c3628",
+      "arxiv_id": "2407.04872",
+      "notes": "Continued rapid progress on real-weight negative SSSP. Purdue University team. The gap between real-weight (polynomial in n) and integer-weight (near-linear in m) negative SSSP remains a major open question."
+    },
+    {
+      "key": "li2025",
+      "title": "Faster Negative-Weight Shortest Paths and Directed Low-Diameter Decompositions",
+      "authors": "Jason Li, Connor Mowry, Satish Rao",
+      "year": 2025,
+      "venue": "arXiv preprint October 2025; to appear at SODA 2026",
+      "result": "O((m + n log log n) log(nW) log n log log n) randomized SSSP with negative integer weights",
+      "technique": "Faster directed LDD algorithm that matches the O(log n log log n) edge-cutting probability of Bringmann-Fischer-Haeupler-Latypov (ICALP 2025) while achieving running time O((m + n log log n) log n log log n). Applies the faster LDD to the SPmain framework to shave a nearly log factor from Bringmann-Cassis-Fischer 2023.",
+      "model": "word-RAM (integer weights, negative allowed, randomized)",
+      "semantic_scholar_id": "cb8af4e6f279aeacd77c9a548aae68af7a974568",
+      "arxiv_id": "2510.22721",
+      "notes": "Currently the fastest known randomized algorithm for negative-weight SSSP with integer weights. Demonstrates that further improvements to directed LDD directly translate to faster SSSP."
+    },
+    {
+      "key": "bringmann2025_ldd",
+      "title": "Near-Optimal Directed Low-Diameter Decompositions",
+      "authors": "Karl Bringmann, Nick Fischer, Bernhard Haeupler, Rustam Latypov",
+      "year": 2025,
+      "venue": "ICALP 2025 (52nd International Colloquium on Automata, Languages, and Programming), LIPIcs Vol. 334, pp. 35:1-35:18",
+      "result": "Directed LDD with edge-cutting probability O((1/D) log n log log n), approaching the Omega(log n) lower bound",
+      "technique": "Reveals a natural connection between directed Low-Diameter Decompositions and Expander Decompositions. Leveraging this connection, establishes LDD with edge-cutting probability O((1/D) log n log log n), improving the O((1/D) log^2 n) of Bernstein et al. 2022. This is close to the Omega(log n / D) lower bound that holds even for undirected graphs. Efficient randomized algorithm runs in O(m log^5 n log log n) time.",
+      "model": "word-RAM (integer weights, randomized)",
+      "semantic_scholar_id": "2f6428a3a7364f55c34df3f831dcca8ac8dfc0d5",
+      "arxiv_id": "2502.05687",
+      "notes": "Key infrastructure result: improving directed LDD quality directly improves negative-weight SSSP running time. The connection to expander decompositions opens new avenues for further improvement."
+    },
+    {
+      "key": "haeupler2025_det",
+      "title": "Deterministic Negative-Weight Shortest Paths in Nearly Linear Time via Path Covers",
+      "authors": "Bernhard Haeupler, Yonggang Jiang, Thatchaphol Saranurak",
+      "year": 2025,
+      "venue": "arXiv preprint November 2025",
+      "result": "O-tilde(m) * log(nW) deterministic SSSP with negative integer weights",
+      "technique": "First deterministic near-linear time algorithm for negative-weight SSSP. Introduces 'path covers' for directed graphs as a deterministic alternative to probabilistic LDDs. Path covers play a role analogous to neighborhood covers in undirected graphs. Overcomes the key barrier that all prior near-linear algorithms relied on randomized LDDs. The path cover construction is the main technical contribution.",
+      "model": "word-RAM (integer weights, negative allowed, deterministic)",
+      "semantic_scholar_id": "9ab8588f5d93dcaeb2203ce4b986dba83596ad2f",
+      "arxiv_id": "2511.08551",
+      "notes": "Landmark derandomization result. All prior near-linear time algorithms for negative-weight SSSP were inherently randomized due to reliance on probabilistic LDDs. Independent concurrent work by Jason Li (arXiv 2511.07859) achieves the same via padded decompositions."
+    },
+    {
+      "key": "li2025_det",
+      "title": "Deterministic Padded Decompositions and Negative-Weight Shortest Paths",
+      "authors": "Jason Li",
+      "year": 2025,
+      "venue": "arXiv preprint November 2025",
+      "result": "Near-linear time deterministic SSSP with negative integer weights",
+      "technique": "Replaces the probabilistic low-diameter decompositions from prior work with a deterministic padded graph decomposition technique. The padded decomposition ensures that for each vertex, a sufficient neighborhood is preserved within some cluster, enabling the recursive elimination of negative edges without randomization.",
+      "model": "word-RAM (integer weights, negative allowed, deterministic)",
+      "semantic_scholar_id": "6224889238fe9409fdcba2df6a7e2928c2e676c2",
+      "arxiv_id": "2511.07859",
+      "notes": "Independent concurrent work with Haeupler-Jiang-Saranurak 2025. Both papers resolve the open question of whether randomization is necessary for near-linear negative-weight SSSP. 3+ citations."
+    },
+    {
+      "key": "li2025_shortcut",
+      "title": "Shortcutting for Negative-Weight Shortest Paths",
+      "authors": "George Z. Li, Jason Li, Satish Rao, Ruoyan Zhang",
+      "year": 2025,
+      "venue": "arXiv preprint November 2025",
+      "result": "O(n^{2.5} log^{4.5} n) SSSP with negative real weights",
+      "technique": "Shortcutting framework for negative-weight SSSP on dense graphs. Iteratively augments the graph with shortcut edges to reduce the negative hop count. Improves upon Fineman (STOC 2024) and Huang-Jin-Quanrud (SODA 2025) on dense graphs where m = Theta(n^2).",
+      "model": "comparison-addition (real weights, negative allowed, randomized)",
+      "semantic_scholar_id": "58a023fd0d2d481dda075ab9dcd0f801d1b4564d",
+      "arxiv_id": "2511.12714",
+      "notes": "Best known bound for dense graphs with negative real weights. On dense graphs, improves over the O-tilde(mn^{4/5}) of Huang-Jin-Quanrud."
+    },
+    {
+      "key": "ashvinkumar2024",
+      "title": "Parallel, Distributed, and Quantum Exact Single-Source Shortest Paths with Negative Edge Weights",
+      "authors": "Vikrant Ashvinkumar, Aaron Bernstein, Nairen Cao, Christoph Grunau, Bernhard Haeupler, Yonggang Jiang, Danupon Nanongkai, Hsin-Hao Su",
+      "year": 2024,
+      "venue": "ESA 2024 (32nd European Symposium on Algorithms), LIPIcs Vol. 308",
+      "result": "O-tilde(m) work parallel algorithm for negative-weight SSSP; extends to distributed (CONGEST) and quantum models",
+      "technique": "Reduces negative-weight SSSP in parallel/distributed/quantum settings to n^{o(1)} calls to any SSSP algorithm that works with a virtual source. The key insight is that the directed LDD computation from Bernstein et al. 2022 can be efficiently parallelized by reducing it to non-negative-weight SSSP computations with virtual sources.",
+      "model": "parallel/distributed/quantum (integer weights, negative allowed)",
+      "semantic_scholar_id": "8099295f3dcf13bb31c4705c56244f6a83011e25",
+      "arxiv_id": "2303.00811",
+      "notes": "Shows the generality of the Bernstein et al. framework: it extends naturally to parallel, distributed, and quantum computation models. DOI: 10.4230/LIPIcs.ESA.2024.13."
+    },
+    {
+      "key": "khanna2026",
+      "title": "An n^{2+o(1)} Time Algorithm for Single-Source Negative Weight Shortest Paths",
+      "authors": "Sanjeev Khanna, Junkai Song",
+      "year": 2026,
+      "venue": "arXiv preprint 2026",
+      "result": "n^{2+o(1)} randomized SSSP with negative real weights",
+      "technique": "Builds on the hop-reduction via shortcutting framework of Li-Li-Rao-Zhang (2025). Introduces a compression technique using auxiliary Steiner vertices to represent large neighborhoods compactly, enabling efficient shortcut generation and propagation while controlling vertex degree growth. The n^{2+o(1)} bound is essentially optimal for dense graphs since Omega(n^2) time is needed just to read the input.",
+      "model": "comparison-addition (real weights, negative allowed, randomized)",
+      "semantic_scholar_id": "bec88ff8b496548207215d517042697b90fe7a27",
+      "arxiv_id": null,
+      "notes": "Achieves essentially optimal running time for dense graphs. The first almost-linear time algorithm for the problem on dense graphs (m = omega(n^{1.306})). From University of Pennsylvania."
+    }
+  ],
+  "summary": {
+    "integer_weights_randomized": {
+      "best_known": {
+        "paper": "li2025",
+        "bound": "O((m + n log log n) log(nW) log n log log n)",
+        "deterministic": false,
+        "notes": "Li, Mowry, Rao (SODA 2026) via faster directed LDD. Nearly log-factor improvement over Bringmann-Cassis-Fischer 2023."
+      },
+      "key_milestones": [
+        {"paper": "bellman1958", "bound": "O(mn)", "year": 1958},
+        {"paper": "gabow1989", "bound": "O(m sqrt(n) log W)", "year": 1989},
+        {"paper": "bernstein2022", "bound": "O(m log^8(n) log W)", "year": 2022},
+        {"paper": "bringmann2023", "bound": "O(m log^2(n) log(nW) log log n)", "year": 2023},
+        {"paper": "li2025", "bound": "O((m + n log log n) log(nW) log n log log n)", "year": 2025}
+      ]
+    },
+    "integer_weights_deterministic": {
+      "best_known": {
+        "papers": ["haeupler2025_det", "li2025_det"],
+        "bound": "O-tilde(m) * log(nW)",
+        "deterministic": true,
+        "notes": "Two independent concurrent results from November 2025 (Haeupler-Jiang-Saranurak via path covers; Jason Li via padded decompositions). First deterministic near-linear time algorithms."
+      }
+    },
+    "real_weights": {
+      "best_known_sparse": {
+        "paper": "huang2025",
+        "bound": "O-tilde(m n^{4/5})",
+        "deterministic": false,
+        "notes": "Huang, Jin, Quanrud (SODA 2025). Subsequently improved to O-tilde(mn^{3/4} + m^{4/5} n) by same authors."
+      },
+      "best_known_dense": {
+        "paper": "khanna2026",
+        "bound": "n^{2+o(1)}",
+        "deterministic": false,
+        "notes": "Khanna, Song (2026). Essentially optimal for m = Theta(n^2)."
+      },
+      "key_milestones": [
+        {"paper": "bellman1958", "bound": "O(mn)", "year": 1958},
+        {"paper": "fineman2024", "bound": "O-tilde(mn^{8/9})", "year": 2024},
+        {"paper": "huang2025", "bound": "O-tilde(mn^{4/5})", "year": 2025},
+        {"paper": "li2025_shortcut", "bound": "O(n^{2.5} log^{4.5} n) for dense", "year": 2025},
+        {"paper": "khanna2026", "bound": "n^{2+o(1)} for dense", "year": 2026}
+      ]
+    },
+    "key_techniques": {
+      "price_functions": "A price function phi: V -> R defines reduced costs w_phi(u,v) = w(u,v) + phi(u) - phi(v). A feasible price function makes all reduced costs non-negative. Shortest paths are preserved under reweighting because for any path s -> t, the total weight changes by phi(s) - phi(t) regardless of the path taken. Introduced by Johnson (1977). Central to all scaling algorithms.",
+      "scaling": "Process integer weights bit-by-bit from MSB to LSB. Each phase doubles the precision of the price function. After O(log W) phases, the price function is exact. At each phase, the residual negative weights are bounded, enabling efficient elimination. Introduced by Gabow-Tarjan (1989) and Goldberg (1995). The SPmain framework of Bernstein et al. uses this as the outer loop.",
+      "directed_LDD": "Low-Diameter Decomposition for directed graphs: partition vertices so each SCC has weak diameter at most D, cutting each edge with probability O(log^c(n) / D). Bernstein et al. 2022 introduced directed LDD (c=2). Bringmann et al. ICALP 2025 improved to c = 1 + o(1), near the Omega(log n / D) lower bound. The LDD is computed by running Dijkstra from a virtual source with random initial distances. Directed LDD is the key ingredient that enables near-linear time within each scaling phase.",
+      "spmain_framework": "The recursive framework from Bernstein et al. 2022: SPmain(G, s) calls ElimNeg(G) to compute a feasible price function, then runs Dijkstra on the reweighted graph. ElimNeg uses LDD to decompose G, recursively solves shorter-diameter subproblems within each SCC, then fixes inter-component edges via FixDAGEdges. The recursion depth is O(log n) with diameter halving at each level.",
+      "randomized_rounding": "In the Bernstein et al. framework, the scaling procedure produces real-valued intermediate price functions that must be rounded to integers. Randomized rounding (adding uniform random noise before rounding) ensures that each edge's reduced cost is non-negative with high probability, maintaining the feasibility invariant across recursive levels.",
+      "hop_reduction_for_real_weights": "For real-valued negative weights (where scaling is unavailable), Fineman (2024) introduced hop reduction: iteratively add shortcut edges to reduce the 'negative hop count' (number of negative-weight edges) on shortest paths. This is the key technique that breaks the Bellman-Ford barrier for real weights."
+    },
+    "key_insights": [
+      "The negative-weight SSSP problem has two fundamentally different regimes: integer weights (where scaling gives near-linear time) and real weights (where polynomial gaps remain).",
+      "The 2022 Bernstein-Nanongkai-Wulff-Nilsen breakthrough was purely combinatorial, requiring only graph decomposition and elementary tools, in contrast to prior continuous-optimization approaches.",
+      "Directed Low-Diameter Decomposition is the single most important subroutine: improving its quality directly improves SSSP running time.",
+      "The price function / reweighting technique from Johnson (1977) is the conceptual foundation for all modern negative-weight SSSP algorithms.",
+      "Deterministic near-linear time was achieved in late 2025 via two independent approaches (path covers and padded decompositions), resolving whether randomization is inherent.",
+      "Practical implementations (SEA 2025) show the theoretical algorithms can outperform the classical Goldberg-Radzik algorithm by up to 100x on hard instances.",
+      "For real weights, the gap between O-tilde(mn^{4/5}) and near-linear remains a major open question."
+    ],
+    "open_questions": [
+      "Can negative-weight SSSP with real weights be solved in near-linear time, or is there a polynomial separation from the integer case?",
+      "What is the optimal directed LDD quality? The current best is O(log n log log n / D) vs. the Omega(log n / D) lower bound.",
+      "Can the practical constant factors of the near-linear algorithms be further reduced to make them competitive with Bellman-Ford on easy instances?",
+      "Is there a deterministic near-linear time algorithm for negative-weight SSSP that is also practically efficient?"
+    ]
+  }
+}
