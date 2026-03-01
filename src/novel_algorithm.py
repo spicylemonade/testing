@@ -147,6 +147,60 @@ class BALTHPreprocessing:
                 best = max(best, d_s_lm - d_v_lm)
         return max(best, 0.0)
 
+    def select_active_landmarks(self, source: int, target: int,
+                                k_active: int = 2) -> List[int]:
+        """Select the top-k landmarks that give the best lower bounds for (s,t).
+
+        Optimization 1: Instead of iterating all landmarks per node expansion,
+        pre-select the most effective landmarks for this specific query pair.
+        """
+        if not self.landmarks:
+            return []
+        scores = []
+        for i in range(len(self.landmarks)):
+            d_lm_s = self.landmark_dist_from[i].get(source, INF)
+            d_lm_t = self.landmark_dist_from[i].get(target, INF)
+            d_s_lm = self.landmark_dist_to[i].get(source, INF)
+            d_t_lm = self.landmark_dist_to[i].get(target, INF)
+            lb = 0.0
+            if d_lm_s < INF and d_lm_t < INF:
+                lb = max(lb, abs(d_lm_t - d_lm_s))
+            if d_s_lm < INF and d_t_lm < INF:
+                lb = max(lb, abs(d_s_lm - d_t_lm))
+            scores.append((lb, i))
+        scores.sort(reverse=True)
+        return [i for _, i in scores[:k_active]]
+
+    def lower_bound_forward_active(self, v: int, target: int,
+                                   active: List[int]) -> float:
+        """Lower bound using only active (pre-selected) landmarks."""
+        best = 0.0
+        for i in active:
+            d_lm_v = self.landmark_dist_from[i].get(v, INF)
+            d_lm_t = self.landmark_dist_from[i].get(target, INF)
+            d_v_lm = self.landmark_dist_to[i].get(v, INF)
+            d_t_lm = self.landmark_dist_to[i].get(target, INF)
+            if d_lm_v < INF and d_lm_t < INF:
+                best = max(best, d_lm_t - d_lm_v)
+            if d_v_lm < INF and d_t_lm < INF:
+                best = max(best, d_v_lm - d_t_lm)
+        return max(best, 0.0)
+
+    def lower_bound_backward_active(self, v: int, source: int,
+                                    active: List[int]) -> float:
+        """Lower bound using only active (pre-selected) landmarks."""
+        best = 0.0
+        for i in active:
+            d_lm_s = self.landmark_dist_from[i].get(source, INF)
+            d_lm_v = self.landmark_dist_from[i].get(v, INF)
+            d_s_lm = self.landmark_dist_to[i].get(source, INF)
+            d_v_lm = self.landmark_dist_to[i].get(v, INF)
+            if d_lm_s < INF and d_lm_v < INF:
+                best = max(best, d_lm_s - d_lm_v)
+            if d_s_lm < INF and d_v_lm < INF:
+                best = max(best, d_s_lm - d_v_lm)
+        return max(best, 0.0)
+
     def hub_upper_bound(self, source: int, target: int) -> float:
         """Compute upper bound via hub vertices: min over hubs of d(h,s)+d(h,t).
 
@@ -164,12 +218,21 @@ class BALTHPreprocessing:
 
 
 def balth_query(graph: Graph, source: int, target: int,
-                prep: BALTHPreprocessing) -> Tuple[float, int]:
+                prep: BALTHPreprocessing,
+                opt_active_landmarks: bool = True,
+                opt_settled_pruning: bool = True,
+                k_active: int = 2) -> Tuple[float, int]:
     """BALT-H point-to-point shortest path query.
 
     Uses bidirectional Dijkstra (g-value ordered heaps) for correctness,
     with landmark lower bounds for pruning individual nodes, and hub
     upper bounds for early mu initialization.
+
+    Togglable optimizations:
+        opt_active_landmarks: Pre-select top-k landmarks per query to reduce
+            per-node lower bound computation from O(k_landmarks) to O(k_active).
+        opt_settled_pruning: Skip edge relaxation to already-settled nodes,
+            avoiding unnecessary heap pushes.
 
     Returns (distance, nodes_expanded).
     """
@@ -178,6 +241,15 @@ def balth_query(graph: Graph, source: int, target: int,
 
     # Initialize best known distance with hub upper bound
     mu = prep.hub_upper_bound(source, target)
+
+    # Optimization 1: Pre-select active landmarks for this query
+    if opt_active_landmarks and prep.landmarks:
+        active = prep.select_active_landmarks(source, target, k_active)
+        lb_forward = lambda v: prep.lower_bound_forward_active(v, target, active)
+        lb_backward = lambda v: prep.lower_bound_backward_active(v, source, active)
+    else:
+        lb_forward = lambda v: prep.lower_bound_forward(v, target)
+        lb_backward = lambda v: prep.lower_bound_backward(v, source)
 
     # Build reverse adjacency for directed graphs
     if graph.directed:
@@ -228,12 +300,15 @@ def balth_query(graph: Graph, source: int, target: int,
             if u in dist_b:
                 mu = min(mu, g + dist_b[u])
 
-            # Landmark pruning: if g + h_forward(u) >= mu, skip expansion
-            lb = prep.lower_bound_forward(u, target)
+            # Landmark pruning: if g + lb >= mu, skip expansion
+            lb = lb_forward(u)
             if g + lb >= mu:
                 continue
 
             for v, w in graph.neighbors(u):
+                # Optimization 2: skip relaxation to already-settled nodes
+                if opt_settled_pruning and v in settled_f:
+                    continue
                 ng = g + w
                 if ng < dist_f.get(v, INF):
                     dist_f[v] = ng
@@ -252,12 +327,15 @@ def balth_query(graph: Graph, source: int, target: int,
             if u in dist_f:
                 mu = min(mu, g + dist_f[u])
 
-            # Landmark pruning: if g + h_backward(u) >= mu, skip expansion
-            lb = prep.lower_bound_backward(u, source)
+            # Landmark pruning: if g + lb >= mu, skip expansion
+            lb = lb_backward(u)
             if g + lb >= mu:
                 continue
 
             for v, w in _rev_neighbors(u):
+                # Optimization 2: skip relaxation to already-settled nodes
+                if opt_settled_pruning and v in settled_b:
+                    continue
                 ng = g + w
                 if ng < dist_b.get(v, INF):
                     dist_b[v] = ng
