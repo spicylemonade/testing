@@ -1,0 +1,292 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-01T00:00:00Z",
+  "updated_at": "2026-03-01T20:08:33.182727+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-01T00:00:00Z",
+      "completed_at": "2026-03-01T20:08:33.182702+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and research infrastructure",
+          "acceptance_criteria": "Produce a written document (repo_analysis.md) listing all files, modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, figures/, results/), their purposes, and how they support the SSSP research workflow. Must cover concept evolution, semantic scholar integration, and output directories.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive web search for classical and modern SSSP algorithms",
+          "acceptance_criteria": "Search the web for papers on: (1) Dijkstra's algorithm with Fibonacci heaps (Fredman & Tarjan 1987), (2) Thorup's linear-time SSSP for undirected integer-weight graphs (1999), (3) Pettie-Ramachandran optimal SSSP (2005), (4) Goldberg's shortest-path algorithms using integer data structures. Summarize each result's model, graph class, weight assumptions, and time complexity in a comparison table (literature_survey.md).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Survey recent breakthroughs: BNW 2022, Bringmann et al. 2023, Haeupler et al. 2024, Duan et al. 2025",
+          "acceptance_criteria": "Search the web and use .archivara/semantic_scholar.py to locate and summarize: (1) Bernstein-Nanongkai-Wulff-Nilsen FOCS 2022 negative-weight SSSP in O(m log^8(n) log W), (2) Bringmann-Cassis-Fischer 2023 improvement to O(m log^2(n) log(nW) log log n), (3) Haeupler et al. FOCS 2024 universal optimality of Dijkstra for distance ordering, (4) Duan-Mao-Mao-Shu-Yin STOC 2025 O(m log^{2/3} n) breaking the sorting barrier, (5) the follow-up achieving O(m sqrt(log n) + sqrt(mn log n log log n)). Document key techniques: directed LDDs, divide-and-conquer frontier reduction, FindPivots, interval-pivot mechanism, and batch prepend data structures. Append to literature_survey.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Investigate computational models, lower bounds, and conditional hardness results for SSSP",
+          "acceptance_criteria": "Search the web for: (1) comparison-addition model lower bounds for SSSP, (2) the relationship between SSSP and sorting (why Dijkstra implies Omega(n log n) in comparison model), (3) Haeupler et al. 2024 proof that Dijkstra is optimal IF vertex ordering is required, (4) word-RAM model advantages (Thorup), (5) conditional lower bounds for dynamic SSSP. Document the separation between models and identify which model the novel algorithm should target. Write model_analysis.md with at least 3 distinct models compared.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted works",
+          "acceptance_criteria": "Create sources.bib in the repo root containing valid BibTeX entries for at least 15 relevant papers. Must include entries for: Fredman-Tarjan 1987, Thorup 1999, Pettie-Ramachandran 2005, Bernstein-Nanongkai-Wulff-Nilsen 2022, Bringmann-Cassis-Fischer 2023, Haeupler-Hladik-Rozhon-Tarjan-Tetek 2024, Duan-Mao-Mao-Shu-Yin 2025, Bellman 1958, Gabow-Tarjan 1989, and at least 6 additional related works. Each entry must have title, author, year, and venue fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Formalize the research problem and identify open directions for improvement",
+          "acceptance_criteria": "Write problem_formulation.md defining: (1) the exact computational problem (single-source shortest paths on weighted directed graphs with real non-negative edge weights), (2) the comparison-addition model formally, (3) the current best bound of O(m log^{2/3} n) by Duan et al. 2025, (4) at least 3 concrete open directions (e.g., reducing the log^{2/3} n factor, extending to negative weights in sublogarithmic overhead, closing the gap to linear time on sparse directed graphs, new data-structural primitives). Cite at least 5 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement graph data structures and parameterized graph generators",
+          "acceptance_criteria": "Create a Python module (src/graph.py) implementing: (1) adjacency-list representation for weighted directed graphs, (2) generators for random sparse graphs (m = O(n)), dense graphs (m = Theta(n^2)), grid graphs, and layered DAGs, (3) a reader for standard graph formats (DIMACS or edge-list). All generators must accept n, m, and weight-range parameters. Include at least 5 unit tests verifying graph properties (vertex count, edge count, weight bounds).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement Dijkstra's algorithm with Fibonacci heap as the primary baseline",
+          "acceptance_criteria": "Create src/dijkstra.py implementing Dijkstra's SSSP with a Fibonacci heap (or a faithful simulation achieving O(m + n log n) amortized). Must return both distance array and predecessor array. Verify correctness on at least 3 graph families (sparse random, dense random, grid) with n >= 1000 by comparing against a brute-force Bellman-Ford on small instances. Include operation counters for comparisons, additions, and decrease-key calls.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement Bellman-Ford and a simple Dijkstra with binary heap as secondary baselines",
+          "acceptance_criteria": "Create src/bellman_ford.py (O(mn) baseline supporting negative weights) and src/dijkstra_binary.py (O(m log n) with binary heap). Both must pass the same correctness tests as item_008. Include operation counters consistent with the Fibonacci heap version for direct comparison.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Build benchmarking infrastructure with timing, operation counting, and profiling",
+          "acceptance_criteria": "Create src/benchmark.py that: (1) runs any SSSP algorithm on a given graph and measures wall-clock time, (2) counts comparison and addition operations, (3) supports sweeping over graph sizes (n from 2^10 to 2^20) and densities (m/n ratios of 2, 4, 8, 16, n), (4) outputs results as CSV to results/ directory. Demonstrate by generating baseline performance data for Dijkstra+Fibonacci on at least 3 graph families with at least 5 sizes each.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Establish baseline performance profiles and validate O(m + n log n) scaling",
+          "acceptance_criteria": "Run benchmarks from item_010 on Dijkstra+Fibonacci across graph sizes n = 2^10 to 2^20 for sparse (m=4n) and dense (m=n^{1.5}) graphs. Plot operation counts vs. (m + n log n) and verify the ratio converges to a constant (within 2x). Save plots to figures/baseline_scaling.png. Document observed constants and any deviations in results/baseline_report.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Analyze the Duan et al. 2025 divide-and-conquer framework and identify bottlenecks",
+          "acceptance_criteria": "Write a detailed technical analysis (analysis/duan_et_al_analysis.md) of the Duan et al. STOC 2025 algorithm covering: (1) the recursive structure and how subproblems are defined via distance intervals, (2) the FindPivots procedure and its O(m log^{2/3} n) contribution, (3) the frontier reduction technique, (4) the interval-pivot mechanism, (5) identify at least 2 specific algorithmic bottlenecks or components where improvement might be possible. Must cite the original paper and at least 2 related works from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Use concept evolution tools to discover cross-domain algorithmic insights",
+          "acceptance_criteria": "Run .archivara/concept_evolve.py in 'evolve' mode with the SSSP problem framing, then run 'probe' mode on at least 2 promising sub-problems (e.g., efficient frontier management, subproblem decomposition without full sorting). Save outputs to results/concept_evolve/. Extract at least 3 concrete algorithmic ideas from the cross-domain bridges (e.g., from information theory, topology, parallel computing, or compressed data structures). Document extracted ideas in analysis/cross_domain_ideas.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Design a novel algorithmic approach targeting improvement over O(m log^{2/3} n)",
+          "acceptance_criteria": "Write a formal algorithm description (analysis/novel_algorithm.md) specifying: (1) a precise pseudocode description of the proposed algorithm, (2) the key novel idea (e.g., improved decomposition, new data structure, tighter recurrence, hybrid approach, or relaxation of the comparison-addition model), (3) a claimed time complexity with justification of why it improves over O(m log^{2/3} n) on some or all graph families, (4) correctness argument sketching why all shortest-path distances are computed correctly. Must be self-contained and citable.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Develop rigorous theoretical complexity analysis of the proposed algorithm",
+          "acceptance_criteria": "Write analysis/complexity_proof.md containing: (1) formal theorem statement of the claimed complexity bound, (2) a recurrence relation for the algorithm's running time, (3) proof or detailed proof sketch resolving the recurrence, (4) analysis of each subroutine's contribution to the total cost, (5) comparison with Duan et al. 2025 showing where and why the improvement arises. All lemmas must have complete proofs or detailed proof outlines.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Prove correctness of the novel algorithm",
+          "acceptance_criteria": "Write analysis/correctness_proof.md containing: (1) a loop invariant or inductive argument establishing that the algorithm computes correct single-source distances, (2) formal treatment of edge cases (disconnected vertices, zero-weight edges, self-loops), (3) argument that the algorithm terminates, (4) comparison of the correctness structure with Dijkstra's relaxation invariant and Duan et al.'s recursive correctness argument. At least 2 complete lemma proofs required.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Implement the novel SSSP algorithm",
+          "acceptance_criteria": "Create src/novel_sssp.py implementing the algorithm from item_014. Must: (1) accept the same graph format as baselines, (2) return distance and predecessor arrays, (3) include operation counters (comparisons, additions) consistent with baselines, (4) pass correctness tests on all graph families used for baselines (item_008), (5) include at least 10 unit tests covering edge cases (single vertex, disconnected graph, uniform weights, very sparse, very dense).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Implement key data-structural components as standalone tested modules",
+          "acceptance_criteria": "Create src/data_structures.py containing any novel or specialized data structures required by the algorithm (e.g., batch-update priority queues, interval decomposition trees, or frontier management structures). Each data structure must have: (1) documented time complexity per operation, (2) at least 5 unit tests verifying correctness and operation counts, (3) a comparison note explaining how it differs from standard structures (Fibonacci heap, van Emde Boas tree, etc.).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_019",
+          "description": "Run operation-count experiments comparing novel algorithm against all baselines",
+          "acceptance_criteria": "Using the benchmarking infrastructure from item_010, run the novel algorithm and all baselines on: (1) sparse random directed graphs (m = 4n) for n = 2^10 to 2^20, (2) moderately dense graphs (m = n log n) for the same range, (3) dense graphs (m = n^{1.5}) for n = 2^10 to 2^16. Record comparison counts, addition counts, and total operation counts. Save raw data to results/experiment_operations.csv.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Run wall-clock timing experiments on realistic graph sizes",
+          "acceptance_criteria": "Measure wall-clock execution time for the novel algorithm and Dijkstra+Fibonacci on graph sizes n = 2^12 to 2^18 across sparse and dense regimes. Each measurement must be averaged over at least 5 runs with different random seeds. Save to results/experiment_timing.csv. Report median, mean, and standard deviation.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Perform scaling analysis to empirically validate the claimed complexity improvement",
+          "acceptance_criteria": "For the novel algorithm's operation counts on sparse graphs (m = O(n)), fit the data to the function f(n) = c * m * g(n) for candidate functions g(n) in {log^{2/3}(n), log^{1/2}(n), log^{1/3}(n), log(log(n)), 1}. Report R^2 values for each fit. Plot the ratio (operations) / (m * log^{2/3}(n)) vs. n and verify it is decreasing (indicating improvement over Duan et al.). Save plots to figures/scaling_analysis.png and analysis to results/scaling_report.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Test on structured graph families to characterize when the novel algorithm excels",
+          "acceptance_criteria": "Run experiments on at least 4 structured graph families beyond random graphs: (1) grid/mesh graphs, (2) layered DAGs, (3) small-world graphs (Watts-Strogatz), (4) power-law degree distribution graphs. For each family, compare operation counts of the novel algorithm vs. Dijkstra+Fibonacci. Identify and document in results/structured_graphs_report.md which families show the largest improvement and provide an explanation grounded in the algorithm's design.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Compare results against prior work cited in the literature review",
+          "acceptance_criteria": "Write results/comparison_with_prior_work.md that: (1) compares the novel algorithm's empirical operation counts to theoretical predictions for Dijkstra O(m + n log n) and Duan et al. O(m log^{2/3} n), (2) discusses whether the constants observed are practical, (3) references the experimental study of Duan et al. implementations (arXiv:2511.03007) noting that Dijkstra is 3-4x faster in practice and n > 10^67 was predicted for crossover, (4) positions the novel contribution relative to this landscape. Must cite at least 5 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Write comprehensive research report with theoretical and experimental results",
+          "acceptance_criteria": "Create report.md (or report.pdf via LaTeX) in the repo root containing: (1) Abstract summarizing the contribution, (2) Introduction with motivation and context citing at least 8 papers from sources.bib, (3) Preliminaries defining the model and problem, (4) Algorithm description with pseudocode, (5) Correctness proof, (6) Complexity analysis with full theorem and proof, (7) Experimental results with figures, (8) Discussion comparing with Duan et al. 2025 and other prior work, (9) Conclusion with open problems. Minimum 3000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Create publication-quality figures summarizing key results",
+          "acceptance_criteria": "Generate and save to figures/ at least 4 publication-quality plots: (1) operation count vs. graph size for all algorithms on sparse graphs, (2) operation count vs. graph size on dense graphs, (3) scaling ratio plot showing improvement over O(m + n log n), (4) structured graph family comparison heatmap or grouped bar chart. All figures must have labeled axes, legends, and captions. Use matplotlib or equivalent with consistent styling.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Finalize sources.bib and verify all citations are complete and correctly formatted",
+          "acceptance_criteria": "Update sources.bib to include all works cited in the report and analysis documents. Verify: (1) at least 20 total entries, (2) every citation key used in .md files has a corresponding entry, (3) all entries have author, title, year, and venue/journal fields, (4) no duplicate entries. Run a BibTeX validation check (or manual audit) confirming parsability.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Update README.md with project overview, reproduction instructions, and results summary",
+          "acceptance_criteria": "Rewrite README.md to include: (1) project title and one-paragraph summary of the contribution, (2) repository structure overview, (3) instructions to reproduce all experiments (dependencies, commands), (4) summary table of key results (algorithm, complexity, operation counts at n=2^18), (5) link to the full report. Must be self-contained enough for a reviewer to understand and reproduce the work.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
