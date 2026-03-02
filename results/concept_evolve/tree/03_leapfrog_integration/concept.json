@@ -1,0 +1,12 @@
+{
+  "symbolic_name": "LEAPFROG_CORE",
+  "description": "Kick-drift-kick symplectic integrator as the heartbeat of the simulation. Second-order, time-reversible, and energy-conserving over arbitrary time horizons. The minimal viable physics engine.",
+  "domains": [
+    "numerical_integration",
+    "celestial_mechanics",
+    "hamiltonian_systems"
+  ],
+  "mathematical_formalization": "v(t+dt/2) = v(t) + a(x(t)) * dt/2;  x(t+dt) = x(t) + v(t+dt/2) * dt;  v(t+dt) = v(t+dt/2) + a(x(t+dt)) * dt/2.  Symplectic map preserving the 2-form dp ^ dq on phase space.",
+  "implementation_hypothesis": "A single function `leapfrog_step(pos, vel, mass, dt, force_fn)` operating on Float64Arrays. Expected: energy drift < 1e-10 per orbit for Keplerian two-body. ~15 lines of Python/TS.",
+  "experiment_seed": "Compare energy drift of Euler vs leapfrog vs RK4 on a two-body Kepler orbit (e=0.5) over 1000 periods. Plot |dE/E| vs time. Leapfrog should show bounded oscillation while Euler/RK4 show secular drift."
+}

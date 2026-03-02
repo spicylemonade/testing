@@ -1,0 +1,12 @@
+{
+  "symbolic_name": "SOA_STATE",
+  "description": "Structure-of-Arrays (SoA) particle state: flat typed arrays for positions, velocities, and masses. Maximum cache coherence, minimal allocation, zero indirection. The anti-OOP particle system.",
+  "domains": [
+    "data_oriented_design",
+    "high_performance_computing",
+    "cache_optimization"
+  ],
+  "mathematical_formalization": "State S = (X, V, M) where X in R^(N x d), V in R^(N x d), M in R^N. All operations are batched: X' = X + V*dt is a single vectorized op over contiguous memory.",
+  "implementation_hypothesis": "In Python: numpy arrays of shape (N,2) for pos/vel, (N,) for mass. In TS: Float64Array(N*2) with stride-2 access. The entire simulation state is 5*N floats = 40KB for N=1000.",
+  "experiment_seed": "Benchmark AoS (array of Body objects) vs SoA (flat arrays) for N=100,1000,10000 force calculations. Measure wall-clock time. SoA should be 2-5x faster due to cache effects."
+}

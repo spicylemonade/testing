@@ -1,0 +1,12 @@
+{
+  "symbolic_name": "YOSHIDA_FOURTH_ORDER",
+  "description": "Fourth-order symplectic integrator via the Yoshida (1990) triple-jump composition of leapfrog steps. Error scales as O(dt^4) instead of O(dt^2), at 3x the cost per step. The sweet spot for precision-sensitive simulations.",
+  "domains": [
+    "symplectic_geometry",
+    "numerical_methods",
+    "perturbation_theory"
+  ],
+  "mathematical_formalization": "Coefficients: w1 = 1/(2 - 2^(1/3)), w0 = -2^(1/3)*w1.  Yoshida4(dt) = Leapfrog(w1*dt) . Leapfrog(w0*dt) . Leapfrog(w1*dt).  Three leapfrog steps with specific time-step weights that cancel third-order error terms.",
+  "implementation_hypothesis": "Literally 5 lines wrapping leapfrog_step: call it 3 times with w1*dt, w0*dt, w1*dt. The coefficients are constants. Entire implementation is trivial once leapfrog exists.",
+  "experiment_seed": "Richardson convergence test: run Kepler orbit with dt = 0.1, 0.01, 0.001, 0.0001 for both leapfrog and Yoshida4. Plot max |dE/E| vs dt on log-log. Leapfrog slope should be -2, Yoshida4 slope should be -4."
+}

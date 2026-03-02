@@ -1,0 +1,26 @@
+[
+  {
+    "id": "SD1",
+    "direction": "Symplectic-First Architecture",
+    "description": "Build the simulation around symplectic integrators from day one. Use leapfrog as the minimum viable integrator, then compose it into Yoshida 4th-order. This ensures energy conservation is architectural, not a post-hoc fix.",
+    "informs_items": ["item_008", "item_010", "item_013", "item_019"],
+    "priority": "highest",
+    "rationale": "Energy conservation is the primary correctness signal for any N-body simulation. A non-symplectic integrator (Euler, RK4) will show secular energy drift that compounds over time, making long-term simulations meaningless."
+  },
+  {
+    "id": "SD2",
+    "direction": "Vectorized SoA Data Layout",
+    "description": "Use Structure-of-Arrays (numpy arrays) rather than Array-of-Structs (Python objects). All particle state is flat numpy arrays: pos(N,d), vel(N,d), mass(N). Force computation is vectorized with broadcasting.",
+    "informs_items": ["item_006", "item_007", "item_012", "item_018"],
+    "priority": "high",
+    "rationale": "Python object overhead kills performance. Numpy vectorization gives 100x speedup over pure Python loops. This is the single biggest performance decision for a Python-based sim."
+  },
+  {
+    "id": "SD3",
+    "direction": "Hierarchical Force Approximation Path",
+    "description": "Implement Barnes-Hut tree as the scaling breakthrough. The concept path 01_newtonian_gravity -> 10_force_decomposition -> 05_barnes_hut_tree -> 09_vectorized_computation provides a natural progression from O(N^2) brute-force to O(N log N) tree code.",
+    "informs_items": ["item_012", "item_015", "item_016", "item_018", "item_021"],
+    "priority": "high",
+    "rationale": "Brute-force O(N^2) is a hard wall at N>1000. Barnes-Hut is the canonical solution and the minimal tree code that demonstrates scaling improvement."
+  }
+]

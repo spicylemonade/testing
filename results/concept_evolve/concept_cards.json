@@ -1,0 +1,294 @@
+[
+  {
+    "symbolic_name": "LEAPFROG_CORE",
+    "description": "Kick-drift-kick symplectic integrator as the heartbeat of the simulation. Second-order, time-reversible, and energy-conserving over arbitrary time horizons. The minimal viable physics engine.",
+    "domains": ["numerical_integration", "celestial_mechanics", "hamiltonian_systems"],
+    "mathematical_formalization": "v(t+dt/2) = v(t) + a(x(t)) * dt/2;  x(t+dt) = x(t) + v(t+dt/2) * dt;  v(t+dt) = v(t+dt/2) + a(x(t+dt)) * dt/2.  Symplectic map preserving the 2-form dp ^ dq on phase space.",
+    "analogical_connections": [
+      "Leapfrog <-> BFGS momentum in optimization (half-step velocity update)",
+      "Leapfrog <-> staggered-grid FDTD in electromagnetics (E and H fields offset by half a time step)",
+      "Symplecticity <-> area-preservation in Hamiltonian flow (Liouville's theorem)"
+    ],
+    "implementation_hypothesis": "A single function `leapfrog_step(pos, vel, mass, dt, force_fn)` operating on Float64Arrays. Expected: energy drift < 1e-10 per orbit for Keplerian two-body. ~15 lines of Python/TS.",
+    "experiment_seed": "Compare energy drift of Euler vs leapfrog vs RK4 on a two-body Kepler orbit (e=0.5) over 1000 periods. Plot |dE/E| vs time. Leapfrog should show bounded oscillation while Euler/RK4 show secular drift.",
+    "folder_plan": {
+      "files": ["src/integrators.py"],
+      "folders": ["tests/"],
+      "key_file": "src/integrators.py:leapfrog_step()"
+    }
+  },
+  {
+    "symbolic_name": "SOFTENED_GRAVITY",
+    "description": "Plummer softening replaces the 1/r^2 singularity with 1/(r^2 + epsilon^2), preventing infinite forces at close approach while preserving long-range Newtonian behavior. The minimal regularization.",
+    "domains": ["astrophysics", "potential_theory", "regularization"],
+    "mathematical_formalization": "F_ij = -G * m_i * m_j * (r_j - r_i) / (|r_j - r_i|^2 + eps^2)^(3/2).  Potential: Phi(r) = -G*m / sqrt(r^2 + eps^2).  Recovers Newtonian gravity for r >> eps.",
+    "analogical_connections": [
+      "Plummer softening <-> L2 regularization in ML (adds eps to prevent divergence)",
+      "Softened gravity <-> Lennard-Jones potential at long range (attractive 1/r^6 vs 1/r^2)",
+      "Epsilon parameter <-> kernel bandwidth in KDE (controls resolution scale)"
+    ],
+    "implementation_hypothesis": "Brute-force O(N^2) double loop with softening. For N<500, this is real-time at 60fps. The softening epsilon should be ~1% of the mean inter-particle distance to avoid artificial smoothing.",
+    "experiment_seed": "Fix two bodies at distance d, sweep eps/d from 0.001 to 1.0, plot force magnitude vs eps/d. Identify the crossover where softening distorts the force by >5% (expected at eps/d ~ 0.1).",
+    "folder_plan": {
+      "files": ["src/forces.py"],
+      "folders": ["tests/"],
+      "key_file": "src/forces.py:compute_forces()"
+    }
+  },
+  {
+    "symbolic_name": "SOA_STATE",
+    "description": "Structure-of-Arrays (SoA) particle state: flat typed arrays for positions, velocities, and masses. Maximum cache coherence, minimal allocation, zero indirection. The anti-OOP particle system.",
+    "domains": ["data_oriented_design", "high_performance_computing", "cache_optimization"],
+    "mathematical_formalization": "State S = (X, V, M) where X in R^(N x d), V in R^(N x d), M in R^N. All operations are batched: X' = X + V*dt is a single vectorized op over contiguous memory.",
+    "analogical_connections": [
+      "SoA <-> columnar databases (Parquet, Arrow) optimized for analytical queries over rows",
+      "SoA <-> GPU texture buffers (data must be contiguous for SIMD/warp execution)",
+      "Flat arrays <-> tensor layout in deep learning frameworks (contiguous for matmul)"
+    ],
+    "implementation_hypothesis": "In Python: numpy arrays of shape (N,2) for pos/vel, (N,) for mass. In TS: Float64Array(N*2) with stride-2 access. The entire simulation state is 5*N floats = 40KB for N=1000.",
+    "experiment_seed": "Benchmark AoS (array of Body objects) vs SoA (flat arrays) for N=100,1000,10000 force calculations. Measure wall-clock time. SoA should be 2-5x faster due to cache effects.",
+    "folder_plan": {
+      "files": ["src/bodies.py"],
+      "folders": ["tests/"],
+      "key_file": "src/bodies.py:create_system()"
+    }
+  },
+  {
+    "symbolic_name": "INITIAL_CONDITIONS_GALLERY",
+    "description": "A library of analytically-motivated starting configurations: Kepler two-body, circular N-ring, Plummer sphere, Pythagorean three-body, figure-eight choreography. Each tests a different regime of the simulator.",
+    "domains": ["celestial_mechanics", "dynamical_systems", "testing"],
+    "mathematical_formalization": "Kepler: v_circular = sqrt(G*M/r), e in [0,1).  Plummer: rho(r) = (3M/4pi*a^3)(1 + r^2/a^2)^(-5/2).  Figure-eight: x1(0) = -x3(0) = (0.97, -0.24), v1(0) = v2(0)/2, periodic solution of 3-body problem.",
+    "analogical_connections": [
+      "Initial conditions <-> dataset splits in ML (each IC tests a different failure mode)",
+      "Plummer sphere <-> Gaussian mixture model (smooth density profile, analytically tractable)",
+      "Pythagorean 3-body <-> chaotic time series benchmark (sensitive dependence on initial conditions)"
+    ],
+    "implementation_hypothesis": "Factory functions: kepler_orbit(m1,m2,a,e), plummer_sphere(N,M,a), ring(N,R), figure_eight(). Each returns (positions, velocities, masses) arrays. ~50 lines total.",
+    "experiment_seed": "Run all 5 initial conditions for 100 time units. For Kepler: verify period. For ring: measure time to instability. For figure-eight: measure how many periods before numerical chaos breaks the choreography.",
+    "folder_plan": {
+      "files": ["src/bodies.py", "src/initial_conditions.py"],
+      "folders": ["tests/", "figures/initial_conditions/"],
+      "key_file": "src/initial_conditions.py"
+    }
+  },
+  {
+    "symbolic_name": "CONSERVATION_SENTINEL",
+    "description": "Runtime monitors for total energy, linear momentum, and angular momentum. Not just diagnostics -- they are the primary correctness signal. A simulation that doesn't conserve energy is wrong, period.",
+    "domains": ["numerical_analysis", "hamiltonian_mechanics", "observability"],
+    "mathematical_formalization": "E = sum(0.5*m_i*|v_i|^2) + sum_{i<j}(-G*m_i*m_j/sqrt(|r_ij|^2+eps^2)).  P = sum(m_i*v_i).  L = sum(m_i * r_i x v_i).  For symplectic integrators: |dE/E| bounded, |dP| = 0 to machine precision, |dL| = 0 to machine precision.",
+    "analogical_connections": [
+      "Conservation metrics <-> loss curves in training (the signal that tells you if learning is working)",
+      "Energy conservation <-> checksum verification (detects corruption in the computation)",
+      "Noether's theorem <-> symmetry-based invariant testing (every symmetry implies a conserved quantity)"
+    ],
+    "implementation_hypothesis": "Functions: kinetic_energy(vel, mass), potential_energy(pos, mass, eps), total_momentum(vel, mass), angular_momentum(pos, vel, mass). Called once per frame, results logged. ~30 lines.",
+    "experiment_seed": "Deliberately break symplecticity (use Euler) and show that the conservation sentinel detects it within 10 orbits. Then switch to leapfrog and show the sentinel stays green indefinitely.",
+    "folder_plan": {
+      "files": ["src/metrics.py"],
+      "folders": ["tests/", "results/baseline/"],
+      "key_file": "src/metrics.py"
+    }
+  },
+  {
+    "symbolic_name": "BARNES_HUT_TREE",
+    "description": "Hierarchical quadtree/octree spatial decomposition enabling O(N log N) force approximation. Treats distant particle clusters as single pseudoparticles. The canonical scaling breakthrough for N-body problems.",
+    "domains": ["computational_geometry", "approximation_algorithms", "astrophysics"],
+    "mathematical_formalization": "For each body i, traverse tree. At node n with center-of-mass r_n, total mass M_n, size s_n: if s_n/|r_i - r_n| < theta, treat n as point mass. Else recurse into children. Error ~ O(theta^2). Complexity: O(N log N) for theta > 0.",
+    "analogical_connections": [
+      "Barnes-Hut <-> level-of-detail rendering in games (far objects rendered at lower resolution)",
+      "Theta parameter <-> compression ratio (controls accuracy-vs-speed tradeoff)",
+      "Quadtree <-> k-d tree in nearest-neighbor search (spatial indexing with logarithmic lookup)",
+      "Multipole expansion <-> Taylor series (approximate a complex field with a truncated polynomial)"
+    ],
+    "implementation_hypothesis": "Quadtree node: {center_of_mass, total_mass, bounds, children[4]}. Build tree: O(N log N). Walk tree per body: O(log N) average. Total: O(N log N). ~200 lines for full implementation with insertion, COM update, and force walk.",
+    "experiment_seed": "Compare brute-force vs Barnes-Hut (theta=0.5) for N=100,500,1000,5000. Plot wall-time and force RMS error. Identify crossover N where Barnes-Hut becomes faster (expected ~300-500).",
+    "folder_plan": {
+      "files": ["src/tree.py", "src/tree_force.py"],
+      "folders": ["tests/", "figures/"],
+      "key_file": "src/tree.py:BarnesHutTree"
+    }
+  },
+  {
+    "symbolic_name": "GRADIENT_DESCENT_DUALITY",
+    "description": "The deep structural isomorphism between gravitational dynamics and optimization. A body falling in a potential field IS gradient descent. Adding kinetic energy (momentum) IS momentum-SGD. This duality makes a gravity sim a physical optimizer and vice versa.",
+    "domains": ["optimization_theory", "physics", "machine_learning"],
+    "mathematical_formalization": "Gravitational: a = -nabla Phi(x), v' = v + a*dt, x' = x + v*dt.  SGD+momentum: g = nabla L(theta), v' = mu*v - lr*g, theta' = theta + v'.  Isomorphism: Phi <-> L, x <-> theta, v <-> momentum_buffer, dt <-> lr, G*m <-> 1.",
+    "analogical_connections": [
+      "Orbiting body <-> momentum-SGD oscillating around a minimum without converging",
+      "Gravitational capture <-> convergence (losing kinetic energy to reach a bound state)",
+      "Escape velocity <-> learning rate explosion (too much kinetic energy to stay bound)",
+      "Lagrange points <-> saddle points in loss landscape (unstable equilibria)"
+    ],
+    "implementation_hypothesis": "Implement a 'GravityOptimizer' that uses the same leapfrog code to minimize an arbitrary scalar field. Show it finding the minimum of Rosenbrock's function. Conversely, visualize SGD trajectories as 'orbits' in loss space.",
+    "experiment_seed": "Use the gravity sim engine to minimize f(x,y) = (1-x)^2 + 100(y-x^2)^2 (Rosenbrock). Add damping (friction) to convert orbits into convergence. Compare trajectory with standard Adam optimizer.",
+    "folder_plan": {
+      "files": ["src/optimizer_bridge.py", "examples/gravity_optimizer.py"],
+      "folders": ["figures/optimization/"],
+      "key_file": "src/optimizer_bridge.py"
+    }
+  },
+  {
+    "symbolic_name": "GRAPH_LAYOUT_ISOMORPHISM",
+    "description": "Force-directed graph layout algorithms (Fruchterman-Reingold, ForceAtlas2) ARE N-body simulations with modified force laws. A gravity sim with repulsive short-range forces and attractive edge-spring forces becomes a graph visualization engine.",
+    "domains": ["graph_theory", "information_visualization", "network_science"],
+    "mathematical_formalization": "ForceAtlas2: F_repulsive(i,j) = k_r * m_i * m_j / |r_ij|^2 (Coulomb repulsion).  F_attractive(i,j) = k_a * |r_ij| for (i,j) in E (Hooke spring).  This is gravity with sign-flipped short-range + edge-only long-range.",
+    "analogical_connections": [
+      "Barnes-Hut for gravity <-> Barnes-Hut in Gephi's ForceAtlas2 (same algorithm, different domain)",
+      "Gravitational collapse <-> graph clustering (dense subgraphs attract each other)",
+      "Escape velocity <-> graph disconnection (weakly connected nodes drift away)"
+    ],
+    "implementation_hypothesis": "Modify compute_forces() to accept a force_law parameter. Add 'repulsive_gravity' and 'spring_attraction' laws. Feed an adjacency list. Reuse the entire simulation loop. ~40 lines of glue code.",
+    "experiment_seed": "Load a small social network (Zachary's karate club, 34 nodes) and lay it out using the gravity sim engine with repulsive + spring forces. Compare layout quality with NetworkX's spring_layout.",
+    "folder_plan": {
+      "files": ["src/force_laws.py", "examples/graph_layout.py"],
+      "folders": ["figures/graph_layout/"],
+      "key_file": "src/force_laws.py:spring_repulsion()"
+    }
+  },
+  {
+    "symbolic_name": "ORBITAL_STATE_CLASSIFIER",
+    "description": "Classify orbital states in real time: bound elliptical (E<0), parabolic escape (E=0), hyperbolic flyby (E>0). Detect binary formation, three-body ejection, and resonance capture as discrete state transitions in a continuous dynamical system.",
+    "domains": ["orbital_mechanics", "dynamical_systems", "automata_theory"],
+    "mathematical_formalization": "For pair (i,j): E_ij = 0.5*mu*v_rel^2 - G*m_i*m_j/r_ij, where mu = m_i*m_j/(m_i+m_j).  E_ij < 0 => bound.  Eccentricity: e = sqrt(1 + 2*E_ij*L_ij^2/(G^2*m_i^2*m_j^2*mu)).  State transitions: bound->unbound = ejection event.",
+    "analogical_connections": [
+      "Orbital classification <-> anomaly detection (continuous signal crossing a threshold)",
+      "Binary capture <-> phase transition (discrete change from continuous dynamics)",
+      "Three-body ejection <-> bankruptcy in economic models (one agent expelled by collective dynamics)",
+      "Resonance <-> mode-locking in coupled oscillators"
+    ],
+    "implementation_hypothesis": "Per-pair energy computation at each step. Maintain a state matrix S[i,j] in {unbound, bound, resonant}. Emit events on state transitions. ~50 lines.",
+    "experiment_seed": "Run 10 random 3-body simulations. Log all state transitions. Verify that ejection events correlate with energy transfer: the ejected body gains KE equal to the PE lost by the remaining binary.",
+    "folder_plan": {
+      "files": ["src/classify.py", "src/events.py"],
+      "folders": ["tests/", "results/experiments/"],
+      "key_file": "src/classify.py:classify_orbit()"
+    }
+  },
+  {
+    "symbolic_name": "ADAPTIVE_TIMESTEPPING",
+    "description": "Dynamically adjust dt based on local acceleration magnitude or closest approach distance. Essential for handling the extreme dynamic range of gravitational encounters (close periapsis vs. distant apoapsis).",
+    "domains": ["numerical_analysis", "adaptive_methods", "stiff_systems"],
+    "mathematical_formalization": "dt_new = eta * min_i(|v_i|/|a_i|, sqrt(eps/|a_i|)).  Block time-stepping: group particles by dt into powers of 2, synchronize at common multiples.  Constraint: sum(dt_k) = T_total, max(|dE/E|) < tolerance.",
+    "analogical_connections": [
+      "Adaptive dt <-> learning rate scheduling in training (reduce step size in hard regions)",
+      "Block time-stepping <-> hierarchical task scheduling (different tasks at different frequencies)",
+      "Close encounter detection <-> collision detection in game engines (narrow-phase trigger)"
+    ],
+    "implementation_hypothesis": "Simplest version: dt = eta * min(v/a) globally. More sophisticated: per-particle block timesteps with shared synchronization points. Start with global adaptive, upgrade later. ~25 lines for global.",
+    "experiment_seed": "Simulate a highly eccentric (e=0.95) two-body orbit with fixed dt=0.01 and adaptive dt(eta=0.01). Compare energy conservation and wall-clock time. Adaptive should achieve 100x better conservation at equal or less compute.",
+    "folder_plan": {
+      "files": ["src/integrators.py"],
+      "folders": ["tests/", "results/experiments/"],
+      "key_file": "src/integrators.py:adaptive_leapfrog()"
+    }
+  },
+  {
+    "symbolic_name": "YOSHIDA_FOURTH_ORDER",
+    "description": "Fourth-order symplectic integrator via the Yoshida (1990) triple-jump composition of leapfrog steps. Error scales as O(dt^4) instead of O(dt^2), at 3x the cost per step. The sweet spot for precision-sensitive simulations.",
+    "domains": ["symplectic_geometry", "numerical_methods", "perturbation_theory"],
+    "mathematical_formalization": "Coefficients: w1 = 1/(2 - 2^(1/3)), w0 = -2^(1/3)*w1.  Yoshida4(dt) = Leapfrog(w1*dt) . Leapfrog(w0*dt) . Leapfrog(w1*dt).  Three leapfrog steps with specific time-step weights that cancel third-order error terms.",
+    "analogical_connections": [
+      "Yoshida composition <-> Richardson extrapolation (combine coarse results to cancel error terms)",
+      "Triple-jump <-> Runge-Kutta stages (multiple sub-evaluations per step, but symplectic)",
+      "Fourth-order convergence <-> cubic spline vs linear interpolation (dramatically better with small extra cost)"
+    ],
+    "implementation_hypothesis": "Literally 5 lines wrapping leapfrog_step: call it 3 times with w1*dt, w0*dt, w1*dt. The coefficients are constants. Entire implementation is trivial once leapfrog exists.",
+    "experiment_seed": "Richardson convergence test: run Kepler orbit with dt = 0.1, 0.01, 0.001, 0.0001 for both leapfrog and Yoshida4. Plot max |dE/E| vs dt on log-log. Leapfrog slope should be -2, Yoshida4 slope should be -4.",
+    "folder_plan": {
+      "files": ["src/integrators.py"],
+      "folders": ["tests/"],
+      "key_file": "src/integrators.py:yoshida4_step()"
+    }
+  },
+  {
+    "symbolic_name": "CANVAS_RENDERER",
+    "description": "Minimal HTML5 Canvas 2D renderer for real-time visualization. Maps simulation coordinates to screen coordinates with pan/zoom. Renders bodies as circles scaled by mass. Trail rendering for orbital paths.",
+    "domains": ["computer_graphics", "interactive_simulation", "web_development"],
+    "mathematical_formalization": "Screen transform: s = (x - camera.x) * zoom + canvas.width/2.  Circle radius: r_screen = max(2, log(mass) * scale).  Trail buffer: ring buffer of last K positions per body, rendered as polyline with alpha fade.",
+    "analogical_connections": [
+      "Canvas rendering loop <-> game engine update/render split (physics at fixed dt, render at display Hz)",
+      "Trail rendering <-> time-series sparklines (recent history as a visual trace)",
+      "Zoom/pan <-> coordinate transform in GIS (world coords -> screen coords)"
+    ],
+    "implementation_hypothesis": "requestAnimationFrame loop. Physics substeps at fixed dt inside render frame. Canvas clearRect + arc/fill for each body. Trail as a fading polyline. ~60 lines of rendering code, separate from physics.",
+    "experiment_seed": "Render 50 random bodies with trails. Measure frame time. Should sustain 60fps. Add zoom with mouse wheel and pan with drag. Verify the visualization reveals structure (binary pairs, ejections) that raw data doesn't.",
+    "folder_plan": {
+      "files": ["index.html", "src/renderer.ts"],
+      "folders": ["assets/"],
+      "key_file": "src/renderer.ts:render()"
+    }
+  },
+  {
+    "symbolic_name": "NEWTONS_THIRD_EXPLOIT",
+    "description": "Exploit F_ij = -F_ji to halve the O(N^2) force computation. The simplest optimization: compute each pair once, apply equal-and-opposite forces. Zero added complexity, 2x speedup.",
+    "domains": ["algorithm_optimization", "classical_mechanics", "symmetry_exploitation"],
+    "mathematical_formalization": "Standard: for i in 0..N, for j in 0..N, compute F_ij. Cost: N^2.  Exploited: for i in 0..N, for j in i+1..N, compute F_ij, set F_ji = -F_ij. Cost: N*(N-1)/2.  Speedup: exactly 2x minus diagonal.",
+    "analogical_connections": [
+      "Newton's third <-> symmetric matrix storage (only store upper triangle)",
+      "Pair symmetry <-> undirected graph edge list (each edge stored once, used twice)",
+      "Half-iteration trick <-> FFT butterfly (exploit symmetry to halve computation)"
+    ],
+    "implementation_hypothesis": "Change inner loop from `for j in range(N)` to `for j in range(i+1, N)`. Add force to both i and j (with opposite signs). One-line change, 2x speedup.",
+    "experiment_seed": "Benchmark N=1000 brute-force with and without Newton's third law optimization. Verify exactly 2x speedup and identical force results (bitwise).",
+    "folder_plan": {
+      "files": ["src/forces.py"],
+      "folders": ["tests/"],
+      "key_file": "src/forces.py:compute_forces()"
+    }
+  },
+  {
+    "symbolic_name": "PLUMMER_SPHERE_BENCHMARK",
+    "description": "The Plummer sphere as a canonical N-body benchmark: analytically known density profile, velocity distribution, and virial equilibrium. The standard testbed for N-body code validation used since Aarseth (1963).",
+    "domains": ["astrophysics", "statistical_mechanics", "benchmarking"],
+    "mathematical_formalization": "rho(r) = (3M/(4*pi*a^3)) * (1 + r^2/a^2)^(-5/2).  Velocity distribution: isotropic Maxwellian with sigma^2(r) = G*M / (6*sqrt(r^2+a^2)).  Virial ratio: 2K/|W| = 1 at equilibrium.  Dynamical time: t_dyn = (R^3/(G*M))^(1/2).",
+    "analogical_connections": [
+      "Plummer sphere <-> Maxwell-Boltzmann gas (thermal equilibrium with gravitational confinement)",
+      "Virial theorem <-> equipartition theorem (energy balance between kinetic and potential modes)",
+      "Plummer relaxation <-> thermalization in statistical mechanics (approach to equilibrium from arbitrary IC)"
+    ],
+    "implementation_hypothesis": "Generate N bodies from Plummer distribution using inverse CDF sampling. Evolve for 50 t_dyn. Monitor virial ratio and density profile stability. The standard acceptance test for any N-body code.",
+    "experiment_seed": "Initialize N=500 Plummer sphere. Evolve with leapfrog for 50 t_dyn. Plot virial ratio vs time (should oscillate around 1.0). Plot radial density profile at t=0,10,25,50 t_dyn (should be stable). Measure energy drift.",
+    "folder_plan": {
+      "files": ["src/initial_conditions.py", "experiments/plummer_benchmark.py"],
+      "folders": ["results/experiments/", "figures/"],
+      "key_file": "experiments/plummer_benchmark.py"
+    }
+  },
+  {
+    "symbolic_name": "SOCIAL_GRAVITY_MODEL",
+    "description": "Reinterpret gravitational attraction as social influence: mass = authority/follower-count, distance = topical/social distance, force = information flow. A gravity sim becomes a social network dynamics engine with one force-law substitution.",
+    "domains": ["network_science", "sociology", "agent_based_modeling"],
+    "mathematical_formalization": "F_social(i,j) = k * influence_i * influence_j / (distance_ij^alpha).  Alpha=2 recovers gravity. Alpha=1 is stronger long-range coupling (information spreads further than gravity). Add repulsion at close range: F_total = F_attract - F_repel * exp(-r/sigma).",
+    "analogical_connections": [
+      "Gravitational mass <-> social capital (determines strength of influence)",
+      "Orbital capture <-> community formation (agents become bound by mutual attraction)",
+      "Ejection event <-> echo chamber exit (agent gains enough kinetic energy to leave group)",
+      "Lagrange points <-> opinion equilibria between opposing influencers"
+    ],
+    "implementation_hypothesis": "Parameterize force_law: gravity(alpha=2), social(alpha=1, repulsion_scale=sigma). Feed agent attributes as masses. The simulation loop is identical. Only the force function changes. ~20 lines of new code.",
+    "experiment_seed": "Create 50 'agents' with random influence scores and positions. Run with alpha=1 (social) vs alpha=2 (gravity). Compare clustering behavior: social forces should produce tighter, more numerous clusters due to stronger long-range coupling.",
+    "folder_plan": {
+      "files": ["src/force_laws.py", "examples/social_gravity.py"],
+      "folders": ["figures/social/"],
+      "key_file": "src/force_laws.py:social_force()"
+    }
+  },
+  {
+    "symbolic_name": "ENERGY_LANDSCAPE_VIZ",
+    "description": "Render the gravitational potential field as a 2D heatmap or contour plot, making the invisible force landscape visible. Shows potential wells, saddle points (Lagrange points), and energy barriers in real time as bodies move.",
+    "domains": ["field_theory", "scientific_visualization", "topology"],
+    "mathematical_formalization": "Phi(x,y) = -sum_i G*m_i / sqrt((x-x_i)^2 + (y-y_i)^2 + eps^2).  Rendered as color map: deep blue = deep potential well, red = high potential.  Contour lines at equipotential surfaces.  Gradient arrows show force direction.",
+    "analogical_connections": [
+      "Potential field visualization <-> loss landscape visualization in ML (making the optimization surface visible)",
+      "Lagrange points <-> saddle points in loss landscapes (unstable equilibria visible as saddle contours)",
+      "Equipotential lines <-> topographic contour lines (same math, different physical quantity)"
+    ],
+    "implementation_hypothesis": "Compute Phi on a 100x100 grid each frame. Render as canvas imageData (direct pixel manipulation). Cost: 100*100*N = 10K*N evaluations per frame. For N=20, that's 200K evals, still real-time. ~40 lines.",
+    "experiment_seed": "Render two equal masses orbiting their COM. Show the rotating potential field with L1-L5 Lagrange points visible as saddle points and local extrema in the co-rotating frame.",
+    "folder_plan": {
+      "files": ["src/field_viz.py", "examples/potential_landscape.py"],
+      "folders": ["figures/potential/"],
+      "key_file": "src/field_viz.py:render_potential()"
+    }
+  }
+]
