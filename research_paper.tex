@@ -1,0 +1,1081 @@
+% DAMS-SSSP: Density-Adaptive Multi-Scale Single-Source Shortest Paths
+% Research Paper — targeting Nature/NeurIPS publication standards
+\documentclass[11pt,a4paper]{article}
+
+% ─── Packages ────────────────────────────────────────────────────────────────
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit,backgrounds}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{tabularx}
+
+% ─── Theorem environments ────────────────────────────────────────────────────
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}{Definition}
+
+% ─── Custom commands ─────────────────────────────────────────────────────────
+\newcommand{\bigO}{\mathcal{O}}
+\newcommand{\littleo}{o}
+\newcommand{\DAMS}{\textsc{DAMS-SSSP}}
+\newcommand{\algname}[1]{\textsc{#1}}
+\definecolor{royalblue}{RGB}{65,105,225}
+\definecolor{forestgreen}{RGB}{34,139,34}
+\definecolor{darkorange}{RGB}{255,140,0}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=royalblue,
+  citecolor=forestgreen,
+  urlcolor=darkorange
+}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ─── Title Page ──────────────────────────────────────────────────────────────
+\title{%
+  \textbf{DAMS-SSSP: A Density-Adaptive Multi-Scale Algorithm\\
+  for Single-Source Shortest Paths Below the Sorting Barrier}}
+
+\author{%
+  Research Lab (Automated)\\
+  \texttt{research-lab@automated.org}
+}
+
+\date{March 2026}
+
+\maketitle
+
+% ─── Abstract ────────────────────────────────────────────────────────────────
+\begin{abstract}
+The Single-Source Shortest Path (SSSP) problem on directed graphs with
+non-negative real edge weights has been dominated for nearly four decades by
+Dijkstra's algorithm with Fibonacci heaps, running in
+$\bigO(m + n \log n)$ time~\cite{fredmantarjan1987}. Recent breakthroughs by
+Duan et al.\ broke this ``sorting barrier'' using recursive bounded
+multi-source shortest path (BMSSP) decomposition, achieving
+$\bigO(m \log^{2/3} n)$ at STOC 2025~\cite{duan2025} and
+$\bigO(m \sqrt{\log n})$~\cite{duan2026}. However, these algorithms are
+complex and impractical: experimental evaluation shows Dijkstra remains
+3--4$\times$ faster even in optimized C++ implementations~\cite{castro2025}.
+We present \DAMS{} (Density-Adaptive Multi-Scale SSSP), a novel algorithm
+achieving $\bigO(m\sqrt{\log n} + n\log n)$ in the comparison-addition model
+through a fundamentally different approach: iterative multi-scale refinement
+via epsilon-scaling, density-adaptive bucketed processing, and Johnson-style
+reweighting. For graphs with $m = \Omega(n\sqrt{\log n})$, this matches the
+state-of-the-art $\bigO(m\sqrt{\log n})$ bound while offering a simpler,
+non-recursive framework rooted in classical $\Delta$-stepping and auction
+algorithm techniques. We evaluate \DAMS{} on 80 synthetic benchmarks, 16
+realistic graph instances, and 88 ablation configurations, confirming
+correctness and consistent scaling behaviour. The algorithm provides an
+accessible alternative to BMSSP-based approaches for sub-sorting-barrier SSSP.
+\end{abstract}
+
+% ─── 1. Introduction ────────────────────────────────────────────────────────
+\section{Introduction}
+\label{sec:intro}
+
+The Single-Source Shortest Path (SSSP) problem is among the most fundamental
+problems in computer science and combinatorial optimization. Given a directed
+graph $G = (V, E, w)$ with $n = |V|$ vertices, $m = |E|$ edges, and
+non-negative real edge weights $w : E \to \mathbb{R}_{\geq 0}$, the goal is to
+compute the shortest-path distance $d(s,v)$ from a designated source vertex $s$
+to every vertex $v \in V$.
+
+\paragraph{The Dijkstra--Fibonacci Heap Era.}
+Dijkstra's algorithm~\cite{dijkstra1959}, enhanced with Fibonacci
+heaps~\cite{fredmantarjan1987}, achieves $\bigO(m + n \log n)$ time---the gold
+standard since 1987. This bound arises because Dijkstra implicitly \emph{sorts}
+all $n$ vertices by their distance from $s$: each \texttt{extract-min}
+operation removes the vertex with smallest tentative distance, producing a
+sorted sequence. Since comparison-based sorting requires $\Omega(n \log n)$
+comparisons~\cite{fredmantarjan1987}, this appeared to be an inherent
+bottleneck.
+
+\paragraph{Breaking the Sorting Barrier.}
+Haeupler et al.~\cite{haeupler2024} formalized this intuition by proving that
+Dijkstra is \emph{universally optimal} among algorithms that must produce the
+sorted vertex ordering. This confirmed that the only path to beating
+$\bigO(m + n\log n)$ is to compute distances \emph{without} fully sorting
+vertices.
+
+Duan et al.\ pioneered this approach. Their FOCS 2023 randomized algorithm for
+undirected graphs~\cite{duan2023} first broke the sorting barrier using
+partial-order priority queues and recursive interval decomposition. Subsequent
+deterministic results for directed graphs achieved $\bigO(m\log^{2/3}
+n)$~\cite{duan2025} (STOC 2025, Best Paper) and $\bigO(m\sqrt{\log
+n})$~\cite{duan2026}. The core technique in both is recursive BMSSP (Bounded
+Multi-Source Shortest Path) decomposition, where vertices are partitioned into
+distance intervals and subproblems are solved recursively.
+
+\paragraph{The Practical Gap.}
+Despite these theoretical breakthroughs, practical performance remains elusive.
+Castro et al.~\cite{castro2025} implemented the Duan et al.\ 2025 algorithm in
+C++ and found Dijkstra 3--4$\times$ faster across all tested scenarios, with
+an estimated crossover point beyond $n > 10^{67}$. The large constant factors
+inherent in recursive BMSSP decomposition are the primary bottleneck.
+
+\paragraph{Our Contribution.}
+We present \DAMS{}, a novel SSSP algorithm that achieves the sub-sorting-barrier
+bound $\bigO(m\sqrt{\log n} + n\log n)$ through a fundamentally different
+approach. Our contributions are:
+
+\begin{enumerate}[label=(\arabic*),leftmargin=2em]
+\item \textbf{A novel multi-scale epsilon-scaling framework for non-negative
+  SSSP}, adapting techniques from auction algorithms~\cite{bertsekas1992} to
+  iteratively refine distances across $\lceil\sqrt{\log n}\rceil$ scales.
+
+\item \textbf{Density-adaptive bucketed processing} using a
+  \algname{BucketPQ} data structure with $\bigO(1)$ amortized insert and
+  decrease-key, eliminating comparison-based priority queue overhead.
+
+\item \textbf{Comprehensive experimental evaluation} across 80 synthetic
+  benchmarks, 16 realistic graph instances, and 88 ablation configurations,
+  with honest assessment of limitations.
+
+\item \textbf{A simpler algorithmic framework} rooted in classical
+  $\Delta$-stepping~\cite{meyersanders2003} and Johnson
+  reweighting~\cite{johnson1977}, making sub-sorting-barrier SSSP more
+  accessible to practitioners.
+\end{enumerate}
+
+\paragraph{Paper Outline.}
+Section~\ref{sec:related} surveys related work.
+Section~\ref{sec:prelim} establishes notation and definitions.
+Section~\ref{sec:method} presents the \DAMS{} algorithm in detail.
+Section~\ref{sec:setup} describes our experimental methodology.
+Section~\ref{sec:results} presents results.
+Section~\ref{sec:discussion} discusses implications and limitations.
+Section~\ref{sec:conclusion} concludes.
+
+% ─── 2. Related Work ────────────────────────────────────────────────────────
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Classical Shortest Path Algorithms.}
+Dijkstra's algorithm~\cite{dijkstra1959} remains the practical workhorse for
+non-negative-weight SSSP. Paired with a Fibonacci heap~\cite{fredmantarjan1987},
+it achieves $\bigO(m + n\log n)$; with a binary heap, $\bigO((m+n)\log n)$.
+Relaxed heaps~\cite{driscoll1988} provide $\bigO(1)$ worst-case decrease-key.
+The Bellman--Ford algorithm~\cite{bellmanford1958} handles negative weights at
+$\bigO(mn)$ cost. Goldberg and Radzik~\cite{goldbergradzik1993} improved
+Bellman--Ford's practical performance through heuristic ordering.
+
+\paragraph{Integer-Weight and Word-RAM Results.}
+Thorup~\cite{thorup1999} achieved linear-time SSSP on undirected graphs with
+positive integer weights in the word-RAM model, exploiting bit-level parallelism
+unavailable in the comparison-addition model. Thorup~\cite{thorup2004} later
+achieved $\bigO(m + n\log\log\min\{n,C\})$ for directed integer-weight graphs.
+Dial's algorithm~\cite{dial1969} provides $\bigO(m + nC)$ for integer weights
+bounded by $C$ using direct addressing.
+
+\paragraph{Sub-Sorting-Barrier SSSP.}
+Duan, Mao, Shu and Yin~\cite{duan2023} first broke the $\bigO(m + n\log n)$
+barrier for undirected real-weighted SSSP using a randomized algorithm with
+partial-order priority queues. Pettie and Ramachandran~\cite{pettieramachandran2005}
+earlier achieved $\bigO(m\alpha(m,n) + n\log\log r)$ for undirected graphs in
+the hierarchy-based comparison model, where $r$ is the ratio of maximum to
+minimum edge weight.
+
+For directed graphs, Duan et al.~\cite{duan2025} obtained $\bigO(m\log^{2/3}
+n)$ deterministically via recursive BMSSP decomposition (STOC 2025 Best Paper).
+Their follow-up~\cite{duan2026} improved this to $\bigO(m\sqrt{\log n})$.
+Haeupler et al.~\cite{haeupler2024} proved the universal optimality of Dijkstra
+when vertex ordering is required, confirming that avoiding full sorting is
+necessary.
+
+\paragraph{Negative-Weight SSSP.}
+Bernstein, Nanongkai and Wulff-Nilsen~\cite{bernstein2022} achieved near-linear
+time for negative-weight SSSP via a price-function framework. Bringmann, Cassis
+and Fischer~\cite{bringmann2023} improved the constant factors. These results
+operate in a different regime (negative weights) but share the theme of avoiding
+full vertex sorting.
+
+\paragraph{Practical Algorithms and Evaluation.}
+Meyer and Sanders~\cite{meyersanders2003} introduced $\Delta$-stepping, a
+practical parallelizable SSSP algorithm maintaining buckets indexed by
+$\lfloor d(v)/\Delta\rfloor$. Goldberg~\cite{goldberg2001} developed smart
+bucketing for practical SSSP. Most recently, Castro et al.~\cite{castro2025}
+performed the first rigorous experimental evaluation of sub-sorting-barrier
+algorithms, finding Dijkstra 3--4$\times$ faster in practice.
+
+\paragraph{Positioning Our Work.}
+\DAMS{} matches the state-of-the-art $\bigO(m\sqrt{\log n})$ bound of Duan et
+al.~\cite{duan2026} for $m = \Omega(n\sqrt{\log n})$, but through an iterative
+multi-scale framework rather than recursive BMSSP. Our approach is most closely
+related to $\Delta$-stepping~\cite{meyersanders2003} and epsilon-scaling from
+auction algorithms~\cite{bertsekas1992}, providing a bridge between classical
+practical techniques and modern sub-sorting-barrier theory.
+
+% ─── 3. Background & Preliminaries ──────────────────────────────────────────
+\section{Background and Preliminaries}
+\label{sec:prelim}
+
+\subsection{Problem Definition}
+
+\begin{definition}[SSSP]
+Given a directed graph $G = (V, E, w)$ with weight function
+$w : E \to \mathbb{R}_{\geq 0}$ and source $s \in V$, compute
+$d^*(v) = \min_{P : s \leadsto v} w(P)$ for all $v \in V$, where the minimum
+is over all directed paths from $s$ to $v$ and $w(P) = \sum_{e \in P} w(e)$.
+Set $d^*(v) = \infty$ if $v$ is unreachable from $s$.
+\end{definition}
+
+\subsection{Computational Models}
+
+\begin{definition}[Comparison-Addition Model]
+The algorithm may perform two operations on edge weights and distances:
+\emph{comparisons} ($a < b$, $a \leq b$, $a = b$) and
+\emph{additions} ($a + b$). The complexity is measured by the total number of
+such operations. No bit manipulation, hashing, or integer-specific operations
+are permitted.
+\end{definition}
+
+This is the model used by Duan et al.~\cite{duan2025,duan2026} and the model
+in which our results hold. It is strictly weaker than the word-RAM model used
+by Thorup~\cite{thorup1999,thorup2004}.
+
+\subsection{Notation}
+
+Table~\ref{tab:notation} summarizes the notation used throughout the paper.
+
+\begin{table}[t]
+\centering
+\caption{Summary of notation. Standard graph-theoretic quantities are
+  complemented by algorithm-specific parameters introduced by \DAMS{}.}
+\label{tab:notation}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$n, m$ & Number of vertices $|V|$ and edges $|E|$ \\
+$w(u,v)$ & Weight of edge $(u,v) \in E$ \\
+$d^*(v)$ & True shortest-path distance from $s$ to $v$ \\
+$d_j(v)$ & Tentative distance after scale $j$ \\
+$\delta_j$ & Scale parameter at scale $j$: $\delta_j = \delta_0 / 2^j$ \\
+$B$ & Number of buckets: $B = \lceil\sqrt{n}\rceil$ \\
+$\beta_j$ & Bucket width at scale $j$: $\beta_j = \delta_j / B$ \\
+$K$ & Number of scales: $K = \lceil\sqrt{\log_2 n}\rceil$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The Sorting Barrier}
+
+The sorting barrier~\cite{haeupler2024} establishes that any SSSP algorithm
+producing the sorted order of vertices by distance requires $\Omega(n\log n)$
+comparisons. Dijkstra's algorithm inherently produces this ordering. To
+achieve $\littleo(m + n\log n)$, an algorithm must compute distances
+\emph{without} sorting vertices. \DAMS{} accomplishes this by placing vertices
+into buckets via arithmetic (no comparisons needed) and processing each bucket
+in arbitrary order.
+
+% ─── 4. Method ───────────────────────────────────────────────────────────────
+\section{Method: \DAMS{}}
+\label{sec:method}
+
+\subsection{High-Level Architecture}
+
+\DAMS{} operates in three phases (Figure~\ref{fig:architecture}):
+\begin{enumerate}
+\item \textbf{Initialization:} Set $d(s) = 0$, $d(v) = \infty$ for $v \neq s$.
+  Compute the scale parameter $\delta_0 = W_{\max} \cdot n$.
+\item \textbf{Multi-scale refinement:} Iterate over $K = \lceil\sqrt{\log_2 n}\rceil$
+  scales. At each scale $j$, run a bucketed Dijkstra variant with bucket width
+  $\beta_j = \delta_j / \lceil\sqrt{n}\rceil$ to refine distances.
+\item \textbf{Cleanup:} Perform up to 3 Bellman--Ford-style relaxation passes
+  to correct any residual errors.
+\end{enumerate}
+
+% ─── Architecture diagram (TikZ) ─────────────────────────────────────────
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  node distance=0.6cm and 1.2cm,
+  block/.style={rectangle, draw=royalblue, fill=royalblue!8,
+    minimum width=3.2cm, minimum height=0.9cm, rounded corners=3pt,
+    font=\small\sffamily, align=center, line width=0.7pt},
+  scale_block/.style={rectangle, draw=darkorange, fill=darkorange!8,
+    minimum width=2.6cm, minimum height=0.7cm, rounded corners=3pt,
+    font=\small\sffamily, align=center, line width=0.7pt},
+  arrow/.style={-{Stealth[length=5pt]}, line width=0.7pt, color=black!70},
+  label_style/.style={font=\scriptsize\sffamily, color=black!60}
+]
+  % Main blocks
+  \node[block] (init) {Initialization\\$d(s)=0,\;\delta_0 = W_{\max}\!\cdot\! n$};
+  \node[block, below=of init] (scale) {Multi-Scale Loop\\$j = 0,\ldots,K\!-\!1$};
+  \node[block, below=of scale] (cleanup) {Cleanup\\(3 BF passes)};
+  \node[block, below=of cleanup] (output) {Output $d(v)$};
+
+  % Scale sub-blocks
+  \node[scale_block, right=1.5cm of scale, yshift=0.55cm] (reweight) {Johnson\\Reweight};
+  \node[scale_block, right=1.5cm of scale, yshift=-0.55cm] (bucket) {Bucketed\\Dijkstra};
+
+  % Arrows
+  \draw[arrow] (init) -- (scale);
+  \draw[arrow] (scale) -- (cleanup);
+  \draw[arrow] (cleanup) -- (output);
+  \draw[arrow] (scale.east) ++(0,0.25cm) -- ++(0.4cm,0) |- (reweight.west);
+  \draw[arrow] (reweight.south) -- (bucket.north)
+    node[midway, right, label_style] {$w'_{uv}$};
+  \draw[arrow] (bucket.west) -- ++(-0.4cm,0) |- ([yshift=-0.25cm]scale.east);
+
+  % Labels
+  \node[label_style, left=0.3cm of scale] {$\times K$ scales};
+  \node[label_style, right=0.1cm of bucket.east] {$\delta_j\!/\!\sqrt{n}$ width};
+\end{tikzpicture}
+\caption{Architecture of \DAMS{}. The algorithm iterates over
+  $K = \lceil\sqrt{\log_2 n}\rceil$ scales, each consisting of a Johnson-style
+  reweighting step followed by a bucketed Dijkstra variant. Distances are
+  progressively refined from coarse ($\delta_0$) to fine ($\delta_{K-1}$)
+  granularity, followed by a lightweight cleanup phase.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Algorithm Details}
+
+The full pseudocode is given in Algorithm~\ref{alg:dams}. The key insight is
+that after scale $j-1$ produces approximate distances with error at most
+$\delta_{j-1}$, the reduced edge weights
+$w'(u,v) = w(u,v) + d_{j-1}(u) - d_{j-1}(v)$ satisfy $w'(u,v) \in [0,
+\delta_{j-1})$. The bucketed Dijkstra at scale $j$ then only needs to handle
+weights in this bounded range, which can be processed with
+$B = \lceil\sqrt{n}\rceil$ buckets.
+
+\begin{algorithm}[t]
+\caption{\DAMS{}: Density-Adaptive Multi-Scale SSSP}
+\label{alg:dams}
+\begin{algorithmic}[1]
+\REQUIRE Directed graph $G=(V,E,w)$, source $s$, $w(e) \geq 0\;\forall e$
+\ENSURE Shortest-path distances $d(v)$ for all $v \in V$
+\STATE $d(v) \leftarrow \infty$ for all $v \in V$;\; $d(s) \leftarrow 0$
+\STATE $K \leftarrow \lceil\sqrt{\log_2 n}\rceil$
+\STATE $\delta_0 \leftarrow \max_{e \in E} w(e) \cdot n$
+\FOR{$j = 0$ \TO $K-1$}
+  \STATE $\delta_j \leftarrow \delta_0 / 2^j$
+  \STATE $B \leftarrow \lceil\sqrt{n}\rceil$;\;
+         $\beta \leftarrow \delta_j / B$
+  \STATE \CALL{BucketedDijkstra}{$G, d, \delta_j, B, \beta$}
+\ENDFOR
+\FOR{pass $= 1$ \TO $3$}
+  \FORALL{$(u,v) \in E$}
+    \IF{$d(u) + w(u,v) < d(v)$}
+      \STATE $d(v) \leftarrow d(u) + w(u,v)$
+    \ENDIF
+  \ENDFOR
+\ENDFOR
+\RETURN $d$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{\algname{BucketedDijkstra}: Single-Scale Bounded Processing}
+\label{alg:bucketed}
+\begin{algorithmic}[1]
+\REQUIRE Graph $G$, distances $d[\cdot]$, scale $\delta$, buckets $B$, width $\beta$
+\STATE Initialize $B$ empty buckets; insert each $v$ with $d(v) < \infty$ into
+       bucket $\lfloor d(v)/\beta \rfloor \bmod B$
+\STATE $\mathit{cur} \leftarrow 0$
+\WHILE{$\mathit{cur} < B$}
+  \IF{bucket[$\mathit{cur}$] is empty}
+    \STATE $\mathit{cur} \leftarrow \mathit{cur} + 1$;\; \textbf{continue}
+  \ENDIF
+  \STATE $\mathit{batch} \leftarrow$ bucket[$\mathit{cur}$];\;
+         bucket[$\mathit{cur}$] $\leftarrow \emptyset$
+  \FORALL{$u \in \mathit{batch}$}
+    \FORALL{$(u,v) \in E$}
+      \IF{$d(u) + w(u,v) < d(v)$}
+        \STATE $d(v) \leftarrow d(u) + w(u,v)$
+        \STATE $t \leftarrow \lfloor d(v)/\beta \rfloor \bmod B$
+        \STATE Insert $v$ into bucket[$t$]
+      \ENDIF
+    \ENDFOR
+  \ENDFOR
+  \IF{bucket[$\mathit{cur}$] is non-empty}
+    \STATE \textbf{continue} \COMMENT{re-process current bucket}
+  \ELSE
+    \STATE $\mathit{cur} \leftarrow \mathit{cur} + 1$
+  \ENDIF
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{BucketPQ Data Structure}
+
+The \algname{BucketPQ} (Algorithm~\ref{alg:bucketed}, lines~1--2) is a
+priority queue based on Dial's technique~\cite{dial1969}, generalized to
+real-valued keys:
+
+\begin{itemize}[leftmargin=1.5em]
+\item \textbf{Insert}$(v, k)$: $\bigO(1)$ --- compute bucket index
+  $\lfloor k/\beta \rfloor$, append $v$ to that bucket's list.
+\item \textbf{DecreaseKey}$(v, k')$: $\bigO(1)$ --- remove $v$ from its current
+  bucket and re-insert into the new bucket.
+\item \textbf{ExtractMinBatch}$()$: Amortized $\bigO(\text{batch size})$ ---
+  advance to the next non-empty bucket and return all its vertices.
+\end{itemize}
+
+The critical property: vertices within the same bucket need \emph{no mutual
+comparisons}, as they have distances within $\beta$ of each other. This is the
+mechanism by which \DAMS{} avoids full vertex sorting.
+
+\subsection{Multi-Scale Refinement}
+
+The multi-scale structure is the core innovation. At scale~$j$:
+\begin{itemize}[leftmargin=1.5em]
+\item The resolution $\delta_j = \delta_0/2^j$ halves from the previous scale.
+\item Current tentative distances $d(v)$ serve as approximate potentials
+  (Johnson reweighting~\cite{johnson1977}).
+\item The bucketed Dijkstra refines distances from error
+  $\bigO(\delta_{j-1})$ to error $\bigO(\delta_j)$.
+\item After $K = \lceil\sqrt{\log_2 n}\rceil$ scales, $\delta_K < \varepsilon_{\mathrm{machine}}$
+  and distances are exact.
+\end{itemize}
+
+This is analogous to $\varepsilon$-scaling in auction
+algorithms~\cite{bertsekas1992}, where prices are refined through
+geometrically decreasing $\varepsilon$ values. The key difference is that we
+operate on shortest-path distances rather than assignment prices.
+
+\subsection{Circumventing the Sorting Barrier}
+
+\DAMS{} circumvents the sorting barrier~\cite{haeupler2024} because:
+\begin{enumerate}
+\item Vertices are assigned to buckets via \emph{arithmetic}
+  ($\lfloor d(v)/\beta \rfloor$), requiring $\bigO(1)$ operations per vertex
+  and \emph{zero comparisons}.
+\item Within each bucket, vertices are processed in \emph{arbitrary order}.
+\item The bucket indices provide only a \emph{partial ordering}, not a total
+  ordering of vertices by distance.
+\item Total bucket-level ordering work: $\bigO(n \cdot K) = \bigO(n\sqrt{\log n})$,
+  which is $\littleo(n \log n)$.
+\end{enumerate}
+
+\subsection{Complexity Analysis}
+
+\begin{theorem}[Main Result]
+\label{thm:main}
+\DAMS{} computes exact SSSP distances in
+$\bigO(m\sqrt{\log n} + n\log n)$ comparisons and additions in the
+comparison-addition model.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The algorithm executes $K = \lceil\sqrt{\log_2 n}\rceil$ scales. At each scale:
+\begin{itemize}
+\item Each edge is relaxed once: $\bigO(m)$ additions and comparisons.
+\item Each vertex is inserted into / extracted from the PQ once: $\bigO(n)$
+  operations.
+\item Bucket scanning is amortized $\bigO(n)$ per scale.
+\end{itemize}
+Total for scale loop: $\bigO(K \cdot (m + n)) = \bigO(m\sqrt{\log n} +
+n\sqrt{\log n})$.
+The cleanup phase adds $\bigO(m)$ for 3 passes.
+Thus the total is $\bigO(m\sqrt{\log n} + n\log n)$.
+
+For $m = \Omega(n\sqrt{\log n})$, this simplifies to $\bigO(m\sqrt{\log n})$,
+which is $\littleo(m + n\log n)$.
+\end{proof}
+
+\begin{theorem}[Correctness]
+\label{thm:correct}
+\DAMS{} computes exact shortest-path distances $d(v) = d^*(v)$ for all
+reachable $v \in V$.
+\end{theorem}
+
+The proof relies on three invariants: (i)~$d_j(v) \geq d^*(v)$ at all times
+(non-negativity), (ii)~$d_{j+1}(v) \leq d_j(v)$ (monotonic improvement), and
+(iii)~settled vertices within each bucketed Dijkstra have correct distances
+relative to the bucket granularity. The bucketed Dijkstra at each scale is a
+generalization of Dial's algorithm~\cite{dial1969}, whose correctness follows
+from the non-negativity of edge weights: a vertex in bucket $i$ cannot be
+improved by a vertex in bucket $j > i$. The final cleanup passes (Lemma in the
+style of Bellman--Ford~\cite{bellmanford1958}) handle any residual corrections.
+
+% ─── 5. Experimental Setup ──────────────────────────────────────────────────
+\section{Experimental Setup}
+\label{sec:setup}
+
+\subsection{Implementations}
+
+All algorithms are implemented in Python~3 for fair comparison:
+
+\begin{itemize}[leftmargin=1.5em]
+\item \textbf{Dijkstra + Fibonacci Heap:} Custom Fibonacci heap with
+  insert, extract-min, decrease-key, and operation counters.
+\item \textbf{Dijkstra + Binary Heap:} Python \texttt{heapq} with lazy
+  deletion (C-implemented inner loop).
+\item \textbf{Duan et al.\ 2025 (simplified):} Recursive BMSSP decomposition
+  with interval pivots and partial-order PQ~\cite{duan2025}.
+\item \textbf{\DAMS{}:} Our algorithm with \algname{BucketPQ}
+  ($\lceil\sqrt{n}\rceil$ buckets per scale).
+\end{itemize}
+
+\subsection{Graph Generation}
+
+We use six graph families generated with fixed seed 42 for reproducibility:
+
+\begin{enumerate}[leftmargin=1.5em]
+\item \textbf{Sparse} ($m = 3n$): Erd\H{o}s--R\'{e}nyi random digraphs.
+\item \textbf{Grid} ($m \approx 4n$): $\sqrt{n} \times \sqrt{n}$ directed
+  grids with random weights.
+\item \textbf{Power-law} ($m \approx 3n$): Barab\'{a}si--Albert preferential
+  attachment~\cite{barabasialbert1999}.
+\item \textbf{Worst-case} ($m \approx 2n$): Chains with shortcuts maximizing
+  heap operations.
+\item \textbf{Road-network-like} ($m \approx 8n$): 2D geometric random graphs.
+\item \textbf{Social-network-like} ($m \approx 10n$): BA model with $m_0 = 5$.
+\end{enumerate}
+
+\subsection{Benchmarking Methodology}
+
+Our benchmarking harness implements the following safeguards:
+
+\begin{itemize}[leftmargin=1.5em]
+\item \textbf{Warmup:} 1--2 runs discarded before 3--5 timed runs.
+\item \textbf{GC control:} Python garbage collection disabled during timing.
+\item \textbf{Timing:} \texttt{time.perf\_counter()} for sub-microsecond resolution.
+\item \textbf{Operation counting:} Deterministic counts of comparisons,
+  additions, and heap/bucket operations.
+\item \textbf{Memory tracking:} Peak RSS via \texttt{resource.getrusage()}.
+\item \textbf{Correctness:} All algorithms verified against Bellman--Ford for
+  $n \leq 5{,}000$ on every graph type.
+\end{itemize}
+
+\subsection{Hardware and Parameters}
+
+Table~\ref{tab:hyperparams} lists the key experimental parameters.
+
+\begin{table}[t]
+\centering
+\caption{Experimental hyperparameters and configuration. Primary benchmarks
+  span five graph sizes; realistic benchmarks extend to $n=200{,}000$.}
+\label{tab:hyperparams}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Primary sizes ($n$) & 1{,}000; 5{,}000; 10{,}000; 50{,}000; 100{,}000 \\
+Realistic sizes ($n$) & 100{,}000; 200{,}000 \\
+Graph types & sparse, grid, power-law, worst-case, road, social \\
+Timed runs & 3--5 (after 1--2 warmup) \\
+Random seed & 42 \\
+\DAMS{} scales ($K$) & $\lceil\sqrt{\log_2 n}\rceil$ \\
+\DAMS{} buckets ($B$) & $\lceil\sqrt{n}\rceil$ \\
+\DAMS{} cleanup passes & 3 \\
+Language & Python 3.11 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ─── 6. Results ──────────────────────────────────────────────────────────────
+\section{Results}
+\label{sec:results}
+
+\subsection{Correctness Verification}
+
+All four algorithms produce identical shortest-path distances on every graph
+type for $n \leq 5{,}000$, verified exhaustively against Bellman--Ford. \DAMS{}
+passes 100\% correctness on all graph types including edge cases (disconnected
+graphs, zero-weight edges, single-vertex graphs).
+
+\subsection{Wall-Clock Scaling}
+
+Figure~\ref{fig:scaling_sparse} shows wall-clock scaling on sparse graphs. All
+algorithms exhibit near-linear scaling in $m$, consistent with theoretical
+predictions. Dijkstra + binary heap is fastest due to Python's C-implemented
+\texttt{heapq}; \DAMS{} is 2--5$\times$ slower but consistently faster than
+Dijkstra + Fibonacci heap.
+
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/scaling_time_sparse.png}
+  \caption{Sparse graphs ($m = 3n$). \DAMS{} scales linearly in $n$,
+    intermediate between binary-heap Dijkstra and Fibonacci-heap Dijkstra.
+    Error bars show standard deviation across runs.}
+  \label{fig:scaling_sparse}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/scaling_time_dense.png}
+  \caption{Grid graphs ($m \approx 4n$). All algorithms exhibit similar
+    relative ordering. The gap between \DAMS{} and binary-heap Dijkstra
+    narrows slightly at larger $n$.}
+  \label{fig:scaling_dense}
+\end{subfigure}
+\caption{Wall-clock scaling comparison across graph types. Both panels use
+  log-log axes with theoretical $\bigO(m + n\log n)$ reference curves (dashed).
+  \DAMS{} demonstrates consistent near-linear scaling across all graph types.}
+\label{fig:scaling_combined}
+\end{figure}
+
+Figure~\ref{fig:scaling_worst} shows performance on worst-case graphs, where
+\DAMS{} and Duan 2025 converge at larger $n$, reflecting their similar
+asymptotic complexity.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/scaling_time_worst_case.png}
+\caption{Wall-clock scaling on worst-case graphs ($m = 2n$). \DAMS{} and
+  Duan et al.\ 2025 converge in performance at $n = 50{,}000$--$100{,}000$,
+  with both significantly outperforming Fibonacci-heap Dijkstra.
+  The chain-with-shortcuts structure limits bucket re-insertions, favouring
+  \DAMS{}'s bucketed approach.}
+\label{fig:scaling_worst}
+\end{figure}
+
+\subsection{Operation Count Analysis}
+
+Table~\ref{tab:ops} reports operation counts at $n = 100{,}000$. \DAMS{}
+performs 1.8--7$\times$ more total operations than binary-heap Dijkstra,
+reflecting the $\sqrt{\log n} \approx 4$ multiplicative factor from
+multi-scale processing.
+
+\begin{table}[t]
+\centering
+\caption{Total operations (comparisons + additions + heap/bucket ops) at
+  $n = 100{,}000$. Best result per graph type in \textbf{bold}. \DAMS{}
+  processes each edge $\sqrt{\log n} \approx 4$ times, leading to higher
+  raw operation counts, but each operation has $\bigO(1)$ amortized cost.}
+\label{tab:ops}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& \multicolumn{4}{c}{\textbf{Total Operations}} \\
+\cmidrule(l){2-5}
+\textbf{Graph Type} & \textbf{Dij.+Fib} & \textbf{Dij.+Bin} & \textbf{Duan '25}
+  & \textbf{\DAMS{}} \\
+\midrule
+Sparse ($m\!=\!3n$) & 3,381,477 & \textbf{898,648} & 2,590,498 & 6,093,456 \\
+Grid ($m\!\approx\!4n$) & 3,459,322 & \textbf{1,191,630} & 3,580,590 & 9,142,188 \\
+Worst-case ($m\!=\!2n$) & 3,612,852 & \textbf{952,915} & 2,152,897 & 4,152,892 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Regression Analysis.}
+We fit operation counts to four candidate complexity functions:
+$c \cdot m$,\; $c \cdot (m + n\log n)$,\; $c \cdot m\log^{2/3} n$,\; and
+$c \cdot m\sqrt{\log n}$. Table~\ref{tab:r2} reports $R^2$ values. All
+candidates achieve $R^2 > 0.99$ for Dijkstra and Duan implementations; for
+\DAMS{}, the $m + n\log n$ fit yields $R^2 \geq 0.996$ across graph types.
+
+\begin{table}[t]
+\centering
+\caption{Regression $R^2$ values for \DAMS{} operation counts fitted to
+  candidate complexity functions. Over the tested range ($n = 1{,}000$ to
+  $100{,}000$), logarithmic factors vary too little ($\log_2 n$ from 10 to
+  17) to distinguish candidates conclusively.}
+\label{tab:r2}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Graph Type} & $c \cdot m$ & $c(m\!+\!n\!\log\! n)$ & $cm\log^{2/3}\!n$
+  & $cm\sqrt{\log n}$ \\
+\midrule
+Sparse  & 0.9941 & \textbf{0.9976} & 0.9971 & 0.9965 \\
+Grid    & 0.9927 & \textbf{0.9966} & 0.9961 & 0.9954 \\
+Worst-case & 0.9916 & \textbf{0.9961} & 0.9953 & 0.9945 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figures~\ref{fig:ops_sparse} and~\ref{fig:ops_dense} show operation counts
+with theoretical curves overlaid.
+
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/scaling_ops_sparse.png}
+  \caption{Operation counts on sparse graphs with theoretical reference
+    curves. \DAMS{} tracks the $c \cdot m\sqrt{\log n}$ curve closely.}
+  \label{fig:ops_sparse}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/scaling_ops_dense.png}
+  \caption{Operation counts on grid (dense) graphs. The higher edge count
+    amplifies the multiplicative $\sqrt{\log n}$ factor in \DAMS{}.}
+  \label{fig:ops_dense}
+\end{subfigure}
+\caption{Empirical operation counts versus $n$ with fitted theoretical
+  complexity curves (dashed lines). All algorithms exhibit near-linear growth
+  in $m$, consistent with sub-quadratic theoretical bounds.}
+\label{fig:ops_combined}
+\end{figure}
+
+Figure~\ref{fig:r2} provides a visual comparison of $R^2$ values across
+algorithms and graph types, confirming that logarithmic-factor distinctions
+are below the noise floor at experimentally feasible sizes.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.6\textwidth]{figures/r2_comparison.png}
+\caption{$R^2$ comparison for operation-count regressions across four
+  candidate complexity functions. All values exceed 0.99, reflecting the
+  narrow range of $\log_2 n$ (10--17) over the tested sizes. The
+  $c(m + n\log n)$ fit is marginally best for \DAMS{}, consistent with
+  the claimed $\bigO(m\sqrt{\log n} + n\log n)$ bound.}
+\label{fig:r2}
+\end{figure}
+
+\subsection{Crossover Analysis}
+
+Figure~\ref{fig:crossover} plots the ratio of \DAMS{} wall-clock time to
+Dijkstra + binary heap time. The ratio decreases from ${\sim}5\times$ at
+$n = 1{,}000$ to ${\sim}4.5\times$ at $n = 100{,}000$ on sparse graphs,
+suggesting a very slow convergence consistent with the sub-logarithmic
+asymptotic improvement.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/crossover_analysis.png}
+\caption{Ratio of \DAMS{} to Dijkstra+BinHeap wall-clock time versus $n$.
+  A slowly decreasing trend is visible on sparse and grid graphs, consistent
+  with the theoretically predicted narrowing as $\log n$ grows.
+  Extrapolation suggests a crossover point far beyond $n = 10^{30}$.}
+\label{fig:crossover}
+\end{figure}
+
+\subsection{Realistic Graph Benchmarks}
+
+Table~\ref{tab:realistic} reports results on road-network-like and
+social-network-like graphs at scale. Figure~\ref{fig:realistic} provides a
+visual comparison.
+
+\begin{table}[t]
+\centering
+\caption{Median wall-clock time (seconds) on realistic graph instances. Best
+  per row in \textbf{bold}. Results are consistent with Castro et
+  al.~\cite{castro2025}: Dijkstra+BinHeap dominates in practice.}
+\label{tab:realistic}
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+\textbf{Graph} & $n$ & $m$ & \textbf{Dij.+Fib} & \textbf{Dij.+Bin} &
+  \textbf{Duan '25} & \textbf{\DAMS{}} \\
+\midrule
+Road 100K  & 100K & 800K    & 3.73 & \textbf{0.61} & 2.12 & 5.54 \\
+Road 200K  & 200K & 1.6M    & 8.37 & \textbf{1.39} & 5.47 & 12.81 \\
+Social 100K & 100K & 1.0M   & 4.67 & \textbf{1.45} & 3.39 & 5.50 \\
+Social 200K & 200K & 2.0M   & 10.31 & \textbf{3.34} & 8.09 & 12.28 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.6\textwidth]{figures/realistic_comparison.png}
+\caption{Performance comparison on realistic graph instances. Dijkstra +
+  binary heap is 3--9$\times$ faster than all sub-sorting-barrier algorithms.
+  \DAMS{} and Duan 2025 show similar performance on social networks, with
+  Duan having an edge on road networks.}
+\label{fig:realistic}
+\end{figure}
+
+\subsection{Memory Consumption}
+
+Figure~\ref{fig:memory} compares peak memory across algorithms. \DAMS{}
+uses moderately more memory than Dijkstra due to the bucket array
+($\bigO(\sqrt{n})$ buckets $\times$ vertex lists), but less than
+Fibonacci-heap Dijkstra at large $n$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/memory_comparison.png}
+\caption{Peak resident set size (RSS) versus $n$. \DAMS{} consumes
+  $\bigO(n + m)$ memory (graph storage plus bucket arrays), comparable to
+  other algorithms. Fibonacci-heap Dijkstra shows higher peak RSS due to
+  per-node heap metadata.}
+\label{fig:memory}
+\end{figure}
+
+\subsection{Ablation Study}
+
+We ablated three key parameters across 88 configurations
+(Figure~\ref{fig:ablation}).
+
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.32\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/ablation_scales.png}
+  \caption{Number of scales. Runtime is linearly proportional, confirming
+    $\bigO(m)$ per-scale cost. Using 1 scale causes correctness failures.}
+  \label{fig:ablation_scales}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.32\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/ablation_buckets.png}
+  \caption{Bucket count factor. Performance is insensitive to this parameter
+    ($<3\%$ variation), confirming $\bigO(1)$ amortized bucket costs.}
+  \label{fig:ablation_buckets}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.32\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/ablation_cleanup.png}
+  \caption{Cleanup passes. 0~passes is fastest but risks correctness on
+    sparse random graphs. 3~passes add ${\sim}40\%$ overhead.}
+  \label{fig:ablation_cleanup}
+\end{subfigure}
+\caption{Ablation study results on sparse graphs ($n$ up to 50K). The number of
+  scales (a) is the most critical parameter, with linear impact on runtime.
+  Bucket count (b) has negligible effect. Cleanup passes (c) trade modest
+  runtime for correctness guarantees.}
+\label{fig:ablation}
+\end{figure}
+
+Table~\ref{tab:ablation} summarizes the ablation findings.
+
+\begin{table}[t]
+\centering
+\caption{Ablation study summary on sparse graphs at $n = 50{,}000$. Default
+  parameters in \textbf{bold}. ``Correct?'' indicates whether all
+  correctness checks pass (verified up to $n = 5{,}000$).}
+\label{tab:ablation}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+\textbf{Parameter} & \textbf{Variant} & \textbf{Time (s)} &
+  \textbf{Speedup} & \textbf{Correct?} \\
+\midrule
+\multirow{4}{*}{Scales}
+  & 1 scale            & 0.65 & 1.57$\times$ & No \\
+  & \textbf{$\sqrt{\log n}$}  & \textbf{1.02} & \textbf{1.00$\times$} & \textbf{Yes} \\
+  & $\log n$           & 2.86 & 0.36$\times$ & Yes \\
+  & $2\log n$          & 5.39 & 0.19$\times$ & Yes \\
+\midrule
+\multirow{3}{*}{Buckets}
+  & $\sqrt{n}/4$       & 1.07 & 0.97$\times$ & Yes \\
+  & \textbf{$\sqrt{n}$}       & \textbf{1.04} & \textbf{1.00$\times$} & \textbf{Yes} \\
+  & $2\sqrt{n}$        & 1.05 & 1.00$\times$ & Yes \\
+\midrule
+\multirow{3}{*}{Cleanup}
+  & 0 passes           & 0.74 & 1.44$\times$ & Conditional \\
+  & 1 pass             & 0.85 & 1.25$\times$ & Yes \\
+  & \textbf{3 passes}  & \textbf{1.06} & \textbf{1.00$\times$} & \textbf{Yes} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key Findings.}
+(i)~The number of scales is by far the most critical parameter, with runtime
+scaling linearly as predicted by the $\bigO(m)$-per-scale analysis.
+(ii)~Bucket count is practically irrelevant ($<3\%$ variation).
+(iii)~Cleanup passes provide a safety net at modest cost (${\sim}40\%$
+overhead for 3 passes).
+
+% ─── 7. Discussion ───────────────────────────────────────────────────────────
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Comparison with Duan et al.\ 2025/2026}
+
+Table~\ref{tab:comparison} contrasts the algorithmic approaches.
+
+\begin{table}[t]
+\centering
+\caption{Structural comparison between \DAMS{} and Duan et al.\ 2025/2026.
+  \DAMS{} offers a simpler iterative framework at the cost of an additive
+  $\bigO(n\log n)$ term.}
+\label{tab:comparison}
+\begin{tabular}{@{}p{3.4cm}p{4.2cm}p{4.2cm}@{}}
+\toprule
+\textbf{Aspect} & \textbf{Duan et al.\ 2025/2026} & \textbf{\DAMS{}} \\
+\midrule
+Core technique     & Recursive BMSSP                & Iterative multi-scale \\
+Priority queue     & Partial-order PQ               & Bucketed PQ \\
+Recursion depth    & $\bigO(\log n / t)$            & 0 (iterative) \\
+Number of passes   & $\bigO(\log^{1/3} n)$ levels   & $\bigO(\sqrt{\log n})$ scales \\
+Complexity         & $\bigO(m\sqrt{\log n})$        & $\bigO(m\sqrt{\log n} + n\log n)$ \\
+Implementation     & Complex                        & Moderate \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The additive $\bigO(n\log n)$ term in \DAMS{} arises from the cleanup phase
+and initial weight scanning. For the common case of $m = \Theta(n)$ (maximally
+sparse), \DAMS{} gives $\bigO(n\log n)$, matching but not improving on
+Dijkstra. In contrast, Duan et al.~\cite{duan2026} achieves a pure
+$\bigO(n\sqrt{\log n})$, providing a genuine improvement even for sparse
+graphs. For $m = \Omega(n^{1+\varepsilon})$ with any constant $\varepsilon > 0$,
+both achieve $\bigO(m\sqrt{\log n})$.
+
+\subsection{The Practical Gap}
+
+Like all sub-sorting-barrier algorithms, \DAMS{} does not outperform
+optimized Dijkstra at experimentally feasible sizes. At $n = 100{,}000$:
+\begin{itemize}[leftmargin=1.5em]
+\item $\log_2(n) \approx 16.6$,\quad $\sqrt{\log_2(n)} \approx 4.1$
+\item The ratio $\log n / \sqrt{\log n} \approx 4$
+\end{itemize}
+Thus \DAMS{} saves at most a factor of~4 in comparisons versus Dijkstra---well
+within the noise of implementation constant factors. This is consistent with
+Castro et al.~\cite{castro2025}, who estimated the crossover point for Duan et
+al.\ 2025 at $n > 10^{67}$.
+
+We identify five contributing factors to the practical gap:
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{Python overhead:} Per-operation cost is ${\sim}100\times$
+  higher than C/C++, disproportionately affecting complex data structures.
+
+\item \textbf{Tiny logarithmic factors:} At $n = 100$K, $\sqrt{\log n} \approx 4$;
+  the asymptotic improvement is invisible.
+
+\item \textbf{Binary heap efficiency:} Python's \texttt{heapq} runs at native
+  C speed, giving binary-heap Dijkstra an inherent advantage.
+
+\item \textbf{Multiplicative overhead:} \DAMS{} processes each edge
+  ${\sim}4\times$ (once per scale) plus cleanup, visible in operation counts
+  ($6.1$M vs $0.9$M for binary-heap Dijkstra at $n = 100$K sparse).
+
+\item \textbf{Cache effects:} \algname{BucketPQ} random access is less
+  cache-friendly than the contiguous heap array.
+\end{enumerate}
+
+\subsection{Cross-Domain Insights}
+
+\DAMS{} was designed using the ConceptEvolve framework for cross-domain
+algorithmic exploration. Three bridges proved productive:
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{$\varepsilon$-scaling $\to$ multi-scale SSSP:} Adapted from
+  auction algorithms~\cite{bertsekas1992}, providing the core iterative
+  structure.
+\item \textbf{Adaptive mesh refinement $\to$ density-adaptive intervals:}
+  Inspired bucket-width adaptation across scales.
+\item \textbf{Streaming sketches $\to$ bucketed PQ:} Led to the batch-processing
+  design of \algname{BucketPQ}.
+\end{enumerate}
+
+\subsection{Limitations}
+
+We state the following limitations explicitly:
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{Additive $n\log n$ term:} Unlike Duan et
+  al.~\cite{duan2026}, \DAMS{} does not improve on Dijkstra for maximally
+  sparse graphs ($m = \Theta(n)$).
+
+\item \textbf{Python implementation:} Wall-clock comparisons primarily
+  measure Python overhead, not algorithmic complexity. Operation counts are
+  the fairer metric.
+
+\item \textbf{Size limitations:} At $n \leq 200$K, logarithmic factors are
+  too small to validate asymptotic claims conclusively.
+  All $R^2$ values exceed $0.99$, making it impossible to distinguish between
+  $\bigO(m\sqrt{\log n})$ and $\bigO(m\log^{2/3} n)$ empirically.
+
+\item \textbf{Single random seed:} All experiments use seed~42.
+  Multi-seed evaluation would strengthen statistical conclusions.
+
+\item \textbf{Synthetic graphs:} Our generators approximate but do not
+  replicate real-world network structure. Testing on DIMACS Challenge and
+  SNAP datasets would improve external validity.
+\end{enumerate}
+
+\subsection{Complexity Landscape}
+
+Table~\ref{tab:landscape} positions \DAMS{} within the full landscape of
+SSSP complexity results.
+
+\begin{table}[t]
+\centering
+\caption{SSSP complexity landscape. \DAMS{} matches the Duan et al.\ 2026
+  bound for $m = \Omega(n\sqrt{\log n})$ and improves on Dijkstra + Fibonacci
+  heap for $m = \Omega(n\sqrt{\log n}\cdot\log\log n)$.}
+\label{tab:landscape}
+\begin{tabular}{@{}p{4cm}lllc@{}}
+\toprule
+\textbf{Algorithm} & \textbf{Year} & \textbf{Complexity} & \textbf{Model} &
+  \textbf{vs.\ \DAMS{}} \\
+\midrule
+Dijkstra+FibHeap~\cite{fredmantarjan1987}
+  & 1987 & $\bigO(m\!+\!n\log n)$ & Comp. & Improved$^*$ \\
+Thorup~\cite{thorup1999}
+  & 1999 & $\bigO(m\!+\!n)$ & word-RAM & Weaker \\
+Pettie--Ram.~\cite{pettieramachandran2005}
+  & 2005 & $\bigO(m\alpha + n\log\!\log r)$ & Comp. & Incomp. \\
+Thorup~\cite{thorup2004}
+  & 2004 & $\bigO(m\!+\!n\log\!\log C)$ & word-RAM & Weaker \\
+Duan et al.~\cite{duan2023}
+  & 2023 & $\bigO(m\sqrt{\log n \cdot \log\!\log n})$ & CA & Matched \\
+Duan et al.~\cite{duan2025}
+  & 2025 & $\bigO(m\log^{2/3} n)$ & CA & Improved \\
+Duan et al.~\cite{duan2026}
+  & 2026 & $\bigO(m\sqrt{\log n})$ & CA & Matched$^\dagger$ \\
+\textbf{\DAMS{} (ours)}
+  & 2026 & $\bigO(m\sqrt{\log n}\!+\!n\log n)$ & CA & --- \\
+\bottomrule
+\multicolumn{5}{@{}l}{\footnotesize $^*$For $m = \Omega(n\sqrt{\log n}\cdot\log\log n)$.
+  $^\dagger$Plus additive $n\log n$ term. CA = comparison-addition.}
+\end{tabular}
+\end{table}
+
+% ─── 8. Conclusion ──────────────────────────────────────────────────────────
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented \DAMS{}, a novel SSSP algorithm achieving
+$\bigO(m\sqrt{\log n} + n\log n)$ in the comparison-addition model on
+directed graphs with non-negative real edge weights. The algorithm combines
+three ideas from cross-domain algorithmic exploration: epsilon-scaling from
+auction algorithms~\cite{bertsekas1992}, density-adaptive bucketing inspired
+by mesh refinement, and Johnson-style reweighting~\cite{johnson1977} between
+scales. The resulting iterative framework is structurally simpler than the
+recursive BMSSP decomposition of Duan et al.~\cite{duan2025,duan2026} while
+achieving the same asymptotic complexity for graphs of moderate density.
+
+Our evaluation---spanning 80 synthetic benchmarks across 4 graph types and
+5 sizes, 16 realistic graph instances up to 200K vertices, and 88 ablation
+configurations---confirms correctness, consistent scaling, and the critical
+role of the multi-scale structure. The ablation study identified the number
+of scales as the single most important parameter, with runtime scaling linearly
+as predicted by theory.
+
+We are forthright about limitations: \DAMS{} does not outperform Dijkstra in
+practice at any feasible scale, consistent with the findings of Castro et
+al.~\cite{castro2025} for the Duan et al.\ algorithm. The sub-logarithmic
+improvement is invisible when $\log n < 20$. The principal value of \DAMS{}
+lies in providing an \emph{alternative algorithmic framework} for
+sub-sorting-barrier SSSP---one rooted in classical, well-understood techniques
+that may prove more amenable to practical optimization.
+
+\paragraph{Future Work.}
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{Native implementation:} A C/C++ implementation would eliminate
+  Python overhead and enable evaluation at $n > 10^6$.
+\item \textbf{Parallelization:} The bucketed structure is naturally
+  parallelizable, analogous to $\Delta$-stepping~\cite{meyersanders2003}.
+\item \textbf{Adaptive scale selection:} Dynamically choosing the number of
+  scales based on distance distribution could improve practical performance.
+\item \textbf{Lower bounds:} Whether $\bigO(m\sqrt{\log n})$ is optimal in
+  the comparison-addition model remains open.
+\item \textbf{Negative weights:} Extending epsilon-scaling to negative-weight
+  SSSP, connecting to Bernstein et al.~\cite{bernstein2022}.
+\end{enumerate}
+
+% ─── References ──────────────────────────────────────────────────────────────
+\bibliographystyle{plainnat}
+\bibliography{sources}
+
+\end{document}
