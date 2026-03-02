@@ -1,0 +1,284 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-02T00:00:00Z",
+  "updated_at": "2026-03-02T05:39:02.387419+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-02T00:00:00Z",
+      "completed_at": "2026-03-02T05:39:02.387370+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and available tooling",
+          "acceptance_criteria": "Produce repo_analysis.md documenting all files, modules (.archivara/semantic_scholar.py, .archivara/concept_evolve.py), their purposes, and how they connect. Run ConceptEvolve with 'python3 .archivara/concept_evolve.py evolve \"minimal gravity N-body simulation\"' and record cross-domain steering insights.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Literature review of classical N-body gravitational simulation methods",
+          "acceptance_criteria": "Search the web for foundational papers on N-body gravity simulation (Aarseth direct summation, Barnes-Hut tree code, fast multipole method). Document at least 5 classical references with summaries of key contributions. Use .archivara/semantic_scholar.py to find papers. Add all found references to sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Literature review of numerical integration schemes for gravitational dynamics",
+          "acceptance_criteria": "Search the web for papers on symplectic integrators (Verlet/leapfrog, Yoshida, Forest-Ruth), energy-preserving methods, and adaptive timestepping for Hamiltonian systems. Document at least 5 references covering integrator accuracy, stability, and symplecticity. Add all to sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Survey open-source gravity simulators and benchmark codes",
+          "acceptance_criteria": "Search the web for open-source N-body codes (e.g., REBOUND, Gadget, NBODY6, galpy, pynbody). Document at least 4 repositories with their design choices, languages, and performance characteristics. Note which techniques are standard practice.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Create and validate sources.bib with comprehensive bibliography",
+          "acceptance_criteria": "sources.bib exists in the repo root with valid BibTeX entries for all consulted sources. At least 12 relevant papers and repositories cited. Entries must include author, title, year, and venue/url. Use .archivara/semantic_scholar.py bibtex command to generate entries.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Define problem scope, constraints, and research questions",
+          "acceptance_criteria": "Produce problem_spec.md defining: (1) scope \u2014 2D or 3D point-mass gravitational N-body simulation, (2) target N range (10 to 10000+), (3) key research questions \u2014 how do different force algorithms and integrators trade off accuracy vs speed, (4) success metrics \u2014 energy conservation, momentum conservation, wall-clock scaling, (5) canonical test problems to validate against (Kepler orbit, figure-eight three-body, Plummer sphere).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement core data structures: Body, System, and vector math",
+          "acceptance_criteria": "Python module with Body class (mass, position, velocity as numpy arrays), System class (list of bodies, time), and vector utility functions. Support both 2D and 3D. Include factory functions for standard initial conditions (circular orbit, random cluster, Plummer sphere). All classes tested with at least 5 unit tests.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement brute-force O(N^2) gravitational force computation",
+          "acceptance_criteria": "Function computing pairwise gravitational forces with Newton's law F = -G*m1*m2*r_hat/|r|^2. Include gravitational softening parameter epsilon to avoid singularities. Vectorized with numpy for performance. Verified against analytic two-body force to within 1e-10 relative error.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement baseline integrators: forward Euler, symplectic Euler, and leapfrog (Verlet)",
+          "acceptance_criteria": "Three integrator functions each advancing the system by one timestep dt. Leapfrog must use the kick-drift-kick or drift-kick-drift form. Verified on circular Kepler orbit: forward Euler diverges, symplectic Euler and leapfrog conserve energy to within specified tolerances over 100 orbits.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement conservation metrics: energy, linear momentum, angular momentum",
+          "acceptance_criteria": "Functions computing total kinetic energy, total potential energy, total linear momentum vector, and total angular momentum. Relative energy error |dE/E0| tracked per timestep. Verified: brute-force + leapfrog on two-body Kepler orbit maintains |dE/E0| < 1e-6 over 1000 orbits with dt=0.01.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Run baseline benchmarks and establish reference performance",
+          "acceptance_criteria": "Benchmark brute-force + leapfrog for N = 10, 50, 100, 500, 1000. Record wall-clock time per step and energy drift per 100 steps. Produce baseline_benchmarks.json with all timing and accuracy data. Confirm O(N^2) scaling by fitting log-log slope (expect slope ~2.0 +/- 0.2).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Implement Barnes-Hut octree/quadtree for O(N log N) force approximation",
+          "acceptance_criteria": "Recursive tree structure (quadtree for 2D, octree for 3D) with configurable opening angle theta. Computes approximate gravitational forces using monopole (center-of-mass) approximation. For theta=0.5, force error per particle < 1% compared to brute-force on a 1000-body Plummer sphere.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement Yoshida 4th-order symplectic integrator",
+          "acceptance_criteria": "4th-order symplectic integrator using Yoshida (1990) coefficients. On Kepler orbit, demonstrate 4th-order convergence: halving dt should reduce energy error by factor ~16. Energy error over 1000 orbits at least 100x smaller than leapfrog at same dt.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement adaptive timestep control for close encounters",
+          "acceptance_criteria": "Timestep adapter based on minimum pairwise distance or maximum acceleration. When particles approach closely, dt decreases to maintain accuracy; when well-separated, dt increases for efficiency. Demonstrate on a hyperbolic two-body encounter: energy conserved to < 1e-5 relative error with adaptive stepping vs > 1e-2 with fixed dt.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement optimized vectorized force computation using numpy broadcasting",
+          "acceptance_criteria": "Fully vectorized brute-force using numpy array operations (no Python loops over particle pairs). At least 5x speedup over naive Python loop implementation for N=1000. Results must match naive implementation to machine precision (relative error < 1e-14).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement visualization module for orbits and diagnostic plots",
+          "acceptance_criteria": "Module using matplotlib producing: (1) 2D/3D trajectory plots with color-coded time, (2) energy error vs time plot, (3) momentum conservation plot, (4) particle distribution snapshots. Demonstrate on Kepler orbit and 100-body cluster. Save all figures as PNG files.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Implement standard initial conditions and canonical test problems",
+          "acceptance_criteria": "Generator functions for: (1) Kepler two-body orbit (circular and eccentric), (2) figure-eight three-body solution (Chenciner-Montgomery 2000), (3) Plummer sphere with N particles, (4) cold collapse (uniform sphere with zero velocity). Each verified to produce expected dynamics for at least 10 dynamical times.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Benchmark Barnes-Hut vs brute-force scaling across N",
+          "acceptance_criteria": "Time both force algorithms for N = 100, 500, 1000, 2000, 5000, 10000. Produce scaling_comparison.png showing log-log wall-clock time vs N. Fit power-law exponents: brute-force should show slope ~2.0, Barnes-Hut should show slope ~1.0-1.3. Report crossover N where Barnes-Hut becomes faster.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Compare integrator accuracy on Kepler two-body orbit",
+          "acceptance_criteria": "Run forward Euler, symplectic Euler, leapfrog, and Yoshida on circular Kepler orbit for 1000 periods. Plot energy error vs time for all four. Measure convergence order by running each at dt = 0.1, 0.05, 0.025, 0.0125 and fitting error vs dt on log-log. Results must match theoretical convergence orders (1st, 1st, 2nd, 4th).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Run canonical test problems and validate against known solutions",
+          "acceptance_criteria": "Run figure-eight three-body for 10 periods \u2014 orbit must close to within 1% of initial positions. Run Plummer sphere with N=500 for 50 dynamical times \u2014 virial ratio must remain within 10% of equilibrium. Run eccentric Kepler orbit (e=0.9) \u2014 verify orbital elements conserved. Document all results with plots.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Convergence study: energy conservation vs timestep and theta parameter",
+          "acceptance_criteria": "Sweep dt over [0.001, 0.005, 0.01, 0.05, 0.1] and Barnes-Hut theta over [0.3, 0.5, 0.7, 1.0] for a 500-body Plummer sphere over 100 dynamical times. Produce heatmap of max |dE/E0| as function of dt and theta. Identify optimal trade-off region. Compare against prior work from literature review (cite specific papers from sources.bib).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Stress test: adaptive timestep on chaotic three-body encounters",
+          "acceptance_criteria": "Generate 20 random three-body initial conditions with close encounters. Compare fixed-dt vs adaptive-dt leapfrog: measure energy conservation and wall-clock time. Adaptive scheme should achieve < 1e-5 energy error on at least 80% of cases while fixed-dt (matched wall-clock budget) shows > 1e-3 error on most cases.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Write comprehensive research report (REPORT.md)",
+          "acceptance_criteria": "REPORT.md with sections: Introduction, Background (citing at least 8 papers from sources.bib), Methods (force algorithms, integrators, adaptive timestepping), Results (all experimental findings with figure references), Discussion (comparison to prior work, trade-offs), Conclusion. Minimum 1500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Create publication-quality summary tables comparing all methods",
+          "acceptance_criteria": "Produce RESULTS.md with: (1) table comparing force algorithms (brute-force vs Barnes-Hut) on accuracy, scaling exponent, and crossover N, (2) table comparing integrators on convergence order, energy conservation, and cost per step, (3) table of canonical test problem results vs expected values. Reference specific prior work benchmarks from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Document limitations, open questions, and future directions",
+          "acceptance_criteria": "Section in REPORT.md or separate LIMITATIONS.md covering: (1) what the simulation does NOT handle (relativistic effects, collisions, gas dynamics), (2) known accuracy limits and failure modes, (3) at least 3 concrete future directions (e.g., fast multipole method, GPU acceleration, individual particle timesteps) with references to relevant papers in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Create reproducibility package with requirements, runner script, and README",
+          "acceptance_criteria": "requirements.txt listing all Python dependencies (numpy, matplotlib). run_all.py script that executes all benchmarks and generates all figures from scratch. Updated README.md with project description, installation instructions, usage examples, and summary of findings. All tests pass with 'python -m pytest' or equivalent.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 26,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 26
+  }
+}
