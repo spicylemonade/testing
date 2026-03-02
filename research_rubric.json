@@ -1,0 +1,300 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-02T12:00:00Z",
+  "updated_at": "2026-03-02T19:55:06.990424+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-02T12:00:00Z",
+      "completed_at": "2026-03-02T19:55:06.990399+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and available research infrastructure",
+          "acceptance_criteria": "Produce a written document (results/repo_analysis.md) listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, .opencode/tools/*, .opencode/agents/*), their purposes, data flow between them, and how to invoke each tool. Must cover all 5 configured agent roles from opencode.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive web-based literature review on Hadamard matrix constructions",
+          "acceptance_criteria": "Search the web for at least 15 distinct queries covering: Hadamard conjecture status 2024-2026, Goethals-Seidel constructions, Williamson matrices, supplementary difference sets, Turyn sequences, modular Hadamard matrices, SAT-based Hadamard search, and order-668-specific results. Create results/literature_review.md summarizing findings with full citations. Must identify the key result that 668 is the smallest open order (Kharaghani & Tayfeh-Rezaie 2005, Cati & Pasechnik 2024).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Build and maintain sources.bib with BibTeX entries for all consulted papers",
+          "acceptance_criteria": "Create sources.bib in the repo root containing BibTeX entries for at least 10 relevant papers. Must include entries for: (1) Kharaghani & Tayfeh-Rezaie 2005, (2) Djokovic, Golubitsky & Kotsireas 2014, (3) Cati & Pasechnik 2024, (4) Djokovic 2024 (spin/slide), (5) Eliahou 2025 (64-modular H(668)), (6) Seberry & Yamada 2020 monograph, (7) Bright et al. on SAT/Williamson, (8) Goethals & Seidel 1970, (9) Turyn 1972, (10) at least one paper on supplementary difference sets for prime orders. Use the semantic_scholar tool's bibtex command where possible.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Subagent delegation: Mine citation graph of Kharaghani-Tayfeh-Rezaie 2005 and Djokovic 2024 for cross-domain construction ideas",
+          "acceptance_criteria": "Delegate to the literature-graph-miner subagent to build a citation graph rooted at the H(428) paper and Djokovic's 2024 spin/slide paper. Produce results/citation_graph_analysis.md identifying: (a) at least 5 papers that cite both roots or share common references, (b) any construction methods not yet tried for order 668, (c) cross-domain techniques (coding theory, combinatorial designs, algebraic geometry) that could transfer. Must include paper IDs for all referenced works.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Formalize the mathematical problem: analyze 668 = 4 \u00d7 167 and classify all applicable construction families",
+          "acceptance_criteria": "Produce results/problem_formalization.md containing: (1) complete factorization analysis of 668, (2) properties of F_167 (primitive roots, quadratic residues, cyclotomic structure), (3) a table of all known Hadamard construction families with a pass/fail verdict for order 668 and explicit reason (Paley I/II, Kronecker, Williamson, Goethals-Seidel, Miyamoto, Cooper-Wallis, Spence, Baumert-Hall, Djokovic spin/slide, Turyn-type, eight-Williamson), (4) identification of Goethals-Seidel over Z_167 and Spence's construction with v=83 as the two most viable paths.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Run ConceptEvolve to generate initial concept tree for Hadamard-668 problem",
+          "acceptance_criteria": "Execute concept_evolve with 'evolve' command on the topic 'Constructing Hadamard matrix of order 668 using algebraic and combinatorial methods'. Verify that results/concept_evolve/tree/ is populated with at least 5 concept folders, each containing concept.json, literature.json, and README.md. The tree index.json and adjacency.json must exist and be valid JSON.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement SageMath/Python verification toolkit for Hadamard matrix validation",
+          "acceptance_criteria": "Create src/hadamard_verify.py that: (1) checks if an n\u00d7n \u00b11 matrix H satisfies HH^T = nI, (2) computes row-orthogonality defect ||HH^T - nI||_F, (3) checks m-modular Hadamard property (HH^T \u2261 nI mod m) for arbitrary m, (4) includes unit tests with known small Hadamard matrices (orders 2, 4, 8, 12, 20). All tests must pass.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement baseline Paley and Kronecker construction library",
+          "acceptance_criteria": "Create src/constructions/paley.py implementing Paley Type I (q \u2261 3 mod 4) and Type II (q \u2261 1 mod 4) constructions using Legendre symbols over finite fields. Create src/constructions/kronecker.py implementing tensor product construction. Verify: paley_type1(167) produces valid H(168), kronecker(H4, H168) produces valid H(672). Log the orthogonality defect for near-miss H(668) attempts.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement Goethals-Seidel array framework over Z_n",
+          "acceptance_criteria": "Create src/constructions/goethals_seidel.py that: (1) takes four (0,1)-sequences of length n representing circulant first rows A, B, C, D, (2) constructs the Goethals-Seidel array [A BR CR DR; -BR A D^TR -C^TR; -CR -D^TR A B^TR; -DR C^TR -B^TR A] where R is the back-circulant matrix, (3) evaluates AA^T + BB^T + CC^T + DD^T and checks if it equals 4nI, (4) includes a small-case validation with known GS-Hadamard of order 12 or 20.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement supplementary difference set (SDS) search framework for Z_167",
+          "acceptance_criteria": "Create src/constructions/sds_search.py that: (1) defines the SDS constraint for GS-type: 4-{167; k1,k2,k3,k4; \u03bb} where sum(ki(ki-1)) + ... = 167\u03bb and sum(ki) = (4\u00d7167-668)/... satisfies the necessary conditions, (2) computes the periodic autocorrelation function of a subset via DFT (using numpy.fft), (3) checks the SDS condition sum of autocorrelations = 0 for all nonzero shifts, (4) validates on at least one known small SDS example. Must be correct but need not be fast for v=167.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Subagent delegation: Explore concept tree for computational bottlenecks and known algorithmic approaches",
+          "acceptance_criteria": "Delegate to concept-tree-explorer subagent to traverse results/concept_evolve/tree/, identify concept nodes related to computational complexity of SDS search (e.g., symmetry reduction, FFT-based filtering, SAT encoding). Produce results/concept_evolve/tree/bottleneck_analysis.md listing at least 3 distinct algorithmic acceleration strategies found in the concept tree, with references to specific concept folders.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Investigate cyclotomic structure of F_167 for algebraically-constrained SDS construction",
+          "acceptance_criteria": "Create src/algebra/cyclotomic_167.py that: (1) computes primitive roots of F_167, (2) identifies all cyclotomic cosets mod 167, (3) computes the quadratic residues and non-residues, (4) constructs cyclotomic difference sets and near-difference sets, (5) evaluates which cyclotomic classes yield low autocorrelation when used as SDS blocks. Produce results/cyclotomic_analysis.md documenting the cyclotomic structure and identifying the most promising algebraic seed sets. Must reference prior work on cyclotomic Hadamard difference sets from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Develop Turyn-type sequence approach for order 167",
+          "acceptance_criteria": "Create src/constructions/turyn_sequences.py that: (1) implements Turyn-type base sequences of lengths (a, a, a+1, a+1) where a=83, (2) defines the PAF (periodic autocorrelation function) constraint for Turyn sequences, (3) implements a heuristic search using the cyclotomic seeds from item_012 to initialize candidate sequences, (4) evaluates PAF defect for each candidate. Produce results/turyn_search_log.md documenting at least 10 candidate families tested and their defect values. Compare approach against Turyn's original 1972 method cited in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Explore Spence's construction: find SDS with parameters 4-{166; 83,83,83,84; \u03bb}",
+          "acceptance_criteria": "Create src/constructions/spence.py that: (1) formalizes Spence's construction requiring SDS in Z_166, (2) since 166 = 2 \u00d7 83 and 83 is prime, analyzes the group structure of Z_166 \u2245 Z_2 \u00d7 Z_83, (3) uses the Chinese Remainder Theorem decomposition to reduce search space, (4) implements a targeted search exploiting the Z_2 \u00d7 Z_83 factorization. Produce results/spence_analysis.md with: necessary conditions verified, search space size estimates, and results of any partial searches.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Investigate weighing matrix and orthogonal design embeddings for order 167",
+          "acceptance_criteria": "Create src/constructions/weighing_matrices.py that: (1) searches for circulant weighing matrices W(167, k) for various k using character-theoretic methods, (2) if W(167, k) found, attempts to lift it to a full Hadamard matrix via orthogonal design embedding, (3) documents the relationship between weighing matrices and Hadamard matrices for this order. Produce results/weighing_matrix_results.md. Must reference the Arasu-Seberry theory of weighing matrices from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "ConceptEvolve probe: Deep investigation of the 'SDS over prime cyclic groups \u2261 3 mod 4' bottleneck",
+          "acceptance_criteria": "Execute concept_evolve 'probe' command targeting the problem 'Finding 4-element supplementary difference sets in Z_p for primes p \u2261 3 (mod 4), specifically p=167'. Verify new concept nodes appear in results/concept_evolve/tree/. The probe must produce at least 3 new concept cards with literature references. Update tree index and adjacency files.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "ConceptEvolve reframe: Cross-domain reframing of the H(668) construction problem",
+          "acceptance_criteria": "Execute concept_evolve 'reframe' command on 'Constructing Hadamard matrix of order 668 without brute-force search'. Verify the reframe produces concept cards from at least 5 distinct domains (e.g., coding theory, signal processing, quantum information, algebraic geometry, optimization). Produce results/concept_evolve/reframe_synthesis.md summarizing the most promising cross-domain analogies. Each analogy must be linked to a specific concept folder in the tree.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Subagent delegation: Synthesize novel construction strategy from concept tree and literature graph",
+          "acceptance_criteria": "Delegate to both literature-graph-miner and concept-tree-explorer subagents. The literature-graph-miner searches for papers combining character sums, Gauss sums, or Jacobi sums with supplementary difference sets. The concept-tree-explorer identifies unexplored paths in results/concept_evolve/tree/ linking algebraic number theory concepts to GS arrays. Produce results/novel_strategy.md proposing at least 2 concrete novel approaches not found in the existing literature, with mathematical justification for why they might succeed for p=167.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_019",
+          "description": "Execute cyclotomic-seeded GS search for H(668)",
+          "acceptance_criteria": "Run the SDS search framework (item_010) with cyclotomic seeds from item_012 over Z_167. Test all cyclotomic class combinations as initial blocks A, B, C, D. Log: (a) number of configurations tested, (b) best orthogonality defect achieved (||AA^T+BB^T+CC^T+DD^T - 668I||_F), (c) any configurations with defect < 10% of 668\u00d7167. Store results in results/experiments/cyclotomic_gs_search.json. If a valid SDS is found, immediately verify with hadamard_verify.py.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Execute Turyn-type sequence search with algebraic initialization",
+          "acceptance_criteria": "Run the Turyn sequence search (item_013) with at least 5 different initialization strategies derived from cyclotomic structure. Log all candidates with PAF defect below a threshold (to be determined from initial runs). Store results in results/experiments/turyn_search.json. Compare convergence rates of different initialization strategies. Total runtime must not exceed 2 hours (creative methods, not brute force).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Test novel approaches from Phase 3 synthesis",
+          "acceptance_criteria": "Implement and test at least one of the novel approaches proposed in results/novel_strategy.md (item_018). Create src/experiments/novel_approach.py. Run the experiment and log results in results/experiments/novel_approach.json including: method description, parameter choices, number of trials, best orthogonality defect, and comparison against the cyclotomic GS baseline from item_019. Must explicitly state whether the novel approach outperforms the baseline.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Attempt modular Hadamard construction and progressive lifting",
+          "acceptance_criteria": "Create src/experiments/modular_lift.py that: (1) constructs a 64-modular H(668) following Eliahou's method (cited in sources.bib), (2) attempts progressive lifting: from 64-modular to 128-modular to 256-modular to exact, using local search / perturbation, (3) logs the modular level achieved and the defect at each stage. Store results in results/experiments/modular_lift.json. Even if exact H(668) is not found, document the maximum modular level achieved and the gap to exactness.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Subagent delegation: Concept tree walk to identify unexplored experimental paths",
+          "acceptance_criteria": "Execute concept_evolve 'walk' command with depth >= 3, then delegate to concept-tree-explorer to analyze the walk paths. Identify at least 2 experimental directions from the concept tree that were not covered by items 019-022. Document in results/concept_evolve/tree/walk_paths_analysis.md with specific recommendations for additional experiments. Each recommendation must reference a concept node and explain the mathematical basis.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Compile comprehensive results comparison table against prior work",
+          "acceptance_criteria": "Create results/comparison_table.md containing a table comparing: (1) all construction methods attempted in this research with their best defect values, (2) Eliahou's 64-modular result (sources.bib), (3) Djokovic et al.'s search bounds for GS-type H-matrices, (4) any computational records from Bright et al. on SAT-based Williamson search. Table must have columns: Method, Best Defect, Modular Level Achieved, Runtime, Reference. Must cite at least 5 papers from sources.bib in the comparison.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Write final research report with theoretical analysis of why H(668) is hard",
+          "acceptance_criteria": "Create results/final_report.md containing: (1) Executive summary of all findings, (2) Mathematical analysis of why 167 is structurally difficult (no order-3 elements in Z*_167, Williamson obstruction, composite 667 blocking Paley II), (3) Summary of all experiments with quantitative results, (4) Evaluation of each novel approach attempted, (5) Open questions and concrete next steps. Must be at least 2000 words. Must cite at least 8 papers from sources.bib. If H(668) was found, include the explicit construction and verification proof.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Generate visualization of the concept evolution tree and research trajectory",
+          "acceptance_criteria": "Create a visualization (figures/concept_tree.png or .svg) showing the concept tree from results/concept_evolve/tree/ with: node labels, edge weights from adjacency.json, highlighted walk paths, and annotations showing which concepts led to successful experiments. Additionally create figures/defect_landscape.png showing the orthogonality defect across all experimental configurations tested. Both figures must be referenced in the final report.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Finalize sources.bib and verify all citations are complete and correctly formatted",
+          "acceptance_criteria": "Update sources.bib to include BibTeX entries for every paper referenced in any results/ document. Final count must be at least 12 entries. Each entry must have: author, title, year, and either journal/booktitle or eprint/arxiv fields. Run a BibTeX validation check (bibtex or biber dry-run) or manual field completeness check. Produce results/citation_audit.md listing all entries and confirming each is referenced in at least one results/ document.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_028",
+          "description": "Subagent delegation: Final literature-graph review for any missed recent breakthroughs",
+          "acceptance_criteria": "Delegate to literature-graph-miner subagent to perform a final web search for Hadamard matrix papers published in 2025-2026. Cross-reference against sources.bib to identify any papers missed in the initial review. Add any new relevant papers to sources.bib. Produce results/final_literature_check.md confirming the review is complete or documenting newly found papers. Must search at least 3 queries: 'Hadamard matrix 668 2025 2026', 'supplementary difference sets prime order 2025 2026', 'Hadamard conjecture new construction 2025 2026'.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 28,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 28
+  }
+}
