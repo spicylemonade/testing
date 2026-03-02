@@ -1,0 +1,292 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-02T00:00:00Z",
+  "updated_at": "2026-03-02T20:14:08.907929+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-02T00:00:00Z",
+      "completed_at": "2026-03-02T20:14:08.907896+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and tooling capabilities",
+          "acceptance_criteria": "Document listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, .opencode/ agents and tools), their purposes, interconnections, and available computational resources (SageMath availability, Python environment). File saved to results/repo_analysis.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Number-theoretic analysis of 668 and its factorizations",
+          "acceptance_criteria": "Document analyzing 668 = 4 * 167 (167 prime, 167 \u2261 3 mod 4), all composite factorizations of 668 (e.g., 668 = 4*167, 2*334, etc.), Kronecker-product-reachable orders (e.g., H(a) \u2297 H(b) gives H(ab)), and why Paley construction fails directly (167+1=168 \u2260 668, 667 is not a prime power). Saved to results/factorization_analysis.md.",
+          "status": "pending",
+          "notes": "668 = 4 * 167. Since 167 is prime \u2261 3 mod 4, Paley I gives order 168 not 668. No prime power q exists with q+1=668 or 2(q+1)=668 (333 not prime power). Kronecker products: need divisor pairs (a,b) of 668 where both H(a) and H(b) are known, but 668=4*167 and H(167) doesn't exist (167 is odd, not 1 or 2).",
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Conduct comprehensive literature review via web search and Semantic Scholar",
+          "acceptance_criteria": "At least 15 relevant papers identified and summarized, covering: (a) Hadamard conjecture history and smallest open cases, (b) Goethals-Seidel array and supplementary difference sets for order 4*167, (c) propus construction for symmetric Hadamard matrices (Balonin-Djokovic 2018), (d) T-sequences and T-matrices (Kharaghani), (e) Williamson-type matrices for prime orders, (f) Eliahou's 64-modular Hadamard matrix of order 668 (2025), (g) Cati-Pasechnik SageMath database (2024). Results saved to results/literature_review.md. Delegate sub-searches to literature-graph-miner agent for citation chain mining.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Create and maintain sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "sources.bib in repo root contains at least 10 properly formatted BibTeX entries including: Eliahou2025 (64-modular H(668)), CatiPasechnik2024 (SageMath database), BaloninDjokovic2018 (propus construction), Seberry1986 (Williamson-type), GoethalsSeidel1970 (GS array), Kharaghani1985 (T-sequences), Kotsireas (structured Hadamard conjecture), CooperWallis1972 (T-matrix Hadamard construction), Spence1975 (SDS construction), and ZhangSeveral2024 (GS sequences). Each entry has author, title, journal/venue, year, and DOI/arXiv ID where available.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Map all known construction methods applicable to order 668 using concept-tree exploration",
+          "acceptance_criteria": "Concept tree materialized in results/concept_evolve/tree/ with at least 6 concept nodes covering: (1) Goethals-Seidel + 4-SDS for v=167, (2) Williamson construction for n=167, (3) propus array + difference families, (4) T-sequence/T-matrix product constructions (4*n*w where nw=167), (5) Miyamoto's construction (q prime power \u2261 1 mod 4 with H(q-1) known), (6) Kronecker doubling + smaller constructions. Each node has concept.json, literature.json, and README.md. Use concept-tree-explorer subagent to verify completeness.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Analyze why 668 has resisted construction since 2005 and identify structural obstacles",
+          "acceptance_criteria": "Document explaining: (a) why standard Paley fails (667 not prime power, 333 not prime power), (b) why Kronecker products fail (no useful factorization into known Hadamard orders), (c) why Williamson matrices of order 167 are likely non-existent or extremely hard to find, (d) what Eliahou's 64-modular result reveals about near-miss structures, (e) why the propus construction hasn't yet reached 167. Saved to results/obstacle_analysis.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement verification framework for Hadamard matrix candidates",
+          "acceptance_criteria": "Python module verify_hadamard.py in repo root that: (a) checks H*H^T = n*I for exact Hadamard, (b) computes m-modular residual ||H*H^T - n*I|| mod m for modular Hadamard, (c) computes defect metric: number of off-diagonal entries in H*H^T that are nonzero, (d) checks circulant structure of component blocks, (e) validates supplementary difference set parameters. Includes unit tests passing for known small Hadamard matrices (orders 4, 8, 12, 20, 28).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement Goethals-Seidel array framework for order 4*167",
+          "acceptance_criteria": "Python module gs_array.py that: (a) constructs GS(A,B,C,D) given four 167x167 \u00b11 circulant matrices, (b) verifies AA^T + BB^T + CC^T + DD^T = 4*167*I condition, (c) computes periodic autocorrelation of sequences, (d) has function to construct circulant from first row. Tested on known SDS examples from literature for smaller orders (e.g., order 4*73=292).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Reproduce Eliahou's 64-modular Hadamard matrix of order 668 as baseline",
+          "acceptance_criteria": "Successfully reproduce or construct a 64-modular Hadamard matrix of order 668 (i.e., H*H^T \u2261 668*I mod 64), following Eliahou (2025). Document the construction method, the specific sequences used, and the residual structure. Save matrix and analysis to results/baseline_64modular/. Compare against prior 32-modular result (Eliahou-Kervaire 2001). Cite Eliahou2025 from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Catalog all known Hadamard matrices of nearby orders using SageMath database",
+          "acceptance_criteria": "Table documenting construction methods for all Hadamard matrices of orders 660-676 (excluding 668) that are known, extracted from Cati-Pasechnik (2024) database or SageMath. For each order, record: construction type (Paley I/II, Williamson, GS+SDS, T-matrix product, etc.), key parameters, and whether the construction approach could be adapted for 668. Save to results/nearby_orders_catalog.md. Cite CatiPasechnik2024.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Explore supplementary difference sets (4-SDS) in Z_167 for Goethals-Seidel construction",
+          "acceptance_criteria": "Systematic analysis of 4-{167; k1,k2,k3,k4; \u03bb} SDS existence in Z_167. Determine necessary parameter constraints (sum of ki, value of \u03bb = 167 - sum(ki)). Use multiplier methods (as in Balonin-Djokovic 2018) to restrict search space using automorphisms of Z_167. Document which multipliers are available (quadratic residues mod 167, subgroups of Z_167*). If SDS found, verify via GS array. Results in results/concept_evolve/tree/001_sds_z167/. Delegate multiplier analysis to concept-tree-explorer subagent.",
+          "status": "pending",
+          "notes": "167 is prime, so Z_167* is cyclic of order 166 = 2*83. Subgroups have orders 1, 2, 83, 166. The subgroup of order 2 is {1, 166} = {1, -1}. The subgroup of order 83 is the quadratic residues. Multiplier approach: look for SDS invariant under multiplication by elements of a nontrivial subgroup.",
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Investigate propus construction for symmetric Hadamard matrix of order 668",
+          "acceptance_criteria": "Analysis of propus array construction (A,B,B,D variant of Williamson array) for n=167. Determine if propus difference families exist in Z_167 using multiplier method with the order-83 subgroup of quadratic residues. Document theoretical feasibility and parameter constraints. Compare with successful propus constructions at orders 268 (n=67), 412 (n=103), 436 (n=109), 604 (n=151) from Balonin-Djokovic 2018. Results in results/concept_evolve/tree/002_propus_167/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Explore T-matrix product constructions: H(4nw) from T-matrices of order n and Williamson-like matrices of order w",
+          "acceptance_criteria": "Analysis of Cooper-Wallis Theorem (Theorem 5 in Cati-Pasechnik): if T-matrices of order n and pairwise-amicable \u00b11 matrices A,B,C,D of order w with AA^T+BB^T+CC^T+DD^T=4wI exist, then H(4nw) exists. For 4nw = 668, need nw = 167. Since 167 is prime, only (n,w) = (1,167) or (167,1). (1,167) requires Williamson-type matrices of order 167. (167,1) is trivial. Explore whether relaxing to non-prime decompositions via doubled orders helps: 2*668 = 1336 = 4*334 = 4*2*167. Document all viable and non-viable decomposition paths. Results in results/concept_evolve/tree/003_tmatrix_product/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Cross-domain reframing: explore algebraic geometry, coding theory, and group theory approaches",
+          "acceptance_criteria": "Use concept_evolve reframe command to generate at least 5 cross-domain perspectives: (a) error-correcting codes (Reed-Muller, self-dual codes of length 668), (b) algebraic geometry over F_167 (rational points on curves giving difference sets), (c) group-ring approach (units in Z[Z_167] satisfying Hadamard condition), (d) association schemes and strongly regular graphs of order 667 or 333, (e) conference matrices of order 667 or 334. For each perspective, assess theoretical promise and cite relevant prior work from sources.bib. Save concept cards to results/concept_evolve/. Delegate to concept-tree-explorer subagent.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Investigate modular-lifting strategy: strengthen Eliahou's 64-modular result toward true Hadamard",
+          "acceptance_criteria": "Analyze whether Eliahou's 64-modular H(668) can be iteratively improved: (a) study the residual R = H*H^T - 668*I and its structure, (b) determine if local row/column sign changes can reduce ||R||, (c) investigate whether 128-modular or 256-modular matrices exist as intermediate steps, (d) formalize the modular lifting problem as an optimization. Document theoretical barriers (is there a gap between modular and true Hadamard that cannot be crossed incrementally?). Results in results/concept_evolve/tree/004_modular_lifting/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Explore Turyn-type and generalized Williamson constructions for non-circulant blocks",
+          "acceptance_criteria": "Investigate whether relaxing from circulant to group-developed (e.g., over non-cyclic groups of order 167, which don't exist since 167 is prime, or over groups of related orders) or from symmetric to non-symmetric blocks opens new possibilities. Analyze Seberry's generalized Williamson construction: if q is prime power, Williamson-type matrices of order q^2(q+1)/2 or q^2(q+1)/4 exist. Check if any q gives order near 167. Results in results/concept_evolve/tree/005_generalized_williamson/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Investigate indirect constructions via known Hadamard matrices of related orders",
+          "acceptance_criteria": "Systematic check of: (a) Miyamoto's theorem: if q prime power \u2261 1 mod 4 and H(q-1) known, then H(4q) exists. For 4q=668, q=167, but 167 \u2261 3 mod 4, fails. (b) Product constructions: H(4)*H(167) needs H(167) which doesn't exist. (c) Doubling from H(334): 334 = 2*167, H(334) = H(2)*H(167) needs H(167). (d) Check if H(1336) = H(2*668) can be constructed and then 'halved'. (e) Spence's SDS construction (Theorem 7): 4(2v+1) = 668 gives v=83; need 4-{166; 83,83,83,84; 166} SDS in Z_166. Analyze feasibility. Results in results/indirect_constructions.md.",
+          "status": "pending",
+          "notes": "Spence's construction is particularly promising: v=83, 2v=166, 2v+1=167, 4(2v+1)=668. Need SDS with parameters 4-{166; 83,83,83,84; 166} in Z_166. This is a concrete, structured search problem.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Implement and test Spence's SDS construction for v=83 (most promising path to H(668))",
+          "acceptance_criteria": "Implementation of Spence's Theorem 7 targeting 4-{166; 83,83,83,84; 166} SDS in Z_166: (a) Python code for SDS verification over Z_166, (b) multiplier-based search restricting to SDS with nontrivial automorphisms (Z_166* has order \u03c6(166) = 82 = 2*41, subgroups of orders 1,2,41,82), (c) cyclotomic-class-based approach exploiting structure of Z_166*, (d) if found, plug into Goethals-Seidel array and verify H(668). Save code to spence_sds.py and results to results/spence_v83/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Implement and test difference family search for propus construction at n=167",
+          "acceptance_criteria": "Implementation of propus difference family search for n=167: (a) Python code using orbit method with multiplier subgroup of order 83 (QR mod 167) to reduce search space, (b) hash-based distribution of candidate sequences into bins as in Balonin-Djokovic 2018, (c) test on known successful orders first (n=67, 103, 109, 151) to validate methodology. If propus difference families found for n=167, construct symmetric H(668). Save code to propus_search.py and results to results/propus_167/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Implement cyclotomic approach for constructing circulant blocks over Z_167",
+          "acceptance_criteria": "Exploit the cyclotomic structure of Z_167: (a) 167 is prime, primitive root g exists, Z_167* = <g> of order 166 = 2*83, (b) partition Z_167* into cosets of subgroup of order 83 (QR and QNR), (c) construct candidate circulant \u00b11 sequences of length 167 using unions of cyclotomic classes, (d) compute periodic autocorrelations and check GS-array compatibility (sum of 4 autocorrelations = 4*167*\u03b4). Document number of candidates tested and closest near-misses. Results in results/cyclotomic_167/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Evaluate cross-domain approaches from Phase 3 reframing exercise",
+          "acceptance_criteria": "For each of the top-3 most promising cross-domain approaches identified in item_014: (a) implement a minimal prototype or proof-of-concept computation, (b) assess whether it reduces to a known-hard problem or offers genuine new purchase on H(668), (c) compare computational complexity with direct SDS search. Document which approaches are dead ends and which merit further investigation. Results in results/crossdomain_eval/. Cite at least 3 papers from sources.bib in the analysis.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Consolidate best candidate matrices and compute quality metrics",
+          "acceptance_criteria": "For all candidate matrices produced (modular Hadamard, near-miss exact Hadamard, partial constructions): (a) compute defect d = number of nonzero off-diagonal entries in H*H^T - 668*I, (b) compute modular quality m_max = largest m such that H*H^T \u2261 668*I mod m, (c) compute spectral gap of H*H^T, (d) rank candidates by proximity to true Hadamard. Summary table in results/candidate_ranking.md. If any candidate achieves d=0, we have found H(668).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Synthesize concept tree and identify the most viable path to H(668)",
+          "acceptance_criteria": "Walk the full concept tree in results/concept_evolve/tree/ using concept-tree-explorer subagent. Produce a ranked list of construction strategies with: (a) theoretical feasibility assessment, (b) computational complexity estimate, (c) dependence on unresolved sub-problems, (d) comparison with approaches that succeeded for orders 428 (2004), 268 (1985), 604 (2018). Save walk paths to results/concept_evolve/tree/walk_paths.json and synthesis to results/strategy_synthesis.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Write comprehensive research report comparing results against prior work",
+          "acceptance_criteria": "Report in results/research_report.md containing: (a) problem statement and significance of H(668), (b) survey of all construction methods attempted with results, (c) comparison with Eliahou 2025 baseline (64-modular), (d) comparison with successful constructions for nearby orders in Cati-Pasechnik database, (e) identification of the key mathematical bottleneck preventing H(668), (f) specific open sub-problems whose resolution would yield H(668). At least 10 citations from sources.bib. Minimum 3000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Document negative results and structural impossibility barriers",
+          "acceptance_criteria": "Document in results/negative_results.md: (a) which construction methods are provably inapplicable to order 668 (e.g., Paley, Kronecker with known factors), (b) which methods are theoretically applicable but computationally intractable, (c) for Spence v=83 and propus n=167 approaches: if no SDS/difference family found, characterize the search space explored and establish lower bounds on required search depth. This negative knowledge is as valuable as positive results for the research community.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Generate visualizations of key mathematical structures",
+          "acceptance_criteria": "At least 3 figures saved to figures/ directory: (a) concept tree graph showing construction strategy relationships (from adjacency.json), (b) heatmap of defect matrix H*H^T - 668*I for best candidate, (c) visualization of cyclotomic class structure of Z_167 and its relationship to candidate SDS. Figures in PNG or SVG format with descriptive filenames.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Final review: verify all sources.bib entries and cross-reference with report claims",
+          "acceptance_criteria": "Reviewer agent verifies: (a) sources.bib has at least 10 entries with complete metadata, (b) every mathematical claim in research_report.md cites a source, (c) all code in .py files has docstrings and passes verification on known test cases, (d) concept tree in results/concept_evolve/tree/ has index.json and adjacency.json that are consistent. Create reviewer checklist in results/review_checklist.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
