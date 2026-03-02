@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "created_at": "2026-03-02T00:30:00Z",
-  "updated_at": "2026-03-02T00:58:33.046146+00:00",
+  "updated_at": "2026-03-02T01:38:02.800223+00:00",
   "current_agent": "researcher",
   "agent_status": {
     "orchestrator": {
@@ -133,56 +133,56 @@
           "id": "item_011",
           "description": "Novel Direction 1: Persistent homology of Collatz trajectory point clouds to discover hidden topological structure",
           "acceptance_criteria": "Create research/tda_collatz.py that: (a) constructs point clouds from Collatz trajectory features (from item_009) for n=1..50000, (b) computes Vietoris-Rips persistent homology in dimensions 0, 1, 2 using ripser or gudhi, (c) generates persistence diagrams and barcodes saved to figures/persistence_*.png, (d) computes Betti numbers beta_0, beta_1, beta_2 at multiple filtration scales, (e) compares persistence diagrams of trajectories grouped by residue class (e.g., n\u22611 mod 4 vs n\u22613 mod 4) using bottleneck or Wasserstein distance. NOVELTY TEST: Document in results/tda_results.md whether any non-trivial 1-cycles (loops) or 2-cycles (voids) persist across a significant range of filtration values, indicating genuine topological structure not attributable to noise. Compare persistence diagram statistics against 1000 random null-model point clouds of the same size. Report p-values. This direction has NO prior work in the Collatz literature (confirmed via item_002).",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "TDA: H1 p=0.02 borderline, Wasserstein distance between residue classes = 13.4. First TDA application to Collatz.",
           "error": null
         },
         {
           "id": "item_012",
           "description": "Novel Direction 2: Spectral analysis of Collatz predecessor graph \u2014 eigenvalue statistics and random matrix universality",
           "acceptance_criteria": "Create research/spectral_collatz.py that: (a) builds the Collatz predecessor graph for n=1..N (N=10000, 50000, 100000), (b) computes the top 500 eigenvalues of the normalized graph Laplacian, (c) computes the eigenvalue spacing distribution and compares to GOE (Gaussian Orthogonal Ensemble), GUE, and Poisson statistics using KS-test, (d) computes the spectral gap (second smallest eigenvalue) and tracks how it scales with N, (e) generates eigenvalue density plots and nearest-neighbor spacing histograms saved to figures/spectral_*.png. NOVELTY TEST: Document in results/spectral_results.md whether the Collatz graph eigenvalue statistics match any known random matrix ensemble, and whether the spectral gap exhibits power-law or logarithmic scaling with N. If it matches GOE/GUE, this connects Collatz to quantum chaos \u2014 a result not in the literature. If it doesn't match any standard ensemble, characterize the deviation.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "Spectral: Poisson spacing (not GOE/GUE), spectral gap shrinks with N. First eigenvalue spacing computation for Collatz graph.",
           "error": null
         },
         {
           "id": "item_013",
           "description": "Novel Direction 3: Transfer matrix products and finite-time Lyapunov exponent distribution",
           "acceptance_criteria": "Create research/transfer_matrix.py that: (a) encodes each Collatz step as a 2x2 matrix: M_even = [[1/2, 0],[0,1]] for even steps, M_odd = [[3, 1],[0, 1]] for odd steps (operating on [n, 1]^T), (b) for each n=1..100000, computes the product of matrices along its trajectory and extracts the finite-time Lyapunov exponent lambda(n) = (1/T) * log(||M_T ... M_1||) where T is the stopping time, (c) plots the distribution of lambda(n) values and fits to known distributions (normal, Tracy-Widom, etc.), (d) computes the correlation between lambda(n) and features of n (2-adic valuation, number of 1-bits, etc.). NOVELTY TEST: Document in results/lyapunov_results.md whether the Lyapunov exponent distribution converges to a universal form as N grows, and whether there are outlier n-values with anomalously high or low lambda. If the distribution matches Tracy-Widom, this connects Collatz to random matrix theory in a new way. Report the mean Lyapunov exponent and compare to the theoretical prediction log(3/2)/2 \u2248 0.2027.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "Lyapunov: mean lambda \u2248 0.0001 (marginal stability), strongly non-Gaussian (KS p=0). Correlates weakly with stopping time.",
           "error": null
         },
         {
           "id": "item_014",
           "description": "Novel Direction 4: Information-theoretic invariants \u2014 mutual information between binary structure and trajectory fate",
           "acceptance_criteria": "Create research/info_theory_collatz.py that: (a) for n=1..200000, computes Shannon entropy H of the parity sequence, (b) computes mutual information I(X;Y) where X = k-bit windows of the binary representation of n and Y = corresponding k-step windows of the parity sequence, for k=3,4,5,6,7,8, (c) computes conditional entropy H(parity_step_t | binary_bits_of_n) as a function of step t, (d) tests whether I(X;Y) decays to zero (implying eventual independence from initial conditions) or plateaus (implying persistent memory). NOVELTY TEST: Document in results/info_theory_results.md the mutual information decay curve with error bars. If mutual information plateaus above zero for large t, this provides computational evidence that Collatz trajectories retain infinite memory of initial conditions \u2014 contradicting the stochastic independence assumption underlying most probabilistic Collatz models (cite Kontorovich-Lagarias from sources.bib). Plot I(X;Y) vs step t for k=4,6,8.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "Info theory: MI decays to null level for all k. Stochastic independence assumption confirmed computationally.",
           "error": null
         },
         {
           "id": "item_015",
           "description": "Novel Direction 5: Modular resonance scanner \u2014 systematic discovery of hidden periodicity in stopping times mod m",
           "acceptance_criteria": "Create research/modular_resonance.py that: (a) for each modulus m from 2 to 500, computes the distribution of stopping_time(n) mod m for n=1..500000, (b) performs chi-squared test against uniform distribution for each m, reporting p-values, (c) identifies all m where the distribution is significantly non-uniform (p < 10^-10) and ranks them by effect size, (d) for the top 20 most resonant moduli, visualizes the stopping time distribution mod m as bar charts saved to figures/resonance_mod_*.png, (e) tests whether resonant moduli cluster around numbers with special arithmetic properties (powers of 2, powers of 3, products 2^a * 3^b). NOVELTY TEST: Document in results/resonance_results.md all discovered resonant moduli with their chi-squared statistics. The known trivial resonances are mod 2 and powers of 2 (due to parity). Identify any non-trivial resonances (not explained by powers of 2 or 3). If stopping times show unexplained bias mod some prime p > 3, this is a genuinely novel number-theoretic discovery. Compare against the null hypothesis that stopping times mod m are uniform for m coprime to 6.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "MAJOR FINDING: 165 novel resonances coprime to 6. Mod 13 (prime) is #1 most resonant with V=0.089, chi2=47082.",
           "error": null
         },
         {
           "id": "item_016",
           "description": "Novel Direction 6: Forbidden and anomalously rare subwords in Collatz parity sequences",
           "acceptance_criteria": "Create research/forbidden_patterns.py that: (a) collects parity sequences for n=1..500000, (b) for word lengths k=4,5,6,...,16, counts the frequency of every possible binary k-gram across all collected parity sequences, (c) identifies k-grams that never appear (truly forbidden) or appear with frequency < 1% of the expected frequency under a uniform iid Bernoulli(log2(3)/(1+log2(3))) model, (d) for each candidate forbidden/rare pattern, attempts to prove or disprove its impossibility via modular arithmetic arguments (does the pattern imply a contradiction in the Collatz recurrence?), (e) tests whether forbidden patterns are preserved under the generalized Collatz map (5n+1, 7n+1). NOVELTY TEST: Document in results/forbidden_patterns.md a complete catalogue of forbidden k-grams for k up to 12, with frequency counts and p-values against the null model. Any provably forbidden pattern of length >= 6 that isn't a trivial consequence of the parity rules would be a significant new constraint on Collatz dynamics.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "All forbidden patterns explained by consecutive-odd constraint. No non-trivial forbidden patterns for k\u226412.",
           "error": null
         },
         {
           "id": "item_017",
           "description": "Novel Direction 7: Phase transitions in the generalized Collatz family an+b and critical boundary mapping",
           "acceptance_criteria": "Create research/generalized_collatz.py that: (a) implements the generalized map T(n) = n/2 if even, T(n) = a*n+b if odd, for integer parameters a (odd, 1..21) and b (odd, 1..21), (b) for each (a,b) pair, tests n=1..100000 for convergence (reaches a cycle) vs divergence (exceeds 10^15), (c) creates a 2D phase diagram: color-coded grid of (a,b) showing fraction of starting values that converge, saved to figures/phase_diagram.png, (d) identifies the critical boundary between convergence and divergence regions, (e) for parameter pairs near the critical boundary, measures the mean escape time and tests for power-law divergence characteristic of a phase transition. NOVELTY TEST: Document in results/phase_transition.md the complete phase diagram with convergence fractions. Determine whether the critical boundary exhibits fractal structure (compute its box-counting dimension). If the boundary has non-integer fractal dimension, this connects generalized Collatz maps to critical phenomena in statistical mechanics. Compare to the known result that a=3,b=1 is convergent and a=5,b=1 has known divergent orbits.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "Phase diagram computed. Sharp transition at a\u22483\u21925. a=3,b=1 fully convergent; a=5,b=1 mostly divergent.",
           "error": null
         }
       ]
@@ -268,9 +268,9 @@
   ],
   "summary": {
     "total_items": 25,
-    "completed": 10,
+    "completed": 17,
     "in_progress": 0,
     "failed": 0,
-    "pending": 15
+    "pending": 8
   }
 }
