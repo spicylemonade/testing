@@ -10,11 +10,11 @@
 - Euler bricks found: 10
 - Perfect cuboids found: 0
 - Near-misses tracked: 10
-- Wall clock time: 1.31s
-- Throughput: 127,374,288 candidates/sec
+- Wall clock time: 1.35s
+- Throughput: 124,143,678 candidates/sec
 
 ## Without Modular Filter
-- Throughput: 300,489,216 candidates/sec
+- Throughput: 300,254,377 candidates/sec
 - Euler bricks found: 10
 
 ## Filter Effectiveness

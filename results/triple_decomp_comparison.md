@@ -11,7 +11,7 @@ finds pairs sharing a common leg, checks third face diagonal.
 - Euler bricks found: 151
 - Perfect cuboids found: 0
 - Wall clock time: 0.19s
-- Throughput: 1,732,506 pairs/sec
+- Throughput: 1,730,352 pairs/sec
 
 ## Comparison with Baseline
 The triple decomposition approach is orders of magnitude more efficient
