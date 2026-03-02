@@ -94,40 +94,40 @@
           "id": "item_007",
           "description": "Implement Euler brick generator using classical parametric families",
           "acceptance_criteria": "Create src/euler_brick.py that generates Euler bricks using at least 2 parametric families (Saunderson and Euler). The generator must: (1) accept parameter ranges as input, (2) output (a, b, c, d, e, f) tuples where d,e,f are face diagonals, (3) verify all face diagonal equations hold, (4) include unit tests passing for known Euler bricks [(240,117,44), (275,252,240), (693,480,140)]. Tests must pass with 0 failures.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "Implemented Saunderson + Euler two-triple families. All 3 test cases pass. Generates 210 distinct Euler bricks with max_m=30.",
           "error": null
         },
         {
           "id": "item_008",
           "description": "Implement modular constraint filter",
           "acceptance_criteria": "Create src/modular_filter.py implementing a multi-stage modular sieve: (1) divisibility by 4/16 check on edges, (2) parity check on diagonals, (3) mod-24 and mod-48 congruence filters. Must include a function is_candidate(a, b, c) -> bool that returns True only if (a,b,c) passes all known necessary conditions. Unit tests must verify: known Euler bricks pass the filter, and at least 95% of random integer triples (up to 10^6) are rejected.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "Implemented multi-stage sieve: divisibility, mod-24, mod-48, multi-modulus QR checks. 99.8% rejection rate (well above 95%). Known Euler bricks pass.",
           "error": null
         },
         {
           "id": "item_009",
           "description": "Implement space diagonal integer test and near-miss tracker",
-          "acceptance_criteria": "Create src/space_diagonal.py with: (1) is_perfect(a, b, c) -> bool checking whether a^2+b^2+c^2 is a perfect square AND all face diagonals are integers, (2) near_miss_score(a, b, c) -> float returning how close a^2+b^2+c^2 is to the nearest perfect square (normalized by magnitude), (3) a NearMissTracker class that maintains a sorted list of the top-K closest near-misses found. Unit tests must pass for known near-misses (e.g., a=44, b=117, c=240 where 117^2+44^2+240^2=73225 and sqrt(73225)\u2248270.6).",
-          "status": "pending",
-          "notes": null,
+          "acceptance_criteria": "Create src/space_diagonal.py with: (1) is_perfect(a, b, c) -> bool checking whether a^2+b^2+c^2 is a perfect square AND all face diagonals are integers, (2) near_miss_score(a, b, c) -> float returning how close a^2+b^2+c^2 is to the nearest perfect square (normalized by magnitude), (3) a NearMissTracker class that maintains a sorted list of the top-K closest near-misses found. Unit tests must pass for known near-misses (e.g., a=44, b=117, c=240 where 117^2+44^2+240^2=73225 and sqrt(73225)≈270.6).",
+          "status": "completed",
+          "notes": "All tests pass. near_miss_score(44,117,240) = 0.00295 (residual=216). NearMissTracker maintains sorted top-K.",
           "error": null
         },
         {
           "id": "item_010",
           "description": "Implement baseline brute-force search with benchmarks",
           "acceptance_criteria": "Create src/baseline_search.py performing exhaustive search over all primitive triples (a,b,c) with a<=b<=c up to a configurable bound. Must: (1) apply modular_filter before computing diagonals, (2) check all face diagonals are integers, (3) check space diagonal, (4) log near-misses to results/near_misses.csv, (5) report search rate (triples/second). Benchmark: achieve at least 10^6 candidate evaluations per second on a single core for the filtered search. Document baseline performance in results/baseline_benchmarks.md.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "127M candidates/sec throughput (127x above 1M/sec target). Found 10 Euler bricks in [1,1000], 0 perfect cuboids. Near-misses logged. Benchmarks documented.",
           "error": null
         },
         {
           "id": "item_011",
           "description": "Establish metrics framework and reproducibility infrastructure",
           "acceptance_criteria": "Create src/metrics.py providing: (1) SearchMetrics class tracking total candidates tested, candidates passing each filter stage, near-misses found, wall-clock time, (2) JSON export of all metrics to results/metrics.json, (3) a run configuration system (src/config.py) that saves search parameters for reproducibility. All search scripts must use this metrics framework. Verify by running baseline_search.py and confirming results/metrics.json is produced with all required fields.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "SearchMetrics + SearchConfig implemented. results/metrics.json produced with all fields. Used by baseline_search.py.",
           "error": null
         }
       ]
@@ -284,9 +284,9 @@
   ],
   "summary": {
     "total_items": 27,
-    "completed": 6,
+    "completed": 11,
     "in_progress": 0,
     "failed": 0,
-    "pending": 21
+    "pending": 16
   }
 }
