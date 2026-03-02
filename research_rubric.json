@@ -1,0 +1,284 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-02T12:00:00Z",
+  "updated_at": "2026-03-02T04:19:16.781063+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-02T12:00:00Z",
+      "completed_at": "2026-03-02T04:19:16.781037+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and available tooling",
+          "acceptance_criteria": "Produce repo_analysis.md listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py), their purposes (cross-domain concept discovery, academic paper search), and how they interconnect. Include directory tree and dependency notes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Literature review of classical Hadamard matrix constructions",
+          "acceptance_criteria": "Use web search and semantic_scholar.py to survey classical construction methods: Sylvester, Paley Type I and II, Williamson, Goethals-Seidel array, Turyn-type sequences, and supplementary difference sets. Document each method's applicability to order 668 = 4 * 167. Write literature_review.md with at least 2 pages of structured analysis. At least 8 relevant papers cited.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Literature review of computational and heuristic approaches for Hadamard matrix search",
+          "acceptance_criteria": "Survey modern computational methods: SAT+CAS (Bright et al. MATHCHECK2), simulated annealing (Piza), exhaustive Williamson search (\u0110okovi\u0107), Turyn sequence enumeration (Kharaghani), and quantum approaches. Document search space sizes and computational barriers for order 668. At least 6 additional papers cited beyond item_002.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Create and maintain sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "sources.bib exists in repo root with valid BibTeX entries for at least 12 relevant papers. Must include: Kharaghani & Tayfeh-Rezaie (2005, order 428), \u0110okovi\u0107 (2008/2009, Williamson matrices), Goethals & Seidel (1970), Turyn (1974), Bright et al. (2018, SAT+CAS), and Seberry/Whiteman on supplementary difference sets. Each entry has title, author, year, and venue/url.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Formalize why order 668 is the hardest small open case and which approaches have been exhausted",
+          "acceptance_criteria": "Write problem_analysis.md explaining: (1) 668 = 4*167, 167 is prime with 167 \u2261 3 mod 4; (2) Paley Type I gives order 168, not 668; (3) Paley Type II requires prime power q=333, which 333=9*37 is not; (4) Kronecker products fail since 167 admits no Hadamard matrix; (5) No known Williamson matrices of order 167; (6) SageMath returns 'Unknown' for hadamard_matrix(668). Include mathematical notation and proofs of inapplicability.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Run ConceptEvolve for cross-domain concept discovery and novel angle identification",
+          "acceptance_criteria": "Execute concept_evolve.py evolve with the Hadamard-668 problem. Review generated concept cards and semantic bridges. Write steering_notes.md summarizing the 3-5 most promising cross-domain insights (e.g., connections to coding theory, graph coloring, algebraic number theory, spectral methods) and how they might inform novel construction attempts.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement core matrix data structures and Hadamard verification routines",
+          "acceptance_criteria": "Create hadamard_core.py with: (1) efficient \u00b11 matrix representation (numpy arrays); (2) is_hadamard(H) function verifying H*H^T = n*I with tolerance; (3) circulant matrix constructor from first row; (4) back-circulant (reverse-circulant) matrix constructor; (5) Goethals-Seidel array assembler taking four circulant matrices and producing 4n\u00d74n matrix; (6) unit tests passing for known small Hadamard matrices (orders 2, 4, 8, 12, 20).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement Paley construction and Kronecker product methods",
+          "acceptance_criteria": "Create paley.py with: (1) Legendre symbol computation for GF(p); (2) Jacobi matrix (quadratic residue matrix) for prime p; (3) Paley Type I construction (order p+1 for p \u2261 3 mod 4); (4) Paley Type II construction (order 2(p+1) for p \u2261 1 mod 4); (5) Kronecker product of two Hadamard matrices; (6) Demonstrate these produce valid Hadamard matrices for orders 12, 20, 28, 168 but NOT 668. Tests must pass.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement Williamson and Goethals-Seidel construction frameworks",
+          "acceptance_criteria": "Create williamson.py with: (1) Williamson array constructor H = [A BR CR DR; -BR A D^TR -C^TR; -CR -D^TR A B^TR; -DR C^TR -B^TR A] where R is back-identity; (2) Supplementary difference set (SDS) to \u00b11 sequence converter; (3) Autocorrelation function for periodic and non-periodic cases; (4) SDS verification: check that sum of autocorrelations equals the correct value for 4-{167; k1,k2,k3,k4; \u03bb}; (5) Verify construction produces valid Hadamard matrix of order 4*43=172 using known SDS for n=43.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement Turyn-type sequence framework and base sequence construction",
+          "acceptance_criteria": "Create turyn.py with: (1) Turyn-type sequence TT(n) validator checking NPAF condition; (2) Base sequence to T-sequence converter; (3) T-sequence to Hadamard matrix converter via Goethals-Seidel; (4) Verify with known TT sequences of small lengths (e.g., TT(6), TT(8), TT(10)) that valid Hadamard matrices are produced. All tests pass.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Benchmark baseline methods and establish performance reference points",
+          "acceptance_criteria": "Create benchmarks.py that: (1) times each construction method for orders up to 500; (2) records which orders each method can produce; (3) identifies the gap: orders achievable vs. 668; (4) profiles memory usage for 668\u00d7668 matrix operations; (5) establishes timing baselines for the SDS autocorrelation check (target: <1ms per candidate for n=167). Write baseline_results.md summarizing findings and comparing against prior work from literature review.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Implement exhaustive and pruned search for 4-SDS in Z_167",
+          "acceptance_criteria": "Create sds_search.py that searches for four subsets A1,A2,A3,A4 of Z_167 with parameters 4-{167; k1,k2,k3,k4; \u03bb} satisfying the SDS condition. Exploit symmetries: (1) multiplier groups of Z_167 (quadratic residues give factor-of-83 reduction); (2) complementation (replacing A_i with Z_167\\A_i); (3) negation symmetry. Search at least the balanced case k1=k2=k3=k4. Report search space size and estimated time to exhaustion.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement SAT/constraint-solver encoding for Williamson matrix search of order 167",
+          "acceptance_criteria": "Create sat_search.py that: (1) encodes the Williamson condition A^2+B^2+C^2+D^2=4*167*I as a Boolean satisfiability or constraint satisfaction problem; (2) exploits circulant symmetry so variables are the 167 entries of each first row (668 Boolean variables total); (3) uses symmetry-breaking constraints (fix first entry, multiplier equivalence); (4) can interface with an available SAT solver (e.g., pysat, or subprocess call to minisat/cadical); (5) runs on small test cases (n=3,7,11) to verify correctness before scaling to 167.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement heuristic optimization (simulated annealing and/or genetic algorithm) for SDS search",
+          "acceptance_criteria": "Create heuristic_search.py with: (1) objective function = sum of squared deviations of autocorrelation sums from target (0 = valid Hadamard); (2) simulated annealing with bit-flip neighborhood on the four \u00b11 first-row vectors; (3) adaptive temperature schedule tuned for n=167; (4) optional genetic algorithm variant with crossover preserving circulant structure; (5) demonstrate convergence to known solutions for n \u2264 50; (6) report best objective value achieved for n=167 after 10^7 iterations.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Explore Turyn-type sequence construction for length 167 via exhaustive/heuristic search",
+          "acceptance_criteria": "Extend turyn.py to search for TT(167) or near-167 Turyn-type sequences. Since TT(n) are known only up to n\u224844, this is exploratory: (1) implement the NPAF constraint as an optimization target; (2) use compression via power spectral density (PSD) to prune infeasible candidates; (3) attempt partial enumeration with backtracking for lengths up to 42 (verifying against known results); (4) apply heuristic search for length 167. Document feasibility assessment.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Investigate non-cyclic constructions: dihedral, other group-ring based SDS for order 167",
+          "acceptance_criteria": "Create group_ring_search.py exploring SDS in non-cyclic groups of order 167. Since 167 is prime, Z_167 is the only group of order 167, but explore: (1) constructions using Z_p with non-standard indexing (e.g., Butson-type); (2) 8-Williamson type matrices (products of smaller Hadamard matrices); (3) SDS in Z_2 \u00d7 Z_m for appropriate m (e.g., m=334, using 2\u00d7167 structure for order 668); (4) propus/GP array alternatives to Goethals-Seidel. Document at least 3 attempted non-standard constructions with results.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Design and implement combined hybrid search strategy",
+          "acceptance_criteria": "Create hybrid_search.py combining the best elements: (1) use algebraic constraints (multiplier groups, PSD conditions) to narrow the search space; (2) initialize heuristic search from algebraically-informed starting points (e.g., near-solutions from partial SDS); (3) use SAT solver for sub-problems when search space is small enough; (4) implement portfolio approach running multiple strategies in parallel; (5) document the hybrid strategy's design rationale referencing prior work from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Run comprehensive search campaigns with each approach for order 668",
+          "acceptance_criteria": "Execute all search methods from Phase 3 with substantial computational budgets: (1) SDS exhaustive search for at least 10^8 candidates with symmetry reduction; (2) SAT solver run for at least 1 hour wall-clock; (3) simulated annealing for at least 10^8 iterations with 5 independent restarts; (4) heuristic search with different starting configurations. Log all runs in experiments_log.csv with columns: method, config, wall_time_s, best_objective, solution_found(bool), notes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Analyze search space coverage and convergence behavior across methods",
+          "acceptance_criteria": "Create analysis_convergence.py that: (1) plots objective function vs. iteration for SA runs; (2) plots search space coverage (fraction explored) for exhaustive methods; (3) computes estimated time-to-exhaustion for SAT approach; (4) identifies which method gets closest to a valid solution (lowest objective); (5) generates at least 3 publication-quality plots saved as PNG. Compare convergence rates against any available benchmarks from cited literature.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Validate any candidate solution or document closest near-solutions",
+          "acceptance_criteria": "If a solution H is found: (1) verify is_hadamard(H) returns True; (2) verify H is 668\u00d7668 with all entries \u00b11; (3) verify H*H^T = 668*I exactly (integer arithmetic, no floating point); (4) save to solution.csv as a 668\u00d7668 CSV of \u00b11 values; (5) compute and report det(H) = 668^(334) (or verify |det(H)| = 668^(334)). If no exact solution found: document the 5 best near-solutions with their objective values, the defect matrix H*H^T - 668*I, and analysis of which autocorrelation constraints remain violated.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Compare experimental results against prior work and known constructions for neighboring orders",
+          "acceptance_criteria": "Create comparison.md that: (1) compares our search efficiency against reported computational efforts for order 428 (Kharaghani & Tayfeh-Rezaie); (2) benchmarks our tools on orders where solutions are known (e.g., 664, 672) as validation; (3) tabulates which construction methods succeed for orders 660-676 and why 668 remains out of reach; (4) references at least 5 papers from sources.bib in the comparison.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Stress test solution verification and edge cases",
+          "acceptance_criteria": "Create test_verification.py with: (1) unit tests for is_hadamard on known matrices of orders up to 500; (2) tests on deliberately corrupted matrices (single bit flip) to confirm rejection; (3) tests on the solution.csv output (if exists) or on best near-solutions; (4) verify CSV I/O round-trips preserve matrix exactly; (5) all tests pass with 0 failures.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Write comprehensive research report (REPORT.md)",
+          "acceptance_criteria": "REPORT.md in repo root with at least 2000 words covering: (1) problem background and significance (smallest open Hadamard order); (2) mathematical framework (SDS, Williamson, Goethals-Seidel, Turyn); (3) methods implemented and their rationale; (4) experimental results with embedded figure references; (5) analysis of why each method succeeded or failed for 668; (6) comparison with prior work; (7) conclusions. Cites at least 10 sources from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Create summary tables and figures comparing approaches against prior work",
+          "acceptance_criteria": "Generate: (1) table of construction methods vs. applicable orders (showing 668 gap); (2) table of search methods with configurations, runtime, best objective, success rate; (3) at least 2 figures (convergence plots, search space visualization) saved as PNG; (4) all tables formatted in Markdown within REPORT.md and also as standalone CSV files.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Document limitations, open questions, and future research directions",
+          "acceptance_criteria": "Write LIMITATIONS.md covering: (1) computational budget constraints vs. estimated search space for n=167 Williamson matrices (~2^668 raw, reduced by symmetry); (2) which algebraic avenues remain unexplored (e.g., cocyclic Hadamard, Bush-type); (3) potential for distributed/cloud computing to extend search; (4) connections to other open problems (e.g., Barker sequences, Circulant Hadamard conjecture); (5) specific next steps ranked by feasibility.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Create reproducibility package with requirements, run script, and README",
+          "acceptance_criteria": "Provide: (1) requirements.txt listing all Python dependencies (numpy, scipy, etc.); (2) run_all.py script that executes the full pipeline end-to-end (literature tools, baseline verification, search campaigns, validation); (3) README.md updated with project description, usage instructions, and summary of results; (4) Validate sources.bib has at least 12 entries and all referenced files exist. Pipeline completes without error.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 26,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 26
+  }
+}
