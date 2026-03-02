@@ -1,0 +1,300 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-02T00:00:00Z",
+  "updated_at": "2026-03-02T09:01:05.010556+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-02T00:00:00Z",
+      "completed_at": "2026-03-02T09:01:05.010521+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and identify available tooling",
+          "acceptance_criteria": "Produce a document (results/analysis/repo_structure.md) listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, .opencode/tools/*), their purposes, inter-module connections, and available agent roles (orchestrator, researcher, writer, reviewer, concept_worker). Must cover build prerequisites (Python 3, Bun, OpenCode CLI).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Define problem scope and constraints for minimal gravity simulation",
+          "acceptance_criteria": "Write results/analysis/problem_scope.md specifying: dimensionality (2D vs 3D), particle count range (N=2 to N>=1000), gravitational softening strategy (e.g. Plummer), boundary conditions, target conservation properties (energy, momentum, angular momentum), time-step strategy, and language/framework choice with justification. Must reference at least 3 existing open-source N-body codes (e.g. REBOUND, Gadget, NbodyX) for comparison.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Conduct literature review on N-body gravitational simulation methods using web search and Semantic Scholar",
+          "acceptance_criteria": "Search the web and Semantic Scholar for papers on: (a) symplectic integrators for N-body problems, (b) Barnes-Hut and FMM tree methods, (c) Plummer/spline softening, (d) adaptive time-stepping, (e) GPU-accelerated N-body. At least 10 relevant papers cited in sources.bib (repo root) with complete BibTeX entries. Create results/analysis/literature_review.md summarizing key findings, grouping papers by topic.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Explore concept tree for gravitational simulation design space",
+          "acceptance_criteria": "Run concept_evolve with topic 'minimal N-body gravity simulation' to generate concept cards in results/concept_evolve/tree/. At least 10 concept folders must exist, each with concept.json and literature.json. Produce results/analysis/concept_map.md summarizing the top 5 most promising concept paths with justification.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Delegate subagent exploration: cross-domain integration technique survey",
+          "acceptance_criteria": "Use the concept-tree-explorer subagent to traverse generated concept folders and identify at least 3 cross-domain techniques applicable to gravity simulation (e.g. ideas from molecular dynamics, electrostatics, fluid simulation). Document findings in results/analysis/cross_domain_ideas.md with references to specific concept folders and cited papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Implement body/particle data structure and initial conditions generator",
+          "acceptance_criteria": "Create src/bodies.py (or equivalent module) with: Body class/dataclass (mass, position, velocity vectors), factory functions for at least 3 initial condition presets (two-body Kepler, circular N-body ring, random Plummer sphere). Unit tests in tests/test_bodies.py with >= 5 test cases, all passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement brute-force O(N^2) gravitational force calculation with softening",
+          "acceptance_criteria": "Create src/forces.py with pairwise gravitational force computation using Plummer softening (epsilon parameter). Must handle N>=2 bodies. Include unit tests in tests/test_forces.py verifying: (a) two-body force matches analytical F=Gm1m2/r^2 within 1% for r >> epsilon, (b) softened force is finite at r=0, (c) Newton's third law (F_ij = -F_ji). All tests passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement Euler and leapfrog (Stormer-Verlet) integrators",
+          "acceptance_criteria": "Create src/integrators.py with: (a) forward Euler integrator, (b) leapfrog/Stormer-Verlet integrator. Both must accept a force function, body state, and time-step dt. Unit tests in tests/test_integrators.py verifying correct position/velocity updates for a known analytical case (e.g. simple harmonic oscillator or free-fall). All tests passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement conservation metrics (energy, momentum, angular momentum)",
+          "acceptance_criteria": "Create src/metrics.py computing: total kinetic energy, total gravitational potential energy, total linear momentum vector, total angular momentum vector. Unit tests in tests/test_metrics.py verifying: (a) KE formula correctness, (b) PE symmetry, (c) conservation to machine precision for a trivially invariant configuration. All tests passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Validate two-body Kepler orbit with leapfrog integrator",
+          "acceptance_criteria": "Run a two-body simulation for at least 10 orbital periods using the leapfrog integrator. Measure: (a) relative energy drift < 1e-6 over full run, (b) orbital period error < 1% vs analytical Kepler period, (c) trajectory plot saved to figures/kepler_validation.png showing closed elliptical orbit. Results logged in results/baseline/kepler_validation.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Delegate subagent: benchmark baseline against prior work metrics",
+          "acceptance_criteria": "Use the literature-graph-miner subagent to find published benchmark results for brute-force N-body simulations (energy conservation, runtime scaling). Compare baseline implementation metrics against at least 2 cited benchmarks from sources.bib. Document comparison in results/baseline/benchmark_comparison.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Implement Barnes-Hut tree-based O(N log N) force approximation",
+          "acceptance_criteria": "Create src/tree.py with a quadtree (2D) or octree (3D) spatial partitioning structure and Barnes-Hut force approximation with configurable theta parameter. Unit tests in tests/test_tree.py verifying: (a) tree correctly partitions >= 100 bodies, (b) force error vs brute-force < 1% for theta=0.5, (c) O(N log N) scaling demonstrated for N=100,1000,10000 with timing data. All tests passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement 4th-order symplectic integrator (Yoshida or Forest-Ruth)",
+          "acceptance_criteria": "Add a 4th-order symplectic integrator to src/integrators.py (Yoshida 1990 or Forest-Ruth 1990, cited in sources.bib). Unit tests verifying: (a) 4th-order convergence rate (error ~ dt^4) demonstrated by Richardson extrapolation with at least 4 step sizes, (b) energy drift improvement over leapfrog by >= 2 orders of magnitude for a fixed total time. Tests in tests/test_integrators.py, all passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement adaptive time-stepping strategy",
+          "acceptance_criteria": "Add adaptive time-stepping to src/integrators.py using a criterion based on acceleration magnitude or close-encounter detection. Must handle: (a) automatic dt reduction during close encounters, (b) dt increase during quiescent phases. Test with a highly eccentric two-body orbit (e >= 0.9) showing energy conservation improvement vs fixed dt. Results in results/experiments/adaptive_dt.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Explore concept tree for novel optimization approaches",
+          "acceptance_criteria": "Run concept_evolve with topic 'optimizing N-body gravity simulation performance' and walk concept paths with depth >= 3. At least 8 new concept folders generated in results/concept_evolve/tree/. Identify and document the single most promising novel optimization idea in results/experiments/novel_approach.md with rationale and implementation plan.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement the selected novel optimization or algorithmic improvement",
+          "acceptance_criteria": "Based on item_015 findings, implement the selected approach in a new module under src/. Must include: (a) unit tests with all passing, (b) measurable performance or accuracy improvement documented in results/experiments/novel_results.json, (c) comparison against brute-force and Barnes-Hut baselines.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Delegate subagent: survey state-of-the-art GPU/vectorized N-body techniques",
+          "acceptance_criteria": "Use the literature-graph-miner subagent to build a citation graph starting from key GPU N-body papers (e.g. Nyland et al. 2007, Bedorf et al. 2012). Add at least 5 new papers to sources.bib. Produce results/experiments/gpu_survey.md summarizing vectorization and parallelization strategies applicable to the minimal sim, even if not fully implemented.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Scaling experiment: runtime vs N for all force calculation methods",
+          "acceptance_criteria": "Run simulations for N = 10, 50, 100, 500, 1000, 5000 bodies using brute-force and Barnes-Hut (and any novel method from item_016). Record wall-clock time per step. Save data to results/experiments/scaling_data.json and plot to figures/scaling_comparison.png showing log-log runtime vs N. Verify O(N^2) and O(N log N) slopes match theoretical expectations within 20%.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Accuracy experiment: energy conservation across integrators and step sizes",
+          "acceptance_criteria": "For the Kepler two-body problem, run 100-period simulations with Euler, leapfrog, and 4th-order symplectic integrators at dt = 0.1, 0.01, 0.001, 0.0001. Record max relative energy error. Save data to results/experiments/energy_conservation.json and plot to figures/energy_conservation.png. Verify convergence orders match theory (1st, 2nd, 4th order respectively).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Multi-body stability experiment: Plummer sphere relaxation",
+          "acceptance_criteria": "Initialize a Plummer sphere with N=500 bodies and evolve for 50 dynamical times. Track: (a) total energy conservation (drift < 5% with leapfrog), (b) virial ratio (2K/|W|) oscillation settling near 1.0, (c) density profile stability. Save data to results/experiments/plummer_relaxation.json and trajectory animation or multi-panel plot to figures/plummer_evolution.png.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Barnes-Hut accuracy vs speed tradeoff: theta parameter sweep",
+          "acceptance_criteria": "For N=1000 Plummer sphere, sweep theta = 0.0, 0.3, 0.5, 0.7, 1.0, 1.5. Measure: (a) RMS force error vs brute-force, (b) wall-clock time per step. Save data to results/experiments/theta_sweep.json and plot to figures/theta_tradeoff.png showing Pareto frontier. Identify optimal theta value.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Compare results against prior work benchmarks from literature review",
+          "acceptance_criteria": "For at least 3 experiments (scaling, energy conservation, Plummer relaxation), compare quantitative results against published benchmarks cited in sources.bib. Document agreements and discrepancies in results/experiments/prior_work_comparison.md. Reference specific papers and table/figure numbers from the cited works.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Delegate subagent: validate experimental methodology against published standards",
+          "acceptance_criteria": "Use the concept-tree-explorer subagent to review all experiment configurations in results/experiments/ and cross-reference against concept tree findings. Produce results/experiments/methodology_review.md confirming or flagging potential issues with: sample sizes, integration times, convergence tests, and statistical significance.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Write comprehensive project report synthesizing all findings",
+          "acceptance_criteria": "Create results/report.md with sections: Abstract, Introduction (citing motivation from literature), Methods (all integrators and force methods), Results (all figures and key metrics), Discussion (comparison with prior work from sources.bib), Conclusion, References. Must be >= 2000 words, reference all figures in figures/, and cite >= 10 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Create user-facing README with installation, usage, and example commands",
+          "acceptance_criteria": "Update README.md with: project description, installation instructions (dependencies, setup), usage examples (running a two-body sim, running N-body with Barnes-Hut, generating plots), module overview table, and link to results/report.md. Must include at least one code example showing how to set up and run a simulation programmatically.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Ensure all tests pass and produce final test coverage report",
+          "acceptance_criteria": "Run full test suite (all tests/test_*.py files) with zero failures. Generate coverage report showing >= 80% line coverage across src/ modules. Save test output to results/test_results.txt and coverage summary to results/coverage_summary.txt.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Finalize sources.bib with all referenced works",
+          "acceptance_criteria": "Verify sources.bib contains valid BibTeX entries for every paper cited in results/report.md and all results/analysis/*.md and results/experiments/*.md files. Minimum 15 unique entries. Each entry must have: author, title, year, and venue/journal fields. No broken or placeholder entries.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_028",
+          "description": "Delegate subagent: final quality review of all deliverables",
+          "acceptance_criteria": "Use the concept-tree-explorer subagent to review: (a) all generated concept folders for completeness, (b) all figures for readability and correct labels, (c) results/report.md for logical flow and citation accuracy. Produce results/final_review.md with a quality score (1-10) per deliverable and specific improvement suggestions if score < 7.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 28,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 28
+  }
+}
