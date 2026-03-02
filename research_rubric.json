@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-02T00:30:00Z",
+  "updated_at": "2026-03-02T00:25:51.208872+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-02T00:20:00Z",
+      "completed_at": "2026-03-02T00:25:51.208803+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and available tooling",
+          "acceptance_criteria": "Produce a written document (results/repo_analysis.md) listing all modules (.archivara/semantic_scholar.py, .archivara/concept_evolve.py), their purposes, input/output formats, and how they connect. Include the figures/ and results/ directory conventions. Minimum 200 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive literature review on Collatz conjecture via web search",
+          "acceptance_criteria": "Search for and read at least 15 papers/resources covering: (a) Tao's 2019 logarithmic density result, (b) 2-adic and (p,q)-adic analysis approaches (Siegel 2024), (c) transfer operator and spectral methods (Lagarias, Kontorovich), (d) computational verification records (up to 2^71), (e) operator-theoretic formulations (Mori 2024, C*-algebras), (f) topological/ergodic approaches (Santana 2026), (g) binary representation analysis, (h) fractal structure of stopping times. Produce results/literature_review.md with structured summaries of each paper and explicit identification of at least 5 open gaps suitable for novel computational research.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "File sources.bib exists in repo root with valid BibTeX entries for at least 12 relevant papers. Must include entries for: Tao 2019 (almost all orbits), Lagarias survey, Kontorovich-Lagarias stochastic models, Siegel (p,q)-adic, Mori operator theory, Terras stopping time theorem, and at least 6 additional relevant works. Each entry must have title, author, year, and url or doi fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Survey existing computational tools and open-source Collatz implementations",
+          "acceptance_criteria": "Search GitHub and academic repositories for existing high-performance Collatz implementations. Document at least 5 existing tools/repos in results/computational_survey.md with their capabilities, performance characteristics, and limitations. Identify what computational experiments have already been done vs. what remains unexplored.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Formulate 5 precise novel research questions with falsifiable hypotheses",
+          "acceptance_criteria": "Write results/research_questions.md containing exactly 5 research questions, each with: (1) a precise mathematical statement, (2) a falsifiable hypothesis, (3) a concrete computational test that can verify or refute it in Python, (4) an explanation of why this is not already in the literature (citing sources.bib). Questions must span at least 3 of the following domains: topological data analysis, spectral graph theory, information theory, modular arithmetic structure, random matrix universality, forbidden pattern analysis, and phase transitions in generalized maps.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Implement high-performance Collatz trajectory computation engine",
+          "acceptance_criteria": "Create collatz_engine.py with: (a) function collatz_trajectory(n) returning full trajectory as list, (b) function collatz_stopping_time(n) returning steps to reach 1, (c) function collatz_parity_sequence(n) returning binary string of odd/even steps, (d) function collatz_trajectory_features(n) returning dict with stopping_time, max_value, num_odd_steps, num_even_steps, odd_ratio, max_value_ratio. Must handle n up to 10^15 without overflow. Include unit tests verifying correctness for known values: n=27 (stopping time 111), n=9663 (stopping time 184), n=1 (stopping time 0). Computation of all stopping times for n=1..10^6 must complete in under 60 seconds.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement Collatz predecessor graph construction",
+          "acceptance_criteria": "Create collatz_graph.py with: (a) function build_predecessor_graph(max_n) returning a NetworkX-compatible directed graph where edge (a,b) means b is the Collatz successor of a, (b) function build_collatz_tree(root, depth) building the inverse Collatz tree from a root up to a given depth, (c) function graph_laplacian(G) returning the normalized graph Laplacian as a sparse matrix. Verify: predecessor graph for max_n=100 has exactly 99 nodes (excluding 0) and the tree rooted at 1 with depth 20 contains at least 1000 nodes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement baseline statistical metrics and reproduce known results",
+          "acceptance_criteria": "Create collatz_baseline.py that computes and saves to results/baseline/: (a) stopping time distribution for n=1..10^6 as histogram (PNG in figures/stopping_time_dist.png), (b) verification that mean stopping time grows as ~C*log(n) with fitted constant C (compare to Lagarias bound ~6.95*log2(n)), (c) verification that the ratio of odd to even steps converges to log(2)/log(3) \u2248 0.6309 for large n, (d) Benford's law analysis of leading digits along trajectories. All results must be saved as JSON in results/baseline/baseline_metrics.json with numerical values. Cite at least 3 prior works from sources.bib that established these baseline facts.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement trajectory encoding and feature extraction pipeline",
+          "acceptance_criteria": "Create collatz_features.py with: (a) function encode_trajectory_binary(n) converting parity sequence to numpy array of 0s and 1s, (b) function trajectory_to_point_cloud(n_range) mapping each n in range to a feature vector (stopping_time, log_max_value, odd_ratio, entropy_of_parity_seq, trailing_ones_in_binary_n, 2adic_valuation_n) and returning as numpy array, (c) function parity_ngrams(n, k) returning frequency distribution of all k-grams in the parity sequence. Verify: for n=1..10000, the point cloud has shape (10000, 6) and all features are finite.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Create visualization toolkit for Collatz dynamics",
+          "acceptance_criteria": "Create collatz_viz.py with functions: (a) plot_trajectory(n) saving trajectory plot to figures/, (b) plot_stopping_time_heatmap(N) creating 2D heatmap of stopping times arranged by (n mod p, n mod q) for configurable primes p,q, (c) plot_parity_spectrogram(n_range) creating spectrogram of parity sequences. Generate at least 3 demonstration figures saved to figures/ directory. Each function must accept an output_path parameter.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Novel Direction 1: Persistent homology of Collatz trajectory point clouds to discover hidden topological structure",
+          "acceptance_criteria": "Create research/tda_collatz.py that: (a) constructs point clouds from Collatz trajectory features (from item_009) for n=1..50000, (b) computes Vietoris-Rips persistent homology in dimensions 0, 1, 2 using ripser or gudhi, (c) generates persistence diagrams and barcodes saved to figures/persistence_*.png, (d) computes Betti numbers beta_0, beta_1, beta_2 at multiple filtration scales, (e) compares persistence diagrams of trajectories grouped by residue class (e.g., n\u22611 mod 4 vs n\u22613 mod 4) using bottleneck or Wasserstein distance. NOVELTY TEST: Document in results/tda_results.md whether any non-trivial 1-cycles (loops) or 2-cycles (voids) persist across a significant range of filtration values, indicating genuine topological structure not attributable to noise. Compare persistence diagram statistics against 1000 random null-model point clouds of the same size. Report p-values. This direction has NO prior work in the Collatz literature (confirmed via item_002).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Novel Direction 2: Spectral analysis of Collatz predecessor graph \u2014 eigenvalue statistics and random matrix universality",
+          "acceptance_criteria": "Create research/spectral_collatz.py that: (a) builds the Collatz predecessor graph for n=1..N (N=10000, 50000, 100000), (b) computes the top 500 eigenvalues of the normalized graph Laplacian, (c) computes the eigenvalue spacing distribution and compares to GOE (Gaussian Orthogonal Ensemble), GUE, and Poisson statistics using KS-test, (d) computes the spectral gap (second smallest eigenvalue) and tracks how it scales with N, (e) generates eigenvalue density plots and nearest-neighbor spacing histograms saved to figures/spectral_*.png. NOVELTY TEST: Document in results/spectral_results.md whether the Collatz graph eigenvalue statistics match any known random matrix ensemble, and whether the spectral gap exhibits power-law or logarithmic scaling with N. If it matches GOE/GUE, this connects Collatz to quantum chaos \u2014 a result not in the literature. If it doesn't match any standard ensemble, characterize the deviation.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Novel Direction 3: Transfer matrix products and finite-time Lyapunov exponent distribution",
+          "acceptance_criteria": "Create research/transfer_matrix.py that: (a) encodes each Collatz step as a 2x2 matrix: M_even = [[1/2, 0],[0,1]] for even steps, M_odd = [[3, 1],[0, 1]] for odd steps (operating on [n, 1]^T), (b) for each n=1..100000, computes the product of matrices along its trajectory and extracts the finite-time Lyapunov exponent lambda(n) = (1/T) * log(||M_T ... M_1||) where T is the stopping time, (c) plots the distribution of lambda(n) values and fits to known distributions (normal, Tracy-Widom, etc.), (d) computes the correlation between lambda(n) and features of n (2-adic valuation, number of 1-bits, etc.). NOVELTY TEST: Document in results/lyapunov_results.md whether the Lyapunov exponent distribution converges to a universal form as N grows, and whether there are outlier n-values with anomalously high or low lambda. If the distribution matches Tracy-Widom, this connects Collatz to random matrix theory in a new way. Report the mean Lyapunov exponent and compare to the theoretical prediction log(3/2)/2 \u2248 0.2027.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Novel Direction 4: Information-theoretic invariants \u2014 mutual information between binary structure and trajectory fate",
+          "acceptance_criteria": "Create research/info_theory_collatz.py that: (a) for n=1..200000, computes Shannon entropy H of the parity sequence, (b) computes mutual information I(X;Y) where X = k-bit windows of the binary representation of n and Y = corresponding k-step windows of the parity sequence, for k=3,4,5,6,7,8, (c) computes conditional entropy H(parity_step_t | binary_bits_of_n) as a function of step t, (d) tests whether I(X;Y) decays to zero (implying eventual independence from initial conditions) or plateaus (implying persistent memory). NOVELTY TEST: Document in results/info_theory_results.md the mutual information decay curve with error bars. If mutual information plateaus above zero for large t, this provides computational evidence that Collatz trajectories retain infinite memory of initial conditions \u2014 contradicting the stochastic independence assumption underlying most probabilistic Collatz models (cite Kontorovich-Lagarias from sources.bib). Plot I(X;Y) vs step t for k=4,6,8.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Novel Direction 5: Modular resonance scanner \u2014 systematic discovery of hidden periodicity in stopping times mod m",
+          "acceptance_criteria": "Create research/modular_resonance.py that: (a) for each modulus m from 2 to 500, computes the distribution of stopping_time(n) mod m for n=1..500000, (b) performs chi-squared test against uniform distribution for each m, reporting p-values, (c) identifies all m where the distribution is significantly non-uniform (p < 10^-10) and ranks them by effect size, (d) for the top 20 most resonant moduli, visualizes the stopping time distribution mod m as bar charts saved to figures/resonance_mod_*.png, (e) tests whether resonant moduli cluster around numbers with special arithmetic properties (powers of 2, powers of 3, products 2^a * 3^b). NOVELTY TEST: Document in results/resonance_results.md all discovered resonant moduli with their chi-squared statistics. The known trivial resonances are mod 2 and powers of 2 (due to parity). Identify any non-trivial resonances (not explained by powers of 2 or 3). If stopping times show unexplained bias mod some prime p > 3, this is a genuinely novel number-theoretic discovery. Compare against the null hypothesis that stopping times mod m are uniform for m coprime to 6.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Novel Direction 6: Forbidden and anomalously rare subwords in Collatz parity sequences",
+          "acceptance_criteria": "Create research/forbidden_patterns.py that: (a) collects parity sequences for n=1..500000, (b) for word lengths k=4,5,6,...,16, counts the frequency of every possible binary k-gram across all collected parity sequences, (c) identifies k-grams that never appear (truly forbidden) or appear with frequency < 1% of the expected frequency under a uniform iid Bernoulli(log2(3)/(1+log2(3))) model, (d) for each candidate forbidden/rare pattern, attempts to prove or disprove its impossibility via modular arithmetic arguments (does the pattern imply a contradiction in the Collatz recurrence?), (e) tests whether forbidden patterns are preserved under the generalized Collatz map (5n+1, 7n+1). NOVELTY TEST: Document in results/forbidden_patterns.md a complete catalogue of forbidden k-grams for k up to 12, with frequency counts and p-values against the null model. Any provably forbidden pattern of length >= 6 that isn't a trivial consequence of the parity rules would be a significant new constraint on Collatz dynamics.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Novel Direction 7: Phase transitions in the generalized Collatz family an+b and critical boundary mapping",
+          "acceptance_criteria": "Create research/generalized_collatz.py that: (a) implements the generalized map T(n) = n/2 if even, T(n) = a*n+b if odd, for integer parameters a (odd, 1..21) and b (odd, 1..21), (b) for each (a,b) pair, tests n=1..100000 for convergence (reaches a cycle) vs divergence (exceeds 10^15), (c) creates a 2D phase diagram: color-coded grid of (a,b) showing fraction of starting values that converge, saved to figures/phase_diagram.png, (d) identifies the critical boundary between convergence and divergence regions, (e) for parameter pairs near the critical boundary, measures the mean escape time and tests for power-law divergence characteristic of a phase transition. NOVELTY TEST: Document in results/phase_transition.md the complete phase diagram with convergence fractions. Determine whether the critical boundary exhibits fractal structure (compute its box-counting dimension). If the boundary has non-integer fractal dimension, this connects generalized Collatz maps to critical phenomena in statistical mechanics. Compare to the known result that a=3,b=1 is convergent and a=5,b=1 has known divergent orbits.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Run all novel experiments at scale and collect comprehensive results",
+          "acceptance_criteria": "Execute all 7 novel research directions (items 011-017) with full parameter sweeps. Create results/experiment_log.json tracking: experiment name, parameter settings, runtime, memory usage, output files generated. Total dataset must cover n=1..500000 minimum. All intermediate data must be saved to results/ so experiments are reproducible. Every experiment must complete without errors.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Statistical significance testing and null hypothesis comparison for all novel findings",
+          "acceptance_criteria": "Create research/significance_tests.py that: (a) for each novel finding from items 011-017, constructs an appropriate null model (random graphs, shuffled sequences, Monte Carlo simulations), (b) generates at least 1000 null-model samples for each test, (c) computes p-values using appropriate tests (KS, chi-squared, permutation tests), (d) applies Bonferroni correction for multiple comparisons, (e) saves results to results/significance.json with columns: experiment, test_statistic, p_value, corrected_p_value, effect_size, significant_at_001. All claims of novelty must survive p < 0.001 after Bonferroni correction.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Scale-invariance verification: confirm findings hold across different scales",
+          "acceptance_criteria": "For each statistically significant finding from item_019, repeat the analysis at 3 different scales: n=1..10^4, n=1..10^5, n=1..5*10^5. Document in results/scale_invariance.md whether each finding (a) strengthens with scale (effect size increases), (b) remains stable, or (c) weakens/disappears. Findings that disappear at larger scales must be flagged as artifacts. Findings that strengthen are the most promising. Include plots of effect size vs scale for each finding in figures/scale_*.png.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Cross-comparison with prior work: benchmark novel results against literature",
+          "acceptance_criteria": "Create results/comparison_with_literature.md that: (a) for each novel finding, identifies the closest prior work from sources.bib, (b) explains precisely what is new vs. what was already known, (c) quantifies the advance (e.g., 'We discover X which is not predicted by model Y from [citation]'), (d) addresses potential objections (could the finding be a trivial consequence of known results?). Must reference at least 8 specific papers from sources.bib. Include a comparison table with columns: Finding, Closest Prior Work, What's New, Significance.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Identify and deep-dive into the single most impactful novel discovery",
+          "acceptance_criteria": "Based on items 018-021, select the single most novel and significant finding. Create research/deep_dive.py that: (a) extends the computation to the largest feasible scale (n up to 10^6 or beyond), (b) explores edge cases and boundary conditions, (c) attempts to formulate a precise mathematical conjecture from the computational evidence, (d) writes a self-contained verification script verify_discovery.py that any researcher can run in under 5 minutes to confirm the key result. Document in results/deep_dive.md with the precise conjecture statement, computational evidence, and verification instructions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Write comprehensive research report synthesizing all findings",
+          "acceptance_criteria": "Create results/research_report.md (minimum 3000 words) containing: (1) Abstract (200 words), (2) Introduction with problem statement and motivation, (3) Literature Review summary citing sources.bib, (4) Methods section describing all 7 novel approaches, (5) Results section with key findings from each direction, statistical significance, and scale invariance, (6) Discussion section interpreting results and proposing theoretical explanations, (7) Conclusion with the main novel discovery and its implications, (8) References section linking to sources.bib. Must include at least 8 inline citations and reference at least 6 figures from figures/ directory.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Create single-command reproducibility script that verifies all key results",
+          "acceptance_criteria": "Create run_all.py in repo root that: (a) installs required dependencies via pip, (b) runs all experiments in sequence, (c) generates all figures, (d) runs all statistical tests, (e) produces a summary JSON at results/summary.json with all key numerical findings and their p-values. The script must complete in under 30 minutes on a standard machine. Include requirements.txt listing all Python dependencies with pinned versions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Prepare visual summary and executive findings document",
+          "acceptance_criteria": "Create results/executive_summary.md (500-1000 words) with: (a) the single most striking finding stated in one sentence, (b) why it matters (connection to the Collatz conjecture and broader mathematics), (c) how to verify it (link to verify_discovery.py), (d) what questions it opens for future research. Include the 3 most compelling figures from figures/ directory. Write for an audience of mathematicians and science journalists \u2014 the finding should be comprehensible without deep Collatz background.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
