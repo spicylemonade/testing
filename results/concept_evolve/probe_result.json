@@ -1,0 +1,122 @@
+{
+  "sub_problem": "Designing a novel SSSP algorithm with adaptive batch processing and reduced constant factors in BMSSP recursion",
+  "timestamp": "2026-03-02T00:30:00+00:00",
+  "associations": [
+    {
+      "concept": "Cache-oblivious B-tree traversal",
+      "domain": "external memory algorithms",
+      "surprise_rating": 0.7,
+      "structural_reason": "Cache-oblivious algorithms achieve optimal I/O complexity without knowing cache parameters. Applied to SSSP: process vertices in cache-friendly batches that automatically adapt to the memory hierarchy. The van Emde Boas layout for priority queues achieves O(log_B n) cache misses per operation, which could reduce the practical constant factor."
+    },
+    {
+      "concept": "Adaptive step-size control in ODE solvers",
+      "domain": "numerical analysis",
+      "surprise_rating": 0.75,
+      "structural_reason": "Runge-Kutta methods adapt step size based on local error estimates. In SSSP, the 'step size' is the interval width Delta. If we adaptively choose Delta based on the local graph density (few edges crossing the interval boundary = large Delta is safe), we reduce the number of recursive calls."
+    },
+    {
+      "concept": "Work-stealing scheduling",
+      "domain": "parallel computing",
+      "surprise_rating": 0.6,
+      "structural_reason": "Work-stealing balances load across processors by having idle processors steal work from busy ones. In SSSP interval decomposition, some intervals have many vertices (heavy) while others have few (light). Merging light adjacent intervals reduces overhead."
+    },
+    {
+      "concept": "Huffman coding with run-length encoding",
+      "domain": "data compression",
+      "surprise_rating": 0.65,
+      "structural_reason": "When consecutive symbols are identical (runs), run-length encoding compresses efficiently. When consecutive vertices have similar distances (a 'run' of nearby distances), they can be processed as a single batch without individual PQ operations."
+    },
+    {
+      "concept": "Multigrid methods for PDEs",
+      "domain": "numerical analysis",
+      "surprise_rating": 0.8,
+      "structural_reason": "Multigrid methods solve PDEs by iterating between coarse and fine grids. Coarse grids capture long-range behavior cheaply; fine grids handle local details. SSSP analog: coarse approximation of distances on a sparsified graph, then local refinement on the original graph. The V-cycle structure maps to the recursive BMSSP decomposition."
+    }
+  ],
+  "forced_bridges": [
+    {
+      "concept_a": "Adaptive mesh refinement",
+      "domain_a": "computational fluid dynamics",
+      "concept_b": "Interval decomposition for SSSP",
+      "domain_b": "graph algorithms",
+      "connection_type": "structural",
+      "explanation": "AMR refines the mesh only in regions with high error/gradients. SSSP interval decomposition should refine (use more intervals) only in distance ranges with high vertex density. In sparse distance ranges, one large interval suffices.",
+      "intermediate_concepts": ["error estimator", "local refinement criterion", "octree decomposition"],
+      "confidence": 0.85,
+      "potential_insight": "Use the number of vertices in each distance interval as the refinement criterion. Intervals with many vertices get split further; intervals with few vertices are processed directly. This adaptive scheme reduces the total number of recursive calls from O(2^t * depth) to O(n * depth / avg_interval_size)."
+    },
+    {
+      "concept_a": "Epsilon-scaling in auction algorithms",
+      "domain_a": "combinatorial optimization",
+      "concept_b": "Multi-scale distance computation",
+      "domain_b": "shortest paths",
+      "connection_type": "mathematical",
+      "explanation": "Auction algorithms start with coarse prices (epsilon-approximate) and refine to exact. Each scale reduces epsilon by a constant factor. In SSSP, start with coarse distance estimates (rounding to multiples of Delta) and refine. Each refinement level corrects distances within Delta of their true value.",
+      "intermediate_concepts": ["complementary slackness", "reduced cost", "price refinement"],
+      "confidence": 0.9,
+      "potential_insight": "Johnson's reweighting + epsilon-scaling: at each scale, use current approximate distances as vertex potentials to reduce all edge weights to [0, Delta). Then run a BFS-like subroutine (since all weights are small). Total work: O(m * number_of_scales). If scales = O(sqrt(log n)), this matches the Duan et al. 2026 bound."
+    },
+    {
+      "concept_a": "Streaming algorithms with sketches",
+      "domain_a": "sublinear algorithms",
+      "concept_b": "Priority queue overhead reduction",
+      "domain_b": "data structures",
+      "connection_type": "functional",
+      "explanation": "Streaming algorithms use small-space sketches to approximate statistics over a data stream. For the SSSP PQ, maintain a 'sketch' of the distance distribution (e.g., a histogram with O(sqrt(n)) bins) to quickly identify which vertices to process next without full PQ operations.",
+      "intermediate_concepts": ["Count-Min sketch", "quantile estimation", "bin-based selection"],
+      "confidence": 0.7,
+      "potential_insight": "Replace the PQ with a binned structure where bins have width Delta. Finding the minimum bin is O(1); extracting all vertices from a bin is O(bin_size). Total PQ overhead: O(n + n_bins * processing_per_bin). If n_bins = O(sqrt(n/log n)) and processing_per_bin = O(sqrt(n * log n)), total is O(n)."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "combination": "Wavelet-based multi-resolution SSSP + cache-oblivious layout",
+      "triggers_novel_association": true,
+      "novel_associations": [
+        "Process distances at multiple resolutions: coarse (large Delta) for far vertices, fine (small Delta) for near vertices, like a wavelet decomposition",
+        "Store the graph in a cache-oblivious layout (van Emde Boas or Morton-curve ordering of vertices by approximate distance) to improve cache performance"
+      ],
+      "emergent_insight": "A cache-oblivious SSSP algorithm that naturally adapts to both the graph structure and the memory hierarchy, achieving near-optimal cache miss rate without knowing cache parameters."
+    },
+    {
+      "combination": "Reinforcement learning credit assignment + edge relaxation scheduling",
+      "triggers_novel_association": true,
+      "novel_associations": [
+        "RL's temporal difference learning updates value estimates based on successor values — same structure as edge relaxation in SSSP",
+        "Prioritized experience replay in RL = prioritized edge relaxation in SSSP"
+      ],
+      "emergent_insight": "The 'effective learning rate' concept from RL maps to the priority of edge relaxations. Edges connecting vertices with large distance differences should be relaxed first (high priority), analogous to prioritizing experiences with high TD error."
+    },
+    {
+      "combination": "Sparse matrix factorization + shortest path tree computation",
+      "triggers_novel_association": true,
+      "novel_associations": [
+        "The shortest path tree is a sparse subgraph of G. Finding it is like finding a sparse factorization of the adjacency matrix.",
+        "LU factorization with fill-reducing orderings (nested dissection) has structural similarities to the recursive separator decomposition used in planar SSSP"
+      ],
+      "emergent_insight": "Apply nested dissection ordering to the graph before running SSSP. This ordering minimizes the 'fill-in' (number of auxiliary edges needed) in the recursive decomposition, potentially reducing the constant factor in the BMSSP recursion."
+    }
+  ],
+  "steering_directions": [
+    {
+      "direction": "Adaptive interval width based on vertex density (AMR-inspired)",
+      "rationale": "The forced bridge between AMR and interval decomposition reveals that fixed-width intervals waste work on sparse distance ranges. Adaptive widths reduce recursive calls.",
+      "first_step": "Implement a density estimator that counts vertices in each distance range and adjusts interval width inversely to density."
+    },
+    {
+      "direction": "Epsilon-scaling with Johnson reweighting for multi-scale SSSP",
+      "rationale": "The auction algorithm bridge shows that multi-scale distance computation via potential functions is a principled way to achieve O(m * sqrt(log n)) bounds.",
+      "first_step": "Implement a scale-based SSSP: start with coarse Delta, use current distances as potentials, refine Delta by sqrt(2) each round."
+    },
+    {
+      "direction": "Binned priority queue replacing comparison-based heap",
+      "rationale": "The streaming/sketch bridge suggests that histogram-based PQ operations can be cheaper than comparison-based ones for structured distance distributions.",
+      "first_step": "Implement a bucketed PQ where bucket width adapts to the current distance range, providing O(1) amortized extract-batch."
+    },
+    {
+      "direction": "Cache-oblivious graph layout for practical speedup",
+      "rationale": "The cache-oblivious anomaly suggests that vertex ordering significantly affects practical performance. Layout vertices by approximate distance for cache-friendly access.",
+      "first_step": "Run a quick BFS to estimate distances, reorder adjacency lists by estimated distance, then run the main algorithm on the reordered graph."
+    }
+  ]
+}
