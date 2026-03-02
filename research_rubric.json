@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-02T00:00:00Z",
+  "updated_at": "2026-03-02T08:49:27.311493+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-02T00:00:00Z",
+      "completed_at": "2026-03-02T08:49:27.311454+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and available tooling",
+          "acceptance_criteria": "Produce a document (results/repo_analysis.md) listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, .opencode/tools/*, .opencode/agents/*), their purposes, input/output interfaces, and how they connect. Document the empty scaffolding (figures/, results/) and identify what must be created.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct web-based literature search on N-body gravity simulation methods",
+          "acceptance_criteria": "Use web search and Semantic Scholar to find at least 15 relevant papers covering: (a) classical N-body integrators (Euler, Verlet, leapfrog, Runge-Kutta), (b) symplectic integration methods, (c) Barnes-Hut tree algorithm, (d) energy conservation in Hamiltonian systems, (e) adaptive time-stepping. Save search results and notes to results/literature_notes.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "sources.bib exists in repo root with valid BibTeX entries for at least 10 relevant papers. Must include entries for: Verlet (1967), Barnes & Hut (1986), Aarseth (2003) or equivalent foundational N-body references, plus at least 7 additional papers on numerical integration or gravitational simulation. Each entry must have title, author, year, and venue fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Concept-tree exploration: map the design space of minimal gravity simulators",
+          "acceptance_criteria": "Run concept_evolve with seed 'minimal gravity simulation' and walk depth >= 3. Materialized concept folders must exist under results/concept_evolve/tree/ with at least 5 concept cards covering integration methods, force computation, boundary conditions, visualization, and validation. Delegate to concept-tree-explorer subagent for traversal and synthesis.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Define problem scope and requirements specification",
+          "acceptance_criteria": "Produce results/requirements.md specifying: (1) target particle count range (e.g. 2-1000), (2) dimensionality (2D or 3D), (3) required integrators (at least Euler and one symplectic method), (4) force computation approach (direct O(n^2) baseline), (5) output format for trajectories, (6) energy conservation tolerance target, (7) language/framework choice with justification referencing at least 3 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Literature-graph mining: build citation graph around core N-body simulation papers",
+          "acceptance_criteria": "Delegate to literature-graph-miner subagent. Use semantic_scholar graph command with at least 3 root papers. Produce results/citation_graph.json with nodes and edges. Identify at least 5 highly-cited hub papers not found in initial search. Add any new relevant papers to sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement core data structures for N-body state representation",
+          "acceptance_criteria": "Create src/core.py (or equivalent) with: (1) Particle class/dataclass with position, velocity, mass, and acceleration fields supporting 2D and 3D, (2) System class holding a collection of particles with methods to get/set state vectors, (3) Unit tests in tests/test_core.py with at least 5 test cases passing. All tests must pass with pytest.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement direct-sum O(n^2) gravitational force computation",
+          "acceptance_criteria": "Create src/forces.py with pairwise gravitational force calculation using Newton's law with softening parameter. Must handle: (1) arbitrary N particles, (2) configurable gravitational constant G, (3) softening length epsilon to prevent singularities. Unit tests in tests/test_forces.py verifying: (a) two-body force matches analytic F=Gm1m2/r^2, (b) net force on symmetric 3-body system is correct, (c) softening prevents divergence at r\u21920. All tests pass.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement Euler and Leapfrog (St\u00f6rmer-Verlet) integrators as baselines",
+          "acceptance_criteria": "Create src/integrators.py with: (1) Forward Euler integrator, (2) Leapfrog/St\u00f6rmer-Verlet symplectic integrator, both conforming to a common Integrator interface (step method taking system + dt, returning updated system). Unit tests in tests/test_integrators.py verifying: (a) single step of two-body produces expected displacement within tolerance, (b) leapfrog is time-reversible for a simple case. All tests pass.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Define and implement quantitative metrics for simulation quality",
+          "acceptance_criteria": "Create src/metrics.py implementing: (1) total energy (kinetic + potential) computation, (2) relative energy error \u0394E/E\u2080 over time, (3) linear and angular momentum conservation measures, (4) wall-clock time per step. Unit tests in tests/test_metrics.py verifying energy computation against analytic two-body solution. Document metric definitions in results/metrics_definition.md referencing acceptance criteria from prior work in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Run baseline experiments comparing Euler vs Leapfrog on canonical test cases",
+          "acceptance_criteria": "Create scripts/run_baseline.py executing: (1) two-body Keplerian orbit for 100 periods, (2) 3-body figure-eight solution, (3) random 50-body system for 1000 steps. Record energy error, momentum drift, and wall-clock time for both integrators at dt=0.01 and dt=0.001. Save results to results/baseline_results.json. Generate at least 2 figures (energy drift plot, trajectory plot) saved to figures/. Delegate analysis synthesis to a subagent.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Concept-tree exploration: novel integration and force computation approaches",
+          "acceptance_criteria": "Run concept_evolve 'reframe' on 'gravity simulation optimization' across at least 5 domains. Walk the concept tree to depth >= 3 exploring branches for: (a) higher-order symplectic methods (Yoshida, Forest-Ruth), (b) adaptive time-stepping, (c) Barnes-Hut tree approximation, (d) GPU/vectorized force computation. Materialized folders in results/concept_evolve/tree/ with concept cards. Delegate exploration to concept-tree-explorer subagent.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement at least one higher-order symplectic integrator",
+          "acceptance_criteria": "Add to src/integrators.py at least one of: 4th-order Yoshida, Forest-Ruth, or 4th-order symplectic Runge-Kutta. Implementation must: (1) conform to Integrator interface, (2) pass time-reversibility test, (3) demonstrate measurably better energy conservation than leapfrog on the two-body orbit test (\u0394E/E\u2080 at least 10x smaller for same dt). Reference the original paper in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement adaptive time-stepping mechanism",
+          "acceptance_criteria": "Create src/adaptive.py with a time-step controller that: (1) adjusts dt based on local truncation error estimate or acceleration magnitude, (2) enforces minimum and maximum dt bounds, (3) works with any Integrator. Test on the 3-body problem showing: (a) smaller dt during close encounters, (b) energy conservation comparable to fixed dt at lower total step count. Save comparison results to results/adaptive_results.json. Cite at least 1 relevant paper from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement Barnes-Hut tree-based approximate force computation",
+          "acceptance_criteria": "Create src/tree.py with: (1) octree/quadtree spatial decomposition, (2) Barnes-Hut force approximation with configurable theta parameter, (3) O(n log n) complexity. Tests verifying: (a) force error vs direct-sum is < 1% for theta=0.5 on a 100-body system, (b) timing shows speedup over direct-sum for N >= 500. Reference Barnes & Hut (1986) from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement simulation visualization and trajectory output",
+          "acceptance_criteria": "Create src/visualization.py with: (1) static trajectory plot (matplotlib), (2) animated trajectory replay (matplotlib animation or equivalent), (3) energy/momentum time-series plot. All plotting functions take simulation output data and produce files in figures/. At least one animation saved as figures/trajectory_animation.gif showing a multi-body simulation.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_017",
+          "description": "Systematic integrator comparison experiment",
+          "acceptance_criteria": "Create scripts/run_integrator_comparison.py running all implemented integrators (Euler, Leapfrog, higher-order symplectic) on: (1) Kepler two-body at 5 different dt values, (2) figure-eight 3-body, (3) random 100-body system. For each, record: energy error, momentum error, wall-clock time, number of force evaluations. Save to results/integrator_comparison.json. Generate comparison figures in figures/integrator_comparison_*.png.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Scaling experiment: measure performance vs particle count",
+          "acceptance_criteria": "Create scripts/run_scaling.py measuring wall-clock time per step for N = 10, 50, 100, 250, 500, 1000 particles using: (1) direct-sum force, (2) Barnes-Hut force (if implemented). Fit and verify O(n^2) and O(n log n) scaling. Save results to results/scaling_results.json. Generate log-log scaling plot in figures/scaling_plot.png with fitted curves.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Validation against known analytic solutions",
+          "acceptance_criteria": "Create scripts/run_validation.py testing: (1) Kepler orbit period matches analytic T = 2\u03c0\u221a(a\u00b3/GM) to within 0.1%, (2) two-body energy is conserved to within specified tolerance over 1000 orbits for symplectic integrator, (3) circular orbit maintains constant radius to within 1% for 100 orbits. Save validation results to results/validation_results.json with pass/fail for each test.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Compare results against prior work benchmarks from literature",
+          "acceptance_criteria": "Using papers from sources.bib, identify at least 3 published benchmark results (energy conservation rates, timing, accuracy) for comparable simulations. Document comparison in results/literature_comparison.md showing how our implementation's metrics compare. Delegate literature extraction to literature-graph-miner subagent. Must cite specific figures/tables from referenced papers.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Adaptive time-stepping evaluation experiment",
+          "acceptance_criteria": "Run the 3-body and random 100-body scenarios with: (1) fixed dt=0.001, (2) fixed dt=0.01, (3) adaptive time-stepping. Compare total steps taken, energy conservation, and wall-clock time. Adaptive method must achieve energy conservation within 2x of dt=0.001 fixed step using fewer total steps. Save results to results/adaptive_evaluation.json with figures in figures/adaptive_*.png.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Synthesize experimental results into comprehensive analysis document",
+          "acceptance_criteria": "Create results/analysis.md containing: (1) summary of all experimental results with tables, (2) discussion of integrator trade-offs (accuracy vs speed), (3) analysis of when Barnes-Hut becomes beneficial, (4) assessment of adaptive time-stepping effectiveness, (5) comparison with prior work from sources.bib citing at least 5 papers. Minimum 1500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Concept-tree synthesis: consolidate research insights into concept map",
+          "acceptance_criteria": "Run concept_evolve 'walk' over all materialized concept folders in results/concept_evolve/tree/. Produce results/concept_synthesis.md summarizing: (1) which concept branches proved most valuable, (2) unexpected connections discovered, (3) recommended future research directions. Delegate to concept-tree-explorer subagent for final traversal and synthesis.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Write comprehensive README.md for the repository",
+          "acceptance_criteria": "Update README.md with: (1) project description and motivation, (2) installation/setup instructions, (3) usage examples for running simulations, (4) description of implemented integrators and force methods, (5) summary of key results with inline figure references, (6) references to sources.bib. Must be well-structured with sections and at least 500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Create reproducibility package with requirements and run instructions",
+          "acceptance_criteria": "Repository root contains: (1) requirements.txt or pyproject.toml with all Python dependencies pinned, (2) scripts/run_all.py or Makefile that executes all experiments in sequence, (3) results/ directory populated with all JSON result files and markdown analyses, (4) figures/ directory with all generated plots. Running the full pipeline from a clean environment must reproduce all results.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
