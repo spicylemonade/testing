@@ -1,0 +1,40 @@
+{
+  "nodes": {
+    "lattice_point_density": {"domain": "geometry_of_numbers", "type": "structural"},
+    "resonance_condition": {"domain": "wave_physics", "type": "functional"},
+    "graph_coloring_constraint": {"domain": "constraint_satisfaction", "type": "computational"},
+    "elliptic_curve_points": {"domain": "algebraic_geometry", "type": "structural"},
+    "fitness_landscape": {"domain": "evolutionary_computation", "type": "computational"},
+    "modular_sieve": {"domain": "analytic_number_theory", "type": "computational"},
+    "topological_obstruction": {"domain": "arithmetic_geometry", "type": "structural"},
+    "CRT_reconstruction": {"domain": "number_theory", "type": "structural"},
+    "spectral_gap": {"domain": "spectral_theory", "type": "analytical"},
+    "pareto_front": {"domain": "multi_objective_optimization", "type": "computational"}
+  },
+  "edges": [
+    {"source": "lattice_point_density", "target": "elliptic_curve_points", "type": "mathematical_isomorphism", "confidence": 0.95, "description": "Both concern rational/integer points on algebraic varieties; K3 surface lattice structure directly connects to lattice point counting"},
+    {"source": "elliptic_curve_points", "target": "topological_obstruction", "type": "structural_analogy", "confidence": 0.9, "description": "Brauer-Manin obstruction on K3 surface governs whether EC-based search can succeed"},
+    {"source": "modular_sieve", "target": "CRT_reconstruction", "type": "mathematical_isomorphism", "confidence": 0.95, "description": "Sieve conditions mod p are exactly the local conditions that CRT would combine"},
+    {"source": "graph_coloring_constraint", "target": "fitness_landscape", "type": "functional_analogy", "confidence": 0.8, "description": "CSP solution landscape is the fitness landscape; phase transition in CSP density maps to landscape ruggedness"},
+    {"source": "spectral_gap", "target": "topological_obstruction", "type": "structural_analogy", "confidence": 0.75, "description": "A spectral gap in near-miss scores would be the analytic manifestation of an algebraic obstruction"},
+    {"source": "resonance_condition", "target": "lattice_point_density", "type": "metaphorical_transfer", "confidence": 0.65, "description": "Commensurate frequencies map to lattice points; resonance cavities define the geometric search space"},
+    {"source": "modular_sieve", "target": "graph_coloring_constraint", "type": "functional_analogy", "confidence": 0.8, "description": "Modular constraints act as arc-consistency propagation in the CSP formulation"},
+    {"source": "pareto_front", "target": "fitness_landscape", "type": "mathematical_isomorphism", "confidence": 0.85, "description": "Multi-objective optimization surface IS the fitness landscape in residual space"},
+    {"source": "CRT_reconstruction", "target": "topological_obstruction", "type": "structural_analogy", "confidence": 0.9, "description": "CRT succeeds iff there is no Brauer-Manin obstruction; failure of Hasse principle = CRT failure at the global level"},
+    {"source": "spectral_gap", "target": "resonance_condition", "type": "metaphorical_transfer", "confidence": 0.7, "description": "Spectral gap in number theory is analogous to forbidden frequency bands in resonators"}
+  ],
+  "bridge_chains": [
+    {
+      "chain": ["modular_sieve", "CRT_reconstruction", "topological_obstruction", "elliptic_curve_points"],
+      "insight": "If modular sieves never completely exclude a candidate, CRT suggests local-global compatibility, but the Brauer-Manin obstruction could still block. This chain motivates computing the Brauer group of the cuboid K3 surface."
+    },
+    {
+      "chain": ["fitness_landscape", "spectral_gap", "topological_obstruction"],
+      "insight": "If near-misses show a widening gap (spectral gap), this is empirical evidence for a topological obstruction. Analyzing near-miss distributions can inform whether non-existence is provable."
+    },
+    {
+      "chain": ["graph_coloring_constraint", "modular_sieve", "CRT_reconstruction"],
+      "insight": "CSP propagation + modular sieving + CRT reconstruction forms a complete algorithmic pipeline: reduce via constraints, sieve via local conditions, attempt global assembly."
+    }
+  ]
+}
