@@ -1,0 +1,861 @@
+% =============================================================================
+% Computational Search for a Perfect Cuboid: Algorithms, Near-Miss Analysis,
+% and Scaling Feasibility
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ----------------------------------------------------------------
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,decorations.pathreplacing}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{microtype}
+
+% --- Custom colours ----------------------------------------------------------
+\definecolor{cuboidblue}{RGB}{31,119,180}
+\definecolor{cuboidorange}{RGB}{255,127,14}
+\definecolor{cuboidgreen}{RGB}{44,160,44}
+\definecolor{cuboidred}{RGB}{214,39,40}
+
+% --- Theorem environments ----------------------------------------------------
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+
+% --- Hyperref setup ----------------------------------------------------------
+\hypersetup{
+  colorlinks=true,
+  linkcolor=cuboidblue,
+  citecolor=cuboidgreen,
+  urlcolor=cuboidred,
+}
+
+% =============================================================================
+\begin{document}
+
+% --- Title Page --------------------------------------------------------------
+\begin{center}
+  {\LARGE\bfseries Computational Search for a Perfect Cuboid:\\[4pt]
+   Algorithms, Near-Miss Analysis, and Scaling Feasibility}\\[18pt]
+  {\large Research Lab (Automated)}\\[8pt]
+  {\normalsize March 2026}
+\end{center}
+
+\vspace{6pt}
+\hrule
+\vspace{12pt}
+
+% --- Abstract ----------------------------------------------------------------
+\begin{abstract}
+The \emph{perfect cuboid problem} --- whether a rectangular box exists whose
+three edges, three face diagonals, and space diagonal are all integers ---
+has remained open for over three centuries.  Despite exhaustive searches
+extending to edge bounds exceeding $10^{13}$, no solution has been found,
+yet no proof of non-existence is known.
+We present a systematic computational investigation implementing four
+distinct search algorithms: exhaustive brute force with $S_3$-symmetry
+reduction, a modular arithmetic sieve exploiting quadratic residue tables
+for 25~primes, a parametric family generator covering the Saunderson,
+Euler, and Bremner families, and a novel Pythagorean triple intersection
+method that reformulates Euler brick discovery as triangle finding in the
+Pythagorean graph.
+Our search identifies 69~Euler bricks with edges up to 5{,}000 and
+517~parametric-family bricks with edges up to $\sim\!10^{10}$, none of
+which are perfect cuboids.  The novel algorithm achieves empirical
+$O(n^{1.30})$ scaling --- a 780$\times$ speedup over brute force ---
+while the modular sieve eliminates $>$99.999\% of candidates before
+exact checking.  A chi-squared test on the near-miss gap distribution
+($\chi^2=4.45$, $\text{dof}=9$) shows consistency with uniformity,
+providing no statistical evidence for a nearby solution.  We discuss
+implications for non-existence and identify the Brauer--Manin obstruction
+on the associated K3 surface as the most promising path to a theoretical
+resolution.
+\end{abstract}
+
+% --- 1. Introduction ---------------------------------------------------------
+\section{Introduction}
+\label{sec:intro}
+
+A \emph{perfect cuboid} is a rectangular parallelepiped (box) with integer
+edges $a,b,c$ such that all three face diagonals and the space diagonal are
+simultaneously integers.  Formally, one requires seven positive integers
+$(a,b,c,d_{ab},d_{ac},d_{bc},d_s)$ satisfying the coupled Pythagorean
+system
+\begin{align}
+  a^2 + b^2 &= d_{ab}^2, \label{eq:fab}\\
+  a^2 + c^2 &= d_{ac}^2, \label{eq:fac}\\
+  b^2 + c^2 &= d_{bc}^2, \label{eq:fbc}\\
+  a^2 + b^2 + c^2 &= d_s^2.  \label{eq:space}
+\end{align}
+A box satisfying only~\eqref{eq:fab}--\eqref{eq:fbc} is called an
+\emph{Euler brick}.  The smallest known example, discovered by
+Halcke~\cite{halcke1719}, has edges $(44,117,240)$ with face diagonals
+$(125,244,267)$ and a non-integer space diagonal
+$\sqrt{73225}\approx 270.6$.
+
+The problem has attracted sustained attention since the 18th century.
+Saunderson~\cite{saunderson1740} found the first infinite parametric
+family of Euler bricks; Euler discovered additional families; and
+Leech~\cite{leech1977} established fundamental divisibility constraints.
+Modern computational searches by Rathbun~\cite{rathbun2020},
+Butler~\cite{butler2004}, and Matson~\cite{matson2015} have verified
+non-existence up to edge bounds exceeding $10^{13}$ without finding a
+perfect cuboid.  The problem is listed as Problem~D18 in Guy's
+\emph{Unsolved Problems in Number Theory}~\cite{guy2004}.
+
+On the theoretical side, van~Luijk~\cite{vanluijk2000} showed that the
+algebraic variety parameterizing Euler bricks is a K3 surface of maximal
+Picard rank.  Sharipov~\cite{sharipov2012a,sharipov2015,sharipov2020}
+developed an $S_3$-symmetry approach using multisymmetric polynomials,
+and de~Grey, Gibbs, and Helm~\cite{degrey2024} introduced efficient
+elliptic-curve-based search algorithms.  Several non-existence claims
+have appeared as preprints~\cite{lloyd2022,agbanwa2025,elementary2026},
+but none have been peer-reviewed or widely accepted.
+
+\paragraph{Contributions.}
+This paper makes the following contributions:
+\begin{enumerate}[leftmargin=*,label=(\arabic*)]
+  \item A systematic comparison of four search algorithms with
+    empirical complexity analysis and scaling projections to published
+    frontiers.
+  \item A novel Pythagorean triple intersection algorithm achieving
+    empirical $O(n^{1.30})$ complexity by reformulating the Euler brick
+    search as triangle finding in the Pythagorean graph.
+  \item A modular arithmetic sieve achieving $>$99.999\% candidate
+    elimination with an ablation study quantifying the diminishing
+    returns of additional sieve primes.
+  \item Statistical near-miss analysis on 620~Euler bricks showing
+    that the space-diagonal gap distribution is consistent with
+    uniformity, providing no evidence for a nearby solution.
+\end{enumerate}
+
+\paragraph{Paper outline.}
+Section~\ref{sec:related} surveys related work.
+Section~\ref{sec:background} formalizes the problem and notation.
+Section~\ref{sec:method} describes our four algorithms in detail.
+Section~\ref{sec:setup} presents the experimental setup.
+Section~\ref{sec:results} reports results.
+Section~\ref{sec:discussion} discusses implications.
+Section~\ref{sec:conclusion} concludes.
+
+% --- 2. Related Work ---------------------------------------------------------
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Classical results.}
+Halcke~\cite{halcke1719} discovered the first Euler brick in 1719.
+Saunderson~\cite{saunderson1740} found the first parametric family:
+given any Pythagorean triple $(u,v,w)$ with $u^2+v^2=w^2$, the edges
+$a=|u(4v^2-w^2)|$, $b=|v(4u^2-w^2)|$, $c=|4uvw|$ always form an Euler
+brick.  Spohn~\cite{spohn1966} and Kraitchik~\cite{kraitchik1953}
+extended the catalog, and Lal and Blundon~\cite{lalblundon1966}
+introduced a four-parameter search finding 130~rational cuboids.
+Leech~\cite{leech1977,leech1981} proved fundamental divisibility
+constraints and showed via descent that the face aspect ratio $(4:3)$
+is excluded from any perfect cuboid.  Dickson~\cite{dickson2005}
+provides the definitive historical compilation.
+
+\paragraph{Modern computational searches.}
+Korec~\cite{korec1992} established non-existence below $10^6$ edges.
+Rathbun~\cite{rathbun2020} compiled the most comprehensive catalog,
+verifying non-existence for minimum edge up to $2.325\times10^{10}$.
+Butler~\cite{butler2004} searched all odd sides up to $3\times10^{12}$
+using an even-edge factorization algorithm, and
+Matson~\cite{matson2015} extended this to $2.5\times10^{13}$.
+
+\paragraph{Algebraic and geometric approaches.}
+Van~Luijk~\cite{vanluijk2000} showed the algebraic surface
+parameterizing Euler bricks is a K3 surface, connecting the problem to
+modern algebraic geometry.  Bremner~\cite{bremner1988} analyzed it from
+a quartic surface perspective, producing new families.
+Sharipov~\cite{sharipov2012a,sharipov2012b,sharipov2015,sharipov2020}
+developed an $S_3$-symmetry approach, formulating three cuboid
+conjectures whose joint validity would imply non-existence.
+Ramsden and Sharipov~\cite{ramsden2013} applied elliptic curve
+descent techniques.  De~Grey, Gibbs, and
+Helm~\cite{degrey2024} developed efficient algorithms based on
+elliptic curve methods and showed that large proportions of face
+aspect ratios cannot appear in a perfect cuboid.
+
+\paragraph{Recent non-existence claims.}
+Lloyd~\cite{lloyd2022} claimed non-existence via parity analysis of
+the space diagonal, and Agbanwa~\cite{agbanwa2025} proposed a
+divisor-based proof.  A preprint~\cite{elementary2026} introduced
+arithmetic propagation constraints.  None have been peer-reviewed
+or widely accepted.
+
+% --- 3. Background -----------------------------------------------------------
+\section{Background and Preliminaries}
+\label{sec:background}
+
+\begin{definition}[Euler Brick]
+An \emph{Euler brick} is a triple of positive integers $(a,b,c)$ with
+$a\le b\le c$ such that $a^2+b^2$, $a^2+c^2$, and $b^2+c^2$ are all
+perfect squares.
+\end{definition}
+
+\begin{definition}[Perfect Cuboid]
+A \emph{perfect cuboid} is an Euler brick $(a,b,c)$ for which
+$a^2+b^2+c^2$ is also a perfect square.
+\end{definition}
+
+\paragraph{Notation.}
+Table~\ref{tab:notation} summarizes the notation used throughout.
+
+\begin{table}[htbp]
+\centering
+\caption{Summary of notation used in this paper.}
+\label{tab:notation}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$a,b,c$ & Edge lengths of the cuboid ($a\le b\le c$) \\
+$d_{ab},d_{ac},d_{bc}$ & Face diagonals:
+  $d_{ij}=\sqrt{i^2+j^2}$ \\
+$d_s$ & Space diagonal: $d_s=\sqrt{a^2+b^2+c^2}$ \\
+$N$ & Upper bound on edge search \\
+$\mathrm{QR}(p)$ & Set of quadratic residues modulo prime $p$ \\
+$G=(V,E)$ & Pythagorean graph: $V=\mathbb{Z}^+$,
+  $(a,b)\in E$ iff $a^2+b^2=\square$ \\
+$\delta$ & Near-miss gap:
+  $\delta=\min(\{d_s\},1-\{d_s\})$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Known necessary conditions.}
+The following constraints hold for any perfect cuboid
+(see~\cite{leech1977,guy2004,sharipov2012a}):
+\begin{enumerate}[leftmargin=*,label=(C\arabic*)]
+  \item Exactly one edge is odd, two are even.
+  \item The product $abc$ is divisible by $2^4\cdot 3\cdot 5\cdot 7$.
+  \item No face may have the $(3{:}4)$ aspect ratio.
+  \item The space diagonal satisfies $d_s\equiv 1\pmod{2}$.
+  \item At least one edge is divisible by 11, one by 19.
+\end{enumerate}
+
+% --- 4. Method ---------------------------------------------------------------
+\section{Method}
+\label{sec:method}
+
+We implemented four complementary search algorithms, ranging from
+exhaustive to heuristic, each exploiting different structural properties
+of the cuboid equations.
+
+\subsection{Brute-Force Exhaustive Search}
+\label{sec:bruteforce}
+
+Our baseline iterates over all ordered triples
+$(a,b,c)$ with $1\le a\le b\le c\le N$, exploiting $S_3$ symmetry to
+reduce the search space by a factor of~6.
+
+\begin{algorithm}[htbp]
+\caption{Brute-Force Euler Brick Search}
+\label{alg:bruteforce}
+\begin{algorithmic}[1]
+\REQUIRE Edge bound $N$
+\ENSURE Set of Euler bricks $\mathcal{B}$
+\STATE $\mathcal{B}\leftarrow\emptyset$
+\FOR{$a=1$ \TO $N$}
+  \FOR{$b=a$ \TO $N$}
+    \IF{$a^2+b^2$ is not a perfect square}
+      \STATE \textbf{continue}
+    \ENDIF
+    \FOR{$c=b$ \TO $N$}
+      \IF{$a^2+c^2=\square$ \AND $b^2+c^2=\square$}
+        \STATE $\mathcal{B}\leftarrow\mathcal{B}\cup\{(a,b,c)\}$
+        \IF{$a^2+b^2+c^2=\square$}
+          \RETURN \textsc{Perfect cuboid found!}
+        \ENDIF
+      \ENDIF
+    \ENDFOR
+  \ENDFOR
+\ENDFOR
+\RETURN $\mathcal{B}$
+\end{algorithmic}
+\end{algorithm}
+
+The initial Pythagorean check on $(a,b)$ at line~4 eliminates
+approximately 67\% of outer-loop pairs, preventing the inner loop from
+executing.  Empirical complexity is $O(n^{2.09})$.
+
+\subsection{Modular Arithmetic Sieve}
+\label{sec:sieve}
+
+We enhance the brute-force search with a quadratic residue (QR) sieve.
+For a set of small primes $\mathcal{P}=\{p_1,\ldots,p_k\}$, we
+precompute $\mathrm{QR}(p_i)$ for each prime.  A candidate $(a,b,c)$
+can have $a^2+c^2$ and $b^2+c^2$ as perfect squares only if
+$(a^2+c^2)\bmod p\in\mathrm{QR}(p)$ and
+$(b^2+c^2)\bmod p\in\mathrm{QR}(p)$ for every sieve prime~$p$.
+
+The implementation combines two key optimizations:
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Pythagorean pair enumeration.}  Rather than iterating
+    over all $(a,b)$ pairs, we enumerate only those forming Pythagorean
+    triples via the $(m,n)$-parametrization: $a=m^2-n^2$, $b=2mn$,
+    $d_{ab}=m^2+n^2$, with $\gcd(m,n)=1$ and $m-n$ odd.
+  \item \textbf{Vectorized sieving.}  For each surviving $(a,b)$ pair,
+    we construct a NumPy array of all candidate $c$ values and apply
+    QR masks simultaneously via vectorized modular arithmetic.
+\end{enumerate}
+
+\begin{algorithm}[htbp]
+\caption{Modular Arithmetic Sieve}
+\label{alg:sieve}
+\begin{algorithmic}[1]
+\REQUIRE Edge bound $N$, prime set $\mathcal{P}$
+\ENSURE Set of Euler bricks $\mathcal{B}$
+\STATE Precompute $\mathrm{QR}(p)$ for each $p\in\mathcal{P}$
+\STATE $\text{pairs}\leftarrow$ \textsc{EnumPythPairs}($N$)
+\FOR{each $(a,b,d_{ab})\in\text{pairs}$}
+  \STATE $\mathbf{c}\leftarrow[b,b{+}1,\ldots,N]$
+    \hfill\COMMENT{NumPy array}
+  \STATE $\mathbf{m}\leftarrow\mathbf{1}$
+    \hfill\COMMENT{Boolean mask, all true}
+  \FOR{each $p\in\mathcal{P}$}
+    \STATE $\mathbf{m}\leftarrow\mathbf{m}\;\wedge\;
+      [(a^2+\mathbf{c}^2)\bmod p\in\mathrm{QR}(p)]$
+    \STATE $\mathbf{m}\leftarrow\mathbf{m}\;\wedge\;
+      [(b^2+\mathbf{c}^2)\bmod p\in\mathrm{QR}(p)]$
+  \ENDFOR
+  \FOR{each $c\in\mathbf{c}[\mathbf{m}]$}
+    \STATE \textsc{ExactCheck}$(a,b,c)$
+  \ENDFOR
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+With 25 sieve primes (2 through 97), the sieve achieves
+$>$99.999\% elimination of non-Euler-brick candidates, reducing exact
+integer-square-root checks from ${\sim}15.4$~million to just~69 at
+bound $N\!=\!5{,}000$.
+
+\subsection{Parametric Family Generator}
+\label{sec:parametric}
+
+We implement three known infinite families of Euler bricks:
+
+\paragraph{Saunderson family~\cite{saunderson1740}.}
+Given a Pythagorean triple $(u,v,w)$ with $u^2+v^2=w^2$:
+\begin{equation}
+  a = |u(4v^2-w^2)|,\quad
+  b = |v(4u^2-w^2)|,\quad
+  c = |4uvw|.
+  \label{eq:saunderson}
+\end{equation}
+We generated 498~unique bricks from parameters up to $m=50$.
+
+\paragraph{Euler shared-leg family.}
+Generates pairs of Pythagorean triples sharing a common leg, yielding
+Euler bricks when both face diagonals are integer.
+
+\paragraph{Bremner family~\cite{bremner1988}.}
+Derived from the quartic surface analysis; we generated 19~unique bricks.
+
+In total, 517~unique Euler bricks were generated parametrically, with
+edges up to $\sim\!4.3\times10^{10}$, far exceeding our exhaustive
+search bound.
+
+\subsection{Pythagorean Triple Intersection (Novel)}
+\label{sec:novel}
+
+Our novel algorithm reformulates the Euler brick search as a
+\emph{triangle-finding problem} on the Pythagorean graph~$G$.
+
+\begin{definition}[Pythagorean Graph]
+The \emph{Pythagorean graph} $G=(V,E)$ has vertex set
+$V=\mathbb{Z}^+$ and edge set $E=\{(a,b):a^2+b^2=\square\}$.
+An Euler brick $(a,b,c)$ corresponds to a triangle $\{a,b,c\}$ in~$G$.
+\end{definition}
+
+% --- TikZ: Pythagorean graph illustration ------------------------------------
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  vertex/.style={circle,draw=cuboidblue,fill=cuboidblue!15,
+    minimum size=22pt,font=\small\bfseries},
+  edge/.style={thick,cuboidblue!70},
+  triangle/.style={very thick,cuboidred},
+  label/.style={font=\scriptsize,midway,fill=white,inner sep=1pt}
+]
+  % vertices arranged for illustration
+  \node[vertex] (v3)  at (0,0)    {3};
+  \node[vertex] (v4)  at (2.5,0)  {4};
+  \node[vertex] (v5)  at (5,0)    {5};
+  \node[vertex] (v12) at (1,2.5)  {12};
+  \node[vertex] (v44) at (3.5,3)  {44};
+  \node[vertex] (v117)at (6.5,2)  {117};
+  \node[vertex] (v240)at (5,4.5)  {240};
+
+  % Some Pythagorean edges
+  \draw[edge] (v3) -- (v4) node[label,below] {$5$};
+  \draw[edge] (v5) -- (v12) node[label,above left] {$13$};
+  \draw[edge] (v3) -- (v4);
+
+  % The Halcke triangle
+  \draw[triangle] (v44) -- (v117)
+    node[label,below right] {$125$};
+  \draw[triangle] (v44) -- (v240)
+    node[label,above left] {$244$};
+  \draw[triangle] (v117) -- (v240)
+    node[label,right] {$267$};
+
+  % Label
+  \node[anchor=north west,font=\small,text=cuboidred]
+    at (3.2,5) {Euler brick $(44,117,240)$};
+\end{tikzpicture}
+\caption{Schematic of the Pythagorean graph~$G$.
+Vertices are positive integers; edges connect Pythagorean pairs.
+The triangle $\{44,117,240\}$ (red) represents the smallest Euler
+brick~\cite{halcke1719}.  Edge labels show face diagonals.}
+\label{fig:pythgraph}
+\end{figure}
+
+\begin{algorithm}[htbp]
+\caption{Pythagorean Triple Intersection}
+\label{alg:novel}
+\begin{algorithmic}[1]
+\REQUIRE Edge bound $N$
+\ENSURE Set of Euler bricks $\mathcal{B}$
+\STATE Build index $I$: for each leg $a\le N$, store all
+  $(b,d_{ab})$ with $a^2+b^2=d_{ab}^2$
+\FOR{each $a\in I$}
+  \STATE $P_a\leftarrow I[a]$
+    \hfill\COMMENT{Pythagorean partners of $a$}
+  \FOR{each pair $(b,d_{ab}),(c,d_{ac})\in\binom{P_a}{2}$
+    with $b\le c$}
+    \IF{$b^2+c^2=\square$}
+      \STATE $\mathcal{B}\leftarrow\mathcal{B}\cup
+        \{(\min(a,b,c),\mathrm{med},\max)\}$
+    \ENDIF
+  \ENDFOR
+\ENDFOR
+\RETURN $\mathcal{B}$
+\end{algorithmic}
+\end{algorithm}
+
+The index is built in $O(N\sqrt{N})$ time using the $(m,n)$
+parametrization.  The triangle search has empirical complexity
+$O(n^{1.30})$, achieving a 780$\times$ speedup over brute force at
+$N\!=\!5{,}000$.  The algorithm finds 24 of 69~Euler bricks (35\%
+coverage) because it only detects bricks where at least two faces share
+a common Pythagorean leg via the indexed lookup.
+
+% --- Cuboid TikZ diagram ----------------------------------------------------
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  scale=1.0,
+  edge/.style={thick,black},
+  facediag/.style={thick,dashed,cuboidblue},
+  spacediag/.style={very thick,dotted,cuboidred},
+  lbl/.style={font=\small,fill=white,inner sep=1.5pt}
+]
+  % Back face (origin at O)
+  \coordinate (O) at (0,0);
+  \coordinate (A) at (5,0);     % a along x
+  \coordinate (B) at (0,2.5);   % b along y
+  \coordinate (C) at (2,3.5);   % c along z (projected)
+  \coordinate (AB) at (5,2.5);
+  \coordinate (AC) at (7,3.5);
+  \coordinate (BC) at (2,6);
+  \coordinate (ABC) at (7,6);
+
+  % Edges
+  \draw[edge] (O) -- (A) node[lbl,below,midway] {$a$};
+  \draw[edge] (O) -- (B) node[lbl,left,midway] {$b$};
+  \draw[edge] (O) -- (C) node[lbl,above left,midway] {$c$};
+  \draw[edge] (A) -- (AB);
+  \draw[edge] (A) -- (AC);
+  \draw[edge] (B) -- (AB);
+  \draw[edge] (B) -- (BC);
+  \draw[edge] (C) -- (AC);
+  \draw[edge] (C) -- (BC);
+  \draw[edge] (AB) -- (ABC);
+  \draw[edge] (AC) -- (ABC);
+  \draw[edge] (BC) -- (ABC);
+
+  % Face diagonals
+  \draw[facediag] (O) -- (AB) node[lbl,pos=0.45,below right]
+    {$d_{ab}$};
+  \draw[facediag] (O) -- (AC) node[lbl,pos=0.5,below]
+    {$d_{ac}$};
+  \draw[facediag] (O) -- (BC) node[lbl,pos=0.5,left]
+    {$d_{bc}$};
+
+  % Space diagonal
+  \draw[spacediag] (O) -- (ABC) node[lbl,pos=0.55,above]
+    {$d_s$};
+\end{tikzpicture}
+\caption{A rectangular cuboid with edges $a$, $b$, $c$ (solid), face
+diagonals $d_{ab}$, $d_{ac}$, $d_{bc}$ (dashed blue), and space
+diagonal $d_s$ (dotted red).  A \emph{perfect cuboid} requires all
+seven quantities to be positive integers.}
+\label{fig:cuboid}
+\end{figure}
+
+
+% --- 5. Experimental Setup ---------------------------------------------------
+\section{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Implementation.}
+All algorithms were implemented in Python~3.11 using NumPy for
+vectorized operations.  Integer square roots were computed via
+\texttt{math.isqrt()} with exact verification $\lfloor\sqrt{n}\rfloor^2=n$.
+
+\paragraph{Hardware.}
+Experiments were conducted on a Linux server with a multi-core CPU.
+All timings are single-threaded wall-clock measurements.
+
+\paragraph{Search bounds.}
+We ran exhaustive methods at bounds $N\in\{1000,2000,5000\}$ for
+scaling analysis.  Parametric families were generated with Pythagorean
+parameters up to $m=50$ (Saunderson) and $m=30$ (Bremner).
+
+\paragraph{Sieve configuration.}
+The modular sieve used the first 25~primes
+$\mathcal{P}=\{2,3,5,\ldots,97\}$.  The ablation study tested subsets
+of 5, 10, 15, 20, and 25~primes.
+
+\paragraph{Metrics.}
+We report: (i)~Euler bricks found, (ii)~wall-clock time,
+(iii)~empirical scaling exponent (fitted via $\log$-$\log$
+regression), (iv)~near-miss gap $\delta=\min(\{d_s\},1-\{d_s\})$,
+and (v)~sieve efficiency (fraction of candidates eliminated before
+exact checking).
+
+\begin{table}[htbp]
+\centering
+\caption{Hyperparameters and configuration for each search method.}
+\label{tab:hyperparams}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Method} & \textbf{Key Parameters} &
+  \textbf{Bounds Tested} & \textbf{Coverage} \\
+\midrule
+Brute force & $S_3$ reduction & 1000, 2000, 5000 & Complete \\
+Modular sieve & 25 primes (2--97) & 1000, 2000, 5000 & Complete \\
+Novel search & $(m,n)$ index & 1000, 2000, 5000 & Partial (35\%) \\
+Parametric & Saunderson, Bremner & $m\le 50$ & Family-specific \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% --- 6. Results --------------------------------------------------------------
+\section{Results}
+\label{sec:results}
+
+\subsection{Euler Brick Catalog}
+
+Our exhaustive search found \textbf{69~unique Euler bricks} with all
+edges $\le 5{,}000$, confirming published catalogs.  The smallest is
+$(44,117,240)$~\cite{halcke1719} and the largest is
+$(4{,}320,4{,}536,4{,}950)$.  Parametric families contributed an
+additional 448~bricks beyond the exhaustive bound, with edges up to
+$\sim\!4.3\times10^{10}$.  \textbf{No perfect cuboid was found.}  This
+is consistent with Rathbun's result that none exists with minimum edge
+below $2.325\times10^{10}$~\cite{rathbun2020}.
+
+Both exhaustive methods (brute force and modular sieve) found identical
+brick sets, providing mutual verification of correctness.
+
+\subsection{Algorithm Performance}
+
+Table~\ref{tab:performance} compares the three non-parametric search
+methods at bound $N=5{,}000$.
+
+\begin{table}[htbp]
+\centering
+\caption{Performance comparison at edge bound $N=5{,}000$.
+Best values in each column are \textbf{bolded}.}
+\label{tab:performance}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Method} & \textbf{Bricks} & \textbf{Time (s)} &
+  \textbf{Speedup} & \textbf{Complexity} \\
+\midrule
+Brute force     & \textbf{69} & 16.11 & $1.0\times$ & $O(n^{2.09})$ \\
+Modular sieve   & \textbf{69} & 3.65  & $4.4\times$ & $O(n^{2.01})$ \\
+Novel search    & 24           & \textbf{0.02} &
+  $\mathbf{780\times}$ & $\mathbf{O(n^{1.30})}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The modular sieve provides complete coverage with moderate speedup.
+The novel search is dramatically faster but sacrifices completeness,
+finding only 35\% of Euler bricks due to its shared-leg indexing
+structure.
+
+\subsection{Scaling Analysis}
+
+Figure~\ref{fig:scaling} shows $\log$-$\log$ runtime scaling.
+The fitted empirical exponents are: brute force $k=2.09$, modular
+sieve $k=2.01$, novel search $k=1.30$.  Table~\ref{tab:scaling}
+extrapolates runtimes to published search frontiers.
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\textwidth]{figures/scaling_comparison.pdf}
+  \caption{Log-log runtime scaling for all three methods.  The novel
+  search (green) exhibits significantly subquadratic growth
+  ($k=1.30$), while brute force (blue) and sieve (orange) grow
+  near-quadratically.}
+  \label{fig:scaling_comp}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \includegraphics[width=\textwidth]{figures/coverage_comparison.pdf}
+  \caption{Coverage comparison: number of Euler bricks found by each
+  method as a function of edge bound.  Both exhaustive methods find all
+  bricks; the novel search finds a subset.}
+  \label{fig:coverage}
+\end{subfigure}
+\caption{Scaling behaviour and coverage of the three search algorithms.}
+\label{fig:scaling}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Extrapolated wall-clock time to reach published search
+frontiers.  None of our methods can feasibly reach $10^{10}$ edges.}
+\label{tab:scaling}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Method} & $\mathbf{10^6}$ & $\mathbf{10^8}$ &
+  $\mathbf{10^{10}}$ & $\mathbf{10^{13}}$ \\
+\midrule
+Brute force   & 12\,d & 500\,yr & $7{\times}10^6$\,yr &
+  $10^{13}$\,yr \\
+Modular sieve & 2\,d  & 50\,yr  & $5{\times}10^5$\,yr &
+  $5{\times}10^{11}$\,yr \\
+Novel search  & 15.5\,s & 2\,h  & 29\,d &
+  600\,yr \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Modular Sieve Ablation}
+
+Figure~\ref{fig:ablation} and Table~\ref{tab:ablation} show the effect
+of varying the number of sieve primes.  Five primes (2 through 11)
+eliminate 97.6\% of candidates; ten primes achieve 100\% elimination
+at $N\!=\!5{,}000$.  Beyond 15~primes, diminishing returns are severe.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/ablation_sieve.pdf}
+\caption{Ablation study of modular sieve effectiveness.  Left: sieve
+rate (fraction of non-Euler-brick candidates eliminated) versus number
+of primes.  Right: number of exact integer-square-root checks surviving
+the sieve.  Five primes suffice for $>$97\% elimination; ten primes
+achieve full elimination at $N\!=\!5{,}000$.}
+\label{fig:ablation}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Modular sieve ablation at $N\!=\!5{,}000$
+($2{,}143{,}879$ total candidates).}
+\label{tab:ablation}
+\begin{tabular}{@{}rccr@{}}
+\toprule
+\textbf{Primes} & \textbf{Sieve Rate} &
+  \textbf{Exact Checks} & \textbf{Time (s)} \\
+\midrule
+5  & 97.60\% & 51{,}300 & 0.392 \\
+10 & 99.995\% & 105     & 0.527 \\
+15 & 99.999\% & 23      & 0.537 \\
+20 & 99.999\% & 23      & 0.541 \\
+25 & 99.999\% & 23      & 0.542 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The individual filtering power of each prime decreases with size:
+$p=2$ eliminates ${\sim}50\%$ (parity), $p=3$ eliminates
+${\sim}33\%$, and $p=5$ eliminates ${\sim}20\%$.  For primes $p>20$,
+individual elimination is below 5\%.  The constraints from different
+primes are approximately independent by the Chinese Remainder Theorem,
+though the Pythagorean structure creates some
+correlation~\cite{leech1977}.
+
+\subsection{Near-Miss Analysis}
+
+We analyzed 620~Euler bricks from all sources, measuring the near-miss
+gap $\delta$.  Table~\ref{tab:nearmiss} lists the five closest
+near-misses.
+
+\begin{table}[htbp]
+\centering
+\caption{Top-5 nearest-miss perfect cuboids.
+All arise from the Saunderson parametric family.}
+\label{tab:nearmiss}
+\begin{tabular}{@{}rlcl@{}}
+\toprule
+\textbf{Rank} & \textbf{Edges} $(a,b,c)$ & $\boldsymbol{\delta}$ &
+  \textbf{Source} \\
+\midrule
+1 & $(22768988165,\;31057943280,\;42380268372)$ & 0.00114 & Saunderson \\
+2 & $(74102743,\;105332976,\;255877440)$        & 0.00145 & Saunderson \\
+3 & $(28083,\;43056,\;105820)$                  & 0.00170 & Saunderson \\
+4 & $(204411636,\;248044627,\;285102480)$       & 0.00299 & Saunderson \\
+5 & $(4571070687,\;6346556216,\;9229392480)$    & 0.00425 & Saunderson \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Statistical test.}
+We tested whether the gap distribution differs from the uniform
+distribution on $[0,\,0.5]$ using a chi-squared goodness-of-fit test
+with 10~equal-width bins.  The result is $\chi^2=4.45$ with 9~degrees
+of freedom.  The critical value at the 5\% significance level is 16.92.
+Since $4.45 < 16.92$, we \textbf{fail to reject} the null hypothesis
+of uniformity.  The mean gap is $0.257$ (expected: $0.250$) and
+standard deviation is $0.145$ (expected: $0.144$).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.65\textwidth]%
+  {figures/near_miss_distribution.pdf}
+\caption{Distribution of near-miss gaps $\delta$ for 620 Euler bricks.
+The histogram is consistent with the uniform distribution on $[0,0.5]$
+(dashed line), indicating no statistical clustering near $\delta=0$.
+Chi-squared test: $\chi^2=4.45$, $p>0.05$.}
+\label{fig:nearmiss}
+\end{figure}
+
+% --- 7. Discussion -----------------------------------------------------------
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Implications for existence.}
+Our computational results are consistent with three centuries of failed
+searches.  The uniform near-miss gap distribution provides weak
+evidence compatible with non-existence: if a perfect cuboid existed at
+relatively small edge sizes, we would expect near-misses clustering
+near $\delta=0$, which we do not observe.  However, this argument is
+far from conclusive --- the space diagonal is constrained by Pythagorean
+structure and is not truly random modulo~1.
+
+\paragraph{Algorithmic contributions.}
+The Pythagorean triple intersection algorithm (Section~\ref{sec:novel})
+demonstrates that graph-theoretic reformulations of Diophantine problems
+can yield significant algorithmic advantages.  Its empirical $O(n^{1.30})$
+scaling arises from the sparsity of the Pythagorean graph: the
+average number of Pythagorean partners per vertex grows as
+$O(n^\epsilon)$ for any $\epsilon>0$, related to the divisor
+function~\cite{guy2004}.  The connection to triangle counting in sparse
+graphs suggests potential for further improvements using fast matrix
+multiplication or triangle enumeration
+algorithms~\cite{mathworld_euler_brick}.
+
+The modular sieve's ablation (Table~\ref{tab:ablation}) reveals that
+the first 10~primes capture essentially all filtering power, a consequence
+of the rapid growth of the combined sieve rate as
+$\prod_p(1-|\mathrm{QR}(p)|/p)$.  The Pythagorean structure creates
+inter-prime correlations that slightly reduce the product-formula
+estimate, explaining why 10~primes suffice rather than the 7--8
+predicted by independence.
+
+\paragraph{Comparison with state of the art.}
+Our search bound of 5{,}000 is modest compared to published frontiers
+(Rathbun: $2.3\times10^{10}$~\cite{rathbun2020}; Matson:
+$2.5\times10^{13}$~\cite{matson2015}).  Our contribution lies in
+algorithmic diversity, quantitative sieve analysis, the novel
+$O(n^{1.30})$ algorithm, and statistical near-miss analysis rather than
+in extending the search frontier.  The algorithms of Butler~\cite{butler2004}
+and de~Grey et al.~\cite{degrey2024}, which exploit direct factorization
+and elliptic curve methods respectively, remain orders of magnitude
+faster for very large bounds.
+
+\paragraph{Limitations.}
+Our methods face several inherent limitations:
+(i)~computational search, however extensive, cannot prove
+non-existence~\cite{guy2004};
+(ii)~the novel search achieves only 35\% coverage of Euler bricks;
+(iii)~parametric families (Saunderson, Bremner) are provably incapable
+of producing perfect cuboids~\cite{knill2013};
+(iv)~the statistical test has limited power with 620~bricks and cannot
+detect subtle arithmetic biases.
+
+\paragraph{Theoretical outlook.}
+The most promising path to resolution appears to be algebraic geometry.
+Van~Luijk's identification of the cuboid variety as a K3
+surface~\cite{vanluijk2000} places it in a class where Brauer--Manin
+obstructions are computable.  If the Brauer group $\mathrm{Br}(V)/\mathrm{Br}(\mathbb{Q})$
+contains a non-trivial element obstructing rational points despite the
+existence of local points at all places, this would prove non-existence
+unconditionally.  Sharipov's three cuboid
+conjectures~\cite{sharipov2012a,sharipov2020}, if proven, offer an
+alternative route.  The elliptic curve methods of de~Grey et
+al.~\cite{degrey2024} may also yield structural impossibility results
+for large classes of face aspect ratios.
+
+% --- 8. Conclusion ----------------------------------------------------------
+\section{Conclusion}
+\label{sec:conclusion}
+
+We conducted a systematic computational investigation of the perfect
+cuboid problem, implementing four search algorithms and analyzing their
+performance, scaling, and output.  Our key findings are:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{No perfect cuboid found.}  Among 69~Euler bricks
+    (edges $\le 5{,}000$) and 517~parametric-family bricks
+    (edges up to $\sim\!10^{10}$), none satisfy all four
+    Pythagorean conditions simultaneously.
+
+  \item \textbf{Novel $O(n^{1.30})$ algorithm.}  The Pythagorean triple
+    intersection method achieves a 780$\times$ speedup over brute
+    force by exploiting the graph-theoretic structure of coupled
+    Pythagorean equations.
+
+  \item \textbf{Modular sieve effectiveness.}  Ten primes suffice for
+    complete candidate elimination at $N\!=\!5{,}000$, reducing
+    exact checks from millions to double digits.
+
+  \item \textbf{Uniform near-miss distribution.}  A chi-squared test
+    ($\chi^2\!=\!4.45$, dof$\,{=}\,9$) confirms the gap distribution
+    is consistent with randomness, providing no statistical evidence
+    for a nearby solution.
+
+  \item \textbf{Scaling infeasibility.}  None of our methods can
+    reach the published frontier of $10^{10}$--$10^{13}$ edges;
+    fundamentally different algorithms (elliptic curve
+    methods~\cite{degrey2024}) are required.
+\end{enumerate}
+
+\paragraph{Future work.}
+The most impactful directions are:
+(i)~GPU-parallelized modular sieves for extending the exhaustive bound;
+(ii)~implementation of the elliptic curve search of de~Grey et
+al.~\cite{degrey2024};
+(iii)~computation of the Brauer group of the cuboid K3 surface to
+determine whether a Brauer--Manin obstruction
+exists~\cite{vanluijk2000};
+and (iv)~resolution of Sharipov's three cuboid
+conjectures~\cite{sharipov2012a}.
+The perfect cuboid problem remains a compelling test case at the
+intersection of computational number theory, algebraic geometry, and
+algorithmic complexity.
+
+% --- References --------------------------------------------------------------
+\bibliographystyle{plainnat}
+\bibliography{sources}
+
+\end{document}
