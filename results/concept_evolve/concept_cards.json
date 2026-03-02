@@ -1,0 +1,142 @@
+[
+  {
+    "symbolic_name": "koebe_distortion_refinement",
+    "description": "Refine the Koebe distortion theorem for specific subclasses of univalent functions to get sharper B_f lower bounds",
+    "domains": ["complex_analysis", "geometric_function_theory"],
+    "mathematical_formalization": "For f in S (univalent, f'(0)=1), the Koebe 1/4 theorem gives B_f >= 1/4. By restricting to subclasses (convex, starlike, close-to-convex) we can get sharper distortion bounds",
+    "analogical_connections": ["Koebe 1/4 theorem", "Growth theorem", "Bieberbach conjecture"],
+    "implementation_hypothesis": "Use de Branges coefficient bounds |a_n| <= n to constrain image geometry and derive tighter inradius estimates",
+    "experiment_seed": "Compute B_f for truncated Taylor series with coefficient constraints from de Branges",
+    "folder_plan": ["hypothesis.md", "experiment.py", "results.json"]
+  },
+  {
+    "symbolic_name": "schwarz_pick_hyperbolic",
+    "description": "Use Schwarz-Pick lemma and hyperbolic geometry to reformulate B_u as a problem about Poincaré metric distortion",
+    "domains": ["hyperbolic_geometry", "complex_analysis"],
+    "mathematical_formalization": "The Poincaré metric lambda_D(z)|dz| on a simply connected domain D relates to the inradius via d(w, boundary(D)) = 1/(2*lambda_D(w)). For f univalent, Schwarz-Pick gives lambda_{f(D)}(f(z)) <= lambda_D(z)/|f'(z)|",
+    "analogical_connections": ["Schwarz-Pick lemma", "Hyperbolic metric", "Uniformization"],
+    "implementation_hypothesis": "Lower-bound the inradius of f(D) by analyzing how the hyperbolic metric of f(D) relates to |f'(0)| = 1",
+    "experiment_seed": "Compute hyperbolic density at f(0) for parametric families and relate to inradius",
+    "folder_plan": ["hypothesis.md", "computation.py", "results.json"]
+  },
+  {
+    "symbolic_name": "extremal_slit_domains",
+    "description": "Study slit domains as candidates for minimizing B_f among univalent functions",
+    "domains": ["conformal_mapping", "extremal_problems"],
+    "mathematical_formalization": "Domains D with B_f = inradius(f(D)) are often slit domains. Carroll & Ortega-Cerda showed the near-extremal domain is a disk minus harmonically symmetric arcs, giving B_u <= 0.6564",
+    "analogical_connections": ["Polya-Chebotarev problem", "Conformal welding", "Harmonic symmetry"],
+    "implementation_hypothesis": "Construct explicit slit mappings with various arc configurations and compute their B_f values numerically",
+    "experiment_seed": "Implement conformal maps to disk-minus-arcs domains and compute inradii",
+    "folder_plan": ["hypothesis.md", "slit_construction.py", "results.json"]
+  },
+  {
+    "symbolic_name": "bonk_distortion_extension",
+    "description": "Extend Bonk's distortion theorem approach from B to B_u by adapting the normal family argument",
+    "domains": ["complex_analysis", "geometric_function_theory"],
+    "mathematical_formalization": "Bonk (1990) proved B > sqrt(3)/4 using distortion theorems for Bloch functions. Adapt this to the univalent setting where we have stronger structural constraints (injectivity)",
+    "analogical_connections": ["Bonk distortion theorem", "Normal families", "Schottky's theorem"],
+    "implementation_hypothesis": "The univalence constraint provides additional distortion control that Bonk's method doesn't exploit",
+    "experiment_seed": "Derive distortion bounds for univalent Bloch functions and compare with Bonk's bounds",
+    "folder_plan": ["hypothesis.md", "distortion_analysis.md", "results.json"]
+  },
+  {
+    "symbolic_name": "loewner_chain_optimization",
+    "description": "Use the Loewner differential equation to parametrize univalent functions and optimize B_f over driving functions",
+    "domains": ["complex_analysis", "optimal_control"],
+    "mathematical_formalization": "Every univalent function f on D can be obtained via Loewner chain: df/dt = zf'*p(z,t) where p has positive real part. Minimize B_f over driving functions p",
+    "analogical_connections": ["Loewner equation", "SLE", "de Branges proof of Bieberbach"],
+    "implementation_hypothesis": "Discretize the Loewner equation and use numerical optimization to find the driving function minimizing B_f",
+    "experiment_seed": "Implement Loewner equation solver and optimize B_f over piecewise-constant driving functions",
+    "folder_plan": ["hypothesis.md", "loewner_solver.py", "optimization.py", "results.json"]
+  },
+  {
+    "symbolic_name": "covering_surface_ahlfors",
+    "description": "Apply Ahlfors' theory of covering surfaces to bound univalent disk radius",
+    "domains": ["complex_analysis", "algebraic_topology"],
+    "mathematical_formalization": "Ahlfors' SFT relates area of image to boundary length and ramification. For univalent functions (no ramification), this simplifies and can give bounds on disk containment",
+    "analogical_connections": ["Ahlfors covering surface theory", "Island theorem", "Riemann surface"],
+    "implementation_hypothesis": "Ahlfors' method for B adapts to B_u but the univalence constraint changes the topological setup",
+    "experiment_seed": "Formulate B_u in covering surface language and derive bounds",
+    "folder_plan": ["hypothesis.md", "ahlfors_analysis.md", "results.json"]
+  },
+  {
+    "symbolic_name": "numerical_extremal_search",
+    "description": "Systematic numerical search for the extremal univalent function minimizing B_f",
+    "domains": ["numerical_analysis", "optimization"],
+    "mathematical_formalization": "Parametrize f(z) = z + a_2*z^2 + ... + a_N*z^N with |a_n| <= n, ensure univalence via Noshiro-Warschawski or numerical verification, minimize B_f",
+    "analogical_connections": ["Coefficient optimization", "Semi-definite programming", "Constraint satisfaction"],
+    "implementation_hypothesis": "High-dimensional optimization over coefficient space with univalence constraints can find near-extremal functions",
+    "experiment_seed": "Use scipy.optimize with N=20 truncation and multiple random starts",
+    "folder_plan": ["hypothesis.md", "search.py", "results.json"]
+  },
+  {
+    "symbolic_name": "jenkins_criterion",
+    "description": "Exploit Jenkins' necessary conditions for extremal domains of the schlicht Bloch constant",
+    "domains": ["complex_analysis", "extremal_problems"],
+    "mathematical_formalization": "Jenkins (1992, 1998) gave criteria that extremal domains for B_u must satisfy, involving quadratic differentials and the structure of the boundary",
+    "analogical_connections": ["Quadratic differentials", "Teichmüller theory", "Jenkins' general coefficient theorem"],
+    "implementation_hypothesis": "Use Jenkins' conditions to constrain the search space for extremal functions",
+    "experiment_seed": "Analyze which parametric families satisfy Jenkins' necessary conditions",
+    "folder_plan": ["hypothesis.md", "jenkins_analysis.md", "results.json"]
+  },
+  {
+    "symbolic_name": "goodman_domain_generalization",
+    "description": "Generalize Goodman's 1945 domain construction for upper bounds on B_u",
+    "domains": ["conformal_mapping", "extremal_problems"],
+    "mathematical_formalization": "Goodman (1945) suggested domains D_{n} = D \\ (arcs) with n-fold symmetry. Carroll & Ortega-Cerda (2008) improved using n=4 with Fedorov's Polya-Chebotarev solution. Try higher symmetry and different arc configurations",
+    "analogical_connections": ["Polya-Chebotarev problem", "Symmetrization", "Capacity estimates"],
+    "implementation_hypothesis": "Higher-order symmetry domains or asymmetric configurations may give tighter upper bounds",
+    "experiment_seed": "Construct domains with 3,4,5,6-fold symmetry and compute conformal map + inradius",
+    "folder_plan": ["hypothesis.md", "domain_construction.py", "results.json"]
+  },
+  {
+    "symbolic_name": "extremal_length_connection",
+    "description": "Reformulate B_u in terms of extremal length of curve families",
+    "domains": ["conformal_mapping", "potential_theory"],
+    "mathematical_formalization": "The inradius of a domain D can be related to the extremal length of the family of curves separating a point from the boundary. For f(D), this connects to extremal length on D via conformal invariance",
+    "analogical_connections": ["Extremal length", "Conformal modulus", "Capacity"],
+    "implementation_hypothesis": "Express B_f in terms of extremal length and use known estimates to bound B_u",
+    "experiment_seed": "Compute extremal length for image domains of specific univalent functions",
+    "folder_plan": ["hypothesis.md", "extremal_length.py", "results.json"]
+  },
+  {
+    "symbolic_name": "variational_euler_lagrange",
+    "description": "Derive necessary conditions on the extremal function for B_u via variational calculus",
+    "domains": ["calculus_of_variations", "complex_analysis"],
+    "mathematical_formalization": "Consider the functional f -> B_f on the class S. Characterize critical points via first variation. The extremal f* must satisfy certain Euler-Lagrange type conditions",
+    "analogical_connections": ["Schiffer variation", "Hadamard variation", "Extremal problems for conformal maps"],
+    "implementation_hypothesis": "Use Schiffer's variational method to derive boundary conditions on the extremal domain",
+    "experiment_seed": "Compute first variation of B_f under boundary perturbation",
+    "folder_plan": ["hypothesis.md", "variational_analysis.md", "results.json"]
+  },
+  {
+    "symbolic_name": "de_branges_coefficient_bounds",
+    "description": "Use the full strength of de Branges theorem (|a_n| <= n) to bound B_f from below",
+    "domains": ["geometric_function_theory", "optimization"],
+    "mathematical_formalization": "For f(z) = z + sum a_n z^n univalent, |a_n| <= n. Express the inradius of f(D) in terms of {a_n} and optimize",
+    "analogical_connections": ["de Branges/Bieberbach theorem", "Coefficient regions", "Schur complement"],
+    "implementation_hypothesis": "Truncated coefficient representation with de Branges bounds gives a tractable optimization problem",
+    "experiment_seed": "Formulate as a constrained optimization over coefficient vectors",
+    "folder_plan": ["hypothesis.md", "coefficient_opt.py", "results.json"]
+  },
+  {
+    "symbolic_name": "skinners_method_refinement",
+    "description": "Analyze and refine Skinner's 2009 method for improving the lower bound",
+    "domains": ["complex_analysis", "numerical_analysis"],
+    "mathematical_formalization": "Skinner used an implicit function C(|z|) bounding |f(z)| from below for f in S to get B_u > 0.5708858. Sharpen the estimates in Skinner's proof",
+    "analogical_connections": ["Growth theorem", "Distortion theorem", "Subordination"],
+    "implementation_hypothesis": "Skinner's method has specific bottlenecks where sharper estimates could improve the bound",
+    "experiment_seed": "Reproduce Skinner's computation and identify which inequalities are loose",
+    "folder_plan": ["hypothesis.md", "reproduction.py", "analysis.md", "results.json"]
+  },
+  {
+    "symbolic_name": "polya_chebotarev_higher_order",
+    "description": "Solve the Polya-Chebotarev problem for higher-order configurations to get upper bounds",
+    "domains": ["potential_theory", "conformal_mapping"],
+    "mathematical_formalization": "The Polya-Chebotarev problem asks for the continuum of minimum capacity connecting given points. Solutions for symmetric point configurations give extremal slit domains",
+    "analogical_connections": ["Logarithmic capacity", "Green's function", "Symmetrization"],
+    "implementation_hypothesis": "Solve numerically for 5,6,7-point symmetric configurations and compute the resulting upper bound on B_u",
+    "experiment_seed": "Implement capacity computation for symmetric point sets on the circle",
+    "folder_plan": ["hypothesis.md", "capacity_computation.py", "results.json"]
+  }
+]
