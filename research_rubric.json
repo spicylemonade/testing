@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "created_at": "2026-03-01T00:00:00Z",
-  "updated_at": "2026-03-02T00:02:28.167916+00:00",
+  "updated_at": "2026-03-02T00:07:15.501162+00:00",
   "current_agent": "researcher",
   "agent_status": {
     "orchestrator": {
@@ -94,39 +94,39 @@
           "id": "item_007",
           "description": "Implement Dijkstra's algorithm with Fibonacci heap as the reference baseline",
           "acceptance_criteria": "Working implementation in Python and/or C++ of Dijkstra's algorithm using a Fibonacci heap priority queue. Must: (1) correctly compute SSSP on directed graphs with non-negative real weights, (2) pass correctness tests on at least 5 graph types (complete, sparse random, grid/mesh, path/chain, power-law), (3) include operation counters for comparisons, additions, and heap operations. Implementation in src/baselines/dijkstra_fibonacci.py (or .cpp). All correctness tests pass with 100% accuracy against brute-force Bellman-Ford on small graphs (n <= 1000).",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "dijkstra_fibonacci.py with full Fibonacci heap impl. Passes all correctness tests.",
           "error": null
         },
         {
           "id": "item_008",
           "description": "Implement additional baseline algorithms for comparison",
           "acceptance_criteria": "Implement at least 2 additional baselines in src/baselines/: (1) Dijkstra with binary heap, (2) Bellman-Ford (for correctness verification and negative-weight reference). Each must pass the same correctness test suite as item_007. Optionally implement delta-stepping (Meyer & Sanders) as a third baseline.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "dijkstra_binary.py (heapq with lazy deletion) and bellman_ford.py. All pass correctness tests on 6 graph types.",
           "error": null
         },
         {
           "id": "item_009",
           "description": "Build a comprehensive graph generation and I/O framework",
           "acceptance_criteria": "Create src/graphs/generator.py that generates: (1) Erdos-Renyi random graphs G(n,p) with configurable density, (2) sparse graphs with m = O(n) edges, (3) dense graphs with m = Theta(n^2) edges, (4) grid/mesh graphs, (5) power-law/scale-free graphs (Barabasi-Albert model), (6) worst-case graphs for Dijkstra (e.g., graphs requiring Theta(n log n) heap operations), (7) road-network-like graphs (2D geometric random graphs). Each generator must accept n, optional m, and weight range parameters. Output format must be compatible with DIMACS 9th Challenge format. Include graph I/O routines for reading/writing graphs.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "generator.py: 7 graph types (sparse, dense, grid, power_law, worst_case, road_network, erdos_renyi) + DIMACS I/O.",
           "error": null
         },
         {
           "id": "item_010",
           "description": "Design and implement the benchmarking harness with proper methodology",
           "acceptance_criteria": "Create src/benchmark/harness.py implementing: (1) wall-clock timing with multiple runs (minimum 5) and statistical reporting (mean, median, std dev, min, max), (2) operation counting (comparisons, additions, heap ops), (3) memory usage tracking (peak RSS), (4) warmup runs (at least 2 discarded), (5) cache-clearing between runs on supported platforms, (6) output to structured JSON and CSV formats in results/. Harness must prevent common benchmarking pitfalls: no I/O during timed sections, proper process isolation, GC disabled during measurement (for Python), compiler optimizations enabled (for C++). Document methodology in benchmark_methodology.md.",
-          "status": "pending",
-          "notes": null,
+          "status": "completed",
+          "notes": "harness.py: wall-clock timing with warmup, GC disabled, op counting, peak RSS tracking, JSON output. benchmark_methodology.md written.",
           "error": null
         },
         {
           "id": "item_011",
           "description": "Run baseline benchmarks and establish performance profiles",
           "acceptance_criteria": "Execute all baseline algorithms on a systematic matrix of graph sizes and types: n in {1000, 10000, 100000, 1000000} crossed with graph types from item_009. Produce results/baseline_benchmarks.json containing all timing and operation-count data. Generate figures/baseline_scaling.png showing: (1) wall-clock time vs n for each algorithm and graph type, (2) operation counts vs n overlaid with theoretical O(m + n log n) curves. Baselines must demonstrate expected asymptotic scaling (e.g., Dijkstra + Fibonacci heap scales as O(m + n log n) on generated data within a constant factor).",
-          "status": "pending",
+          "status": "in_progress",
           "notes": null,
           "error": null
         }
@@ -276,9 +276,9 @@
   ],
   "summary": {
     "total_items": 26,
-    "completed": 6,
-    "in_progress": 0,
+    "completed": 10,
+    "in_progress": 1,
     "failed": 0,
-    "pending": 20
+    "pending": 15
   }
 }
