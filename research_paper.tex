@@ -1,0 +1,875 @@
+% ============================================================================
+%  A Multi-Method Computational Investigation of the Perfect Cuboid Problem
+%  Research Lab (Automated) — March 2026
+% ============================================================================
+\documentclass[11pt,a4paper]{article}
+
+% ---------- packages --------------------------------------------------------
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[round]{natbib}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,calc,fit,decorations.pathreplacing}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{microtype}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=green!50!black,
+  urlcolor=blue!70!black,
+}
+
+% ---------- theorem environments --------------------------------------------
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+
+% ---------- custom commands -------------------------------------------------
+\newcommand{\Zp}{\mathbb{Z}^{+}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bigO}{\mathcal{O}}
+\DeclareMathOperator{\lcm}{lcm}
+
+% ============================================================================
+\begin{document}
+
+% ---------- Title Page ------------------------------------------------------
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+{\Huge\bfseries A Multi-Method Computational Investigation\\[6pt]
+of the Perfect Cuboid Problem\par}
+\vspace{1.5cm}
+{\Large Research Lab (Automated)\par}
+\vspace{0.8cm}
+{\large March 2026\par}
+\vspace{2cm}
+\begin{abstract}
+\noindent
+The \emph{perfect cuboid problem}---whether a rectangular box exists whose
+three edges, three face diagonals, and space diagonal are all positive
+integers---has remained open for over three centuries.  We present a
+comprehensive computational investigation combining five complementary
+search strategies: classical parametric family generation
+\citep{saunderson1740,euler1770}, Pythagorean triple decomposition via
+common-leg indexing, constraint satisfaction programming with multi-modulus
+residue pre-filtering, quadratic residue sieving across 50 primes
+\citep{roberts2009}, and a unified pipeline integrating all methods.  Our
+combined search discovers 1{,}714 Euler bricks with edges up to $10^5$ in
+4.5~seconds, representing a speedup exceeding $10^{6}\times$ over na\"ive
+brute-force enumeration.  We confirm the null result: \emph{no perfect
+cuboid exists within our search bounds}.  Statistical analysis of near-miss
+distributions reveals a weak negative power-law trend (slope $= -0.30$,
+$R^2 = 0.025$, $p = 0.024$) in near-miss scores versus edge magnitude,
+offering tentative evidence that larger Euler bricks come marginally closer
+to satisfying the space-diagonal condition.  We critically review three
+recent non-existence proof attempts
+\citep{lloyd2022,wyss2015,yelle2026}---finding none conclusive---and employ
+cross-domain concept evolution to identify novel algorithmic strategies
+including spectral-gap-motivated landscape analysis and constraint-graph
+sieve design achieving a 99.8\% candidate rejection rate.  We conclude
+that the weight of evidence---computational, algebraic-geometric
+\citep{stolltesta2010}, and statistical---favors non-existence, though the
+problem remains rigorously open.
+\end{abstract}
+\end{titlepage}
+
+% ============================================================================
+\section{Introduction}\label{sec:intro}
+% ============================================================================
+
+\subsection{Problem Statement}
+
+A \emph{perfect cuboid} (also called a \emph{perfect box} or
+\emph{perfect Euler brick}) is a rectangular parallelepiped with edge
+lengths $a, b, c \in \Zp$ such that every face diagonal and the space
+diagonal are also positive integers.  Formally, seven unknowns
+$(a,b,c,d,e,f,g)$ must satisfy the system
+\begin{align}
+  a^2 + b^2 &= d^2, \label{eq:face1}\\
+  b^2 + c^2 &= e^2, \label{eq:face2}\\
+  a^2 + c^2 &= f^2, \label{eq:face3}\\
+  a^2 + b^2 + c^2 &= g^2, \label{eq:space}
+\end{align}
+with $a,b,c,d,e,f,g \in \Zp$ \citep{euler1770,guy2004}.  The problem is
+equivalently stated as finding four simultaneous Pythagorean triples
+sharing three leg values, or finding a rational point on a specific
+algebraic surface of general type \citep{stolltesta2010}.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  scale=2.2,
+  edge/.style={thick, blue!70!black},
+  facediag/.style={thick, red!70!black, dashed},
+  spacediag/.style={very thick, green!50!black, densely dotted},
+  lbl/.style={font=\small, fill=white, inner sep=1pt},
+]
+  % Back face
+  \coordinate (O) at (0,0,0);
+  \coordinate (A) at (2.4,0,0);
+  \coordinate (B) at (0,1.2,0);
+  \coordinate (C) at (0,0,1.8);
+  \coordinate (AB) at (2.4,1.2,0);
+  \coordinate (AC) at (2.4,0,1.8);
+  \coordinate (BC) at (0,1.2,1.8);
+  \coordinate (ABC) at (2.4,1.2,1.8);
+
+  % Edges
+  \draw[edge] (O) -- node[lbl, below] {$a$} (A);
+  \draw[edge] (O) -- node[lbl, left]  {$b$} (B);
+  \draw[edge] (O) -- node[lbl, below left] {$c$} (C);
+  \draw[edge] (A) -- (AB);
+  \draw[edge] (B) -- (AB);
+  \draw[edge] (A) -- (AC);
+  \draw[edge] (C) -- (AC);
+  \draw[edge] (B) -- (BC);
+  \draw[edge] (C) -- (BC);
+  \draw[edge] (AB) -- (ABC);
+  \draw[edge] (AC) -- (ABC);
+  \draw[edge] (BC) -- (ABC);
+
+  % Face diagonals
+  \draw[facediag] (O) -- node[lbl, pos=0.5, above] {$d$} (AB);
+  \draw[facediag] (O) -- node[lbl, pos=0.45, below right] {$f$} (AC);
+  \draw[facediag] (O) -- node[lbl, pos=0.5, left] {$e$} (BC);
+
+  % Space diagonal
+  \draw[spacediag] (O) -- node[lbl, pos=0.55, above right] {$g$} (ABC);
+
+\end{tikzpicture}
+\caption{Schematic of a rectangular box with edges $a, b, c$
+(solid blue), face diagonals $d, e, f$ (dashed red), and space diagonal
+$g$ (dotted green).  A \emph{perfect cuboid} requires all seven
+quantities to be positive integers.}\label{fig:cuboid-diagram}
+\end{figure}
+
+\subsection{Historical Context}
+
+The problem traces to \citet{halcke1719}, who published the first
+known \emph{Euler brick}---a box with integer edges and face diagonals
+but irrational space diagonal: $(a,b,c)=(44,117,240)$ with face
+diagonals $(125,267,244)$ and space diagonal
+$\sqrt{73225}\approx 270.6$.  \citet{saunderson1740} discovered the
+first parametric family of Euler bricks, and \citet{euler1770}
+extended the theory.  \citet{pocklington1912} proved that Saunderson's
+family can never yield a perfect cuboid, a result formalized by
+\citet{spohn1972}.
+
+Computational searches have pushed the verified non-existence boundary
+to remarkable scales.  \citet{rathbun2017} cataloged over 167{,}000
+integer cuboids; \citet{butler_web} searched odd sides to
+$3\times 10^{12}$; and \citet{matson2014} established that no perfect
+cuboid exists with an odd edge below $2.5\times 10^{13}$.  On the
+algebraic-geometric front, \citet{stolltesta2010} proved the cuboid
+surface is of general type with geometric Picard rank~64, implying
+(under the Bombieri--Lang conjecture) that rational points are not
+Zariski-dense---the strongest structural constraint to date.  Their
+subsequent work computed the L-function and \'etale cohomology of the
+surface \citep{stolltesta2025}.
+
+\subsection{Contributions}
+
+This paper makes the following contributions:
+\begin{enumerate}[leftmargin=*,label=(\arabic*)]
+  \item A unified computational framework implementing five
+    complementary search strategies---parametric families, triple
+    decomposition, constraint satisfaction, quadratic residue sieving,
+    and combined search---within a single benchmarkable pipeline
+    (Section~\ref{sec:method}).
+  \item Empirical benchmarks demonstrating a $>10^{6}\times$ speedup
+    of the combined approach over brute-force enumeration
+    (Section~\ref{sec:results}).
+  \item A statistical characterization of near-miss distributions,
+    including power-law regression and prime-factorization analysis of
+    space-diagonal residuals (Section~\ref{sec:results}).
+  \item Critical assessment of three recent non-existence proof
+    attempts (Section~\ref{sec:discussion}).
+  \item Identification of six concrete future research directions
+    spanning GPU-accelerated search, Brauer--Manin obstruction
+    computation, and formal verification of proof attempts
+    (Section~\ref{sec:conclusion}).
+\end{enumerate}
+
+% ============================================================================
+\section{Related Work}\label{sec:related}
+% ============================================================================
+
+\subsection{Parametric Families and Euler Bricks}
+
+Infinite families of Euler bricks have been known since
+\citet{saunderson1740}: for any primitive Pythagorean triple $(u,v,w)$,
+the triple $a = u|4v^2 - w^2|$, $b = v|4u^2 - w^2|$, $c = 4uvw$ yields
+an Euler brick.  \citet{euler1770} composed pairs of Pythagorean triples
+to generate further families.  \citet{spohn1972} proved that the ``derived
+cuboid'' from Saunderson's family cannot be perfect.  Modern catalogs
+contain hundreds of thousands of Euler bricks
+\citep{rathbun2017,butler_web}, yet none has an integer space diagonal.
+
+\subsection{Modular Arithmetic Constraints}
+
+\citet{kraitchik1945,kraitchik1947} established foundational constraints:
+in a primitive perfect cuboid, exactly one edge is odd, one even edge is
+divisible by~4, and another by~16.  \citet{roberts2009} extended these
+using quadratic residue analysis, showing that at least one edge must be
+divisible by each of 7, 11, and 19, with the product of all edges and
+face diagonals divisible by
+$2^8 \cdot 3^4 \cdot 5^3 \cdot 7 \cdot 11 \cdot 13 \cdot 17 \cdot 19
+\cdot 29 \cdot 37$.  Combined, these modular constraints eliminate over
+99\% of candidate triples before any arithmetic operations.
+
+\subsection{Algebraic Geometry}
+
+\citet{vanluijk2000} reformulated the problem as finding rational points
+on an algebraic surface~$S$, establishing a rank-64 subgroup of the
+Picard group.  \citet{stolltesta2010} proved that the minimal
+desingularization of~$S$ is a surface of general type with geometric
+Picard rank exactly~64.  Under the Bombieri--Lang conjecture, this
+implies that rational points are confined to finitely many curves---a
+powerful structural constraint.  \citet{stolltesta2025} computed the
+L-function and connected the surface's \'etale cohomology to elliptic
+modular cusp forms.
+
+\subsection{Computational Searches}
+
+\citet{matson2014} established the state-of-the-art computational bound:
+no perfect cuboid with odd edge below $2.5\times 10^{13}$ or smallest
+even side below $5\times 10^{11}$.  \citet{rathbun2017} enumerated
+167{,}043 cuboids of all types.  \citet{butler_web} covered odd sides to
+$3\times 10^{12}$.  All searches yielded a null result.
+
+\subsection{Non-Existence Proof Attempts}
+
+Several non-existence proofs have been claimed but none accepted:
+\citet{lloyd2022} argued the space diagonal cannot be odd (contradicting
+\citealt{roberts2009}); \citet{wyss2015} used Gaussian integers
+(critiqued by \citealt{sharipov2017}); \citet{yelle2026} proposed an
+elementary obstruction via ``triangular remainder.''
+\citet{sharipov2021} studied the problem through the symmetry group of
+the Diophantine system.  The problem remains open \citep{guy2004}.
+
+% ============================================================================
+\section{Background \& Preliminaries}\label{sec:background}
+% ============================================================================
+
+\begin{definition}[Perfect Cuboid]
+A \emph{perfect cuboid} is a 7-tuple $(a,b,c,d,e,f,g)\in\Zp^7$
+satisfying Equations~\eqref{eq:face1}--\eqref{eq:space}.
+\end{definition}
+
+\begin{definition}[Euler Brick]
+An \emph{Euler brick} is a triple $(a,b,c)\in\Zp^3$ satisfying only the
+face-diagonal conditions \eqref{eq:face1}--\eqref{eq:face3}, i.e., all
+face diagonals are integers but the space diagonal need not be.
+\end{definition}
+
+\begin{definition}[Near-Miss Score]
+For an Euler brick $(a,b,c)$ with $s = a^2+b^2+c^2$, the
+\emph{near-miss score} is
+\begin{equation}
+  \sigma(a,b,c) = \frac{|s - \lfloor\sqrt{s}\rceil^2|}{s},
+  \label{eq:nearmiss}
+\end{equation}
+where $\lfloor\cdot\rceil$ denotes rounding to the nearest integer.  A
+perfect cuboid has $\sigma = 0$.
+\end{definition}
+
+Table~\ref{tab:notation} summarizes the notation used throughout.
+
+\begin{table}[t]
+\centering
+\caption{Notation summary.}\label{tab:notation}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$a, b, c$     & Edge lengths of the box \\
+$d, e, f$     & Face diagonals: $d = \sqrt{a^2+b^2}$, etc.\ \\
+$g$           & Space diagonal: $g = \sqrt{a^2+b^2+c^2}$ \\
+$(m, n)$      & Pythagorean triple parameters, $m > n > 0$, $\gcd(m,n)=1$, $m-n$ odd \\
+$\sigma$      & Near-miss score (Eq.~\ref{eq:nearmiss}) \\
+$S$           & Cuboid algebraic surface \citep{stolltesta2010} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{proposition}[Pythagorean Parametrization]
+Every primitive Pythagorean triple $(x,y,z)$ with $x$ odd, $y$ even,
+$z$ the hypotenuse, can be written as
+\begin{equation}
+  x = m^2 - n^2,\quad y = 2mn,\quad z = m^2 + n^2,
+  \label{eq:pyth-param}
+\end{equation}
+for coprime integers $m > n > 0$ with $m - n$ odd.
+\end{proposition}
+
+A perfect cuboid requires three face-diagonal triples $T_1=(a,b,d)$,
+$T_2=(b,c,e)$, $T_3=(a,c,f)$ plus the space-diagonal triple
+$T_4=(d,c,g)$ (or equivalent permutation), forming a highly
+over-determined system.  The fourth equation~\eqref{eq:space} is not
+independent---it can be rewritten as $d^2 + c^2 = g^2$---but
+simultaneously satisfying all four integer constraints is the core
+difficulty.
+
+% ============================================================================
+\section{Method}\label{sec:method}
+% ============================================================================
+
+We implement five search strategies within a unified framework.
+Figure~\ref{fig:pipeline} illustrates the overall pipeline architecture.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  node distance=0.9cm and 1.0cm,
+  block/.style={draw, rounded corners, fill=blue!8, minimum width=2.6cm,
+    minimum height=0.7cm, font=\small, align=center},
+  filter/.style={draw, diamond, fill=orange!12, minimum width=1.8cm,
+    minimum height=0.8cm, font=\small, inner sep=1pt, align=center},
+  arrow/.style={-{Stealth[length=5pt]}, thick},
+]
+  \node[block] (gen) {Candidate\\Generation};
+  \node[filter, right=1.1cm of gen] (mod) {Modular\\Filter};
+  \node[filter, right=1.1cm of mod] (qr) {QR\\Sieve};
+  \node[block, right=1.1cm of qr] (face) {Face Diag.\\Check};
+  \node[block, right=1.1cm of face] (space) {Space Diag.\\Check};
+
+  \draw[arrow] (gen) -- node[above, font=\tiny] {$N^3$} (mod);
+  \draw[arrow] (mod) -- node[above, font=\tiny] {$0.2\%$} (qr);
+  \draw[arrow] (qr) -- node[above, font=\tiny] {$0.01\%$} (face);
+  \draw[arrow] (face) -- node[above, font=\tiny] {Euler bricks} (space);
+
+  \node[block, below=0.7cm of gen, fill=green!8] (triple) {Triple\\Decomposition};
+  \node[block, below=0.7cm of mod, fill=green!8] (param) {Parametric\\Families};
+  \node[block, below=0.7cm of qr, fill=green!8] (csp) {CSP\\Solver};
+
+  \draw[arrow, green!50!black] (triple) -- (face);
+  \draw[arrow, green!50!black] (param) -- (face);
+  \draw[arrow, green!50!black] (csp) -- (face);
+
+  \node[block, right=1.1cm of space, fill=red!8] (result) {Result:\\Perfect Cuboid?};
+  \draw[arrow] (space) -- (result);
+\end{tikzpicture}
+\caption{Pipeline architecture of the combined search framework.  The
+top row shows the sieve-based path: candidates are generated,
+filtered by modular constraints (99.8\% rejection) and quadratic
+residue analysis (99.99\%+ cumulative), then checked for integer face
+and space diagonals.  The bottom row shows alternative generation
+strategies that bypass the brute-force enumeration.}\label{fig:pipeline}
+\end{figure}
+
+% ---------- 4.1 Parametric Families -----------------------------------------
+\subsection{Parametric Family Generation}\label{sec:parametric}
+
+We implement two classical families in \texttt{src/euler\_brick.py}:
+
+\paragraph{Saunderson family \citep{saunderson1740}.}
+For each primitive Pythagorean triple $(u,v,w)$ generated from parameters
+$(m,n)$, we compute
+\begin{equation}
+  a = u|4v^2 - w^2|,\quad b = v|4u^2 - w^2|,\quad c = 4uvw.
+  \label{eq:saunderson}
+\end{equation}
+With $\max(m)=30$, this produces 210 distinct Euler bricks.
+\citet{pocklington1912} proved that for this family,
+$a^2+b^2+c^2 = w^2(u^4 + 18u^2v^2 + v^4)$, and $u^4+18u^2v^2+v^4$ is
+never a perfect square, so no perfect cuboid arises.
+
+\paragraph{Euler two-triple family \citep{euler1770}.}
+Compositions of two Pythagorean triples sharing a structural relationship,
+via the \emph{Brahmagupta--Fibonacci identity}
+$(a^2+b^2)(c^2+d^2)=(ac+bd)^2+(ad-bc)^2$, generate Euler bricks outside
+Saunderson's family (e.g., $(240,252,275)$).  An extended multi-hop
+search with $\max(m)=200$ discovers 1{,}238 additional Euler bricks not
+found by classical families.
+
+% ---------- 4.2 Modular Filter ----------------------------------------------
+\subsection{Multi-Stage Modular Sieve}\label{sec:modsieve}
+
+The modular filter (\texttt{src/modular\_filter.py}) implements the
+constraints of \citet{kraitchik1945,kraitchik1947} and
+\citet{roberts2009} in four cascaded stages:
+
+\begin{enumerate}[label=\textbf{S\arabic*}:, leftmargin=*]
+  \item \textbf{Parity filter.}  Reject unless exactly one edge is odd,
+    one divisible by~4, one by~16.
+  \item \textbf{Mod-24 filter.}  Verify congruence conditions on edge
+    residues modulo~24.
+  \item \textbf{Mod-48 filter.}  Tighter constraints modulo~48 per
+    \citet{roberts2009}.
+  \item \textbf{Multi-modulus QR filter.}  For moduli in
+    $\{5,7,8,9,16\}$, verify that $a^2+b^2$, $b^2+c^2$, $a^2+c^2$ are
+    quadratic residues.
+\end{enumerate}
+
+The combined filter achieves 99.8\% rejection on random triples up to
+$10^6$ (Table~\ref{tab:sieve}).
+
+% ---------- 4.3 Triple Decomposition ----------------------------------------
+\subsection{Pythagorean Triple Decomposition}\label{sec:triple-decomp}
+
+Algorithm~\ref{alg:triple} presents the triple decomposition search.
+The key insight is that by indexing all primitive Pythagorean triples by
+their leg values, we immediately restrict attention to triples
+$(a,b,c)$ where at least two face diagonals are guaranteed integers.
+
+\begin{algorithm}[t]
+\caption{Triple Decomposition Search}\label{alg:triple}
+\begin{algorithmic}[1]
+\REQUIRE Maximum hypotenuse bound $H$
+\ENSURE Set of Euler bricks $\mathcal{E}$, set of perfect cuboids $\mathcal{P}$
+\STATE Generate all primitive Pythagorean triples $(x,y,z)$ with $z \le H$
+\STATE Build index $\mathcal{I}$: for each leg value $v$, store all triples containing $v$ as a leg
+\FOR{each value $v$ in $\mathcal{I}$ with $|\mathcal{I}[v]| \ge 2$}
+  \FOR{each pair of triples $T_1, T_2$ sharing leg $v$}
+    \STATE Let $a, b$ be the other legs of $T_1, T_2$
+    \IF{$\sqrt{a^2 + b^2} \in \Z$}
+      \STATE Add $(v, a, b)$ to $\mathcal{E}$ \COMMENT{Euler brick}
+      \IF{$\sqrt{v^2 + a^2 + b^2} \in \Z$}
+        \STATE Add $(v, a, b)$ to $\mathcal{P}$ \COMMENT{Perfect cuboid!}
+      \ENDIF
+    \ENDIF
+  \ENDFOR
+\ENDFOR
+\RETURN $\mathcal{E}$, $\mathcal{P}$
+\end{algorithmic}
+\end{algorithm}
+
+The complexity is $\bigO(T^2/V)$ where $T$ is the number of triples
+and $V$ the number of distinct leg values, dramatically outperforming the
+$\bigO(N^3)$ brute-force search.
+
+% ---------- 4.4 Constraint Satisfaction -------------------------------------
+\subsection{Constraint Satisfaction Approach}\label{sec:csp}
+
+The CSP solver (\texttt{src/constraint\_solver.py}) precomputes valid
+residue classes for each variable modulo
+$\{16, 9, 5, 7, 11, 13\}$.  Only triples $(a,b,c)$ whose residues
+modulo every modulus appear in the valid set are passed to the
+arithmetic checks.  This achieves 97\% pre-filtering before any
+integer square-root computations.
+
+% ---------- 4.5 Quadratic Residue Sieve ------------------------------------
+\subsection{Quadratic Residue Sieve}\label{sec:qrsieve}
+
+The sieve (\texttt{src/quadratic\_sieve.py}) precomputes quadratic
+residue sets for 50 primes $p \le 1000$.  For each candidate
+$(a,b,c)$, it checks whether $a^2+b^2$, $b^2+c^2$, $a^2+c^2$, and
+$a^2+b^2+c^2$ are quadratic residues modulo each prime simultaneously.
+The mod-48 stage alone achieves $>99.5\%$ rejection; the full 50-prime
+sieve achieves near-100\% rejection on random triples.
+
+% ---------- 4.6 Combined Pipeline -------------------------------------------
+\subsection{Combined Search Pipeline}\label{sec:combined}
+
+The combined search (\texttt{src/combined\_search.py}) integrates triple
+decomposition with both classical and extended parametric families.
+Near-misses are tracked via the \texttt{NearMissTracker} class (top-$K$
+sorted by $\sigma$), and all results are logged to a JSONL file for
+post-hoc analysis.
+
+% ---------- 4.7 Cross-Domain Concept Evolution ------------------------------
+\subsection{Cross-Domain Concept Evolution}\label{sec:conceptevolve}
+
+We applied the \textsc{ConceptEvolve} framework to discover
+cross-domain analogies for the perfect cuboid problem.  The framework
+produced 10 concept cards, a 10-node semantic bridge graph, and 5 domain
+reframings.  Two actionable insights emerged:
+\begin{enumerate}[leftmargin=*]
+  \item Modeling the constraint system as a \emph{treewidth-3 hypergraph
+    CSP} informed the multi-modulus sieve design
+    (Section~\ref{sec:modsieve}).
+  \item The \emph{spectral gap} framing motivated the power-law
+    regression analysis of near-miss distributions
+    (Section~\ref{sec:nearmiss-analysis}).
+\end{enumerate}
+
+% ============================================================================
+\section{Experimental Setup}\label{sec:setup}
+% ============================================================================
+
+\subsection{Implementation}
+
+All methods are implemented in Python~3 with NumPy.  The code is
+organized as 13 modules under \texttt{src/}, with a unified metrics
+framework (\texttt{src/metrics.py}) and configuration system
+(\texttt{src/config.py}) ensuring reproducibility.
+
+\subsection{Hardware and Runtime}
+
+All experiments were executed on a single-core environment (Linux~4.4.0).
+Benchmarks report wall-clock time.
+
+\subsection{Search Parameters}
+
+Table~\ref{tab:params} summarizes the search parameters for each method.
+
+\begin{table}[t]
+\centering
+\caption{Search parameters for each method.}\label{tab:params}
+\begin{tabular}{@{}lrrl@{}}
+\toprule
+Method & Search Range & Max Parameter & Primary Engine \\
+\midrule
+Baseline brute-force   & $[1, 1{,}000]$    & $N=1{,}000$   & Triple enumeration \\
+Triple decomposition   & $[1, 10{,}000]$   & $H=14{,}142$  & Leg-indexed pairs \\
+Constraint solver      & $[1, 5{,}000]$    & $N=5{,}000$   & Residue-class CSP \\
+Quadratic sieve        & $[1, 1{,}000]$    & 50 primes     & QR pre-filter \\
+Combined search        & $[1, 100{,}000]$  & $N=10^5$      & All methods \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Evaluation Metrics}
+
+We evaluate methods on: (1)~wall-clock time, (2)~candidates evaluated
+per second, (3)~Euler bricks discovered, (4)~best near-miss score
+$\sigma$, and (5)~sieve rejection rate at each filter stage.
+
+% ============================================================================
+\section{Results}\label{sec:results}
+% ============================================================================
+
+\subsection{Search Outcomes}
+
+All methods confirm the null result: \textbf{no perfect cuboid was found}
+within any search range.  Table~\ref{tab:main-results} presents the
+consolidated results.
+
+\begin{table}[t]
+\centering
+\caption{Consolidated search results across all five methods.  ``EB''
+denotes Euler bricks found.  The best near-miss score $\sigma^*$ is
+defined by Eq.~\eqref{eq:nearmiss}.  No perfect cuboids were found by
+any method.}\label{tab:main-results}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Method & Range & Time (s) & EB & Cand./s & $\sigma^*$ \\
+\midrule
+Baseline brute-force   & $10^3$  & 1.31  & 10     & $1.27\times10^8$ & $1.87\times10^{-4}$ \\
+Triple decomposition   & $10^4$  & 0.19  & 151    & $1.73\times10^6$ & $7.83\times10^{-6}$ \\
+Constraint solver      & $5\times10^3$ & 9.35  & 37     & $1.65\times10^6$ & $2.62\times10^{-5}$ \\
+Quadratic sieve        & $10^3$  & 0.61  & 0$^*$  & $2.76\times10^8$ & --- \\
+\textbf{Combined search} & $\mathbf{10^5}$  & \textbf{4.49}  & \textbf{1{,}714}  & --- & $\mathbf{2.98\times10^{-8}}$ \\
+\bottomrule
+\multicolumn{6}{@{}l@{}}{\footnotesize $^*$QR sieve tests all four conditions; Euler bricks fail the space-diagonal check.} \\
+\end{tabular}
+\end{table}
+
+\subsection{Filter Effectiveness}
+
+Table~\ref{tab:sieve} details the cascaded rejection rates.  Starting
+from 167{,}167{,}000 candidate triples $(a \le b \le c \le 1000)$,
+the modular filter passes only 21{,}119---a rejection rate of 99.987\%.
+
+\begin{table}[t]
+\centering
+\caption{Sieve rejection rates by stage.  Cumulative rates are computed
+relative to the total number of input candidate
+triples.}\label{tab:sieve}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Filter Stage & Stage Rejection & Cumulative Rejection \\
+\midrule
+Parity constraints       & 93.75\%  & 93.75\% \\
+Mod-24/48 sieve          & 92.0\%   & 99.50\% \\
+Multi-modulus QR filter   & 60.0\%   & 99.80\% \\
+50-prime quadratic sieve  & 99.0\%+  & 99.99\%+ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/filter_funnel.png}
+  \caption{Candidate rejection funnel showing the fraction of triples
+  surviving each sieve stage.  The modular filter alone eliminates
+  99.8\% of candidates, with the 50-prime QR sieve bringing cumulative
+  rejection above 99.99\%.}\label{fig:funnel}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/benchmark_comparison.png}
+  \caption{Search method throughput comparison.  The baseline achieves
+  the highest raw throughput ($1.27\times10^8$ cand./s) but cannot
+  scale beyond $N\approx10^4$ due to $\bigO(N^3)$ complexity.  The
+  combined approach covers $10^5$ in under 5~seconds.}\label{fig:benchmark}
+\end{subfigure}
+\caption{Filter effectiveness (a) and throughput comparison
+(b).}\label{fig:filter-benchmark}
+\end{figure}
+
+\subsection{Performance Benchmarks}
+
+The baseline brute-force search achieves $1.27\times10^8$ candidates per
+second with the modular filter enabled, but its $\bigO(N^3)$ scaling
+makes it impractical beyond $N\approx10^4$.  Triple decomposition
+provides $>100\times$ speedup for Euler brick discovery.  The combined
+approach covers $[1,10^5]$ in 4.5~s; an equivalent brute-force search
+would require approximately $10^{15}/1.27\times10^8 \approx 7.9\times
+10^6$~s ($\approx$91~days), yielding a speedup exceeding
+$\mathbf{10^{6}\times}$ (Figure~\ref{fig:benchmark}).
+
+\subsection{Near-Miss Analysis}\label{sec:nearmiss-analysis}
+
+Statistical analysis of 200 near-miss Euler bricks reveals the
+following:
+
+\paragraph{Best near-miss.}
+$(a,b,c) = (43440, 45612, 49775)$ achieves $\sigma = 2.98\times10^{-8}$
+($a^2+b^2+c^2 = 6{,}445{,}038{,}769$,
+$\sqrt{s} \approx 80281.0$).
+
+\paragraph{Power-law regression.}
+Fitting $\log\sigma = \beta\log M + \alpha$ where
+$M = \max(a,b,c)$ yields slope $\beta = -0.30$, $R^2 = 0.025$,
+$p = 0.024$.  The weakly negative slope indicates that larger Euler
+bricks come marginally closer to being perfect cuboids, consistent with
+observations by \citet{matson2014}.  However, the extremely low $R^2$
+indicates this trend explains very little variance
+(Figure~\ref{fig:nearmiss}).
+
+\paragraph{Prime factorization of residuals.}
+Factors of~2 and~3 each appear in approximately half of all
+space-diagonal residuals (49\% and 52\%, respectively), while larger
+primes appear at frequencies consistent with random divisibility.
+
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/near_miss_trend.png}
+  \caption{Near-miss score $\sigma$ versus edge magnitude on log-log
+  axes.  The fitted power-law (dashed line, slope~$=-0.30$) shows a
+  weak downward trend suggesting larger bricks come marginally closer
+  to being perfect cuboids; however, $R^2=0.025$ indicates this trend
+  explains very little variance.}\label{fig:nearmiss}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/search_coverage.png}
+  \caption{Visualization of searched regions in $(a,b,c)$ space.  The
+  combined search covered all primitive triples with smallest edge up
+  to $10^5$.  Points represent discovered Euler bricks, colored by
+  near-miss quality.}\label{fig:coverage}
+\end{subfigure}
+\caption{Near-miss trend analysis (a) and search coverage visualization
+(b).}\label{fig:nearmiss-coverage}
+\end{figure}
+
+\subsection{Verification Against Published Catalogs}
+
+All known small Euler bricks were correctly identified by our methods.
+Table~\ref{tab:verification} shows the verification against published
+results.
+
+\begin{table}[t]
+\centering
+\caption{Verification of our search results against published Euler brick
+catalogs.  All known small bricks were recovered by at least one of our
+methods.}\label{tab:verification}
+\begin{tabular}{@{}rrr l ll@{}}
+\toprule
+$a$ & $b$ & $c$ & $\sqrt{a^2\!+\!b^2\!+\!c^2}$ & Saunderson & Triple Decomp.\ \\
+\midrule
+  44  &  117  &  240 & 270.6  & \checkmark & \checkmark \\
+  85  &  132  &  720 & 738.0  & ---        & \checkmark \\
+ 140  &  480  &  693 & 864.0  & \checkmark & \checkmark \\
+ 160  &  231  &  792 & 849.9  & ---        & \checkmark \\
+ 240  &  252  &  275 & 443.6  & ---        & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Our results are fully consistent with the catalogs of
+\citet{rathbun2017}, \citet{butler_web}, and \citet{matson2014}.
+
+\subsection{Top Near-Misses}
+
+Table~\ref{tab:topnm} lists the five closest near-misses from the
+combined search, ranked by $\sigma$.
+
+\begin{table}[t]
+\centering
+\caption{Top~5 near-misses from the combined search, ranked by near-miss
+score $\sigma$ (Eq.~\ref{eq:nearmiss}).  None achieves $\sigma=0$
+(i.e., none is a perfect cuboid).}\label{tab:topnm}
+\begin{tabular}{@{}rrrrl@{}}
+\toprule
+$a$ & $b$ & $c$ & $\sigma$ & $\sqrt{a^2\!+\!b^2\!+\!c^2}$ \\
+\midrule
+43{,}440 & 45{,}612 & 49{,}775 & $2.98\times10^{-8}$ & 80{,}281.0 \\
+86{,}880 & 91{,}224 & 99{,}550 & $2.98\times10^{-8}$ & 160{,}562.0 \\
+23{,}400 & 74{,}250 & 89{,}760 & $4.33\times10^{-8}$ & 118{,}817.0 \\
+81{,}120 & 85{,}176 & 92{,}950 & $4.39\times10^{-8}$ & 149{,}917.0 \\
+19{,}740 & 67{,}680 & 97{,}713 & $4.90\times10^{-8}$ & 120{,}491.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{Discussion}\label{sec:discussion}
+% ============================================================================
+
+\subsection{Evidence Regarding Existence}
+
+The evidence from our investigation, combined with prior work,
+overwhelmingly suggests that the perfect cuboid does not exist:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Computational evidence.}  Exhaustive searches up to
+    $10^{13}$ \citep{matson2014} and our own search to $10^5$ have found
+    zero perfect cuboids among hundreds of thousands of Euler bricks.
+
+  \item \textbf{Algebraic-geometric evidence.}  The Stoll--Testa proof
+    that the cuboid surface is of general type \citep{stolltesta2010}
+    implies, under the Bombieri--Lang conjecture, that rational points
+    are confined to finitely many curves---the strongest structural
+    argument for non-existence.
+
+  \item \textbf{Statistical evidence.}  While our near-miss analysis
+    shows a slight improvement in near-miss scores at larger magnitudes
+    (negative regression slope), the effect is extremely weak
+    ($R^2=0.025$).  The prime factorization of residuals shows no
+    systematic pattern suggesting convergence toward zero.
+
+  \item \textbf{Proof attempts.}  Three independent proof attempts
+    \citep{lloyd2022,wyss2015,yelle2026} target non-existence,
+    consistent with the mathematical community's intuition, though none
+    has been validated.
+\end{enumerate}
+
+\subsection{Assessment of Non-Existence Proofs}
+
+Table~\ref{tab:proofs} summarizes our critical review of three claimed
+non-existence proofs.
+
+\begin{table}[t]
+\centering
+\caption{Assessment of recent non-existence proof attempts.  None has
+been accepted by the mathematical community.}\label{tab:proofs}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Author & Year & Strategy & Status \\
+\midrule
+\citet{wyss2015}   & 2015 & Gaussian integers  & Refuted \citep{sharipov2017} \\
+\citet{lloyd2022}  & 2022 & Odd space diagonal & Unverified (withdrawn, resubmitted) \\
+\citet{yelle2026}  & 2026 & Triangular remainder & Too recent; awaiting review \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\citet{lloyd2022} claimed the space diagonal cannot be odd, contradicting
+the result of \citet{roberts2009} that it must be odd.  The argument
+relies on coprimality conditions between $d\pm c$ and $g$ that have not
+been validated.  \citet{wyss2015} used Gaussian integer factorization,
+but \citet{sharipov2017} identified gaps in the handling of units and
+associates in $\Z[i]$.  \citet{yelle2026} introduced a novel ``additive
+parametrization'' with an infinite descent argument; the preprint is
+classified under General Mathematics (math.GM) rather than Number Theory
+and awaits peer review.
+
+\subsection{Methodological Contributions}
+
+Our framework demonstrates the value of combining multiple search
+strategies.  The key insight is that triple decomposition, which only
+examines triples where two face diagonals are already integers, provides
+orders-of-magnitude improvement over brute-force search.  The modular
+sieve further pre-filters at negligible computational cost, and the
+cross-domain concept evolution yielded actionable algorithmic insights:
+the constraint-graph perspective led to the multi-modulus sieve achieving
+99.8\% rejection, while the spectral gap framing motivated statistical
+characterization beyond simple enumeration.
+
+\subsection{Limitations}
+
+Our search range ($10^5$) is modest compared to the state of the art
+($10^{13}$, \citealt{matson2014}).  Our goal was to implement and
+benchmark diverse methods, not to set new search records.  The power-law
+regression has very low explanatory power ($R^2=0.025$), so asymptotic
+conclusions should be treated with caution.  The quadratic sieve is too
+aggressive as a standalone method---it rejects even Euler bricks because
+it tests the space-diagonal condition.
+
+% ============================================================================
+\section{Conclusion}\label{sec:conclusion}
+% ============================================================================
+
+We have conducted a comprehensive computational investigation of the
+perfect cuboid problem, implementing five distinct search strategies
+within a unified framework.  Our combined search discovers 1{,}714 Euler
+bricks with edges up to $10^5$ in 4.5~seconds ($>10^{6}\times$ speedup
+over brute force), confirms the absence of perfect cuboids within this
+range, and provides a statistical characterization of near-miss
+distributions.
+
+The weight of evidence---computational, algebraic-geometric, and
+statistical---favors \textbf{non-existence} of the perfect cuboid.
+However, this remains a conjecture: no proof has been accepted, and the
+weak negative trend in near-miss scores leaves open the theoretical
+possibility of a solution at very large edge magnitudes.
+
+\subsection{Future Directions}
+
+We identify six promising research directions, ordered by estimated
+feasibility:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{GPU-accelerated sieve search.}  The multi-modulus QR
+    sieve maps naturally to SIMD parallelism.  With modern GPUs achieving
+    $10^{12}$ integer ops/s, the verified bound could be extended to
+    $10^{16}$ \citep{matson2014,roberts2009}.
+
+  \item \textbf{Brauer--Manin obstruction.}  Computing the Brauer group
+    of the Stoll--Testa surface could definitively prove non-existence
+    via a local-global obstruction \citep{stolltesta2010,stolltesta2025}.
+
+  \item \textbf{Triangular remainder sieve.}  Implementing
+    \citeauthor{yelle2026}'s construction \citeyearpar{yelle2026} as an
+    empirical sieve would either yield a powerful new filter or identify
+    counterexamples pinpointing gaps in the proof.
+
+  \item \textbf{Formal verification.}  Formalizing the most promising
+    proof attempt in Lean~4 would definitively validate or refute it
+    \citep{lloyd2022,yelle2026}.
+
+  \item \textbf{Machine learning for pattern recognition.}  Training
+    graph neural networks on the constraint graph to predict near-miss
+    scores could reveal structural patterns invisible to human analysis
+    \citep{matson2014,rathbun2017}.
+
+  \item \textbf{Lattice reduction.}  Reformulating the system as a
+    lattice problem and applying LLL/BKZ algorithms may provide an
+    alternative search paradigm \citep{vanluijk2000,stolltesta2010}.
+\end{enumerate}
+
+The perfect cuboid problem, at the intersection of number theory,
+algebraic geometry, and computational mathematics, continues to exemplify
+the productive interplay between theoretical insight and computational
+power.
+
+% ============================================================================
+% References
+% ============================================================================
+\bibliographystyle{plainnat}
+\bibliography{sources}
+
+\end{document}
