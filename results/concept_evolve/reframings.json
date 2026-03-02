@@ -1,0 +1,41 @@
+{
+  "problem": "Find a rectangular box where all edges, all face diagonals, and the space diagonal are all integers",
+  "framings": [
+    {
+      "domain": "circuit_design",
+      "reframing": "Design a resistor network with 7 branches where all branch impedances are integer ohms, and the network satisfies 4 Kirchhoff-like quadratic compatibility equations. The face diagonals are equivalent to impedances of parallel paths, and the space diagonal is the total network impedance.",
+      "key_insight": "In circuit design, impedance matching problems are solved by iterating over discrete component values. The discrete nature of resistor values (E-series) creates a similar combinatorial search, but circuit designers use Smith charts and network synthesis theory to navigate the space efficiently.",
+      "suggested_technique": "Network synthesis: start from the desired impedance (space diagonal) and factor backward through the network to determine required component values. This is a top-down approach rather than the bottom-up search used in most cuboid algorithms.",
+      "mapping_back": "Start from candidate space diagonal values g and factor the system backward: g^2 = a^2+b^2+c^2, then check if the resulting a,b,c admit integer face diagonals. This reverses the usual search direction."
+    },
+    {
+      "domain": "evolutionary_biology",
+      "reframing": "Find an organism whose genome (the 3 edge lengths) simultaneously satisfies 4 fitness constraints (the diagonal equations). Each constraint is a selective pressure. The problem is whether the intersection of all fitness peaks contains any individual — i.e., whether the fitness landscape has a global optimum satisfying all constraints simultaneously.",
+      "key_insight": "In evolutionary biology, multi-constraint optimization often leads to Pareto fronts rather than single optima. The existence of many Euler bricks (satisfying 3 of 4 constraints) but no perfect cuboid suggests the 4th constraint may be incompatible — a fitness valley that evolution cannot cross.",
+      "suggested_technique": "Fitness landscape analysis: map the near-miss distribution and measure the 'ruggedness' of the landscape near candidate solutions. If the landscape shows increasing ruggedness (wider valleys) at larger scales, non-existence becomes more likely.",
+      "mapping_back": "Analyze whether near-miss scores improve or worsen with increasing edge magnitude. A widening gap would be the number-theoretic equivalent of a deepening fitness valley."
+    },
+    {
+      "domain": "music_theory_acoustics",
+      "reframing": "Find a rectangular room whose resonant frequencies in all directions form perfect harmonic ratios. The face diagonals correspond to 2D standing wave modes, and the space diagonal to the 3D room mode. The problem asks whether a room can have all its resonance frequencies in perfect just intonation.",
+      "key_insight": "In acoustics, perfect just intonation for all intervals simultaneously is known to be impossible (the comma problem). This is structurally similar: you can tune some intervals perfectly but not all of them at once. The syntonic comma is analogous to the near-miss residual.",
+      "suggested_technique": "Temperament analysis: in music, the solution is equal temperament — accepting small deviations from perfection. The cuboid equivalent is studying the distribution of 'commas' (near-miss residuals) and determining if they can ever vanish exactly.",
+      "mapping_back": "Compute the 'comma' for each Euler brick (the fractional part of the space diagonal) and analyze whether these commas have an algebraic structure that could permit exact cancellation."
+    },
+    {
+      "domain": "molecular_chemistry",
+      "reframing": "Find a molecular crystal with a unit cell whose edge lengths and diagonal distances are all integer multiples of the lattice constant. The 4 constraint equations correspond to bond-length compatibility conditions between atoms at the corners and face centers of the unit cell.",
+      "key_insight": "Crystallographers use group theory (space groups) to classify which geometric arrangements of atoms are possible. The 48-element symmetry group of the cuboid equations corresponds to the octahedral point group Oh. Non-existence of perfect cuboids would mean this particular geometric arrangement violates a crystallographic impossibility theorem.",
+      "suggested_technique": "Space group analysis: classify the solutions modulo the symmetry group and check whether the quotient variety admits rational points. The automorphism group of the cuboid system can dramatically reduce the search space.",
+      "mapping_back": "Exploit the S3 × (Z/2)^3 symmetry of the cuboid system to reduce the search to a fundamental domain, potentially reducing the effective search space by a factor of 48."
+    },
+    {
+      "domain": "control_theory",
+      "reframing": "Design a linear control system with 3 state variables where the L2 norms of all 2-projections and the full state vector are integers. The face diagonals are L2 norms of 2D sub-state projections, the space diagonal is the full state norm.",
+      "key_insight": "In control theory, norm-constrained optimization is solved using Linear Matrix Inequalities (LMIs). The integrality constraint makes it a mixed-integer semidefinite program (MI-SDP), which has well-studied feasibility conditions.",
+      "suggested_technique": "Semidefinite programming relaxation: solve the continuous relaxation of the norm-integer constraint, then use branch-and-bound with SDP bounds to search for integer solutions. This is much more efficient than brute-force enumeration.",
+      "mapping_back": "Formulate the cuboid problem as a mixed-integer SDP and use SDP relaxation bounds to prune the search tree. The relaxation gap indicates how far the continuous optimum is from any integer solution."
+    }
+  ],
+  "timestamp": "2026-03-02T04:00:00Z"
+}
