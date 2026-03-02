@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-02T00:00:00Z",
+  "updated_at": "2026-03-02T06:49:11.327621+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-02T00:00:00Z",
+      "completed_at": "2026-03-02T06:49:11.327593+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and existing infrastructure",
+          "acceptance_criteria": "Produce results/phase1/repo_analysis.md documenting: (a) all directories and their purposes, (b) available tooling (ConceptEvolve, Semantic Scholar, subagents), (c) configuration files and their roles, (d) .gitattributes LFS rules for binary data. File must be at least 200 lines.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct web-based literature review on N-body gravity simulation methods",
+          "acceptance_criteria": "Search the web and Semantic Scholar for papers on: (a) N-body simulation algorithms (direct summation, Barnes-Hut, FMM), (b) symplectic integrators (leapfrog, Yoshida, Verlet), (c) energy conservation in numerical gravity, (d) GPU-accelerated particle simulations. At least 10 relevant papers cited in sources.bib with proper BibTeX entries. Create results/phase1/literature_review.md summarizing key findings with inline citations.",
+          "status": "pending",
+          "notes": "Delegate to literature-graph-miner subagent for citation graph traversal",
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Run ConceptEvolve to explore the gravity simulation design space",
+          "acceptance_criteria": "Execute concept_evolve with seed='minimal gravity simulation' and topic='N-body physics'. The results/concept_evolve/tree/ directory must contain at least 5 concept folders, each with concept.json, literature.json, and README.md. Concepts must span: force computation, numerical integration, data structures, visualization, and validation.",
+          "status": "pending",
+          "notes": "Use concept-tree-explorer subagent to traverse and synthesize concept paths",
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Define problem scope and minimal viable simulation requirements",
+          "acceptance_criteria": "Produce results/phase1/problem_scope.md specifying: (a) 2D vs 3D choice with justification citing at least 2 papers from sources.bib, (b) target body count range (N=2 to N=1000+), (c) force model (Newtonian inverse-square), (d) required conservation properties (energy, momentum, angular momentum), (e) performance targets (real-time for N<=100), (f) output format specification. Must reference concept paths from item_003.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Survey existing open-source gravity simulators and codebases",
+          "acceptance_criteria": "Search the web for at least 5 open-source N-body or gravity simulation repositories (GitHub, GitLab). Document each in results/phase1/prior_implementations.md with: repo URL, language, algorithm used, performance characteristics, and lessons applicable to our minimal sim. Add any associated papers to sources.bib. Total sources.bib entries must be at least 15 after this item.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Implement core data structures for body state and system configuration",
+          "acceptance_criteria": "Create src/bodies.py with: (a) Body dataclass holding mass, position (2D numpy array), velocity, acceleration, (b) System class managing a collection of bodies with add/remove/query, (c) serialization to/from JSON, (d) at least 3 unit tests in tests/test_bodies.py passing via pytest.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement brute-force O(N^2) gravitational force computation",
+          "acceptance_criteria": "Create src/forces/brute_force.py implementing direct pairwise Newtonian gravity with softening parameter epsilon. Must: (a) compute all pairwise forces, (b) use vectorized numpy operations where possible, (c) handle self-interaction correctly (skip i==j), (d) support configurable gravitational constant G. Tests in tests/test_forces.py must verify: two-body analytical force, symmetry (F_ij = -F_ji), zero self-force. At least 5 tests passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement symplectic Euler and leapfrog (Stormer-Verlet) integrators",
+          "acceptance_criteria": "Create src/integrators/ with euler.py and leapfrog.py. Each integrator must: (a) accept a force function, system state, and timestep dt, (b) return updated system state, (c) implement the correct symplectic update order. Tests in tests/test_integrators.py must verify: (a) two-body Kepler orbit energy conservation within 1% over 100 orbits for leapfrog, (b) correct position update for single step with known force. At least 6 tests passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement conservation metrics (energy, linear momentum, angular momentum)",
+          "acceptance_criteria": "Create src/metrics.py computing: (a) total kinetic energy, (b) total gravitational potential energy, (c) total energy, (d) total linear momentum vector, (e) total angular momentum scalar (2D). Tests in tests/test_metrics.py must verify analytical values for known configurations (e.g., circular orbit). At least 4 tests passing. Metrics must return relative errors (delta_E/E0, delta_p/p0).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Build minimal simulation loop and validate against Kepler two-body problem",
+          "acceptance_criteria": "Create sim.py that: (a) initializes a two-body Kepler problem with known analytical solution, (b) runs simulation for at least 10 orbital periods, (c) logs energy and momentum conservation at each step to results/phase2/kepler_validation.json, (d) generates trajectory plot saved to figures/kepler_orbit.png. Energy drift with leapfrog must be <0.1% over 10 orbits. Compare results against analytical Kepler orbit period within 1% accuracy, citing Danby (1988) or equivalent from sources.bib.",
+          "status": "pending",
+          "notes": "Delegate validation analysis to a subagent for independent verification",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Explore concept tree for advanced force computation strategies",
+          "acceptance_criteria": "Run ConceptEvolve probe on the 'force computation' concept node from phase 1. Explore at least 3 alternative approaches: (a) Barnes-Hut tree (O(N log N)), (b) vectorized/SIMD brute force, (c) cutoff-radius neighbor lists. Document trade-offs in results/concept_evolve/tree/force_computation/README.md with complexity analysis and references to literature. Walk at least 2 concept paths and document findings.",
+          "status": "pending",
+          "notes": "Use concept-tree-explorer subagent to identify highest-value concept paths",
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Implement Barnes-Hut tree algorithm for O(N log N) force computation",
+          "acceptance_criteria": "Create src/forces/barnes_hut.py implementing: (a) quadtree construction for 2D bodies, (b) recursive force computation with opening angle theta, (c) center-of-mass approximation for distant nodes. Tests must verify: (a) force accuracy vs brute-force within 1% for theta=0.5 on N=100 random bodies, (b) correct tree structure for 4 bodies in known positions, (c) convergence to brute-force as theta->0. At least 5 tests in tests/test_barnes_hut.py.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement higher-order Yoshida 4th-order symplectic integrator",
+          "acceptance_criteria": "Create src/integrators/yoshida.py implementing the 4th-order Yoshida composition method using the standard coefficients from Yoshida (1990) - must be cited in sources.bib. Tests must verify: (a) 4th-order convergence rate (halving dt must reduce error by ~16x), (b) energy conservation better than leapfrog for equivalent total force evaluations, (c) correct coefficients match published values. At least 4 tests passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement adaptive timestep control based on close encounters",
+          "acceptance_criteria": "Create src/integrators/adaptive.py that: (a) detects close body encounters using minimum pairwise distance, (b) reduces timestep when bodies approach within a configurable threshold, (c) restores timestep when encounter resolves, (d) wraps any base integrator (Euler, leapfrog, Yoshida). Tests must show: (a) correct timestep reduction during close encounter, (b) energy conservation improvement vs fixed timestep for a hyperbolic flyby, (c) total step count is less than fixed-dt equivalent while maintaining accuracy. At least 4 tests.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement initial condition generators for benchmark scenarios",
+          "acceptance_criteria": "Create src/initial_conditions.py with generators for: (a) circular two-body orbit, (b) figure-eight three-body solution (Chenciner & Montgomery 2000, must cite in sources.bib), (c) random N-body Plummer sphere, (d) solar system inner planets (approximate). Each generator must return a valid System object. Tests must verify: (a) circular orbit has correct velocity for given radius, (b) figure-eight initial conditions match published values within 1e-6, (c) Plummer sphere density profile. At least 5 tests.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_016",
+          "description": "Performance scaling benchmark: brute-force vs Barnes-Hut",
+          "acceptance_criteria": "Create benchmarks/scaling.py that measures wall-clock time for N = [10, 50, 100, 500, 1000] bodies over 100 steps for both brute-force and Barnes-Hut. Save raw timing data to results/phase4/scaling_benchmark.json. Generate log-log scaling plot in figures/scaling_comparison.png showing empirical O(N^2) vs O(N log N) behavior. Measured scaling exponents must be within 20% of theoretical values.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Integrator comparison: energy conservation across methods and timesteps",
+          "acceptance_criteria": "Create benchmarks/integrator_comparison.py comparing Euler, leapfrog, and Yoshida on the Kepler two-body problem for dt = [0.01, 0.005, 0.001, 0.0005]. Run each for 100 orbital periods. Save results to results/phase4/integrator_comparison.json. Generate: (a) figures/energy_drift.png showing energy error vs time for each method, (b) figures/convergence_order.png showing error vs dt on log-log scale. Leapfrog must show 2nd-order convergence, Yoshida must show 4th-order. Compare results against convergence rates reported in literature from sources.bib.",
+          "status": "pending",
+          "notes": "Delegate figure analysis to subagent for independent interpretation of convergence plots",
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Barnes-Hut accuracy vs theta parameter sweep",
+          "acceptance_criteria": "Create benchmarks/theta_sweep.py testing Barnes-Hut accuracy for theta = [0.1, 0.3, 0.5, 0.7, 1.0, 1.5] on N=200 random Plummer sphere for 50 steps. Measure: (a) max force relative error vs brute-force, (b) energy conservation error, (c) wall-clock time. Save to results/phase4/theta_sweep.json. Generate figures/theta_accuracy_speed.png with dual-axis plot (accuracy vs speed tradeoff). Identify optimal theta balancing <1% force error with >2x speedup over brute-force.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Figure-eight three-body stability test",
+          "acceptance_criteria": "Run the figure-eight initial conditions with leapfrog (dt=0.001) for 100 periods. Measure: (a) maximum position deviation from initial orbit, (b) energy conservation, (c) period stability. Save trajectory data to results/phase4/figure_eight.json. Generate figures/figure_eight_trajectory.png showing the orbit. Energy drift must be <0.01% over 100 periods. Compare observed period against Chenciner & Montgomery (2000) published value, citing from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Adaptive vs fixed timestep comparison on hyperbolic encounter",
+          "acceptance_criteria": "Create benchmarks/adaptive_test.py simulating a hyperbolic two-body flyby with both fixed and adaptive timestep using leapfrog. Measure: (a) energy conservation error, (b) total number of force evaluations, (c) trajectory accuracy vs analytical hyperbolic orbit. Save to results/phase4/adaptive_comparison.json. Generate figures/adaptive_timestep.png showing timestep size over time. Adaptive method must achieve equal or better energy conservation with fewer total force evaluations than the best fixed timestep.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Run full test suite and measure code coverage",
+          "acceptance_criteria": "Run pytest with coverage reporting. All tests must pass (0 failures). Code coverage for src/ must be at least 85%. Save coverage report to results/phase4/coverage_report.txt. Total test count must be at least 30.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Synthesize concept-tree exploration results into design rationale document",
+          "acceptance_criteria": "Create results/phase5/design_rationale.md that: (a) summarizes all concept paths explored via ConceptEvolve, (b) explains why each algorithmic choice was made (force method, integrator, data structures), (c) maps decisions to concept nodes in results/concept_evolve/tree/, (d) identifies unexplored concept paths for future work. Must reference at least 5 concept folders. At least 500 words.",
+          "status": "pending",
+          "notes": "Delegate to concept-tree-explorer subagent for comprehensive path synthesis",
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Write comprehensive results analysis comparing against prior work",
+          "acceptance_criteria": "Create RESULTS.md in repo root analyzing all experimental results from Phase 4. Must include: (a) scaling analysis with comparison to theoretical complexity from Pfalzner & Gibbon (1996) or equivalent, (b) integrator convergence comparison against Hairer et al. (2006) published rates, (c) Barnes-Hut accuracy analysis referencing Barnes & Hut (1986) original paper, (d) summary table of all quantitative results. At least 5 citations from sources.bib with inline references. At least 1000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Generate publication-quality summary figures",
+          "acceptance_criteria": "Create a figures/summary/ directory containing: (a) combined_performance.png (multi-panel figure with scaling + convergence), (b) conservation_analysis.png (energy/momentum conservation across all experiments), (c) algorithm_comparison.png (radar/spider chart comparing all force+integrator combinations on speed, accuracy, conservation). All figures must have proper axis labels, legends, titles, and use a consistent color scheme. Figures must be at least 300 DPI.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Write project README with usage instructions and architecture overview",
+          "acceptance_criteria": "Update README.md to include: (a) project title and one-paragraph description, (b) installation instructions (dependencies, Python version), (c) quick-start usage example, (d) module architecture diagram (text-based), (e) list of available initial conditions and algorithms, (f) how to run benchmarks, (g) link to RESULTS.md. Must be at least 200 lines and correctly reference all src/ modules.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
