@@ -1,0 +1,274 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-02T00:00:00Z",
+  "updated_at": "2026-03-02T00:00:00Z",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": { "status": "in_progress", "started_at": "2026-03-02T00:00:00Z", "completed_at": null, "error": null },
+    "researcher": { "status": "pending", "started_at": null, "completed_at": null, "error": null },
+    "writer": { "status": "pending", "started_at": null, "completed_at": null, "error": null },
+    "reviewer": { "status": "pending", "started_at": null, "completed_at": null, "error": null }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and available tooling",
+          "acceptance_criteria": "A document or notes file listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, .opencode/ agents and tools), their purposes, input/output formats, and how they connect. Must cover at least 8 distinct components.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Formalize the mathematical problem: Hadamard matrix of order 668",
+          "acceptance_criteria": "Written analysis in results/ documenting: (1) definition of Hadamard matrix, (2) the Hadamard conjecture, (3) factorization 668 = 4 * 167 with 167 prime, (4) implications of 167 ≡ 3 (mod 4), (5) all known construction families applicable to order 668 (Paley I/II, Kronecker, Williamson, Turyn, Plotkin doubling, product constructions), (6) feasibility assessment for each approach.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Conduct web-based literature search for Hadamard matrix construction methods",
+          "acceptance_criteria": "Use websearch and Semantic Scholar tools to find at least 15 relevant papers/resources on Hadamard matrix constructions, specifically targeting order 668 and related orders (4p for prime p ≡ 3 mod 4). Search queries must include: 'Hadamard matrix order 668', 'Paley construction Hadamard', 'Williamson Hadamard construction', 'Turyn type sequences', 'Kronecker product Hadamard', 'conference matrix construction'. Results saved to results/literature_search.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "sources.bib exists in repo root with at least 10 valid BibTeX entries covering: Paley (1933), Hadamard (1893), Williamson (1944), Turyn (1974), Seberry/Yamada handbook chapters, Eliahou (2025 HAL paper on order 668), Horadam's 'Hadamard Matrices and Their Applications', and at least 3 additional relevant papers found via search. Each entry must have author, title, year, and venue/journal fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Run concept-tree exploration on Hadamard matrix construction approaches",
+          "acceptance_criteria": "Execute concept_evolve with topic 'Hadamard matrix construction methods for order 4p where p is prime congruent to 3 mod 4'. Resulting concept tree must exist in results/concept_evolve/tree/ with at least 10 concept folders, each containing concept.json and literature.json. The index.json and adjacency.json files must be present and valid.",
+          "status": "pending",
+          "notes": "Subagent delegation: Use concept-tree-explorer agent to traverse and synthesize findings after evolve completes.",
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Delegate literature graph mining to subagent for cross-domain insights",
+          "acceptance_criteria": "Use the literature-graph-miner subagent to mine citation graphs starting from key papers (Paley 1933, Eliahou 2025, Seberry/Yamada). The agent must return at least 5 cross-domain insights or transferable construction techniques, documented in results/literature_graph_synthesis.md.",
+          "status": "pending",
+          "notes": "Subagent delegation: literature-graph-miner agent.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement core Hadamard matrix verification function",
+          "acceptance_criteria": "Python module results/hadamard_verify.py that: (1) reads a matrix from CSV, (2) checks dimensions are n×n, (3) verifies all entries are +1 or -1, (4) computes H * H^T and checks it equals n * I_n, (5) returns True/False with diagnostic info. Must include unit tests that pass on known small Hadamard matrices (orders 2, 4, 8, 12).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement Paley Type I construction as baseline",
+          "acceptance_criteria": "Python module results/paley_construction.py implementing: (1) Legendre symbol computation for prime p, (2) Jacobsthal matrix J_p construction from quadratic residues of GF(p), (3) Paley Type I matrix Q = J + I of order p+1 for p ≡ 3 mod 4. Verified correct for p=3 (order 4), p=7 (order 8), p=11 (order 12), p=167 (order 168). All verification tests pass using item_007.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement Kronecker product (tensor product) construction",
+          "acceptance_criteria": "Function in results/kronecker_hadamard.py that computes the Kronecker product of two Hadamard matrices. Verified: H_2 ⊗ H_2 = H_4, H_4 ⊗ H_2 = H_8, etc. Must handle arbitrary-size input matrices efficiently using numpy or pure Python array operations.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Establish performance metrics and benchmarks",
+          "acceptance_criteria": "Metrics module results/metrics.py that measures: (1) construction time in seconds, (2) peak memory usage in MB, (3) orthogonality error ||H*H^T - n*I||_F (Frobenius norm), (4) matrix density statistics. Benchmark results for orders 4, 8, 12, 168 stored in results/benchmarks.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Delegate baseline exploration to subagent for alternative small-order constructions",
+          "acceptance_criteria": "Use concept-tree-explorer subagent to walk the concept tree from Phase 1 and identify at least 3 alternative baseline construction methods not yet implemented. Document findings in results/concept_evolve/tree/ as annotated concept folders with feasibility scores.",
+          "status": "pending",
+          "notes": "Subagent delegation: concept-tree-explorer agent walks the tree and proposes experiments.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Implement Paley Type II construction for order 2(q+1)",
+          "acceptance_criteria": "Python module results/paley_type2.py implementing: (1) conference matrix C from Jacobsthal matrix of order q (q ≡ 3 mod 4, prime), (2) Paley Type II Hadamard matrix of order 2(q+1) using the block construction [[C+I, C-I],[C-I, -(C+I)]] or equivalent formulation. Verified for q=3 (order 8), q=7 (order 16), q=11 (order 24). This produces order 2(q+1), so for order 668 we need q=333, but 333 is not prime. Document this limitation.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Research and implement product/doubling constructions targeting order 668",
+          "acceptance_criteria": "Investigate all factorizations and doubling paths to reach order 668: (a) 668 = 4 × 167 — direct construction if a Hadamard matrix of order 167 could exist (it cannot, 167 not divisible by 4), (b) Kronecker: H_668 = H_a ⊗ H_b where a*b=668 and both a,b are valid Hadamard orders — enumerate all such (a,b) pairs, (c) Plotkin doubling from order 334, (d) any recursive construction. Document all feasible paths in results/construction_paths.md with clear go/no-go decisions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement the Williamson construction for Hadamard matrices",
+          "acceptance_criteria": "Python module results/williamson.py implementing Williamson's method: find four n×n symmetric circulant (±1)-matrices A,B,C,D satisfying A²+B²+C²+D² = 4nI, then construct a 4n×4n Hadamard matrix. Must work for small test cases. Assess feasibility for n=167 (yielding order 668). Compare against prior work from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Investigate Turyn-type and Goethals-Seidel constructions for order 668",
+          "acceptance_criteria": "Python module results/turyn_goethals_seidel.py implementing the Goethals-Seidel array: a 4n×4n Hadamard matrix from four circulant matrices and a specific block structure using a back-circulant permutation matrix R. Test on known cases. For n=167, determine if suitable quadruples (A,B,C,D) of circulant ±1-matrices of order 167 satisfying AA^T+BB^T+CC^T+DD^T = 668*I exist. Reference at least 2 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Explore the Paley-based construction via conference matrices of order 167",
+          "acceptance_criteria": "Since 167 is prime and 167 ≡ 3 mod 4, a skew-symmetric conference matrix S of order 168 (= 167+1) exists. Implement its construction in results/conference_matrix.py. Then explore: (a) using S to build Hadamard matrices of order 168 (Paley I), and (b) whether 668/168 factorizations or supplementary constructions leveraging S can yield order 668. Document all attempts and outcomes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Implement the direct Paley construction H(4×167) using supplementary difference sets or equivalent algebraic method",
+          "acceptance_criteria": "Research and implement the specific construction that produces a Hadamard matrix of order 4p for prime p ≡ 3 mod 4. This may involve: (a) the doubled Paley method with a specific block structure, (b) supplementary difference sets of GF(167), (c) T-matrices or base sequences of appropriate lengths, or (d) the Mukhopadhyay construction. At least one method must produce a candidate 668×668 matrix. The construction must be documented with mathematical justification referencing sources.bib.",
+          "status": "pending",
+          "notes": "This is the critical research item. 668 = 4×167 with 167 prime, 167≡3 mod 4. Known constructions exist for this family.",
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Delegate novel approach synthesis to subagent",
+          "acceptance_criteria": "Use concept-tree-explorer subagent to (1) traverse the concept tree looking for unexplored construction paths, (2) identify which combination of known techniques is most promising for order 668, and (3) write a synthesis report in results/concept_evolve/tree/ summarizing top-3 recommended approaches with confidence scores.",
+          "status": "pending",
+          "notes": "Subagent delegation: concept-tree-explorer for novel approach identification.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_019",
+          "description": "Execute the most promising construction to produce H(668)",
+          "acceptance_criteria": "Run the best construction method from Phase 3 to generate a 668×668 candidate Hadamard matrix. The output must be a numpy array or equivalent data structure. Construction must complete within 1 hour wall-clock time. Log construction time and memory usage via metrics.py.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Verify the candidate matrix satisfies all Hadamard properties",
+          "acceptance_criteria": "Using hadamard_verify.py from item_007: (1) matrix is 668×668, (2) all entries are exactly +1 or -1, (3) H * H^T = 668 * I_668 exactly (zero orthogonality error), (4) determinant has absolute value 668^(668/2) (or at least verify via row orthogonality). All checks must PASS. If any check fails, document the failure mode and iterate.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Export the verified Hadamard matrix as CSV",
+          "acceptance_criteria": "File results/hadamard_668.csv exists containing the 668×668 Hadamard matrix with entries +1 and -1, comma-separated, no header row, 668 rows and 668 columns. File size should be approximately 668 × (668×2) ≈ 890 KB. The CSV must be re-loadable and re-verifiable.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Compare construction against prior work and alternative methods",
+          "acceptance_criteria": "Comparison document results/comparison.md analyzing: (1) which construction method succeeded and why, (2) timing/memory comparison against baseline methods from Phase 2, (3) comparison against results reported in papers from sources.bib (especially Eliahou 2025 if applicable), (4) whether alternative factorizations or constructions could also produce H(668). Must reference at least 3 specific papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Delegate evaluation synthesis to subagent",
+          "acceptance_criteria": "Use literature-graph-miner subagent to verify that the construction used is consistent with known results in the literature, identify any related open problems, and summarize in results/evaluation_synthesis.md with at least 3 literature-grounded observations.",
+          "status": "pending",
+          "notes": "Subagent delegation: literature-graph-miner for evaluation grounding.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Write comprehensive research summary documenting the full construction pipeline",
+          "acceptance_criteria": "File results/research_summary.md containing: (1) problem statement, (2) mathematical background, (3) literature review summary with citations to sources.bib, (4) all construction methods attempted with outcomes, (5) the successful construction method with full mathematical derivation, (6) verification results, (7) performance metrics, (8) limitations and future work. At least 2000 words. Must cite at least 8 entries from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Generate visualization of the Hadamard matrix structure",
+          "acceptance_criteria": "Python script results/visualize.py that produces a black-and-white image (PNG) of the 668×668 Hadamard matrix saved to figures/hadamard_668.png, where +1 entries are white and -1 entries are black. The image must be at least 668×668 pixels. Include a second visualization showing the block structure if a product/block construction was used.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Final validation: end-to-end reproducibility check",
+          "acceptance_criteria": "A single script results/reproduce.py that, when run from scratch, (1) constructs the Hadamard matrix of order 668, (2) verifies it, (3) exports it to CSV, and (4) prints PASS/FAIL. Running `python results/reproduce.py` must print PASS and produce an identical CSV to results/hadamard_668.csv (verified by checksum).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Update research_rubric.json with final status and notes for all items",
+          "acceptance_criteria": "All items in research_rubric.json have status 'completed' or 'failed' (with error explanation). updated_at timestamp is current. summary counts are accurate. No items remain 'pending' or 'in_progress'.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_028",
+          "description": "Delegate final documentation review to subagent",
+          "acceptance_criteria": "Use concept-tree-explorer subagent to review the full results/ directory, verify completeness of documentation, check that all concept tree folders have been properly annotated, and produce a final quality assessment in results/concept_evolve/tree/quality_assessment.md with scores for completeness, rigor, and reproducibility.",
+          "status": "pending",
+          "notes": "Subagent delegation: concept-tree-explorer for final quality review.",
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": { "total_items": 28, "completed": 0, "in_progress": 0, "failed": 0, "pending": 28 }
+}
