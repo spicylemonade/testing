@@ -1,0 +1,1 @@
+"""Minimal gravity simulation package."""
