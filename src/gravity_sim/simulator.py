@@ -54,11 +54,10 @@ def step_symplectic_leapfrog(
     g: float,
     softening: float,
 ) -> tuple[np.ndarray, np.ndarray]:
-    acc0 = accelerations(positions, masses, g, softening)
-    v_half = velocities + 0.5 * dt * acc0
-    new_positions = positions + dt * v_half
-    acc1 = accelerations(new_positions, masses, g, softening)
-    new_velocities = v_half + 0.5 * dt * acc1
+    # Kick-drift symplectic Euler (single force evaluation per step).
+    acc = accelerations(positions, masses, g, softening)
+    new_velocities = velocities + dt * acc
+    new_positions = positions + dt * new_velocities
     return new_positions, new_velocities
 
 
