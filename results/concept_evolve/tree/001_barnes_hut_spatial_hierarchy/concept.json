@@ -1,0 +1,18 @@
+{
+  "id": 1,
+  "symbolic_name": "barnes_hut_spatial_hierarchy",
+  "description": "The Barnes-Hut algorithm recursively subdivides space into a quadtree (2D) or octree (3D), grouping distant particles into single center-of-mass nodes. This reduces gravitational force calculation from O(N^2) to O(N log N) by approximating far-field interactions. The key parameter theta controls the accuracy-speed tradeoff: smaller theta means more accurate but slower computation.",
+  "domains": ["computational physics", "spatial data structures", "astrophysics"],
+  "mathematical_formalization": "For each particle i, traverse the tree. For node with center-of-mass C, total mass M, and size s at distance d: if s/d < theta, approximate F_i += G * m_i * M * (C - r_i) / |C - r_i|^3. Otherwise, recurse into children. Complexity: O(N log N) vs O(N^2) for direct summation.",
+  "analogical_connections": [
+    "KD-trees in machine learning for nearest-neighbor search use identical spatial subdivision logic",
+    "DNS hierarchical caching groups requests by domain proximity, analogous to grouping particles by spatial proximity",
+    "Image compression quadtrees recursively subdivide pixel regions by similarity, paralleling mass aggregation"
+  ],
+  "implementation_hypothesis": "Build an octree each timestep: insert particles, compute center-of-mass bottom-up, then walk tree per particle with theta=0.5. For a minimal sim, a 2D quadtree suffices. Each node stores: bounds, total_mass, center_of_mass, children[4]. Force walk is a recursive descent with the s/d < theta pruning criterion.",
+  "experiment_seed": "Compare wall-clock time and energy drift between direct O(N^2) summation and Barnes-Hut at theta={0.3, 0.5, 0.8, 1.0} for N={1000, 10000, 100000}. Plot accuracy (energy conservation) vs speedup.",
+  "folder_plan": {
+    "files": ["quadtree.py", "force_walk.py", "benchmark.py"],
+    "structure": "src/barnes_hut/"
+  }
+}

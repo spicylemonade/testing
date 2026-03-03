@@ -1,0 +1,26 @@
+[
+  {
+    "direction": "GPU-first minimal gravity sim with WebGPU",
+    "rationale": "The browser is the most accessible platform. WebGPU compute shaders can handle 100K+ particles at interactive rates using brute-force O(N^2) all-pairs, which is simpler to implement than tree-based methods and maps naturally to GPU parallelism. Start with Verlet integration on GPU, add visualization with point sprites. This gets a working, impressive demo with minimal code.",
+    "first_step": "Write a single-file WebGPU gravity simulation: compute shader for force calculation + Verlet integration, vertex/fragment shaders for rendering particles as colored points. Target: 10K particles, 60 FPS in Chrome.",
+    "expected_signal": "If 10K particles run at 60 FPS with correct orbital dynamics (stable binary orbits, disk formation from random initial conditions), the approach is viable. If FPS drops below 30, need tiling optimization. If orbits diverge, check softening parameter and dt."
+  },
+  {
+    "direction": "Learned gravity via GNN with classical fallback",
+    "rationale": "Training a GNN on gravity trajectories and then using it for fast inference is compelling because it naturally handles non-Newtonian corrections. The hybrid approach (classical Barnes-Hut + neural residual) reduces training data requirements and provides a physics-guaranteed baseline. This direction has the highest research novelty.",
+    "first_step": "Generate a training dataset: 1000 random 3-body systems integrated with a high-accuracy classical integrator for 1000 steps each. Train a simple GNN (2 message-passing layers, 64-dim hidden) to predict accelerations from positions and velocities. Evaluate rollout stability.",
+    "expected_signal": "If the GNN achieves <1% force error on held-out systems and can stably roll out for 100+ steps without diverging, it's promising. If it diverges quickly, add Hamiltonian inductive bias (predict potential energy, take gradient for force). If generalization to different N fails, increase message-passing depth."
+  },
+  {
+    "direction": "Emergent gravity from swarm rules",
+    "rationale": "Showing that Newtonian gravity can emerge from purely local agent rules would be scientifically interesting and pedagogically powerful. It connects to deep questions about whether gravity itself is an emergent phenomenon (entropic gravity, Verlinde's conjecture). The implementation is simple: agent-based model with tunable attraction/repulsion.",
+    "first_step": "Implement a 2D agent-based model with: (1) attractive force proportional to 1/r toward each neighbor within sensing radius R, (2) repulsive force proportional to 1/r^3 for r < epsilon. Tune parameters until radial density profile of a collapsing cloud matches the Newtonian prediction.",
+    "expected_signal": "If the swarm produces stable orbiting structures (binary pairs, small clusters) and the radial density profile follows a power law consistent with gravitational collapse, the emergence is real. If the system either collapses to a point or disperses completely, adjust the attraction/repulsion balance."
+  },
+  {
+    "direction": "Symplectic integrator zoo with energy dashboard",
+    "rationale": "The integrator is the heart of any gravity simulation, and the choice dramatically affects long-term accuracy. Building a collection of integrators (Euler, RK4, leapfrog, Verlet, Yoshida 4th/6th order) with a real-time energy drift dashboard is both educational and practically useful. It makes the invisible (energy conservation) visible.",
+    "first_step": "Implement Euler, leapfrog, and 4th-order Yoshida integrators for a Kepler two-body problem. Plot energy error vs time for each on the same axes. Add angular momentum conservation check. Create an interactive parameter panel for dt and initial eccentricity.",
+    "expected_signal": "Euler should show linear energy drift, leapfrog should show bounded oscillation, Yoshida should show smaller bounded oscillation. If leapfrog shows drift, there's a bug in the kick-drift-kick ordering. The dashboard should make these differences visually obvious within seconds of starting the simulation."
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "id": 4,
+  "symbolic_name": "graph_neural_particle_dynamics",
+  "description": "Graph Neural Networks (GNNs) learn pairwise interaction functions between particles by passing messages along edges of a dynamically constructed interaction graph. Subequivariant GNNs can incorporate broken symmetries (like gravity's preferred direction) while maintaining rotational equivariance in the horizontal plane. This approach can learn gravitational dynamics from data without knowing Newton's law explicitly.",
+  "domains": ["machine learning", "computational physics", "graph theory"],
+  "mathematical_formalization": "Interaction graph G = (V, E) where V = {particles}, E = {(i,j) : |r_i - r_j| < r_cut}. Message passing: m_ij = phi_e(h_i, h_j, r_ij); h_i' = phi_v(h_i, sum_j m_ij). After K rounds, predict acceleration: a_i = phi_out(h_i^K). Loss: L = sum_i |a_i_pred - a_i_true|^2.",
+  "analogical_connections": [
+    "Barnes-Hut tree walk is a handcrafted message-passing scheme",
+    "Social network influence propagation: information flows along edges with learned weights",
+    "Chemical force fields: AMBER is a hand-designed GNN with fixed interaction functions"
+  ],
+  "implementation_hypothesis": "Use PyTorch Geometric. Construct radius graph each step. Encode particle state as node features, relative displacement as edge features. Train on classical integrator trajectories.",
+  "experiment_seed": "Train GNN on 3-body gravity. Test generalization to 5-body and 10-body. Measure rollout error vs message-passing layers.",
+  "folder_plan": {
+    "files": ["gnn_model.py", "dataset.py", "train.py", "rollout.py"],
+    "structure": "src/gnn_gravity/"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": 10,
+  "symbolic_name": "multipole_neural_hybrid",
+  "description": "Hybrid approaches combine classical tree-based force approximation with learned corrections. A neural network can learn the residual error between a low-order multipole approximation and the true force, achieving high accuracy with fewer multipole terms. This bridges the efficiency of FMM/Barnes-Hut with the expressiveness of neural networks.",
+  "domains": [
+    "scientific machine learning",
+    "computational physics",
+    "hybrid algorithms"
+  ],
+  "mathematical_formalization": "F_hybrid(i) = F_multipole(i, p=1) + F_neural(h_i, context_i), where F_multipole uses low-order (monopole) Barnes-Hut approximation and F_neural is a learned correction conditioned on local particle density, velocity dispersion, and tree-level features. Loss: |F_hybrid - F_direct|^2.",
+  "analogical_connections": [
+    "Residual learning (ResNets): learning the correction to an identity mapping is easier than learning the full mapping \u2014 here learning the correction to a physical approximation",
+    "Kalman filtering: combines a physics-based prediction (process model) with a data-driven update (measurement model)",
+    "Hybrid electric vehicles: mechanical engine provides base power, electric motor provides correction/boost \u2014 analogous to classical algorithm + neural correction"
+  ],
+  "implementation_hypothesis": "Run Barnes-Hut with theta=1.0 (fast but inaccurate). Train a small MLP to predict the force residual given: particle position, local density estimate, distance to nearest neighbor, and the Barnes-Hut force estimate itself. Train on pairs (F_BH, F_direct) from a small subset of particles.",
+  "experiment_seed": "Train the hybrid on N=1000 particles. Test on N=5000. Compare: (1) direct summation accuracy, (2) Barnes-Hut theta=0.5 accuracy, (3) hybrid (BH theta=1.0 + neural correction). Measure force error distribution and wall-clock time.",
+  "folder_plan": {
+    "files": [
+      "hybrid_model.py",
+      "train_residual.py",
+      "evaluate_hybrid.py"
+    ],
+    "structure": "src/hybrid/"
+  },
+  "generated_at": "2026-03-03T19:11:32.809463+00:00",
+  "project_folder": "concept_evolve/tree/010_multipole-neural-hybrid"
+}

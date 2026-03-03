@@ -1,0 +1,109 @@
+{
+  "associations": [
+    {
+      "seed": "gravity simulation",
+      "expansions": [
+        "inverse-square law → Coulomb force → electrostatic simulation → molecular dynamics → protein folding",
+        "N-body problem → three-body chaos → Lyapunov exponents → information theory → entropy of gravitational systems",
+        "gravitational collapse → Jeans instability → star formation → nuclear fusion → element synthesis",
+        "tidal forces → Roche limit → binary merger → gravitational waves → LIGO detection → signal processing",
+        "orbital mechanics → Kepler problem → Hamiltonian mechanics → symplectic geometry → topology of phase space",
+        "particle simulation → SPH fluids → astrophysical hydrodynamics → turbulence → Kolmogorov cascade",
+        "galaxy formation → dark matter halos → missing mass → modified gravity (MOND) → philosophy of physics",
+        "space partitioning → R-trees → database indexing → geospatial queries → map rendering"
+      ]
+    },
+    {
+      "seed": "minimal",
+      "expansions": [
+        "minimal viable product → agile development → iterative refinement → evolutionary algorithms",
+        "Occam's razor → model selection → information criteria (AIC, BIC) → minimum description length",
+        "minimal surface → soap films → calculus of variations → geodesics → general relativity",
+        "minimalism in design → constraint-driven creativity → elegance in physics (Lagrangian mechanics)"
+      ]
+    },
+    {
+      "seed": "simulation",
+      "expansions": [
+        "digital twin → predictive maintenance → industrial IoT → edge computing",
+        "Monte Carlo simulation → random sampling → importance sampling → rare event estimation",
+        "simulation hypothesis → Nick Bostrom → computational limits → Bekenstein bound → holographic principle",
+        "agent-based modeling → epidemiology → economic modeling → traffic simulation → urban planning"
+      ]
+    }
+  ],
+  "blind_spots": [
+    {
+      "area": "relativistic effects",
+      "description": "All concepts assume Newtonian gravity. For systems near massive objects (neutron stars, black holes), post-Newtonian corrections or full general relativity are needed. A minimal sim targeting accuracy should at least flag when velocities approach c or gravitational potentials become strong.",
+      "severity": "medium"
+    },
+    {
+      "area": "collisional dynamics and mergers",
+      "description": "We focus on point-particle gravity but ignore what happens when particles collide. Real astrophysical systems involve mergers, mass transfer, and tidal disruption. Game-like sims need collision detection and response.",
+      "severity": "high"
+    },
+    {
+      "area": "softening parameter sensitivity",
+      "description": "The gravitational softening epsilon that prevents singularities at r=0 is typically chosen ad hoc. Its value dramatically affects small-scale dynamics. We lack a principled way to choose epsilon based on the physical system being modeled.",
+      "severity": "high"
+    },
+    {
+      "area": "boundary conditions",
+      "description": "Open (vacuum) boundary conditions are assumed, but periodic boundaries are essential for cosmological simulations. The Ewald summation technique for periodic gravity is entirely absent from our concept set.",
+      "severity": "medium"
+    },
+    {
+      "area": "dimensionality",
+      "description": "Most concepts are presented in 2D for simplicity, but gravity in 2D follows a logarithmic potential (1/r force) rather than the 3D inverse-square law. This changes the qualitative dynamics significantly.",
+      "severity": "low"
+    },
+    {
+      "area": "non-gravitational forces",
+      "description": "Real astrophysical systems include gas pressure, radiation, magnetic fields, and viscosity. A minimal gravity sim that ignores these cannot model star formation, accretion disks, or planetary atmospheres.",
+      "severity": "low"
+    },
+    {
+      "area": "numerical precision and reproducibility",
+      "description": "Floating-point non-associativity means that parallel force summation gives different results depending on reduction order. JANUS integrator addresses this with integer arithmetic, but this is absent from our concept cards.",
+      "severity": "medium"
+    },
+    {
+      "area": "visualization and interaction",
+      "description": "We focus on computation but neglect the user-facing aspects: real-time visualization, interactive parameter tuning, and intuitive controls for exploring the simulation. These are critical for a usable minimal sim.",
+      "severity": "medium"
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "What if particles have negative mass?",
+      "analysis": "Negative mass in Newtonian gravity leads to 'runaway' pairs where the negative mass chases the positive mass, both accelerating indefinitely. The symplectic integrator would still conserve energy, but the system becomes unbounded. This connects to exotic physics (Dirac sea, dark energy as negative pressure) and tests whether our code handles unbounded trajectories gracefully.",
+      "implication": "The energy monitor would detect exponentially growing kinetic energy. Adaptive timestep would shrink dt indefinitely. This stress-tests the simulation boundary conditions."
+    },
+    {
+      "constraint": "What if gravity is 1/r^3 instead of 1/r^2?",
+      "analysis": "Bertrand's theorem says only 1/r^2 and r^2 (harmonic) produce closed orbits. With 1/r^3, orbits precess and eventually become chaotic or escape. The Barnes-Hut theta criterion would need adjustment since the force falls off faster. This tests the generality of our force computation infrastructure.",
+      "implication": "All tree-based approximations still work but convergence properties change. The GNN approach would seamlessly adapt since it learns the force law from data."
+    },
+    {
+      "constraint": "What if the simulation runs backward in time (dt < 0)?",
+      "analysis": "Time-reversible integrators (leapfrog, Verlet) should exactly retrace their steps when dt is negated. Non-symplectic methods (Euler, RK4) will not. This is a powerful validation test: run forward N steps, then backward N steps, and check if you return to the initial state.",
+      "implication": "JANUS integrator achieves exact bit-wise time reversal using integer arithmetic. Standard floating-point implementations achieve reversal only to machine precision. The GNN would likely fail this test entirely."
+    },
+    {
+      "constraint": "What if all particles have exactly equal mass?",
+      "analysis": "Equal-mass systems have enhanced symmetry. The center-of-mass frame simplifies. The N-body problem with equal masses has special periodic solutions (choreographies) where all particles follow the same path with time offsets. The famous figure-eight three-body solution is an example.",
+      "implication": "A minimal gravity sim should be able to find and maintain choreographic solutions. This is an excellent test of integrator quality: only symplectic methods preserve these fragile periodic orbits."
+    },
+    {
+      "constraint": "What if we add a tiny random force (Brownian noise) at each step?",
+      "analysis": "This converts the Hamiltonian system into a Langevin equation. Energy is no longer conserved; instead, the system thermalizes toward a Boltzmann distribution. The energy drift monitor would detect steady energy increase (heating) or stabilization at equilibrium. This bridges to statistical mechanics and Brownian motion.",
+      "implication": "The swarm/boids concepts already implicitly include noise. This anomaly reveals that gravity + noise = statistical mechanics, connecting our simulation to thermodynamics of self-gravitating systems."
+    },
+    {
+      "constraint": "What if the number of particles changes dynamically (particles created/destroyed)?",
+      "analysis": "Astrophysical systems involve mergers (decreasing N), fragmentation (increasing N), and accretion. The Barnes-Hut tree rebuilds every step so it handles variable N naturally. The GNN interaction graph is also rebuilt each step. But the integrator state must be carefully managed when particles appear or disappear.",
+      "implication": "This connects to the LIPAD code (Lagrangian Integrator for Planetary Accretion) which uses tracer particles to represent populations. Variable N also connects to particle-in-cell methods in plasma physics."
+    }
+  ]
+}

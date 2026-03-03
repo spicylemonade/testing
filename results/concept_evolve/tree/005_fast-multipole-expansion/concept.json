@@ -1,0 +1,29 @@
+{
+  "id": 5,
+  "symbolic_name": "fast_multipole_expansion",
+  "description": "The Fast Multipole Method (FMM) achieves O(N) complexity for N-body force evaluation by using multipole expansions to represent far-field contributions and local expansions for near-field. Unlike Barnes-Hut which evaluates each particle independently, FMM translates multipole expansions between tree levels (M2M, M2L, L2L operators), amortizing the cost of far-field computation.",
+  "domains": [
+    "computational mathematics",
+    "electrostatics",
+    "astrophysics",
+    "molecular dynamics"
+  ],
+  "mathematical_formalization": "Multipole expansion of potential at distance R from cluster center: Phi(r) = sum_{l=0}^{p} sum_{m=-l}^{l} M_lm * Y_lm(theta, phi) / r^{l+1}. Translation operators: M2M (shift multipole center), M2L (convert multipole to local expansion), L2L (shift local center). Total cost: O(p^2 * N) for expansion order p.",
+  "analogical_connections": [
+    "Fourier transforms decompose signals into frequency components; FMM decomposes force fields into multipole components at different spatial scales",
+    "Wavelet multiresolution analysis: both FMM and wavelets represent fields at multiple scales with local basis functions",
+    "DNS caching hierarchy: root servers aggregate information (M2M), distribute to local resolvers (M2L, L2L)"
+  ],
+  "implementation_hypothesis": "For a minimal gravity sim, implement a 2D FMM with monopole + dipole terms (p=1). Build the tree, compute M2M upward, M2L at each level, L2L downward, then evaluate local expansions at leaf nodes. Compare with Barnes-Hut for same accuracy.",
+  "experiment_seed": "Benchmark FMM vs Barnes-Hut vs direct summation for N={10^3, 10^4, 10^5, 10^6}. Measure wall-clock time and relative force error. FMM should show O(N) scaling vs O(N log N) for Barnes-Hut.",
+  "folder_plan": {
+    "files": [
+      "fmm_tree.py",
+      "multipole_ops.py",
+      "benchmark_fmm.py"
+    ],
+    "structure": "src/fmm/"
+  },
+  "generated_at": "2026-03-03T19:11:32.804351+00:00",
+  "project_folder": "concept_evolve/tree/005_fast-multipole-expansion"
+}

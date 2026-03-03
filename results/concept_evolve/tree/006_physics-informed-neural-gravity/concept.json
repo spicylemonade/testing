@@ -1,0 +1,29 @@
+{
+  "id": 6,
+  "symbolic_name": "physics_informed_neural_gravity",
+  "description": "Physics-Informed Neural Networks (PINNs) embed physical laws (e.g., Poisson's equation for gravity: nabla^2 Phi = 4*pi*G*rho) directly into the loss function. The PINN gravity model learns to represent the gravitational potential as a neural network, with the physics constraint ensuring physically consistent outputs even with sparse training data. Generation III PINNs address failure modes in earlier versions.",
+  "domains": [
+    "scientific machine learning",
+    "geodesy",
+    "astrodynamics",
+    "potential theory"
+  ],
+  "mathematical_formalization": "Network: Phi_theta(x,y,z) approximates gravitational potential. Loss: L = L_data + lambda * L_physics, where L_data = |Phi_theta(x_i) - Phi_true(x_i)|^2 and L_physics = |nabla^2 Phi_theta - 4*pi*G*rho|^2 evaluated at collocation points. The gradient nabla Phi_theta is computed via automatic differentiation.",
+  "analogical_connections": [
+    "Regularization in statistics: the physics loss acts as a structured regularizer that encodes domain knowledge, analogous to L1/L2 penalties encoding sparsity/smoothness",
+    "Constraint satisfaction in optimization: embedding Poisson's equation is like adding equality constraints to an objective function",
+    "Transfer learning: the physics constraint transfers knowledge from centuries of gravitational theory into the network"
+  ],
+  "implementation_hypothesis": "Train a small MLP (3 layers, 64 units) to represent the potential of a 2D mass distribution. Use autograd to compute Laplacian for the physics loss. Train on scattered position-acceleration pairs from a classical simulation. At inference, evaluate potential at any point by forward pass.",
+  "experiment_seed": "Compare PINN gravity model vs spherical harmonics vs direct summation for representing the field of a non-spherical mass (e.g., asteroid-like shape). Measure: accuracy at training points, generalization to unseen points, inference speed.",
+  "folder_plan": {
+    "files": [
+      "pinn_gravity.py",
+      "train_pinn.py",
+      "evaluate.py"
+    ],
+    "structure": "src/pinn/"
+  },
+  "generated_at": "2026-03-03T19:11:32.805638+00:00",
+  "project_folder": "concept_evolve/tree/006_physics-informed-neural-gravity"
+}

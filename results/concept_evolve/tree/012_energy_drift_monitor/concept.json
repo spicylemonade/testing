@@ -1,0 +1,18 @@
+{
+  "id": 12,
+  "symbolic_name": "energy_drift_monitor",
+  "description": "Long-term energy conservation is the gold standard for validating gravitational integrators. An energy drift monitor tracks the relative energy error |E(t) - E(0)| / |E(0)| over time, distinguishing between bounded oscillation (symplectic integrators), linear drift (non-symplectic), and random walk (optimal per Brouwer's law). This serves as both a diagnostic and a stopping criterion.",
+  "domains": ["numerical validation", "dynamical systems", "software engineering", "observational diagnostics"],
+  "mathematical_formalization": "E(t) = T(t) + V(t) = (1/2) sum_i m_i |v_i|^2 + sum_{i<j} -G*m_i*m_j/|r_i - r_j|. Relative error: delta_E(t) = |E(t) - E(0)| / |E(0)|. For symplectic: delta_E ~ O(dt^p) bounded. For Brouwer's law: delta_E ~ sqrt(t) * O(dt^p).",
+  "analogical_connections": [
+    "Financial auditing: tracking cumulative errors in accounts",
+    "Signal integrity in communications: bit error rate monitoring",
+    "Climate model validation: tracking global energy balance"
+  ],
+  "implementation_hypothesis": "Compute E_kinetic and E_potential each step. Store time series of delta_E. Fit log-log slope to classify drift type.",
+  "experiment_seed": "Run same initial conditions with Euler, RK4, leapfrog, Verlet for 10^6 steps. Plot delta_E(t) on log-log axes.",
+  "folder_plan": {
+    "files": ["energy_monitor.py", "angular_momentum.py", "drift_classifier.py"],
+    "structure": "src/diagnostics/"
+  }
+}

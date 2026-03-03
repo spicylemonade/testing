@@ -1,0 +1,18 @@
+{
+  "id": 10,
+  "symbolic_name": "multipole_neural_hybrid",
+  "description": "Hybrid approaches combine classical tree-based force approximation with learned corrections. A neural network can learn the residual error between a low-order multipole approximation and the true force, achieving high accuracy with fewer multipole terms. This bridges the efficiency of FMM/Barnes-Hut with the expressiveness of neural networks.",
+  "domains": ["scientific machine learning", "computational physics", "hybrid algorithms"],
+  "mathematical_formalization": "F_hybrid(i) = F_multipole(i, p=1) + F_neural(h_i, context_i), where F_multipole uses low-order Barnes-Hut approximation and F_neural is a learned correction. Loss: |F_hybrid - F_direct|^2.",
+  "analogical_connections": [
+    "Residual learning (ResNets): learning correction to identity is easier than learning the full mapping",
+    "Kalman filtering: physics-based prediction + data-driven update",
+    "Hybrid vehicles: mechanical engine provides base power, electric motor provides correction"
+  ],
+  "implementation_hypothesis": "Run Barnes-Hut with theta=1.0 (fast but inaccurate). Train MLP to predict force residual given particle position, local density, and the Barnes-Hut estimate itself.",
+  "experiment_seed": "Train hybrid on N=1000 particles. Test on N=5000. Compare direct summation, Barnes-Hut theta=0.5, and hybrid accuracy and speed.",
+  "folder_plan": {
+    "files": ["hybrid_model.py", "train_residual.py", "evaluate_hybrid.py"],
+    "structure": "src/hybrid/"
+  }
+}

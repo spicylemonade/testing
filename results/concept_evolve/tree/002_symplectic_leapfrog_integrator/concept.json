@@ -1,0 +1,18 @@
+{
+  "id": 2,
+  "symbolic_name": "symplectic_leapfrog_integrator",
+  "description": "The leapfrog (Störmer-Verlet) integrator is a second-order symplectic method that preserves the Hamiltonian structure of gravitational systems. It interleaves position and velocity updates at half-step offsets, ensuring energy oscillates around the true value rather than drifting monotonically. This makes it the workhorse of long-duration N-body simulations.",
+  "domains": ["numerical methods", "Hamiltonian mechanics", "astrophysical simulation"],
+  "mathematical_formalization": "v(t + dt/2) = v(t) + a(t) * dt/2; x(t + dt) = x(t) + v(t + dt/2) * dt; a(t + dt) = F(x(t + dt)) / m; v(t + dt) = v(t + dt/2) + a(t + dt) * dt/2. The method is symplectic: it preserves the 2-form dp ∧ dq, meaning phase-space volume is conserved exactly.",
+  "analogical_connections": [
+    "Staggered grid methods in fluid dynamics (MAC scheme) offset pressure and velocity in the same half-step pattern",
+    "Alternating Schwarz methods in domain decomposition alternate between subdomains like leapfrog alternates x and v",
+    "Musical rhythm: the swing of jazz places beats between grid lines, analogous to the half-step offset"
+  ],
+  "implementation_hypothesis": "Implement kick-drift-kick (KDK) variant: half-kick velocities, full-drift positions, recompute forces, half-kick velocities again. This requires only one force evaluation per step.",
+  "experiment_seed": "Integrate a two-body Kepler orbit for 10^6 steps with leapfrog vs RK4 vs Euler. Compare energy drift over time.",
+  "folder_plan": {
+    "files": ["leapfrog.py", "rk4.py", "euler.py", "compare_integrators.py"],
+    "structure": "src/integrators/"
+  }
+}

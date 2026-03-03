@@ -1,0 +1,218 @@
+[
+  {
+    "id": 1,
+    "symbolic_name": "barnes_hut_spatial_hierarchy",
+    "description": "The Barnes-Hut algorithm recursively subdivides space into a quadtree (2D) or octree (3D), grouping distant particles into single center-of-mass nodes. This reduces gravitational force calculation from O(N^2) to O(N log N) by approximating far-field interactions. The key parameter theta controls the accuracy-speed tradeoff: smaller theta means more accurate but slower computation.",
+    "domains": ["computational physics", "spatial data structures", "astrophysics"],
+    "mathematical_formalization": "For each particle i, traverse the tree. For node with center-of-mass C, total mass M, and size s at distance d: if s/d < theta, approximate F_i += G * m_i * M * (C - r_i) / |C - r_i|^3. Otherwise, recurse into children. Complexity: O(N log N) vs O(N^2) for direct summation.",
+    "analogical_connections": [
+      "KD-trees in machine learning for nearest-neighbor search use identical spatial subdivision logic",
+      "DNS hierarchical caching groups requests by domain proximity, analogous to grouping particles by spatial proximity",
+      "Image compression quadtrees recursively subdivide pixel regions by similarity, paralleling mass aggregation"
+    ],
+    "implementation_hypothesis": "Build an octree each timestep: insert particles, compute center-of-mass bottom-up, then walk tree per particle with theta=0.5. For a minimal sim, a 2D quadtree suffices. Each node stores: bounds, total_mass, center_of_mass, children[4]. Force walk is a recursive descent with the s/d < theta pruning criterion.",
+    "experiment_seed": "Compare wall-clock time and energy drift between direct O(N^2) summation and Barnes-Hut at theta={0.3, 0.5, 0.8, 1.0} for N={1000, 10000, 100000}. Plot accuracy (energy conservation) vs speedup.",
+    "folder_plan": {
+      "files": ["quadtree.py", "force_walk.py", "benchmark.py"],
+      "structure": "src/barnes_hut/"
+    }
+  },
+  {
+    "id": 2,
+    "symbolic_name": "symplectic_leapfrog_integrator",
+    "description": "The leapfrog (Störmer-Verlet) integrator is a second-order symplectic method that preserves the Hamiltonian structure of gravitational systems. It interleaves position and velocity updates at half-step offsets, ensuring energy oscillates around the true value rather than drifting monotonically. This makes it the workhorse of long-duration N-body simulations.",
+    "domains": ["numerical methods", "Hamiltonian mechanics", "astrophysical simulation"],
+    "mathematical_formalization": "v(t + dt/2) = v(t) + a(t) * dt/2; x(t + dt) = x(t) + v(t + dt/2) * dt; a(t + dt) = F(x(t + dt)) / m; v(t + dt) = v(t + dt/2) + a(t + dt) * dt/2. The method is symplectic: it preserves the 2-form dp ∧ dq, meaning phase-space volume is conserved exactly.",
+    "analogical_connections": [
+      "Staggered grid methods in fluid dynamics (MAC scheme) offset pressure and velocity in the same half-step pattern",
+      "Alternating Schwarz methods in domain decomposition alternate between subdomains like leapfrog alternates x and v",
+      "Musical rhythm: the 'swing' of jazz places beats between grid lines, analogous to the half-step offset"
+    ],
+    "implementation_hypothesis": "Implement kick-drift-kick (KDK) variant: half-kick velocities, full-drift positions, recompute forces, half-kick velocities again. This requires only one force evaluation per step. Store positions and velocities as float64 arrays for N particles in 2D/3D.",
+    "experiment_seed": "Integrate a two-body Kepler orbit for 10^6 steps with leapfrog vs RK4 vs Euler. Compare energy drift over time. Leapfrog should show bounded oscillation; Euler and RK4 should show secular drift.",
+    "folder_plan": {
+      "files": ["leapfrog.py", "rk4.py", "euler.py", "compare_integrators.py"],
+      "structure": "src/integrators/"
+    }
+  },
+  {
+    "id": 3,
+    "symbolic_name": "boids_emergent_flocking",
+    "description": "Craig Reynolds' Boids model (1986) generates complex flocking behavior from three simple local rules: separation (avoid crowding), alignment (match neighbor velocity), and cohesion (steer toward center of neighbors). This emergent behavior from local rules mirrors how gravitational clustering produces large-scale structure from pairwise interactions.",
+    "domains": ["swarm intelligence", "artificial life", "computer graphics", "behavioral ecology"],
+    "mathematical_formalization": "For boid i with neighbors N_i (within radius r): F_sep = -sum_{j in N_i} (r_j - r_i)/|r_j - r_i|^2; F_align = (1/|N_i|) sum_{j in N_i} v_j - v_i; F_cohesion = (1/|N_i|) sum_{j in N_i} r_j - r_i. Total steering: F_i = w_s * F_sep + w_a * F_align + w_c * F_cohesion.",
+    "analogical_connections": [
+      "Gravitational N-body: cohesion rule is literally a gravity-like 1/r attraction; separation is a short-range repulsive force (like Pauli exclusion or Lennard-Jones repulsion)",
+      "Market dynamics: traders align with neighbors (herding), separate from crowded positions (contrarian), cohere around consensus (mean reversion)",
+      "Neural populations: excitatory/inhibitory balance mirrors attraction/repulsion in both boids and gravity"
+    ],
+    "implementation_hypothesis": "Implement boids with a gravity-like attraction replacing cohesion: F_attract = G * m / r^2 toward center of mass of neighbors. Use a spatial hash or KD-tree for neighbor lookup. Add a softening parameter epsilon to prevent singularity at r=0, exactly as in gravitational softening.",
+    "experiment_seed": "Replace boid cohesion with inverse-square gravity. Sweep G and softening epsilon. Measure: (1) cluster formation time, (2) number of stable clusters, (3) velocity dispersion. Compare with pure boids and pure gravity.",
+    "folder_plan": {
+      "files": ["boids.py", "gravity_boids_hybrid.py", "spatial_hash.py"],
+      "structure": "src/boids/"
+    }
+  },
+  {
+    "id": 4,
+    "symbolic_name": "graph_neural_particle_dynamics",
+    "description": "Graph Neural Networks (GNNs) learn pairwise interaction functions between particles by passing messages along edges of a dynamically constructed interaction graph. Subequivariant GNNs can incorporate broken symmetries (like gravity's preferred direction) while maintaining rotational equivariance in the horizontal plane. This approach can learn gravitational dynamics from data without knowing Newton's law explicitly.",
+    "domains": ["machine learning", "computational physics", "graph theory"],
+    "mathematical_formalization": "Interaction graph G = (V, E) where V = {particles}, E = {(i,j) : |r_i - r_j| < r_cut}. Message passing: m_ij = phi_e(h_i, h_j, r_ij); h_i' = phi_v(h_i, sum_j m_ij). After K rounds, predict acceleration: a_i = phi_out(h_i^K). Loss: L = sum_i |a_i_pred - a_i_true|^2.",
+    "analogical_connections": [
+      "Barnes-Hut tree walk is a handcrafted message-passing scheme where messages are aggregated at different tree levels",
+      "Social network influence propagation: information flows along edges with learned weights, like forces flow between particles",
+      "Chemical force fields: molecular dynamics force fields like AMBER are effectively hand-designed GNNs with fixed interaction functions"
+    ],
+    "implementation_hypothesis": "Use PyTorch Geometric. Construct radius graph each step. Encode particle state (pos, vel, mass) as node features, relative displacement as edge features. Train on trajectories from a classical integrator. At inference, unroll the learned dynamics autoregressively.",
+    "experiment_seed": "Train GNN on 3-body gravity trajectories. Test generalization to 5-body and 10-body systems. Measure rollout error vs number of message-passing layers. Compare with a classical leapfrog integrator on the same initial conditions.",
+    "folder_plan": {
+      "files": ["gnn_model.py", "dataset.py", "train.py", "rollout.py"],
+      "structure": "src/gnn_gravity/"
+    }
+  },
+  {
+    "id": 5,
+    "symbolic_name": "fast_multipole_expansion",
+    "description": "The Fast Multipole Method (FMM) achieves O(N) complexity for N-body force evaluation by using multipole expansions to represent far-field contributions and local expansions for near-field. Unlike Barnes-Hut which evaluates each particle independently, FMM translates multipole expansions between tree levels (M2M, M2L, L2L operators), amortizing the cost of far-field computation.",
+    "domains": ["computational mathematics", "electrostatics", "astrophysics", "molecular dynamics"],
+    "mathematical_formalization": "Multipole expansion of potential at distance R from cluster center: Phi(r) = sum_{l=0}^{p} sum_{m=-l}^{l} M_lm * Y_lm(theta, phi) / r^{l+1}. Translation operators: M2M (shift multipole center), M2L (convert multipole to local expansion), L2L (shift local center). Total cost: O(p^2 * N) for expansion order p.",
+    "analogical_connections": [
+      "Fourier transforms decompose signals into frequency components; FMM decomposes force fields into multipole components at different spatial scales",
+      "Wavelet multiresolution analysis: both FMM and wavelets represent fields at multiple scales with local basis functions",
+      "DNS caching hierarchy: root servers aggregate information (M2M), distribute to local resolvers (M2L, L2L)"
+    ],
+    "implementation_hypothesis": "For a minimal gravity sim, implement a 2D FMM with monopole + dipole terms (p=1). Build the tree, compute M2M upward, M2L at each level, L2L downward, then evaluate local expansions at leaf nodes. Compare with Barnes-Hut for same accuracy.",
+    "experiment_seed": "Benchmark FMM vs Barnes-Hut vs direct summation for N={10^3, 10^4, 10^5, 10^6}. Measure wall-clock time and relative force error. FMM should show O(N) scaling vs O(N log N) for Barnes-Hut.",
+    "folder_plan": {
+      "files": ["fmm_tree.py", "multipole_ops.py", "benchmark_fmm.py"],
+      "structure": "src/fmm/"
+    }
+  },
+  {
+    "id": 6,
+    "symbolic_name": "physics_informed_neural_gravity",
+    "description": "Physics-Informed Neural Networks (PINNs) embed physical laws (e.g., Poisson's equation for gravity: nabla^2 Phi = 4*pi*G*rho) directly into the loss function. The PINN gravity model learns to represent the gravitational potential as a neural network, with the physics constraint ensuring physically consistent outputs even with sparse training data. Generation III PINNs address failure modes in earlier versions.",
+    "domains": ["scientific machine learning", "geodesy", "astrodynamics", "potential theory"],
+    "mathematical_formalization": "Network: Phi_theta(x,y,z) approximates gravitational potential. Loss: L = L_data + lambda * L_physics, where L_data = |Phi_theta(x_i) - Phi_true(x_i)|^2 and L_physics = |nabla^2 Phi_theta - 4*pi*G*rho|^2 evaluated at collocation points. The gradient nabla Phi_theta is computed via automatic differentiation.",
+    "analogical_connections": [
+      "Regularization in statistics: the physics loss acts as a structured regularizer that encodes domain knowledge, analogous to L1/L2 penalties encoding sparsity/smoothness",
+      "Constraint satisfaction in optimization: embedding Poisson's equation is like adding equality constraints to an objective function",
+      "Transfer learning: the physics constraint transfers knowledge from centuries of gravitational theory into the network"
+    ],
+    "implementation_hypothesis": "Train a small MLP (3 layers, 64 units) to represent the potential of a 2D mass distribution. Use autograd to compute Laplacian for the physics loss. Train on scattered position-acceleration pairs from a classical simulation. At inference, evaluate potential at any point by forward pass.",
+    "experiment_seed": "Compare PINN gravity model vs spherical harmonics vs direct summation for representing the field of a non-spherical mass (e.g., asteroid-like shape). Measure: accuracy at training points, generalization to unseen points, inference speed.",
+    "folder_plan": {
+      "files": ["pinn_gravity.py", "train_pinn.py", "evaluate.py"],
+      "structure": "src/pinn/"
+    }
+  },
+  {
+    "id": 7,
+    "symbolic_name": "gpu_compute_shader_parallelism",
+    "description": "GPU compute shaders enable massively parallel particle simulation by assigning each particle to a GPU thread. For gravity, the naive O(N^2) all-pairs computation maps naturally to GPU parallelism: each thread computes the force on one particle from all others. WebGPU brings this capability to the browser, enabling 1M+ particle simulations at 60 FPS.",
+    "domains": ["GPU computing", "computer graphics", "parallel algorithms", "web technology"],
+    "mathematical_formalization": "Parallel force kernel: for thread_id k in [0, N): a_k = sum_{j != k} G * m_j * (r_j - r_k) / (|r_j - r_k|^2 + eps^2)^{3/2}. Tiled optimization: load TILE_SIZE particles into shared memory, compute partial sums, reduce. Total work: O(N^2) but wall-clock: O(N^2 / P) where P = number of GPU cores.",
+    "analogical_connections": [
+      "MapReduce: each mapper computes partial forces (map), reducers aggregate (reduce) — identical to tiled GPU force computation",
+      "Neural network inference: matrix multiplication in transformers has the same all-pairs structure as direct N-body force computation",
+      "Epidemiological modeling: contact tracing across a population has the same O(N^2) pairwise structure"
+    ],
+    "implementation_hypothesis": "Write a WebGPU compute shader in WGSL: each workgroup loads a tile of particles into shared memory, each thread accumulates force from that tile, then moves to next tile. Use double-buffered storage buffers for positions and velocities. Render particles as point sprites.",
+    "experiment_seed": "Measure FPS vs N for GPU all-pairs vs CPU all-pairs vs GPU Barnes-Hut. Find the crossover point where Barnes-Hut on GPU beats brute-force on GPU (expected around N=50K-100K depending on GPU).",
+    "folder_plan": {
+      "files": ["gravity.wgsl", "renderer.wgsl", "main.js", "index.html"],
+      "structure": "src/webgpu/"
+    }
+  },
+  {
+    "id": 8,
+    "symbolic_name": "verlet_position_integration",
+    "description": "Störmer-Verlet integration computes the next position from the current and previous positions without explicitly storing velocities: x(t+dt) = 2*x(t) - x(t-dt) + a(t)*dt^2. This is algebraically equivalent to the velocity Verlet / leapfrog method but eliminates velocity storage. It is second-order, symplectic, and time-reversible — ideal for a minimal gravity simulation.",
+    "domains": ["numerical integration", "molecular dynamics", "game physics", "computational chemistry"],
+    "mathematical_formalization": "Position Verlet: x_{n+1} = 2*x_n - x_{n-1} + a_n * dt^2. Velocity recovery: v_n = (x_{n+1} - x_{n-1}) / (2*dt). Error: O(dt^4) per step in position, O(dt^2) globally. Symplecticity: the map (x_{n-1}, x_n) -> (x_n, x_{n+1}) preserves the symplectic 2-form.",
+    "analogical_connections": [
+      "Finite differences: the Verlet formula is literally the central difference approximation of the second derivative, connecting numerical PDE methods with ODE integration",
+      "Signal processing: the three-point stencil used in Verlet is identical to a second-order FIR filter",
+      "Cloth simulation in games: Verlet integration is the standard method for cloth and soft-body physics, showing how gravity sim techniques transfer to graphics"
+    ],
+    "implementation_hypothesis": "Store two position arrays: pos_current and pos_previous. Each step: compute acceleration from gravity, apply Verlet update, swap arrays. For velocity (needed for kinetic energy), use the central difference formula. Total memory: 2 * N * dims floats for positions.",
+    "experiment_seed": "Implement position-Verlet and velocity-Verlet side by side. Verify they produce identical trajectories (up to floating-point). Measure memory usage and cache performance for N=10^6 particles.",
+    "folder_plan": {
+      "files": ["position_verlet.py", "velocity_verlet.py", "benchmark_memory.py"],
+      "structure": "src/verlet/"
+    }
+  },
+  {
+    "id": 9,
+    "symbolic_name": "adaptive_timestep_control",
+    "description": "Close gravitational encounters require smaller timesteps for accuracy, while distant particles can use larger steps. Adaptive timestepping adjusts dt based on local dynamics — either globally (shortest timescale dominates) or per-particle (block timesteps). The IAS15 integrator achieves machine-precision accuracy by adaptively choosing timesteps using a 15th-order Gauss-Radau quadrature.",
+    "domains": ["numerical analysis", "astrophysics", "control theory", "adaptive algorithms"],
+    "mathematical_formalization": "Timestep criterion: dt_i = eta * min(|v_i / a_i|, sqrt(|r_ij_min| / |a_i|)). Block timestepping: round dt_i down to nearest power of 2 fraction of the global step. Particles on shorter timesteps are integrated more frequently. Error estimator for adaptive control: err = |x_full - x_half| / tol, where x_half uses two half-steps.",
+    "analogical_connections": [
+      "Adaptive mesh refinement in CFD: refine spatial resolution where gradients are steep, just as adaptive timesteps refine temporal resolution where forces change rapidly",
+      "TCP congestion control: adjusts packet rate based on network conditions, analogous to adjusting dt based on dynamical conditions",
+      "Attention mechanisms in transformers: allocate more compute to important tokens, like allocating more timesteps to close encounters"
+    ],
+    "implementation_hypothesis": "Start with global adaptive: estimate error by comparing full-step and two half-step results. If error > tolerance, halve dt; if error < tolerance/10, double dt. For a minimal sim, this is sufficient. Advanced: implement power-of-2 block timesteps for per-particle adaptation.",
+    "experiment_seed": "Simulate a highly eccentric binary orbit (e=0.99). Compare fixed timestep (tuned to perihelion) vs global adaptive vs block timestep. Measure: total force evaluations, energy conservation, wall-clock time. Adaptive should use 10-100x fewer evaluations.",
+    "folder_plan": {
+      "files": ["adaptive_global.py", "block_timestep.py", "eccentric_orbit_test.py"],
+      "structure": "src/adaptive/"
+    }
+  },
+  {
+    "id": 10,
+    "symbolic_name": "multipole_neural_hybrid",
+    "description": "Hybrid approaches combine classical tree-based force approximation with learned corrections. A neural network can learn the residual error between a low-order multipole approximation and the true force, achieving high accuracy with fewer multipole terms. This bridges the efficiency of FMM/Barnes-Hut with the expressiveness of neural networks.",
+    "domains": ["scientific machine learning", "computational physics", "hybrid algorithms"],
+    "mathematical_formalization": "F_hybrid(i) = F_multipole(i, p=1) + F_neural(h_i, context_i), where F_multipole uses low-order (monopole) Barnes-Hut approximation and F_neural is a learned correction conditioned on local particle density, velocity dispersion, and tree-level features. Loss: |F_hybrid - F_direct|^2.",
+    "analogical_connections": [
+      "Residual learning (ResNets): learning the correction to an identity mapping is easier than learning the full mapping — here learning the correction to a physical approximation",
+      "Kalman filtering: combines a physics-based prediction (process model) with a data-driven update (measurement model)",
+      "Hybrid electric vehicles: mechanical engine provides base power, electric motor provides correction/boost — analogous to classical algorithm + neural correction"
+    ],
+    "implementation_hypothesis": "Run Barnes-Hut with theta=1.0 (fast but inaccurate). Train a small MLP to predict the force residual given: particle position, local density estimate, distance to nearest neighbor, and the Barnes-Hut force estimate itself. Train on pairs (F_BH, F_direct) from a small subset of particles.",
+    "experiment_seed": "Train the hybrid on N=1000 particles. Test on N=5000. Compare: (1) direct summation accuracy, (2) Barnes-Hut theta=0.5 accuracy, (3) hybrid (BH theta=1.0 + neural correction). Measure force error distribution and wall-clock time.",
+    "folder_plan": {
+      "files": ["hybrid_model.py", "train_residual.py", "evaluate_hybrid.py"],
+      "structure": "src/hybrid/"
+    }
+  },
+  {
+    "id": 11,
+    "symbolic_name": "swarm_gravitational_cohesion",
+    "description": "Reframing gravity as an emergent swarm behavior: each particle follows simple local rules (attract neighbors, avoid collisions) that produce large-scale gravitational clustering. This inverts the usual perspective — instead of deriving behavior from a global force law, we ask: what minimal local rules produce gravity-like dynamics? This connects to artificial life and self-organization theory.",
+    "domains": ["artificial life", "self-organization", "emergent dynamics", "swarm robotics"],
+    "mathematical_formalization": "Each agent i follows: a_i = sum_{j in N_i} [w_attract * (r_j - r_i)/|r_j - r_i| - w_repulse * (r_j - r_i)/|r_j - r_i|^3] + noise. With w_attract ~ 1/r and w_repulse ~ 1/r^3, the net effective force is ~1/r^2 at intermediate distances, recovering Newtonian gravity as an emergent phenomenon.",
+    "analogical_connections": [
+      "Chemotaxis in bacteria: cells follow local chemical gradients, producing macroscopic aggregation patterns similar to gravitational collapse",
+      "Ant colony optimization: local pheromone rules produce global shortest-path solutions, like local gravity rules produce global orbital dynamics",
+      "Market gravity models in economics: retail locations attract customers with a force proportional to size and inversely proportional to distance squared"
+    ],
+    "implementation_hypothesis": "Implement agent-based model where each agent senses neighbors within radius R and applies attraction + short-range repulsion. No global force law. Use spatial hashing for neighbor queries. Tune w_attract and w_repulse to produce stable orbiting clusters. Compare emergent dynamics with Newtonian N-body.",
+    "experiment_seed": "Initialize 1000 agents randomly. Run swarm rules and Newtonian gravity from same initial conditions. Compute: radial density profile, velocity dispersion profile, and power spectrum of density fluctuations. Quantify how closely swarm dynamics matches gravity.",
+    "folder_plan": {
+      "files": ["swarm_gravity.py", "newtonian_reference.py", "compare_dynamics.py"],
+      "structure": "src/swarm/"
+    }
+  },
+  {
+    "id": 12,
+    "symbolic_name": "energy_drift_monitor",
+    "description": "Long-term energy conservation is the gold standard for validating gravitational integrators. An energy drift monitor tracks the relative energy error |E(t) - E(0)| / |E(0)| over time, distinguishing between bounded oscillation (symplectic integrators), linear drift (non-symplectic), and random walk (optimal per Brouwer's law). This serves as both a diagnostic and a stopping criterion.",
+    "domains": ["numerical validation", "dynamical systems", "software engineering", "observational diagnostics"],
+    "mathematical_formalization": "E(t) = T(t) + V(t) = (1/2) sum_i m_i |v_i|^2 + sum_{i<j} -G*m_i*m_j/|r_i - r_j|. Relative error: delta_E(t) = |E(t) - E(0)| / |E(0)|. For symplectic integrators: delta_E ~ O(dt^p) bounded. For Brouwer's law (optimal): delta_E ~ sqrt(t) * O(dt^p). Monitor also: angular momentum L = sum_i m_i * (r_i x v_i).",
+    "analogical_connections": [
+      "Financial auditing: tracking cumulative errors in accounts is analogous to tracking cumulative energy drift",
+      "Signal integrity in communications: bit error rate monitoring is the energy drift equivalent for digital systems",
+      "Climate model validation: tracking global energy balance over centuries mirrors tracking gravitational energy over megayears"
+    ],
+    "implementation_hypothesis": "Compute E_kinetic and E_potential at each step. Store time series of delta_E. Fit log-log slope to distinguish drift types: slope=0 (bounded), slope=0.5 (Brouwer random walk), slope=1 (linear drift). Raise warning if drift exceeds threshold. Also monitor angular momentum vector components.",
+    "experiment_seed": "Run same initial conditions with Euler, RK4, leapfrog, and Verlet for 10^6 steps. Plot delta_E(t) for each on log-log axes. Verify: Euler shows linear drift, RK4 shows slow drift, leapfrog/Verlet show bounded oscillation.",
+    "folder_plan": {
+      "files": ["energy_monitor.py", "angular_momentum.py", "drift_classifier.py"],
+      "structure": "src/diagnostics/"
+    }
+  }
+]

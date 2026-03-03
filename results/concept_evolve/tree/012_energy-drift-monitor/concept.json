@@ -1,0 +1,29 @@
+{
+  "id": 12,
+  "symbolic_name": "energy_drift_monitor",
+  "description": "Long-term energy conservation is the gold standard for validating gravitational integrators. An energy drift monitor tracks the relative energy error |E(t) - E(0)| / |E(0)| over time, distinguishing between bounded oscillation (symplectic integrators), linear drift (non-symplectic), and random walk (optimal per Brouwer's law). This serves as both a diagnostic and a stopping criterion.",
+  "domains": [
+    "numerical validation",
+    "dynamical systems",
+    "software engineering",
+    "observational diagnostics"
+  ],
+  "mathematical_formalization": "E(t) = T(t) + V(t) = (1/2) sum_i m_i |v_i|^2 + sum_{i<j} -G*m_i*m_j/|r_i - r_j|. Relative error: delta_E(t) = |E(t) - E(0)| / |E(0)|. For symplectic integrators: delta_E ~ O(dt^p) bounded. For Brouwer's law (optimal): delta_E ~ sqrt(t) * O(dt^p). Monitor also: angular momentum L = sum_i m_i * (r_i x v_i).",
+  "analogical_connections": [
+    "Financial auditing: tracking cumulative errors in accounts is analogous to tracking cumulative energy drift",
+    "Signal integrity in communications: bit error rate monitoring is the energy drift equivalent for digital systems",
+    "Climate model validation: tracking global energy balance over centuries mirrors tracking gravitational energy over megayears"
+  ],
+  "implementation_hypothesis": "Compute E_kinetic and E_potential at each step. Store time series of delta_E. Fit log-log slope to distinguish drift types: slope=0 (bounded), slope=0.5 (Brouwer random walk), slope=1 (linear drift). Raise warning if drift exceeds threshold. Also monitor angular momentum vector components.",
+  "experiment_seed": "Run same initial conditions with Euler, RK4, leapfrog, and Verlet for 10^6 steps. Plot delta_E(t) for each on log-log axes. Verify: Euler shows linear drift, RK4 shows slow drift, leapfrog/Verlet show bounded oscillation.",
+  "folder_plan": {
+    "files": [
+      "energy_monitor.py",
+      "angular_momentum.py",
+      "drift_classifier.py"
+    ],
+    "structure": "src/diagnostics/"
+  },
+  "generated_at": "2026-03-03T19:11:32.811464+00:00",
+  "project_folder": "concept_evolve/tree/012_energy-drift-monitor"
+}

@@ -1,0 +1,130 @@
+{
+  "nodes": [
+    {"id": "barnes_hut_spatial_hierarchy", "domain": "computational physics"},
+    {"id": "symplectic_leapfrog_integrator", "domain": "numerical methods"},
+    {"id": "boids_emergent_flocking", "domain": "swarm intelligence"},
+    {"id": "graph_neural_particle_dynamics", "domain": "machine learning"},
+    {"id": "fast_multipole_expansion", "domain": "computational mathematics"},
+    {"id": "physics_informed_neural_gravity", "domain": "scientific machine learning"},
+    {"id": "gpu_compute_shader_parallelism", "domain": "GPU computing"},
+    {"id": "verlet_position_integration", "domain": "numerical integration"},
+    {"id": "adaptive_timestep_control", "domain": "numerical analysis"},
+    {"id": "multipole_neural_hybrid", "domain": "hybrid algorithms"},
+    {"id": "swarm_gravitational_cohesion", "domain": "artificial life"},
+    {"id": "energy_drift_monitor", "domain": "numerical validation"}
+  ],
+  "edges": [
+    {
+      "source": "barnes_hut_spatial_hierarchy",
+      "target": "fast_multipole_expansion",
+      "relation": "Both use hierarchical spatial decomposition; FMM extends Barnes-Hut with translation operators to achieve O(N) vs O(N log N)"
+    },
+    {
+      "source": "barnes_hut_spatial_hierarchy",
+      "target": "graph_neural_particle_dynamics",
+      "relation": "Barnes-Hut tree walk is a handcrafted multi-scale message-passing scheme; GNNs learn the message functions from data"
+    },
+    {
+      "source": "barnes_hut_spatial_hierarchy",
+      "target": "gpu_compute_shader_parallelism",
+      "relation": "Tree traversal is inherently serial and GPU-hostile; recent work (RT-BarnesHut) reformulates it for ray-tracing cores"
+    },
+    {
+      "source": "symplectic_leapfrog_integrator",
+      "target": "verlet_position_integration",
+      "relation": "Algebraically equivalent: leapfrog and Verlet are the same method with different variable orderings"
+    },
+    {
+      "source": "symplectic_leapfrog_integrator",
+      "target": "energy_drift_monitor",
+      "relation": "Symplecticity guarantees bounded energy error, which the monitor detects as oscillation rather than drift"
+    },
+    {
+      "source": "symplectic_leapfrog_integrator",
+      "target": "adaptive_timestep_control",
+      "relation": "Naive adaptive stepping breaks symplecticity; preserving it requires time-transformation techniques (as in SQQ-PTQ)"
+    },
+    {
+      "source": "boids_emergent_flocking",
+      "target": "swarm_gravitational_cohesion",
+      "relation": "Boids cohesion rule is a linear attraction; replacing it with 1/r^2 attraction produces gravity-like emergent dynamics"
+    },
+    {
+      "source": "boids_emergent_flocking",
+      "target": "graph_neural_particle_dynamics",
+      "relation": "Both define local neighborhoods and compute interactions from neighbor information; GNNs learn the interaction rules that boids prescribe"
+    },
+    {
+      "source": "graph_neural_particle_dynamics",
+      "target": "physics_informed_neural_gravity",
+      "relation": "GNNs learn dynamics from trajectory data; PINNs embed the governing PDE directly into the loss — complementary approaches to neural physics"
+    },
+    {
+      "source": "graph_neural_particle_dynamics",
+      "target": "multipole_neural_hybrid",
+      "relation": "GNN learns full interaction from scratch; hybrid uses classical multipole as a backbone and learns only the residual correction"
+    },
+    {
+      "source": "fast_multipole_expansion",
+      "target": "multipole_neural_hybrid",
+      "relation": "FMM provides the classical force approximation that the neural hybrid corrects; the hybrid reduces FMM order requirements"
+    },
+    {
+      "source": "physics_informed_neural_gravity",
+      "target": "multipole_neural_hybrid",
+      "relation": "Both combine physics knowledge with neural networks; PINN embeds the PDE, hybrid embeds the algorithmic approximation"
+    },
+    {
+      "source": "gpu_compute_shader_parallelism",
+      "target": "verlet_position_integration",
+      "relation": "Verlet's simple update rule maps perfectly to GPU parallelism: each thread updates one particle with no data dependencies between particles"
+    },
+    {
+      "source": "adaptive_timestep_control",
+      "target": "energy_drift_monitor",
+      "relation": "Energy drift measurements can drive adaptive timestep selection: increase dt when drift is small, decrease when large"
+    },
+    {
+      "source": "swarm_gravitational_cohesion",
+      "target": "physics_informed_neural_gravity",
+      "relation": "If gravity emerges from local rules, a PINN could discover those local rules from observed gravitational dynamics"
+    },
+    {
+      "source": "gpu_compute_shader_parallelism",
+      "target": "graph_neural_particle_dynamics",
+      "relation": "GNN inference on particle graphs maps to GPU scatter-gather operations; both exploit parallelism over particles"
+    },
+    {
+      "source": "verlet_position_integration",
+      "target": "energy_drift_monitor",
+      "relation": "Verlet's symplecticity means the energy monitor should detect bounded oscillation, providing a validation check"
+    }
+  ],
+  "bridge_chains": [
+    {
+      "name": "classical_to_learned_physics",
+      "path": ["barnes_hut_spatial_hierarchy", "fast_multipole_expansion", "multipole_neural_hybrid", "graph_neural_particle_dynamics"],
+      "description": "Progression from handcrafted hierarchical approximation through hybrid classical-neural methods to fully learned particle dynamics. Each step trades explicit physics knowledge for learned flexibility."
+    },
+    {
+      "name": "biology_to_astrophysics",
+      "path": ["boids_emergent_flocking", "swarm_gravitational_cohesion", "physics_informed_neural_gravity", "symplectic_leapfrog_integrator"],
+      "description": "Bridge from behavioral ecology (boids) through emergent gravity from local rules, neural discovery of governing equations, to symplectic integration of those equations. Shows how gravity simulation connects to collective animal behavior."
+    },
+    {
+      "name": "hardware_aware_simulation",
+      "path": ["gpu_compute_shader_parallelism", "verlet_position_integration", "energy_drift_monitor", "adaptive_timestep_control"],
+      "description": "From GPU hardware exploitation through minimal-memory integration to runtime quality monitoring and adaptive control. The full stack of building a performant, validated gravity sim."
+    },
+    {
+      "name": "accuracy_hierarchy",
+      "path": ["energy_drift_monitor", "symplectic_leapfrog_integrator", "adaptive_timestep_control", "fast_multipole_expansion", "multipole_neural_hybrid"],
+      "description": "Chain of increasing sophistication in accuracy control: from monitoring energy drift, through symplectic guarantees, adaptive timestepping, O(N) force evaluation, to neural residual correction."
+    },
+    {
+      "name": "emergence_to_formalism",
+      "path": ["swarm_gravitational_cohesion", "boids_emergent_flocking", "graph_neural_particle_dynamics", "physics_informed_neural_gravity"],
+      "description": "From bottom-up emergence (local swarm rules producing gravity-like behavior) to top-down formalism (PINNs embedding Poisson's equation). Crosses from artificial life through ML to mathematical physics."
+    }
+  ]
+}

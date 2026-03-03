@@ -1,0 +1,30 @@
+{
+  "id": 7,
+  "symbolic_name": "gpu_compute_shader_parallelism",
+  "description": "GPU compute shaders enable massively parallel particle simulation by assigning each particle to a GPU thread. For gravity, the naive O(N^2) all-pairs computation maps naturally to GPU parallelism: each thread computes the force on one particle from all others. WebGPU brings this capability to the browser, enabling 1M+ particle simulations at 60 FPS.",
+  "domains": [
+    "GPU computing",
+    "computer graphics",
+    "parallel algorithms",
+    "web technology"
+  ],
+  "mathematical_formalization": "Parallel force kernel: for thread_id k in [0, N): a_k = sum_{j != k} G * m_j * (r_j - r_k) / (|r_j - r_k|^2 + eps^2)^{3/2}. Tiled optimization: load TILE_SIZE particles into shared memory, compute partial sums, reduce. Total work: O(N^2) but wall-clock: O(N^2 / P) where P = number of GPU cores.",
+  "analogical_connections": [
+    "MapReduce: each mapper computes partial forces (map), reducers aggregate (reduce) \u2014 identical to tiled GPU force computation",
+    "Neural network inference: matrix multiplication in transformers has the same all-pairs structure as direct N-body force computation",
+    "Epidemiological modeling: contact tracing across a population has the same O(N^2) pairwise structure"
+  ],
+  "implementation_hypothesis": "Write a WebGPU compute shader in WGSL: each workgroup loads a tile of particles into shared memory, each thread accumulates force from that tile, then moves to next tile. Use double-buffered storage buffers for positions and velocities. Render particles as point sprites.",
+  "experiment_seed": "Measure FPS vs N for GPU all-pairs vs CPU all-pairs vs GPU Barnes-Hut. Find the crossover point where Barnes-Hut on GPU beats brute-force on GPU (expected around N=50K-100K depending on GPU).",
+  "folder_plan": {
+    "files": [
+      "gravity.wgsl",
+      "renderer.wgsl",
+      "main.js",
+      "index.html"
+    ],
+    "structure": "src/webgpu/"
+  },
+  "generated_at": "2026-03-03T19:11:32.806621+00:00",
+  "project_folder": "concept_evolve/tree/007_gpu-compute-shader-parallelism"
+}

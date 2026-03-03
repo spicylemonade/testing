@@ -1,0 +1,18 @@
+{
+  "id": 8,
+  "symbolic_name": "verlet_position_integration",
+  "description": "Störmer-Verlet integration computes the next position from the current and previous positions without explicitly storing velocities: x(t+dt) = 2*x(t) - x(t-dt) + a(t)*dt^2. This is algebraically equivalent to the velocity Verlet / leapfrog method but eliminates velocity storage. It is second-order, symplectic, and time-reversible — ideal for a minimal gravity simulation.",
+  "domains": ["numerical integration", "molecular dynamics", "game physics", "computational chemistry"],
+  "mathematical_formalization": "Position Verlet: x_{n+1} = 2*x_n - x_{n-1} + a_n * dt^2. Velocity recovery: v_n = (x_{n+1} - x_{n-1}) / (2*dt). Error: O(dt^4) per step in position, O(dt^2) globally. Symplecticity: the map (x_{n-1}, x_n) -> (x_n, x_{n+1}) preserves the symplectic 2-form.",
+  "analogical_connections": [
+    "Finite differences: Verlet is the central difference approximation of the second derivative",
+    "Signal processing: the three-point stencil is a second-order FIR filter",
+    "Cloth simulation in games: Verlet integration is the standard for soft-body physics"
+  ],
+  "implementation_hypothesis": "Store two position arrays: pos_current and pos_previous. Each step: compute acceleration from gravity, apply Verlet update, swap arrays.",
+  "experiment_seed": "Implement position-Verlet and velocity-Verlet side by side. Verify identical trajectories. Measure memory usage and cache performance for N=10^6.",
+  "folder_plan": {
+    "files": ["position_verlet.py", "velocity_verlet.py", "benchmark_memory.py"],
+    "structure": "src/verlet/"
+  }
+}

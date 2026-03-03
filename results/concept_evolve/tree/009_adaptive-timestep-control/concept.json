@@ -1,0 +1,29 @@
+{
+  "id": 9,
+  "symbolic_name": "adaptive_timestep_control",
+  "description": "Close gravitational encounters require smaller timesteps for accuracy, while distant particles can use larger steps. Adaptive timestepping adjusts dt based on local dynamics \u2014 either globally (shortest timescale dominates) or per-particle (block timesteps). The IAS15 integrator achieves machine-precision accuracy by adaptively choosing timesteps using a 15th-order Gauss-Radau quadrature.",
+  "domains": [
+    "numerical analysis",
+    "astrophysics",
+    "control theory",
+    "adaptive algorithms"
+  ],
+  "mathematical_formalization": "Timestep criterion: dt_i = eta * min(|v_i / a_i|, sqrt(|r_ij_min| / |a_i|)). Block timestepping: round dt_i down to nearest power of 2 fraction of the global step. Particles on shorter timesteps are integrated more frequently. Error estimator for adaptive control: err = |x_full - x_half| / tol, where x_half uses two half-steps.",
+  "analogical_connections": [
+    "Adaptive mesh refinement in CFD: refine spatial resolution where gradients are steep, just as adaptive timesteps refine temporal resolution where forces change rapidly",
+    "TCP congestion control: adjusts packet rate based on network conditions, analogous to adjusting dt based on dynamical conditions",
+    "Attention mechanisms in transformers: allocate more compute to important tokens, like allocating more timesteps to close encounters"
+  ],
+  "implementation_hypothesis": "Start with global adaptive: estimate error by comparing full-step and two half-step results. If error > tolerance, halve dt; if error < tolerance/10, double dt. For a minimal sim, this is sufficient. Advanced: implement power-of-2 block timesteps for per-particle adaptation.",
+  "experiment_seed": "Simulate a highly eccentric binary orbit (e=0.99). Compare fixed timestep (tuned to perihelion) vs global adaptive vs block timestep. Measure: total force evaluations, energy conservation, wall-clock time. Adaptive should use 10-100x fewer evaluations.",
+  "folder_plan": {
+    "files": [
+      "adaptive_global.py",
+      "block_timestep.py",
+      "eccentric_orbit_test.py"
+    ],
+    "structure": "src/adaptive/"
+  },
+  "generated_at": "2026-03-03T19:11:32.808452+00:00",
+  "project_folder": "concept_evolve/tree/009_adaptive-timestep-control"
+}

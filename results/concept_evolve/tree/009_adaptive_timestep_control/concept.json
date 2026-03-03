@@ -1,0 +1,18 @@
+{
+  "id": 9,
+  "symbolic_name": "adaptive_timestep_control",
+  "description": "Close gravitational encounters require smaller timesteps for accuracy, while distant particles can use larger steps. Adaptive timestepping adjusts dt based on local dynamics — either globally (shortest timescale dominates) or per-particle (block timesteps). The IAS15 integrator achieves machine-precision accuracy by adaptively choosing timesteps using a 15th-order Gauss-Radau quadrature.",
+  "domains": ["numerical analysis", "astrophysics", "control theory", "adaptive algorithms"],
+  "mathematical_formalization": "Timestep criterion: dt_i = eta * min(|v_i / a_i|, sqrt(|r_ij_min| / |a_i|)). Block timestepping: round dt_i down to nearest power of 2 fraction of the global step. Error estimator: err = |x_full - x_half| / tol.",
+  "analogical_connections": [
+    "Adaptive mesh refinement in CFD: refine spatial resolution where gradients are steep",
+    "TCP congestion control: adjusts packet rate based on network conditions",
+    "Attention mechanisms in transformers: allocate more compute to important tokens"
+  ],
+  "implementation_hypothesis": "Start with global adaptive: estimate error by comparing full-step and two half-step results. If error > tolerance, halve dt; if error < tolerance/10, double dt.",
+  "experiment_seed": "Simulate highly eccentric binary orbit (e=0.99). Compare fixed timestep vs global adaptive vs block timestep.",
+  "folder_plan": {
+    "files": ["adaptive_global.py", "block_timestep.py", "eccentric_orbit_test.py"],
+    "structure": "src/adaptive/"
+  }
+}

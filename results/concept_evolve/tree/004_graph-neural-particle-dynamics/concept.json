@@ -1,0 +1,29 @@
+{
+  "id": 4,
+  "symbolic_name": "graph_neural_particle_dynamics",
+  "description": "Graph Neural Networks (GNNs) learn pairwise interaction functions between particles by passing messages along edges of a dynamically constructed interaction graph. Subequivariant GNNs can incorporate broken symmetries (like gravity's preferred direction) while maintaining rotational equivariance in the horizontal plane. This approach can learn gravitational dynamics from data without knowing Newton's law explicitly.",
+  "domains": [
+    "machine learning",
+    "computational physics",
+    "graph theory"
+  ],
+  "mathematical_formalization": "Interaction graph G = (V, E) where V = {particles}, E = {(i,j) : |r_i - r_j| < r_cut}. Message passing: m_ij = phi_e(h_i, h_j, r_ij); h_i' = phi_v(h_i, sum_j m_ij). After K rounds, predict acceleration: a_i = phi_out(h_i^K). Loss: L = sum_i |a_i_pred - a_i_true|^2.",
+  "analogical_connections": [
+    "Barnes-Hut tree walk is a handcrafted message-passing scheme where messages are aggregated at different tree levels",
+    "Social network influence propagation: information flows along edges with learned weights, like forces flow between particles",
+    "Chemical force fields: molecular dynamics force fields like AMBER are effectively hand-designed GNNs with fixed interaction functions"
+  ],
+  "implementation_hypothesis": "Use PyTorch Geometric. Construct radius graph each step. Encode particle state (pos, vel, mass) as node features, relative displacement as edge features. Train on trajectories from a classical integrator. At inference, unroll the learned dynamics autoregressively.",
+  "experiment_seed": "Train GNN on 3-body gravity trajectories. Test generalization to 5-body and 10-body systems. Measure rollout error vs number of message-passing layers. Compare with a classical leapfrog integrator on the same initial conditions.",
+  "folder_plan": {
+    "files": [
+      "gnn_model.py",
+      "dataset.py",
+      "train.py",
+      "rollout.py"
+    ],
+    "structure": "src/gnn_gravity/"
+  },
+  "generated_at": "2026-03-03T19:11:32.803171+00:00",
+  "project_folder": "concept_evolve/tree/004_graph-neural-particle-dynamics"
+}
