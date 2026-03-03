@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-03T00:00:00.000Z",
+  "updated_at": "2026-03-03T08:24:41.166301+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-03T00:00:00.000Z",
+      "completed_at": "2026-03-03T08:24:41.166283+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and tooling capabilities",
+          "acceptance_criteria": "Produce results/phase1/repo_analysis.md documenting: (1) all modules in .archivara/ and .opencode/ with purpose descriptions, (2) available sub-agent types (orchestrator, researcher, writer, reviewer, concept_worker), (3) ConceptEvolve commands (evolve, probe, reframe, walk) and their filesystem outputs, (4) Semantic Scholar API capabilities. File must be at least 200 lines.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct web-based literature review on branchless and binary GCD algorithms",
+          "acceptance_criteria": "Using websearch and webfetch, survey at least 15 distinct sources covering: (1) Stein's binary GCD algorithm, (2) Lemire/Corderoy CTZ-based optimizations, (3) Algorithmica.org binary GCD with dependency-chain analysis, (4) Bernstein-Yang constant-time GCD (safegcd), (5) Pornin's optimized binary GCD for modular inversion, (6) GMP's binary/Lehmer/HGCD algorithms, (7) Iliev et al. improvements to Stein's algorithm. Create results/phase1/literature_survey.md with structured summaries of each source. At least 10 relevant papers cited in sources.bib.",
+          "status": "pending",
+          "notes": "Key sources: Lemire blog 2013, en.algorithmica.org/hpc/algorithms/gcd/, Bernstein-Yang TCHES 2019, Pornin eprint 2020/972, Moller 2007 subquadratic GCD, GMP manual chapters 15.3.1-15.3.3",
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and maintain sources.bib with BibTeX entries for all consulted references",
+          "acceptance_criteria": "sources.bib in repo root contains valid BibTeX entries for at least 10 papers/sources including: Stein 1967, Knuth TAOCP vol 2 sec 4.5.2, Bernstein-Yang 2019 safegcd, Pornin 2020 optimized binary GCD, Moller 2007 subquadratic GCD, Lemire 2013 fastest GCD blog, Algorithmica binary GCD, Jebelean double-digit Lehmer, van der Hoeven 2022 half-GCD optimization, and at least 1 SIMD/vectorization reference. Each entry must have title, author, year, and URL/DOI where applicable.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Analyze CPU microarchitecture constraints for branchless GCD using subagent delegation",
+          "acceptance_criteria": "Delegate to concept-tree-explorer subagent to research: (1) latency of CTZ/TZCNT, CMOV, BSR/LZCNT, and PDEP/PEXT on Intel Skylake/Alder Lake and AMD Zen3/Zen4, (2) branch misprediction penalty costs (14-20 cycles), (3) dependency chain critical paths in the Algorithmica binary GCD loop (sub->ctz->shift = 4-cycle chain vs sub->abs->ctz->shift = 6-cycle chain), (4) SIMD lane width constraints for 64-bit and 128/256-bit integers. Output results/phase1/microarch_analysis.md with instruction latency tables and critical path diagrams. Must reference Agner Fog's instruction tables.",
+          "status": "pending",
+          "notes": "Subagent delegation item for Phase 1",
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Run ConceptEvolve to generate cross-domain concept cards for branchless GCD",
+          "acceptance_criteria": "Execute concept_evolve.py evolve with topic 'branchless binary GCD algorithm optimization for 64-256 bit integers eliminating branch mispredictions using CMOV CTZ SIMD'. Verify results/concept_evolve/concept_cards.json contains at least 8 concept cards, results/concept_evolve/semantic_bridge.json has nodes and edges, and results/concept_evolve/tree/ contains at least 8 numbered concept folders each with concept.json and README.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Implement baseline GCD algorithms in C/C++ with benchmarking harness",
+          "acceptance_criteria": "Create src/baselines/ directory containing: (1) euclid_gcd.h \u2014 standard Euclidean algorithm with modulo, (2) stein_gcd.h \u2014 textbook Stein's binary GCD with branches, (3) binary_gcd_ctz.h \u2014 Lemire/Corderoy CTZ-optimized binary GCD (the current state-of-the-art), (4) std_gcd.h \u2014 wrapper for std::gcd, (5) bench_gcd.cpp \u2014 Google Benchmark or custom harness testing all implementations with uniform random 64-bit inputs. All implementations must pass correctness tests against std::gcd for at least 10 million random pairs.",
+          "status": "pending",
+          "notes": "Depends on item_002 for understanding the algorithms",
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement the Algorithmica optimized binary GCD as reference best-known implementation",
+          "acceptance_criteria": "Create src/baselines/algorithmica_gcd.h implementing the exact optimized loop from en.algorithmica.org: (1) pre-strip common factors of 2 using CTZ, (2) main loop with diff=b-a, az=ctz(diff), b=min(a,b), a=abs(diff) ordering that shortens the dependency chain to 3 instructions. Benchmark shows this is within 5% of the Lemire/Corderoy variant. Add to bench_gcd.cpp and verify correctness.",
+          "status": "pending",
+          "notes": "This is the primary target to beat \u2014 runs at ~91ns per pair on Skylake per Algorithmica",
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Collect detailed performance metrics with perf counters for all baselines",
+          "acceptance_criteria": "Run perf stat on each baseline algorithm collecting: (1) cycles per GCD call, (2) branch-misses per call, (3) instructions per call, (4) IPC (instructions per cycle), (5) L1-dcache-load-misses. Results stored in results/phase2/baseline_perf.json with at least 3 input distributions: small (1-2000), medium (1-2^32), large (1-2^64). Document the branch misprediction rate for Stein's textbook algorithm vs. the CTZ-optimized version. The CTZ version should show <2% branch misprediction rate on the loop-exit branch.",
+          "status": "pending",
+          "notes": "Depends on items 006, 007",
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement 128-bit and 256-bit integer GCD baselines using __int128 and manual limb arithmetic",
+          "acceptance_criteria": "Create src/baselines/wide_gcd.h containing: (1) gcd_128 using __int128 with CTZ-based binary GCD, (2) gcd_256 using a 4\u00d764-bit limb representation with multi-word shift and subtract. Both must pass correctness against a reference implementation (e.g., Python's math.gcd via subprocess or hardcoded test vectors). Benchmark results for 128-bit and 256-bit stored in results/phase2/wide_baseline_perf.json.",
+          "status": "pending",
+          "notes": "256-bit is the upper bound of the target range",
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Generate assembly analysis of baseline inner loops using subagent delegation",
+          "acceptance_criteria": "Delegate to literature-graph-miner subagent to: (1) compile each baseline with -O3 -march=native -S and extract the inner loop assembly, (2) annotate each instruction with latency and throughput from Agner Fog tables, (3) draw data-dependency DAGs for the critical path of each inner loop, (4) identify the theoretical minimum cycles per iteration for each. Results in results/phase2/assembly_analysis.md with annotated assembly listings. Must identify that the Algorithmica variant achieves a 3-cycle critical path (sub, tzcnt, cmov) vs Stein's textbook ~8+ cycles.",
+          "status": "pending",
+          "notes": "Subagent delegation item for Phase 2. Depends on items 006, 007.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Explore concept tree for branchless GCD approaches and identify top-3 research directions",
+          "acceptance_criteria": "Walk the concept tree from item_005 using concept_evolve.py walk. Analyze results/concept_evolve/tree/walk_paths.json and steering_directions.json. Select top-3 concept paths ranked by novelty and feasibility. Create results/concept_evolve/tree/selected_directions.md documenting each direction with: (1) concept chain, (2) hypothesized mechanism, (3) expected cycle count, (4) implementation sketch. At least one direction must involve SIMD, one must involve a fully branchless scalar approach, and one must be a hybrid or novel mathematical reformulation.",
+          "status": "pending",
+          "notes": "Depends on item_005 concept evolution results",
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Implement fully branchless scalar GCD using CMOV chains and arithmetic identity tricks",
+          "acceptance_criteria": "Create src/novel/branchless_scalar_gcd.h implementing a GCD inner loop with ZERO conditional branches (jne/je/jcc) \u2014 only CMOV, arithmetic, and TZCNT. Key technique: replace if(a<b) swap with CMOV-based conditional swap; replace loop exit test with a fixed iteration count of 64 (for 64-bit) since binary GCD converges in at most 2*bitwidth steps. The generated assembly (with -O3 -march=native) must contain no jcc instructions in the hot loop except the loop counter decrement. Correctness verified against std::gcd for 10M random pairs.",
+          "status": "pending",
+          "notes": "Core novel approach 1: eliminate ALL branches from the inner loop. Fixed iteration count trades extra no-op iterations for zero branch mispredictions.",
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement SIMD-parallel batch GCD using AVX2/AVX-512 for processing multiple pairs simultaneously",
+          "acceptance_criteria": "Create src/novel/simd_batch_gcd.h implementing: (1) a batch GCD function that computes gcd for 4 pairs of 64-bit integers simultaneously using AVX2 (or 8 pairs with AVX-512), (2) use _mm256_sub_epi64, CMOV-equivalent via _mm256_blendv_epi8, and software TZCNT per lane. The batch throughput (pairs per second) must exceed 2x the scalar baseline when amortized. Include fallback scalar path. Correctness verified on 1M random pairs per lane.",
+          "status": "pending",
+          "notes": "Core novel approach 2: horizontal SIMD parallelism. Challenge is TZCNT has no SIMD equivalent \u2014 must use De Bruijn or bit-manipulation tricks.",
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement hybrid Lehmer-binary approach for 128-bit and 256-bit GCD",
+          "acceptance_criteria": "Create src/novel/hybrid_lehmer_binary.h implementing: (1) use top 64 bits to compute a 2x2 Lehmer matrix via branchless binary GCD, (2) apply the matrix to reduce the full-width operands by ~64 bits per outer step, (3) fall back to branchless scalar GCD when operands fit in 64 bits. For 256-bit inputs, must complete in fewer cycles than the naive multi-limb binary GCD from item_009. Correctness verified against hardcoded test vectors and Python reference.",
+          "status": "pending",
+          "notes": "Core novel approach 3: combines Lehmer's top-bits insight with branchless binary GCD as the inner engine. Inspired by GMP's hgcd2 but using branchless internals.",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Investigate lookup-table acceleration for final iterations using subagent concept probe",
+          "acceptance_criteria": "Delegate to concept-tree-explorer subagent to probe: 'lookup table acceleration for small-value GCD to short-circuit final iterations of binary GCD'. The probe must: (1) evaluate precomputed GCD tables for values < 2^8, 2^12, 2^16, (2) analyze cache footprint vs. iteration savings tradeoff, (3) estimate cycle savings from early termination. Write results/concept_evolve/tree/probe_lookup_table/probe_result.json with steering_directions. If the probe shows >10% speedup potential, create src/novel/lut_gcd.h implementing the table-assisted approach.",
+          "status": "pending",
+          "notes": "Subagent delegation item for Phase 3",
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement Bernstein-Yang inspired constant-time GCD adapted for performance (not just constant-time security)",
+          "acceptance_criteria": "Create src/novel/divsteps_gcd.h implementing a performance-optimized variant of the Bernstein-Yang 'divsteps' algorithm: (1) use the transition matrix approach with batched divsteps (processing k steps before applying the matrix), (2) target performance not constant-time security \u2014 allow data-dependent optimizations like early exit, (3) benchmark against the branchless scalar GCD from item_012 to determine if the divsteps mathematical structure offers fewer total operations. Document the comparison in results/phase3/divsteps_analysis.md citing Bernstein-Yang 2019.",
+          "status": "pending",
+          "notes": "Adapting the safegcd structure for performance rather than side-channel resistance",
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Explore predicated execution and speculative approaches via concept reframing",
+          "acceptance_criteria": "Run concept_evolve.py reframe on 'eliminating branch mispredictions in iterative greatest common divisor computation on modern superscalar processors'. Verify results/concept_evolve/reframings.json contains at least 6 domain reframings. Create results/phase3/reframing_analysis.md analyzing each reframing for GCD applicability. At least 2 reframings must suggest concrete code changes to try in Phase 4.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Comprehensive benchmark comparison of all implementations across input distributions",
+          "acceptance_criteria": "Create src/bench/full_benchmark.cpp testing ALL implementations (baselines from Phase 2 + novel from Phase 3) across 6 input distributions: (1) uniform small [1, 2^16], (2) uniform medium [1, 2^32], (3) uniform large [1, 2^64], (4) Fibonacci-like (worst-case for Euclidean), (5) one-large-one-small (a >> b), (6) nearly-equal (|a-b| < 2^10). Each test must run at least 10^7 iterations. Results in results/phase4/benchmark_results.json with ns/op, ops/sec, and speedup-vs-std::gcd columns.",
+          "status": "pending",
+          "notes": "Depends on all Phase 2 and Phase 3 implementation items",
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Measure and compare branch misprediction rates across all implementations",
+          "acceptance_criteria": "Use perf stat -e branch-misses,branches to measure branch misprediction rate for each implementation on uniform-large inputs. Results in results/phase4/branch_analysis.json. The fully branchless implementation (item_012) must show 0 branch misses in the inner loop (excluding the fixed loop counter). Document the branch misprediction rate per GCD call for each approach. Compare against the literature values from Algorithmica (which reports ~50% misprediction on the loop exit branch of standard binary GCD).",
+          "status": "pending",
+          "notes": "Key metric \u2014 the whole thesis is about eliminating branch mispredictions",
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Evaluate 128-bit and 256-bit performance of novel approaches vs baselines",
+          "acceptance_criteria": "Extend full_benchmark.cpp to test 128-bit and 256-bit variants. The hybrid Lehmer-binary approach (item_014) must demonstrate measurable speedup over the naive multi-limb binary GCD (item_009) for 256-bit inputs. Results in results/phase4/wide_benchmark_results.json. Include comparison against GMP's mpz_gcd for the same input sizes if GMP is available.",
+          "status": "pending",
+          "notes": "Depends on items 009, 014",
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Statistical significance testing and confidence intervals for all benchmark results",
+          "acceptance_criteria": "For each (implementation, distribution) pair, run the benchmark at least 30 times. Compute mean, std deviation, 95% confidence intervals, and p-values (paired t-test) for the claim 'novel approach X is faster than best baseline'. Results in results/phase4/statistical_analysis.json. At least one novel approach must show statistically significant (p < 0.05) speedup over the Algorithmica/Lemire CTZ-optimized binary GCD on at least 2 of the 6 input distributions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Cross-platform evaluation and sensitivity analysis using subagent delegation",
+          "acceptance_criteria": "Delegate to literature-graph-miner subagent to: (1) research CMOV latency differences across Intel vs AMD microarchitectures, (2) investigate ARM CSEL equivalents for the branchless approach, (3) analyze compiler sensitivity (GCC vs Clang flag differences affecting CMOV vs branch decisions). Produce results/phase4/cross_platform_analysis.md documenting: expected performance on Zen4, Apple M-series, and Graviton3. Must cite Agner Fog tables and compiler documentation. Include a table of expected cycle counts per GCD call on at least 3 microarchitectures.",
+          "status": "pending",
+          "notes": "Subagent delegation item for Phase 4",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Write comprehensive results analysis comparing novel approaches to prior work",
+          "acceptance_criteria": "Create results/phase5/results_analysis.md containing: (1) summary table of all implementations ranked by ns/op for each input distribution, (2) analysis of WHY the best novel approach outperforms (or fails to outperform) baselines \u2014 rooted in microarchitectural reasoning, (3) comparison to performance numbers reported in prior work (Lemire blog, Algorithmica, Bernstein-Yang), (4) identification of which input distributions favor which approaches and why, (5) discussion of the fundamental tradeoff between fixed-iteration branchless loops and variable-iteration branching loops. Must reference at least 5 entries from sources.bib. At least 1500 words.",
+          "status": "pending",
+          "notes": "Depends on all Phase 4 items",
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Generate publication-quality figures for key results",
+          "acceptance_criteria": "Create at least 4 figures in figures/ directory: (1) bar chart of ns/op for all implementations on uniform-large distribution, (2) heatmap of speedup-vs-std::gcd across all implementations and distributions, (3) scatter plot of branch misprediction rate vs cycles/call showing the Pareto frontier, (4) dependency chain DAG comparison between best baseline and best novel approach. Figures must be in SVG or PNG format, suitable for a research paper. Include the generating script in src/figures/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Synthesize findings into a structured research report with concept evolution summary using subagent delegation",
+          "acceptance_criteria": "Delegate to concept-tree-explorer subagent to synthesize: (1) which concept cards from item_005 led to successful implementations, (2) which steering directions proved fruitful vs dead ends, (3) the full concept evolution narrative from problem statement to results. Then create results/phase5/research_report.md (at least 3000 words) with sections: Abstract, Introduction (citing the branchless GCD problem from TASK_orchestrator.md), Related Work (citing sources.bib), Method (describing each novel approach), Results (referencing Phase 4 benchmarks and figures), Discussion (microarchitectural analysis), Conclusion (clear statement of whether the objective was achieved). Must state whether a strictly-faster-than-std::gcd implementation was found and under which conditions.",
+          "status": "pending",
+          "notes": "Subagent delegation item for Phase 5. This is the capstone deliverable.",
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
