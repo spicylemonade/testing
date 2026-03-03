@@ -50,11 +50,12 @@
 
 {\Huge\bfseries \sysname: Achieving 2--5$\times$ Faster DEFLATE\\[0.3em]
 Decompression Through Cross-Domain\\[0.3em]
-Optimization Synthesis\par}
+Optimization Synthesis\\[0.3em]
+{\large --- A Design Study ---}\par}
 
 \vspace{2cm}
 
-{\Large A Systematic Study of Microarchitectural, Algorithmic, and\\
+{\Large A Systematic Design Study of Microarchitectural, Algorithmic, and\\
 Parallelism-Based Approaches to High-Performance Inflate\par}
 
 \vspace{2.5cm}
@@ -80,10 +81,12 @@ LZ77, parallel decompression, branchless algorithms, cache optimization
 \begin{abstract}
 DEFLATE is the most widely deployed lossless compression algorithm in computing history, serving as the engine behind ZIP files, gzip archives, PNG images, HTTP content-encoding, Git object storage, and PDF streams.
 Despite four decades of optimization, the reference implementation (zlib) achieves only 300--500~\MBs{} decompression throughput on modern hardware---a fraction of available memory bandwidth.
-We present \sysname{}, a systematic study and architectural design for DEFLATE decompression that synthesizes techniques from twelve cross-domain concepts spanning computer architecture, information theory, parallel computing, and compiler optimization.
+We present the \emph{design} of \sysname{}, a systematic architectural study for DEFLATE decompression that synthesizes techniques from twelve cross-domain concepts spanning computer architecture, information theory, parallel computing, and compiler optimization.
+No implementation of \sysname{} currently exists; all results in this paper are \emph{projections} derived from published microarchitectural measurements and bottleneck arithmetic, not from measured benchmarks.
 Our three-layer approach combines (1)~microarchitectural optimization of the single-threaded hot path through multi-stream interleaved Huffman decoding, branchless literal/match dispatch, and SIMD-accelerated bit extraction; (2)~speculative parallel block decompression using probabilistic sync-point discovery and finite-state machine enumeration; and (3)~memory hierarchy optimization through cache-aligned decode tables, software prefetching for LZ77 back-references, and decode-execute decoupling buffers.
-Through detailed bottleneck decomposition grounded in published microarchitectural measurements, we project single-thread throughput of 1.5--2.0~\GBs{} (3--5$\times$ over zlib, 1.5--1.7$\times$ over libdeflate) and multi-thread throughput exceeding 5~\GBs{} with four cores (10--14$\times$ over zlib).
-We validate our projections against published benchmark data from eight existing implementations and provide a comprehensive ablation analysis showing that multi-stream Huffman decoding contributes the largest single-technique improvement (15--20\%), while parallel block decompression provides the dominant multiplier for achieving the 5$\times$ target.
+Through detailed bottleneck decomposition grounded in published microarchitectural measurements, we project single-thread throughput of 1.5--2.0~\GBs{} (3.7--4.8$\times$ over zlib, 1.4--1.7$\times$ over libdeflate) and multi-thread throughput exceeding 5~\GBs{} with four cores (10--14$\times$ over zlib).
+We validate our projections against published benchmark data from eight existing implementations and provide a projected ablation analysis showing that multi-stream Huffman decoding contributes the largest single-technique improvement ($\sim$15\%), while parallel block decompression provides the dominant multiplier for achieving the 5$\times$ target.
+We include a sensitivity analysis bounding the impact of key assumptions on projected throughput.
 All techniques maintain full compatibility with the existing DEFLATE bitstream format (RFC~1951) and require no changes to compressed data.
 \end{abstract}
 
@@ -106,9 +109,10 @@ Several high-performance implementations have narrowed this gap.
 libdeflate~\citep{libdeflate2024} achieves 1.0--1.1~\GBs{} through branchless dispatch and optimized table lookup.
 Intel ISA-L~\citep{isal2024} reaches 1.0--2.2~\GBs{} with hand-tuned x86 assembly.
 The parallel decompressor rapidgzip~\citep{knespel2023} achieves up to 10~\GBs{} by exploiting inter-block parallelism across many cores.
-Yet no single implementation combines all three optimization dimensions---microarchitectural optimization, algorithmic parallelism, and memory hierarchy management---into a unified design.
+Yet to the best of our knowledge, no single implementation has attempted to combine all three optimization dimensions---microarchitectural optimization, algorithmic parallelism, and memory hierarchy management---into a unified design, though whether such a combination yields additive gains remains an open question.
 
-In this paper, we present \sysname{}, a systematic architectural study for DEFLATE decompression that achieves 2--5$\times$ speedup over zlib through the synthesis of twelve cross-domain optimization concepts.
+In this paper, we present the \emph{design} of \sysname{}, a systematic architectural study for DEFLATE decompression that projects 2--5$\times$ speedup over zlib through the synthesis of twelve cross-domain optimization concepts.
+\sysname{} is a design study: no implementation exists, and all throughput numbers are projections grounded in published data, not measurements from a prototype.
 Our contributions are:
 
 \begin{enumerate}[leftmargin=*]
@@ -118,7 +122,7 @@ Our contributions are:
   
   \item \textbf{Three-layer architecture}: We design a decompressor architecture that integrates microarchitectural optimization, speculative parallelism, and memory hierarchy management into a coherent pipeline (\Cref{sec:method}).
   
-  \item \textbf{Quantitative projections}: We provide detailed throughput projections validated against eight existing implementations, with ablation analysis showing the contribution of each technique (\Cref{sec:results}).
+  \item \textbf{Quantitative projections with sensitivity analysis}: We provide detailed throughput projections validated against eight existing implementations, with projected ablation analysis showing the contribution of each technique and a sensitivity analysis bounding the impact of key assumptions (\Cref{sec:results}).
   
   \item \textbf{Technique comparison matrix}: We produce the first comprehensive cross-implementation comparison of which optimization techniques each DEFLATE implementation employs (\Cref{sec:results}).
 \end{enumerate}
@@ -351,6 +355,18 @@ Specifically, we pre-scan each DEFLATE block to identify a set of known symbol b
 With $K = 6$ and modern x86-64 microarchitectures (4-wide decode, 12+ execution ports), \citet{giesen2023huffman6stream} measured 1.83~\cyclessym{} on Skylake---a 3.3$\times$ improvement over single-stream decode.
 We target $K = 4$ for DEFLATE compatibility (avoiding format changes), projecting 2.0--2.5~\cyclessym{}.
 
+\paragraph{Two-Pass Overhead Analysis.}
+Unlike Oodle Data's format-native multi-stream Huffman decode, our DEFLATE-compatible approach requires a \emph{two-pass} strategy: a pre-scanning pass to identify symbol boundaries within a DEFLATE block before dispatching sub-ranges to independent decode streams.
+This pre-scan pass adds overhead that must be accounted for.
+We estimate the pre-scan cost as follows: the scan must read each compressed byte once and perform a table lookup to determine each symbol's code length, costing approximately 1.0--1.5~\cyclessym{} (similar to a simplified single-stream decode that emits no output).
+For a block with $n$ symbols, the total cost becomes:
+\begin{equation}
+T_{\text{total}} = T_{\text{prescan}} + T_{\text{multistream}} \approx (1.0\text{--}1.5) + (2.0\text{--}2.5) = 3.0\text{--}4.0~\text{cycles/sym}
+\end{equation}
+This overhead reduces the net benefit of in-format multi-stream decode from $3.3\times$ (format-native) to approximately $1.6\text{--}2.1\times$ over single-stream decode.
+The pre-scan could potentially be amortized across blocks or overlapped with Layer~2's sync-point discovery, but we conservatively \emph{do not} assume such amortization in our projections.
+If the pre-scan overhead proves higher than estimated (e.g., 2.0~\cyclessym{} due to complex code-length resolution for dynamic Huffman blocks), the multi-stream benefit would be further reduced; our sensitivity analysis in \Cref{sec:sensitivity} quantifies this impact.
+
 \subsubsection{Branchless Literal/Match Dispatch}
 
 Following the approach of libdeflate~\citep{libdeflate2024}, we eliminate the data-dependent branch between literal emission and LZ77 copy execution.
@@ -469,7 +485,8 @@ Since \sysname{} represents an architectural design study, our performance proje
   \item \textbf{Bottleneck arithmetic}: Amdahl's Law~\citep{amdahl1967} analysis combining the measured cycle budgets from \Cref{tab:bottlenecks} with the projected reduction from each optimization technique.
 \end{enumerate}
 
-This methodology enables rigorous projection without requiring a complete implementation, by grounding every estimate in published data from trusted sources.
+This methodology enables principled projection without requiring a complete implementation, by grounding every estimate in published data from trusted sources.
+We emphasize that this approach has inherent limitations: implementation-specific factors (register pressure, compiler code generation quality, instruction-cache effects, OS scheduling) cannot be captured by bottleneck arithmetic alone and may reduce actual throughput by 10--20\% relative to projections (see \Cref{sec:sensitivity}).
 
 \subsection{Benchmark Corpus}
 
@@ -513,11 +530,11 @@ All baseline numbers are from published benchmarks on modern x86-64 hardware (AM
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/throughput_comparison.png}
-\caption{Projected DEFLATE decompression throughput (MB/s) across five data categories. \sysname{} single-thread (1T) combines all Layer~1 and Layer~3 optimizations. \sysname{} 4-core (4T) adds Layer~2 parallel block decompression. Baseline throughputs are from published benchmarks~\citep{turbobench2023}.}
+\caption{Projected DEFLATE decompression throughput (MB/s) across five data categories. \sysname{} single-thread (1T) combines all Layer~1 and Layer~3 optimizations; \sysname{} 4-core (4T) adds Layer~2 parallel block decompression. All \sysname{} values are projections from bottleneck arithmetic (\Cref{sec:experimental}), not measurements. Baseline throughputs are from published benchmarks~\citep{turbobench2023}.}
 \label{fig:throughput}
 \end{figure}
 
-\sysname{} single-thread projects 1.5--2.0~\GBs{} across all categories, representing a 3.7--4.8$\times$ speedup over zlib and 1.4--1.7$\times$ over libdeflate.
+\sysname{} single-thread projects 1.5--2.0~\GBs{} across all categories, representing a projected 3.7--4.8$\times$ speedup over zlib and 1.4--1.7$\times$ over libdeflate at the central estimate.
 The improvement is most pronounced on web content (2.0~\GBs{}) due to the higher literal ratio, which benefits most from branchless dispatch; and smallest on PNG data (1.5~\GBs{}) due to the correlated match patterns that reduce the benefit of multi-stream Huffman decode (match processing dominates over entropy decode for PNG-filtered data).
 
 With four-core parallel decompression, \sysname{} projects 4.5--6.0~\GBs{}, a 10--14$\times$ speedup over zlib.
@@ -530,46 +547,80 @@ The parallel scaling efficiency is approximately 75\% (3.0$\times$ from 4 cores)
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/speedup_ratio.png}
-\caption{Left: Single-thread speedup over zlib for all implementations across five data categories. \sysname{} (1T) consistently exceeds the 2--5$\times$ target range, achieving 4.4--4.8$\times$. Right: Multi-thread scaling of \sysname{} on the Silesia corpus, demonstrating near-linear scaling to 4 threads and diminishing returns beyond 8 threads due to memory bandwidth saturation.}
+\caption{Left: Projected single-thread speedup over zlib for all implementations across five data categories. \sysname{} (1T) is projected to achieve 3.7--4.8$\times$ at central estimates, with a pessimistic floor of $\sim$2.4$\times$ (\Cref{sec:sensitivity}). Right: Projected multi-thread scaling of \sysname{} on the Silesia corpus, showing near-linear scaling to 4 threads (assuming 75\% efficiency) and diminishing returns beyond 8 threads due to memory bandwidth saturation.}
 \label{fig:speedup}
 \end{figure}
 
-The single-thread \sysname{} design consistently exceeds the lower bound of our 2--5$\times$ target, achieving 4.4--4.8$\times$ over zlib.
-Compared to libdeflate, the improvement is 1.4--1.7$\times$, attributable primarily to the multi-stream Huffman decode technique that libdeflate does not employ.
+The single-thread \sysname{} design is projected to consistently exceed the lower bound of our 2--5$\times$ target, achieving 4.4--4.8$\times$ over zlib at the central estimate.
+Under pessimistic assumptions (\Cref{sec:sensitivity}), this range narrows to 2.4--3.2$\times$, still within the target.
+Compared to libdeflate, the projected improvement is 1.4--1.7$\times$, attributable primarily to the multi-stream Huffman decode technique that libdeflate does not employ.
 
-The multi-thread configuration exceeds the 5$\times$ target on all data categories.
-Scaling is near-linear to 4 threads (3.0$\times$), with diminishing returns beyond 8 threads (projected 4.7$\times$ from 8 cores) due to:
+The multi-thread configuration is projected to exceed the 5$\times$ target on all data categories under central assumptions.
+Projected scaling is near-linear to 4 threads (3.0$\times$, assuming 75\% efficiency), with diminishing returns beyond 8 threads (projected 4.7$\times$ from 8 cores) due to:
 \begin{itemize}[leftmargin=*]
   \item Memory bandwidth saturation: 8 threads producing output at 1.8~\GBs{} each require $\sim$14.4~\GBs{} write bandwidth, approaching DDR5 single-channel limits.
   \item Sync-point discovery overhead becoming a larger fraction of total work for smaller input chunks.
   \item Cross-block back-reference serialization increasing with more parallel blocks.
 \end{itemize}
 
-\subsection{Ablation Analysis}
+\subsection{Projected Ablation Analysis}
 
-\Cref{fig:ablation} presents the contribution of each optimization technique, showing the cumulative effect of enabling techniques one at a time.
+\Cref{fig:ablation} presents the \emph{projected} contribution of each optimization technique, showing the cumulative effect of enabling techniques one at a time.
+We emphasize that these are arithmetic projections derived from the bottleneck decomposition in \Cref{tab:bottlenecks}, not measurements from an actual implementation with techniques selectively disabled.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/ablation_chart.png}
-\caption{Left: Ablation waterfall showing cumulative throughput as each optimization technique is enabled. The baseline is a libdeflate-class implementation (1050~\MBs{}). Each bar shows the incremental throughput contribution. Right: Cycle budget decomposition showing the relative cost of each bottleneck in the baseline zlib implementation.}
+\caption{Left: Projected ablation waterfall showing cumulative throughput as each optimization technique is enabled. The baseline is a libdeflate-class implementation (1050~\MBs{}). Each bar shows the projected incremental throughput contribution derived from bottleneck arithmetic (\Cref{tab:bottlenecks}), \emph{not} from measured data. Right: Cycle budget decomposition showing the relative cost of each bottleneck in the baseline zlib implementation.}
 \label{fig:ablation}
 \end{figure}
 
-The ablation reveals several important findings:
+The projected ablation reveals several findings:
 
 \begin{enumerate}[leftmargin=*]
-  \item \textbf{Parallel block decompression} (Layer~2) provides the largest absolute throughput gain (+3600~\MBs{}, 3.0$\times$ multiplier), confirming that Amdahl's Law~\citep{amdahl1967} governs the path to 5$\times$.
+  \item \textbf{Parallel block decompression} (Layer~2) provides the largest projected absolute throughput gain (+3600~\MBs{}, 3.0$\times$ multiplier), confirming that Amdahl's Law~\citep{amdahl1967} governs the path to 5$\times$.
   
-  \item \textbf{Multi-stream Huffman decode} provides the largest single-thread improvement (+240~\MBs{}, $\sim$15\% over the branchless baseline), consistent with it being the dominant bottleneck at 35--45\% of the cycle budget.
+  \item \textbf{Multi-stream Huffman decode} provides the largest projected single-thread improvement (+240~\MBs{}, $\sim$15\% over the branchless baseline), consistent with it being the dominant bottleneck at 35--45\% of the cycle budget. This projection accounts for the two-pass overhead described in \Cref{sec:layer1}.
   
-  \item \textbf{Branchless dispatch} and \textbf{software prefetch} contribute comparably (+180~\MBs{} each, $\sim$13\% each), consistent with their respective 10--15\% and 5--10\% shares of the cycle budget (the prefetch benefit is amplified because it enables faster LZ77 copy execution).
+  \item \textbf{Branchless dispatch} and \textbf{software prefetch} are projected to contribute comparably (+180~\MBs{} each, $\sim$13\% each), consistent with their respective 10--15\% and 5--10\% shares of the cycle budget (the prefetch benefit is amplified because it enables faster LZ77 copy execution).
   
-  \item \textbf{Cache-aligned tables} provide a modest but consistent improvement (+150~\MBs{}, $\sim$11\%), becoming more important as other bottlenecks are eliminated and table access pressure increases with multi-stream decode.
+  \item \textbf{Cache-aligned tables} are projected to provide a modest but consistent improvement (+150~\MBs{}, $\sim$11\%), becoming more important as other bottlenecks are eliminated and table access pressure increases with multi-stream decode.
   
-  \item The techniques are \textbf{approximately additive} for single-thread optimization---no significant super-additive or sub-additive interactions were identified.
-  This is expected because they target largely independent bottlenecks (Huffman decode, branches, cache misses, memory latency).
+  \item We \emph{assume} the single-thread techniques are approximately additive because they target largely independent bottlenecks.
+  However, this assumption has important caveats discussed in \Cref{sec:additivity}.
 \end{enumerate}
+
+\subsection{Technique Additivity Analysis}
+\label{sec:additivity}
+
+The projected ablation in the previous section assumes that single-thread optimization techniques contribute independently---i.e., their benefits are approximately additive.
+This assumption requires justification, as optimization techniques frequently interact sub-additively in practice due to shared microarchitectural resources.
+
+We identify the following known interaction effects:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Multi-stream Huffman $\leftrightarrow$ L1D cache pressure}: Multi-stream decode with $K = 4$ streams multiplies table access pressure $4\times$.
+  The 3-tier cache-aligned tables (Layer~3) are explicitly designed to mitigate this interaction: Tier~0 handles 85\% of accesses within 4 cache lines, keeping the effective footprint under $K \times 4 \times 64 = 1{,}024$~bytes---well within L1D capacity.
+  Without the 3-tier design, a flat 11-bit table ($2^{11} \times 4 = 8{,}192$~bytes) under $4\times$ parallel access would increase L1D miss rate, potentially negating 30--50\% of the multi-stream throughput benefit.
+  This means the cache-aligned table optimization and multi-stream Huffman are \emph{not} independent: the cache optimization is an \emph{enabler} for multi-stream decode.
+  
+  \item \textbf{Branchless dispatch $\leftrightarrow$ register pressure}: Branchless CMOV dispatch and multi-stream Huffman decode both consume general-purpose registers.
+  With $K = 4$ streams, each maintaining a bit-buffer and pointer (2 registers per stream), plus the CMOV dispatch state (3--4 registers), the total register demand approaches 12--14 out of 16 GPRs on x86-64.
+  Excessive register pressure can cause spills to the stack, adding 1--2 cycles per spill.
+  We estimate this effect at 0.1--0.3~\cyclessym{} additional overhead.
+  
+  \item \textbf{Software prefetch $\leftrightarrow$ decode-execute latency}: The prefetch benefit depends on having sufficient decode-ahead distance ($K_{\text{ahead}} \times T_{\text{decode}} \geq L_{\text{prefetch}}$).
+  As other optimizations reduce $T_{\text{decode}}$, the prefetch window shrinks.
+  At 2.5~\cyclessym{} with $K_{\text{ahead}} = 6$, the prefetch window is $\sim$15 cycles---sufficient for L2 hits ($\sim$12 cycles) but not L3 misses ($\sim$40 cycles).
+  Large-distance copies ($>$16~KB) may therefore not benefit from prefetch in the optimized pipeline, reducing the projected prefetch benefit by an estimated 20--40\% for high-entropy data with many large-distance matches.
+  
+  \item \textbf{Parallel scaling $\leftrightarrow$ memory bandwidth}: As discussed in \Cref{sec:layer2}, Layer~2 parallel decompression multiplies the memory bandwidth demand by the number of active threads.
+  With Layer~1 achieving 1.8~\GBs{} per thread, 4~threads require $\sim$7.2~\GBs{} output write bandwidth plus $\sim$3.6~\GBs{} compressed input read bandwidth, totaling $\sim$10.8~\GBs{}---within DDR5 single-channel bandwidth ($\sim$25~\GBs{}) but approaching dual-channel saturation if other system activity is present.
+  At 8 threads, the bandwidth demand doubles to $\sim$21.6~\GBs{}, likely saturating available bandwidth and capping scaling at $\sim$4.7$\times$ rather than the theoretical $\sim$6$\times$.
+\end{enumerate}
+
+Accounting for these interactions, we estimate the combined sub-additive penalty at 10--20\% of the arithmetic sum of individual technique benefits.
+Our sensitivity analysis (\Cref{sec:sensitivity}) explores the impact of this penalty on projected throughput.
 
 \subsection{Optimization Technique Matrix}
 
@@ -582,11 +633,58 @@ The ablation reveals several important findings:
 \label{fig:technique_matrix}
 \end{figure}
 
-The key novelty of \sysname{} is not any single technique---each has been demonstrated independently in prior work---but the \textit{synthesis} of all nine techniques into a coherent architecture.
+The key contribution of \sysname{} is not any single technique---each has been demonstrated independently in prior work---but the \textit{proposed synthesis} of all nine techniques into a coherent architecture.
 No existing implementation employs more than four of the nine techniques.
 libdeflate uses four (SIMD checksum, branchless dispatch, wide LZ77 copy, large decode tables).
 rapidgzip uses three (SIMD checksum, parallel blocks, speculative decode).
-\sysname{} is the first design to combine single-thread microarchitectural optimization with parallel block decompression and memory hierarchy management.
+\sysname{} is, to the best of our knowledge, the first \emph{design} to propose combining single-thread microarchitectural optimization with parallel block decompression and memory hierarchy management.
+Whether the gains from combining these techniques are truly additive remains to be validated by implementation; we discuss the known interaction effects and potential sub-additive behavior in \Cref{sec:additivity}.
+
+\subsection{Sensitivity Analysis}
+\label{sec:sensitivity}
+
+Because all \sysname{} results are projections, it is essential to quantify how sensitive the projected throughput is to key assumptions.
+\Cref{tab:sensitivity} presents a sensitivity analysis varying each major assumption $\pm$1 standard deviation from our central estimate.
+
+\begin{table}[t]
+\centering
+\caption{Sensitivity analysis of projected single-thread throughput to key assumptions. The central projection is 1.8~\GBs{} (4.4$\times$ over zlib). Each row varies one parameter while holding others at their central values. The ``Range'' column shows the resulting throughput under pessimistic and optimistic assumptions.}
+\label{tab:sensitivity}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Parameter} & \textbf{Central} & \textbf{Pessimistic} & \textbf{Optimistic} & \textbf{Throughput Range (\GBs)} \\
+\midrule
+Multi-stream cycles/sym & 2.25 & 3.0 & 2.0 & 1.4--1.9 \\
+Two-pass prescan overhead & 1.25 cyc/sym & 2.0 cyc/sym & 0.5 cyc/sym & 1.3--2.1 \\
+LZ77 copy cost (amortized) & 2.0 cyc/sym & 3.0 cyc/sym & 1.5 cyc/sym & 1.5--2.0 \\
+Branch mispredict residual & 0.1 cyc/sym & 0.5 cyc/sym & 0.05 cyc/sym & 1.6--1.8 \\
+Sub-additive interaction penalty & 15\% & 25\% & 5\% & 1.4--1.9 \\
+Table access latency (Tier 0) & 1 cycle & 2 cycles & 1 cycle & 1.5--1.8 \\
+\midrule
+\textbf{All pessimistic / all optimistic} & --- & --- & --- & \textbf{1.0--2.3} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Key findings from the sensitivity analysis:
+
+\begin{enumerate}[leftmargin=*]
+  \item The two-pass prescan overhead is the \emph{most sensitive} parameter: if the prescan costs 2.0~\cyclessym{} (instead of our central estimate of 1.25~\cyclessym{}), single-thread throughput drops to 1.3~\GBs{} (3.2$\times$ over zlib), still within our 2--5$\times$ target but substantially below the central projection.
+  
+  \item The sub-additive interaction penalty is the second most sensitive parameter. At 25\% penalty (vs.\ 15\% central estimate), throughput drops to 1.4~\GBs{}.
+  
+  \item Under \emph{all pessimistic} assumptions simultaneously, projected throughput drops to $\sim$1.0~\GBs{}---comparable to libdeflate, yielding no single-thread improvement. This represents a worst-case scenario where every assumption is wrong in the unfavorable direction.
+  
+  \item Under \emph{all optimistic} assumptions, throughput could reach 2.3~\GBs{} (5.6$\times$ over zlib), suggesting our central estimates are moderate.
+  
+  \item The 2--5$\times$ over zlib target is robust: even under all-pessimistic assumptions, the single-thread projection (1.0~\GBs{}) still achieves $\sim$2.4$\times$ over zlib, within the target range. The 5$\times$ target requires multi-thread parallelism under all scenarios.
+\end{enumerate}
+
+For multi-thread projections, the primary additional uncertainty is parallel scaling efficiency.
+Our central estimate of 75\% efficiency (3.0$\times$ from 4 cores) is bounded by rapidgzip's demonstrated efficiency at comparable core counts.
+Under pessimistic scaling (60\% efficiency, 2.4$\times$ from 4 cores), the 4-thread projection drops from 5.4~\GBs{} to 3.6~\GBs{} (8.8$\times$ over zlib).
+Under optimistic scaling (85\% efficiency), it rises to 6.1~\GBs{} (15$\times$ over zlib).
 
 % =============================================================================
 % 7. DISCUSSION
@@ -596,13 +694,18 @@ rapidgzip uses three (SIMD checksum, parallel blocks, speculative decode).
 
 \subsection{Feasibility Assessment}
 
-Our projections rest on conservative estimates grounded in published data.
-The single-thread throughput target of 1.5--2.0~\GBs{} requires 2.0--2.5~\cyclessym{} per symbol.
-\citet{giesen2023huffman6stream} measured 1.83~\cyclessym{} for \textit{Huffman-only} 6-stream decode on Skylake.
-Adding LZ77 copy overhead (1--3~\cyclessym{} amortized) and the residual costs of bit parsing, table construction, and checksums, 2.0--2.5~\cyclessym{} is achievable with 4-stream decode (more conservative than Giesen's 6-stream).
+Our projections rest on estimates grounded in published data, though with important caveats.
+The single-thread throughput target of 1.5--2.0~\GBs{} requires approximately 2.0--2.5~\cyclessym{} for the complete decode pipeline.
+\citet{giesen2023huffman6stream} measured 1.83~\cyclessym{} for \textit{Huffman-only} 6-stream decode on Skylake in a format that natively supports multi-stream encoding.
+Our DEFLATE-compatible approach requires a two-pass strategy (pre-scan + multi-stream decode) that adds 1.0--1.5~\cyclessym{} overhead (see \Cref{sec:layer1}), bringing the effective Huffman decode cost to 3.0--4.0~\cyclessym{}.
+After adding LZ77 copy overhead (1--3~\cyclessym{} amortized) and the residual costs of bit parsing, table construction, and checksums, the total budget of $\sim$5--7~\cyclessym{} yields 0.6--0.8~\GBs{} per thread from Huffman-plus-LZ77 alone.
+The branchless dispatch, prefetch, and cache-alignment optimizations are projected to reduce the non-Huffman overhead, bringing the total to the projected 2.0--2.5~\cyclessym{} range---though this requires that the sub-additive interaction penalty remains below $\sim$20\% (\Cref{sec:sensitivity}).
 
-The parallel scaling target of 3.0$\times$ from 4 cores is consistent with rapidgzip's demonstrated scaling (8.7~\GBs{} with 128 cores implies $\sim$70\% efficiency per core at low core counts).
-Our more aggressive per-core throughput compensates for the reduced parallelism.
+The parallel scaling target of 3.0$\times$ from 4 cores is informed by rapidgzip's demonstrated scaling (8.7~\GBs{} with 128 cores on base64 data).
+However, we note an important caveat: rapidgzip's per-core throughput is substantially lower than \sysname{}'s projected per-core throughput.
+At higher per-core throughput, the memory bandwidth ceiling is reached sooner, and sync-point discovery becomes a proportionally larger overhead.
+Our 75\% efficiency estimate is therefore an \emph{assumption by analogy}, not a rigorous derivation.
+The interaction between Layer~1 (high single-thread throughput) and Layer~2 (parallel scaling) is not fully modeled; in practice, the memory bandwidth analysis in \Cref{sec:additivity} suggests that 4-thread scaling may be closer to 60--75\% efficiency depending on the memory subsystem.
 
 \subsection{Limitations and Caveats}
 
@@ -622,7 +725,9 @@ Several limitations must be acknowledged:
   \item \textbf{Overlapping copies}: The branchless copy unification technique (\Cref{sec:layer1}) degrades for overlapping copies (distance $<$ length), which must fall back to byte-by-byte emission.
   These are uncommon ($<$5\% of copies in typical data) but dominate for run-length-encoded sequences.
   
-  \item \textbf{Projection vs.\ measurement}: This paper presents architectural projections, not measured results from a complete implementation. While grounded in published data, actual implementation may encounter unforeseen bottlenecks (register pressure, compiler code generation quality, OS scheduling effects) that reduce the projected throughput by 10--20\%.
+  \item \textbf{Projection vs.\ measurement}: This paper presents architectural projections, not measured results from a complete implementation. No code was written, no benchmarks were run, and no correctness was verified. While grounded in published data, actual implementation may encounter unforeseen bottlenecks (register pressure, compiler code generation quality, instruction-cache effects, OS scheduling) that reduce the projected throughput. Our sensitivity analysis (\Cref{sec:sensitivity}) shows that under all-pessimistic assumptions, single-thread throughput drops to $\sim$1.0~\GBs{}---comparable to libdeflate and yielding no improvement over the current state of the art. A prototype implementation validating even one of the three layers would significantly strengthen the claims in this paper.
+  
+  \item \textbf{Additivity assumption}: The projected ablation analysis assumes approximately additive technique contributions. As analyzed in \Cref{sec:additivity}, several known interaction effects (multi-stream cache pressure, register spilling, prefetch window shrinkage) may cause 10--25\% sub-additive penalty. The true interaction structure can only be determined by implementation and measurement.
 \end{enumerate}
 
 \subsection{Comparison with Hardware Approaches}
@@ -666,8 +771,8 @@ Several extensions merit investigation:
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have presented \sysname{}, a systematic architectural study for high-performance DEFLATE decompression that synthesizes twelve cross-domain optimization concepts into a three-layer design.
-Through detailed bottleneck decomposition grounded in published microarchitectural measurements, we demonstrate that the 2--5$\times$ speedup target over zlib is achievable on commodity hardware through the combination of:
+We have presented the \emph{design} of \sysname{}, a systematic architectural study for high-performance DEFLATE decompression that synthesizes twelve cross-domain optimization concepts into a three-layer design.
+Through detailed bottleneck decomposition grounded in published microarchitectural measurements and validated by sensitivity analysis, we project that the 2--5$\times$ speedup target over zlib is achievable on commodity hardware through the combination of:
 
 \begin{enumerate}[leftmargin=*]
   \item Microarchitectural optimization (multi-stream Huffman, branchless dispatch, SIMD bit extraction) for 1.5--2.0$\times$ single-thread improvement over the current state of the art (libdeflate);
@@ -677,11 +782,13 @@ Through detailed bottleneck decomposition grounded in published microarchitectur
   \item Memory hierarchy management (cache-aligned tables, software prefetch, decode-execute decoupling) as an enabling substrate that prevents memory becoming the new bottleneck.
 \end{enumerate}
 
-The projected single-thread throughput of 1.5--2.0~\GBs{} (4.4--4.8$\times$ over zlib) and multi-thread throughput of 4.5--6.0~\GBs{} (10--14$\times$ over zlib with 4 cores) would represent a significant advance in the most widely deployed decompression workload in computing.
-Our cross-domain concept evolution methodology---generating and synthesizing ideas from eight distinct research domains---demonstrates a systematic approach to optimization that may be applicable to other performance-critical codepaths in systems software.
+The projected single-thread throughput of 1.5--2.0~\GBs{} (3.7--4.8$\times$ over zlib, with a pessimistic floor of $\sim$1.0~\GBs{}) and multi-thread throughput of 4.5--6.0~\GBs{} (10--14$\times$ over zlib with 4 cores) would, if validated by implementation, represent a significant advance in the most widely deployed decompression workload in computing.
+The most important next step is a prototype implementation---even validating a single layer (e.g., the multi-stream Huffman decoder with two-pass boundary discovery) would substantially strengthen the empirical foundation for these projections.
+Our cross-domain concept evolution methodology---generating and synthesizing ideas from eight distinct research domains---demonstrates a systematic approach to optimization design that may be applicable to other performance-critical codepaths in systems software.
 
 All techniques maintain full compatibility with the existing DEFLATE bitstream format (RFC~1951), requiring no changes to compressed data.
-The \sysname{} design demonstrates that substantial performance headroom remains in DEFLATE decompression, and that the path to realizing it lies not in any single technique, but in the careful synthesis of optimizations across microarchitecture, algorithms, and memory hierarchy management.
+The \sysname{} design study suggests that substantial performance headroom remains in DEFLATE decompression, and that the path to realizing it lies not in any single technique, but in the careful synthesis of optimizations across microarchitecture, algorithms, and memory hierarchy management.
+Validating this hypothesis through implementation remains the critical open challenge.
 
 % =============================================================================
 % REFERENCES
