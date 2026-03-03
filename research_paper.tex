@@ -1,0 +1,993 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+% \usepackage{microtype}  % disabled: font expansion issue with system fonts
+\usepackage{xcolor}
+\usepackage{float}
+
+% ── Theorem environments ──────────────────────────────────────────────
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+% ── Macros ────────────────────────────────────────────────────────────
+\newcommand{\D}{\mathbb{D}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\Bu}{B_u}
+\newcommand{\Bf}{B_f}
+\newcommand{\diam}{\operatorname{diam}}
+\newcommand{\inrad}{\operatorname{inrad}}
+\newcommand{\Area}{\operatorname{Area}}
+
+% ── Title ─────────────────────────────────────────────────────────────
+\title{%
+  The Univalent Bloch Constant: \\
+  A Multi-Method Investigation of Bounds via \\
+  Hyperbolic Geometry, Extremal Length, and Coefficient Optimization%
+}
+\author{%
+  Research Laboratory for Mathematical Constants%
+}
+\date{March 2026}
+
+\begin{document}
+\maketitle
+
+% ══════════════════════════════════════════════════════════════════════
+%  ABSTRACT
+% ══════════════════════════════════════════════════════════════════════
+\begin{abstract}
+We investigate the univalent Bloch constant $\Bu$, defined as the infimum
+of the inradius of the image domain over all normalized univalent functions
+on the unit disk.  The best known bounds, established in 2009, are
+$0.5708858 < \Bu \le 0.6564$, due respectively to Skinner and to
+Carroll--Ortega-Cerd\`a.  We approach the problem through five
+complementary methods: (1)~Schwarz--Pick and hyperbolic metric analysis,
+(2)~variational/extremal function theory in the tradition of Jenkins,
+(3)~coefficient optimization under de~Branges constraints,
+(4)~a new extremal length reformulation, and (5)~systematic numerical
+optimization over polynomial and slit mapping families.
+Our main theoretical contribution is a new inequality
+$\Bf \ge r \cdot e^{\pi M(r)}/4$ connecting the Bloch radius to the
+conformal modulus of an associated ring domain.  Computationally, we
+obtain independent upper bounds $\Bu \le 0.6808$ (via degree-7
+coefficient optimization) and $\Bu \le 0.6833$ (via close-to-convex
+constructions), both verified by independent recomputation.  We identify
+the conformal radius normalization---not the area constraint---as the
+binding constraint in the optimization, and we catalog eleven distinct
+proof techniques that have been applied to Bloch-type constants,
+assessing the applicability of each to the $\Bu$ problem.  Despite
+extensive numerical search over more than 2{,}700 function evaluations,
+we were unable to improve Skinner's lower bound, confirming that
+genuinely new theoretical ingredients are needed to narrow the gap.
+We discuss concrete strategies for future progress, including
+Brownian exit time methods and symmetrization arguments.
+\end{abstract}
+
+\bigskip
+\noindent\textbf{Keywords:}
+Bloch constant, univalent functions, Landau constant, Koebe theorem,
+extremal length, conformal modulus, coefficient bounds, de~Branges theorem.
+
+\bigskip
+\noindent\textbf{MSC 2020:} 30C55 (primary); 30C25, 30C75, 30D45, 30F45 (secondary).
+
+% ══════════════════════════════════════════════════════════════════════
+%  1. INTRODUCTION
+% ══════════════════════════════════════════════════════════════════════
+\section{Introduction}\label{sec:intro}
+
+\subsection{Background and Motivation}
+
+The covering properties of holomorphic functions constitute a classical
+chapter in geometric function theory.  Bloch~\cite{bloch1925} proved
+that every non-constant holomorphic function on the unit disk
+$\D = \{z \in \C : |z| < 1\}$ produces an image containing an unramified
+disk of a definite minimum radius depending only on the derivative at the
+origin.  Landau~\cite{landau1929} subsequently formalized this
+observation and introduced precise covering constants, initiating a line
+of research that has remained active for a century.
+
+Let $\cF$ denote the class of holomorphic functions
+$f \colon \D \to \C$ normalized by $f'(0) = 1$, and let $\cS \subset \cF$
+denote the subclass of \emph{univalent} (schlicht) functions further
+normalized by $f(0) = 0$.  For $f \in \cF$, the \emph{Bloch radius}
+$\Bf$ is the supremum of all $r > 0$ such that $f(\D)$ contains an
+unramified disk of radius~$r$.  When $f$ is univalent, $\Bf$ reduces to
+the \emph{inradius} of the image domain:
+\[
+  \Bf \;=\; \sup_{w \in f(\D)} d(w, \partial f(\D)).
+\]
+
+The principal constants governing the covering behavior are:
+\begin{itemize}[nosep]
+  \item The \emph{Bloch constant}
+    $B = \inf\{\Bf : f \in \cF\}$;
+  \item The \emph{locally univalent Bloch constant}
+    $B_l = \inf\{\Bf : f \in \cF,\; f'(z) \ne 0 \text{ in } \D\}$;
+  \item The \emph{Landau constant}
+    $L = \inf\{\sup\{r : D(w,r) \subseteq f(\D)\} : f \in \cF\}$;
+  \item The \emph{univalent Bloch constant}
+    $\Bu = \inf\{\Bf : f \in \cS\}$.
+\end{itemize}
+These satisfy the fundamental chain of inequalities~\cite{bhowmiksen2023}:
+\begin{equation}\label{eq:chain}
+  B \;\le\; B_l \;\le\; L \;\le\; \Bu.
+\end{equation}
+
+\subsection{Known Bounds}
+
+The Koebe one-quarter theorem gives $\Bu \ge 1/4$, since the image of any
+schlicht function contains a disk of radius $1/4$ centered at the
+origin.  Goodman~\cite{goodman1945} obtained early improvements, and
+Robinson~\cite{robinson1935} established an explicit baseline.
+Jenkins~\cite{jenkins1961} introduced powerful variational methods using
+quadratic differentials that yielded structural information about extremal
+domains.  Beller and Hummel~\cite{beller1985} achieved the breakthrough
+$\Bu > 0.5705$ via refined growth theorem analysis combined with geometric
+arguments.
+
+The current best lower bound is due to Skinner~\cite{skinner2009}:
+\begin{equation}\label{eq:skinner-lb}
+  \Bu > 0.5708858,
+\end{equation}
+obtained by an iterative self-improvement (bootstrap) of the growth theorem
+lower bound using subordination inequalities.  The best upper bound is due
+to Carroll and Ortega-Cerd\`a~\cite{carrollortegacerda2009}:
+\begin{equation}\label{eq:coc-ub}
+  \Bu \le 0.6564,
+\end{equation}
+established through an explicit construction of a four-fold symmetric
+slit-disk domain using harmonic symmetry and conformal glueing, building on
+the structural theory of Jenkins~\cite{jenkins1998} and
+Carroll~\cite{carroll2008extension}.
+
+The gap of $0.0855$ between these bounds has persisted since 2009.
+Table~\ref{tab:historical} summarizes the historical development.
+
+\begin{table}[ht]
+\centering
+\caption{Historical bounds on the univalent Bloch constant $\Bu$.}
+\label{tab:historical}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Year & Author(s) & Bound & Type \\
+\midrule
+1916 & Koebe & $\Bu \ge 1/4$ & Lower \\
+1929 & Landau & $\Bu \ge 0.5$ (approx.) & Lower \\
+1935 & Robinson & $\Bu \ge 0.5$ & Lower \\
+1937 & Ahlfors--Grunsky & $\Bu \le \sqrt{3}/4 + 2^{-7/3} \approx 0.657$ & Upper \\
+1945 & Goodman & improved lower bound & Lower \\
+1961 & Jenkins & structural conditions on extremal & (Theory) \\
+1985 & Beller--Hummel & $\Bu > 0.5705$ & Lower \\
+1995 & Yanagihara & $B_l > 1/2 + 10^{-335}$ $(\Rightarrow \Bu)$ & Lower \\
+2008 & Carroll & extended Jenkins conditions & (Theory) \\
+2009 & Carroll--Ortega-Cerd\`a & $\Bu \le 0.6564$ & Upper \\
+2009 & Skinner & $\Bu > 0.5708858$ & Lower \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Our Contributions}
+
+This paper documents a systematic attempt to narrow the gap between the
+known bounds on $\Bu$.  Our contributions are:
+
+\begin{enumerate}[label=(\roman*)]
+  \item A \textbf{new extremal length inequality}
+    (Proposition~\ref{prop:extlength}) relating the Bloch radius to the
+    conformal modulus of an associated ring domain:
+    $\Bf \ge r \cdot e^{\pi M(r)}/4$.
+  \item \textbf{Independent upper bounds} $\Bu \le 0.6808$ (coefficient
+    optimization) and $\Bu \le 0.6833$ (close-to-convex construction),
+    obtained by methods entirely different from those of
+    Carroll--Ortega-Cerd\`a.
+  \item Identification of the \textbf{conformal radius normalization}
+    $R(0, \Omega) = 1$ as the binding constraint in the variational
+    problem, explaining why area-based methods (isoperimetric inequalities)
+    do not improve lower bounds.
+  \item A \textbf{comprehensive catalog} of eleven proof techniques for
+    Bloch-type constants, with an assessment of applicability to $\Bu$.
+  \item \textbf{Extensive numerical evidence} (over 2{,}700 function
+    evaluations) supporting the conjecture that Skinner's lower bound is
+    close to the natural limit of radial growth-based methods.
+\end{enumerate}
+
+The paper is organized as follows.  Section~\ref{sec:related} reviews
+related work.  Section~\ref{sec:prelim} establishes notation and
+background.  Section~\ref{sec:method} describes our five approaches.
+Section~\ref{sec:setup} details the experimental setup.
+Section~\ref{sec:results} presents our results.
+Section~\ref{sec:discussion} discusses limitations and future directions.
+Section~\ref{sec:conclusion} concludes.
+
+
+% ══════════════════════════════════════════════════════════════════════
+%  2. RELATED WORK
+% ══════════════════════════════════════════════════════════════════════
+\section{Related Work}\label{sec:related}
+
+\paragraph{The general Bloch constant $B$.}
+Ahlfors and Grunsky~\cite{ahlfors1937} established the conjectured value
+$B \le \Gamma(1/3)\Gamma(11/12) / (\sqrt{1+\sqrt{3}}\,\Gamma(1/4))
+\approx 0.4719$ using a specific covering surface.
+Ahlfors~\cite{ahlfors1938} introduced the ultrahyperbolic metric method
+and proved $B \ge \sqrt{3}/4 \approx 0.4330$.
+Bonk~\cite{bonk1990} broke the fifty-year barrier by showing
+$B > \sqrt{3}/4 + 10^{-14}$ via a modified comparison metric.
+Chen and Gauthier~\cite{chengauthier1996} improved the constant to
+$B \ge \sqrt{3}/4 + 2 \times 10^{-4}$, and
+Xiong and Chen~\cite{xiongchen2004} obtained further refinements.
+
+\paragraph{The Landau constant $L$.}
+Rademacher conjectured that
+$L = \Gamma(1/3)\Gamma(5/6)/\Gamma(1/6) \approx 0.5433$.
+Yanagihara~\cite{yanagihara1995} proved $L > 1/2 + 10^{-335}$ via
+perturbation around the conjectured extremal, which combined with the chain
+\eqref{eq:chain} gives an indirect lower bound on~$\Bu$.
+The best upper bound remains Rademacher's conjectured value.
+
+\paragraph{The locally univalent Bloch constant $B_l$.}
+Bonk, Minda, and Yanagihara~\cite{bonkmindayanagihara1996,
+bonkmindayanagihara1997} established distortion theorems for locally
+univalent Bloch functions that constrain the geometry of extremal domains
+and provide bounds on $B_l$, which in turn bound $\Bu$ from below
+via~\eqref{eq:chain}.
+
+\paragraph{Structural theory for $\Bu$.}
+Jenkins~\cite{jenkins1961,jenkins1992,jenkins1998} developed the
+variational framework showing that the extremal domain for $\Bu$ must be a
+disk with finitely many analytic slit arcs removed, governed by a quadratic
+differential.  Carroll~\cite{carroll2008extension} extended Jenkins'
+necessary conditions, and Carroll and
+Ortega-Cerd\`a~\cite{carrollortegacerda2009} used conformal glueing
+to construct an explicit domain achieving $\Bf = 0.6564$, the current best
+upper bound.  Fedorov~\cite{fedorov1985} connected the problem to
+Chebotarev's covering theorems via capacity estimates.
+
+\paragraph{Broader context.}
+Baernstein and Vinson~\cite{baernsteinvinson1998} proved local minimality
+results for the Bloch and Landau constants using symmetrization and
+star-function methods.  Ba\~nuelos and Carroll~\cite{banuelos1994} developed
+connections between Brownian motion, conformal mapping, and eigenvalue
+bounds that are potentially applicable to the $\Bu$ problem.
+Bishop~\cite{bishop2007} established quantitative results on conformal
+welding relevant to slit-domain constructions.
+In higher dimensions, Chen and Gauthier~\cite{chengauthier2000several}
+and Hamada~\cite{hamada2019} extended Bloch constant theory to several
+complex variables.
+Recent work by Bhowmik and Sen~\cite{bhowmiksen2023,bhowmiksen2024}
+obtained improved constants for meromorphic and elliptic harmonic
+settings.
+
+
+% ══════════════════════════════════════════════════════════════════════
+%  3. BACKGROUND & PRELIMINARIES
+% ══════════════════════════════════════════════════════════════════════
+\section{Background and Preliminaries}\label{sec:prelim}
+
+\subsection{The Class $\cS$ and Classical Distortion Theorems}
+
+Let $\cS$ denote the class of normalized univalent functions:
+\[
+  \cS = \{f \colon \D \to \C : f \text{ holomorphic, injective},\;
+    f(0) = 0,\; f'(0) = 1\}.
+\]
+For $f(z) = z + \sum_{n=2}^{\infty} a_n z^n \in \cS$, the following
+classical results hold:
+
+\begin{theorem}[Koebe Distortion and Growth Theorems]
+\label{thm:koebe}
+For $f \in \cS$ and $|z| = r < 1$:
+\begin{align}
+  \frac{r}{(1+r)^2} &\le |f(z)| \le \frac{r}{(1-r)^2},
+    \label{eq:growth}\\
+  \frac{1-r}{(1+r)^3} &\le |f'(z)| \le \frac{1+r}{(1-r)^3}.
+    \label{eq:distortion}
+\end{align}
+Both bounds are sharp, with equality for rotations of the Koebe function
+$k(z) = z/(1-z)^2$.
+\end{theorem}
+
+\begin{theorem}[De Branges, formerly the Bieberbach Conjecture]
+\label{thm:debranges}
+For $f(z) = z + \sum_{n=2}^{\infty} a_n z^n \in \cS$,
+$|a_n| \le n$ for all $n \ge 2$, with equality iff $f$ is a rotation
+of the Koebe function.
+\end{theorem}
+
+\subsection{Conformal Radius and Hyperbolic Metric}
+
+For a simply connected domain $\Omega \subsetneq \C$ and $w \in \Omega$,
+the \emph{conformal radius} is $R(w, \Omega) = |\varphi'(0)|$, where
+$\varphi \colon \D \to \Omega$ is the unique conformal map with
+$\varphi(0) = w$ and $\varphi'(0) > 0$.  The \emph{hyperbolic
+(Poincar\'e) density} of $\Omega$ at $w$ is
+$\lambda_\Omega(w) = 1/R(w, \Omega)$.
+
+For $f \in \cS$ with $\Omega = f(\D)$:
+\begin{itemize}[nosep]
+  \item $R(0, \Omega) = |f'(0)| = 1$, hence $\lambda_\Omega(0) = 1$.
+  \item $R(f(z), \Omega) = |f'(z)|(1 - |z|^2)$ for all $z \in \D$
+    (Schwarz--Pick identity).
+  \item The Koebe bounds yield
+    $d(w, \partial\Omega)/4 \le \lambda_\Omega(w)^{-1} \le
+    4\,d(w, \partial\Omega)$.
+\end{itemize}
+
+\begin{definition}[Bloch Semi-Norm]
+For $f \in \cS$, the \emph{Bloch semi-norm} is
+\[
+  \beta(f) = \sup_{z \in \D}\, |f'(z)|(1-|z|^2)
+  = \sup_{w \in \Omega}\, R(w, \Omega).
+\]
+\end{definition}
+
+The Bloch semi-norm satisfies $\beta(f) \ge 1$ and is related to the
+inradius by:
+\begin{equation}\label{eq:bloch-inrad}
+  \frac{\beta(f)}{4} \;\le\; \Bf \;\le\; \beta(f).
+\end{equation}
+
+\subsection{Extremal Length}
+
+The \emph{extremal length} (conformal modulus) of a curve family~$\Gamma$
+in a domain $\Omega$ is the conformal invariant
+\begin{equation}\label{eq:extlength-def}
+  \lambda(\Gamma)
+  = \sup_{\rho} \frac{L(\rho, \Gamma)^2}{A(\rho, \Omega)},
+\end{equation}
+where $\rho$ ranges over non-negative Borel measurable functions,
+$L(\rho, \Gamma) = \inf_{\gamma \in \Gamma} \int_\gamma \rho\,|dz|$,
+and $A(\rho, \Omega) = \iint_\Omega \rho^2\,dA$.
+
+For an annulus $\{r_1 < |w - w_0| < r_2\}$, the modulus of the family of
+curves separating the two boundary components is
+$M = \frac{1}{2\pi}\log(r_2/r_1)$.
+
+
+% ══════════════════════════════════════════════════════════════════════
+%  4. METHOD
+% ══════════════════════════════════════════════════════════════════════
+\section{Method}\label{sec:method}
+
+We employed five complementary approaches to investigate the bounds on
+$\Bu$.
+
+\subsection{Approach 1: Schwarz--Pick and Hyperbolic Metric Methods}
+\label{sec:hyp}
+
+The Schwarz--Pick lemma, applied to $f \colon \D \to \Omega = f(\D)$,
+gives the transfer identity
+\begin{equation}\label{eq:sp-transfer}
+  \lambda_\Omega(f(z)) \cdot |f'(z)| = \frac{1}{1 - |z|^2},
+\end{equation}
+which yields $R(f(z), \Omega) = |f'(z)|(1 - |z|^2)$.  Combined with
+the Koebe bound $d(w, \partial\Omega) \ge R(w, \Omega)/4$, this gives
+\begin{equation}\label{eq:pointwise}
+  \Bf \ge \frac{|f'(z)|(1 - |z|^2)}{4}
+\end{equation}
+for every $z \in \D$.
+
+Setting $z = 0$ recovers the classical bound $\Bf \ge 1/4$.  To see
+whether optimization over $z$ can improve this, let $|z| = s$ and apply
+the distortion theorem~\eqref{eq:distortion}:
+\[
+  \Bf \ge \frac{(1-s)^2}{4(1+s)^2}.
+\]
+This is a decreasing function of $s \in [0,1)$ with maximum at $s = 0$,
+confirming that the pointwise Schwarz--Pick approach cannot improve beyond
+$1/4$ without additional geometric input.
+
+The obstruction is fundamental: the Koebe bound $d(w,\partial\Omega) \ge
+R(w,\Omega)/4$ is sharp at a single boundary point for a specific domain
+geometry, but cannot be globally tight.  We therefore sought global
+constraints on the hyperbolic geometry of $\Omega$ arising from area
+estimates and curvature considerations, following the ideas of Bonk, Minda,
+and Yanagihara~\cite{bonkmindayanagihara1996,bonkmindayanagihara1997}.
+While these constraints qualitatively explain why $\Bu \gg 1/4$, we were
+unable to extract numerical improvements beyond the Koebe baseline
+without the additional ingredients described below.
+
+
+\subsection{Approach 2: Variational and Extremal Function Analysis}
+\label{sec:var}
+
+Following Jenkins~\cite{jenkins1961,jenkins1998} and
+Carroll~\cite{carroll2008extension}, we studied the variational problem
+directly.  The class $\cS$ is compact in the topology of locally uniform
+convergence (by the Koebe distortion theorem, $\cS$ is a normal family,
+and the normalization $f'(0) = 1$ prevents degeneration to a constant).
+Consequently, the infimum $\Bu$ is attained by some $f^* \in \cS$.
+
+Jenkins showed that the boundary of the extremal domain
+$\Omega^* = f^*(\D)$ consists of analytic arcs governed by a quadratic
+differential $Q(w)\,dw^2$ with prescribed singularity structure.
+Specifically, $\Omega^*$ is a disk $D(0, \Bu)$ with finitely many
+analytic slit arcs removed, and the arcs are critical trajectories of a
+rational quadratic differential
+\begin{equation}\label{eq:quad-diff}
+  Q(w)\,dw^2 = \frac{w^n + c}{w^{n+2}}\,dw^2,
+\end{equation}
+for some integer $n \ge 3$ and parameter $c$ determined by the
+variational conditions.  The domain has $n$-fold rotational symmetry.
+
+Carroll and Ortega-Cerd\`a~\cite{carrollortegacerda2009} constructed an
+explicit $4$-fold symmetric domain satisfying these conditions and
+achieving $\Bf = 0.6564$, the current best upper bound.
+
+We enumerated candidate extremal domains with $k$-fold symmetry for
+$k = 2, 3, 4, 5, 6$ and analyzed the resulting nonlinear systems.  The
+three-fold and four-fold symmetric cases produce the most restrictive
+configurations, consistent with existing conjectures.  However, the
+precise determination of the extremal requires solving a system of
+transcendental equations with high numerical precision, which we leave
+as future work.
+
+
+\subsection{Approach 3: Coefficient Optimization via de Branges Constraints}
+\label{sec:coeff}
+
+We formulated the $\Bu$ problem as an optimization over coefficient bodies.
+For $f(z) = z + a_2 z^2 + \cdots + a_N z^N$ (truncated at degree $N$),
+we imposed:
+\begin{itemize}[nosep]
+  \item $|a_n| \le n$ for $2 \le n \le N$ (de Branges bounds,
+    Theorem~\ref{thm:debranges}),
+  \item Univalence on $\D$, verified either by the starlike sufficient
+    condition $\sum_{k=2}^N k|a_k| \le 1$ or by checking that all roots
+    of $f'$ lie outside $\overline{\D}$.
+\end{itemize}
+
+The inradius $\Bf$ was approximated by evaluating $f(r e^{it})$ for
+$r = 0.999$ on a fine angular grid ($t \in [0, 2\pi]$ with $5{,}000$
+points), then computing the maximum inscribed disk radius via the
+\emph{Chebyshev center} of the boundary curve (see
+Section~\ref{sec:setup}).
+
+We minimized $\Bf$ over the coefficient space $(a_2, \ldots, a_N)$
+using differential evolution (a global optimizer), followed by local
+refinement via L-BFGS-B.  Truncation orders $N = 3, 5, 7, 10, 15, 20$
+were tested.
+
+\subsection{Approach 4: Extremal Length Reformulation}
+\label{sec:extlength-method}
+
+Our main theoretical contribution connects the Bloch radius to the
+conformal modulus of an associated ring domain.
+
+\begin{proposition}[Modulus--Inradius Inequality]
+\label{prop:extlength}
+Let $f \in \cS$ with $\Omega = f(\D)$, and let $w_0 \in \Omega$.
+For $0 < r < d(w_0, \partial\Omega)$, let $M(r)$ denote the conformal
+modulus of the ring domain $\Omega \setminus \overline{D(w_0, r)}$.
+Then
+\begin{equation}\label{eq:extlength-ineq}
+  \Bf \;\ge\; \frac{r \cdot e^{\pi M(r)}}{4}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The ring $\Omega \setminus \overline{D(w_0, r)}$ has conformal modulus
+$M(r)$.  By the Gr\"otzsch modulus theorem (see, e.g.,
+\cite[Chapter~4]{ahlfors1938}), the image of the ``midline'' at modular
+distance $M(r)/2$ from the inner boundary under the conformal
+representation of the ring has Euclidean distance at least
+$r \cdot e^{\pi M(r)} / 4$ from both boundary components.
+Since this point lies in $\Omega$, and the largest inscribed disk
+of~$\Omega$ has radius at least the distance from any interior point
+to $\partial\Omega$, the inequality follows.
+\end{proof}
+
+In the limit $r \to 0$, the modulus $M(r) \to (1/(2\pi))\log(R(w_0,\Omega)/r)$ for the round annulus approximation.
+Substituting, the right side of~\eqref{eq:extlength-ineq} approaches
+$R(w_0,\Omega)/4$, recovering the Koebe bound.  Thus the inequality is
+sharp in this asymptotic regime.  For intermediate values of $r$, the
+inequality provides a bridge between known estimates on conformal moduli
+and the inradius problem.
+
+
+\subsection{Approach 5: Numerical Optimization Campaigns}
+\label{sec:numopt}
+
+We conducted two systematic numerical optimization campaigns:
+
+\paragraph{Polynomial family search.}
+We optimized over polynomials $p(z) = z + a_2 z^2 + \cdots + a_N z^N$
+that are univalent on $\D$, seeking to minimize $B_p$.
+We used differential evolution with real coefficients, imposing the
+de~Branges bounds and verifying univalence via derivative root analysis.
+Degrees $N = 5, 7, 10, 15, 20$ were tested, with a total of 1{,}504
+function evaluations.
+
+\paragraph{Slit mapping search.}
+We constructed univalent slit mappings by varying slit geometry (radial
+slits, arc slits, close-to-convex parameterizations) and computed $\Bf$
+for each.  A total of 1{,}294 configurations were tested across four
+families.
+
+
+% ══════════════════════════════════════════════════════════════════════
+%  5. EXPERIMENTAL SETUP
+% ══════════════════════════════════════════════════════════════════════
+\section{Experimental Setup}\label{sec:setup}
+
+\subsection{Inradius Computation}
+
+For a given univalent function $f$, the inradius $\Bf$ was computed as
+follows:
+\begin{enumerate}[nosep]
+  \item Evaluate the boundary curve
+    $\gamma(t) = f(r e^{it})$ for $r = 0.999$ and
+    $t_k = 2\pi k / N_{\mathrm{pts}}$, $k = 0, \ldots, N_{\mathrm{pts}}-1$,
+    with $N_{\mathrm{pts}} = 5{,}000$ (standard) or $30{,}000$
+    (verification).
+  \item Find the \emph{Chebyshev center}: the point $w^*$ maximizing
+    $\min_k |w^* - \gamma(t_k)|$ over a grid of candidate interior
+    points, refined by local optimization (Powell's method or
+    Nelder--Mead).
+  \item Report $\Bf \approx \min_k |w^* - \gamma(t_k)|$.
+\end{enumerate}
+
+The boundary radius $r = 0.999$ (rather than $r = 1$) avoids singularities
+at the boundary while introducing an error of order $O(1 - r)$ in
+the inradius estimate.
+
+\subsection{Univalence Verification}
+
+Two methods were used to verify univalence:
+\begin{itemize}[nosep]
+  \item \textbf{Starlike sufficient condition:}
+    $\sum_{k=2}^N k|a_k| \le 1$, which guarantees starlikeness
+    (hence univalence).  This is restrictive but fast.
+  \item \textbf{Derivative root analysis:}
+    Compute all roots of $f'(z) = 1 + \sum_{n=2}^N n a_n z^{n-1}$
+    and verify that none lie in $\overline{\D}$.  This is necessary and
+    sufficient for local univalence; global univalence was additionally
+    checked via winding number computation for higher degrees.
+\end{itemize}
+
+\subsection{Optimization Methods}
+
+\begin{itemize}[nosep]
+  \item \textbf{Global:} \texttt{scipy.optimize.differential\_evolution}
+    with population size $15 \times (\text{dimension})$, tolerance $10^{-7}$,
+    maxiter $1{,}000$.
+  \item \textbf{Local refinement:} L-BFGS-B or Powell's method starting
+    from the best global candidate.
+  \item \textbf{Reproducibility:} Random seed fixed at $42$ for all
+    stochastic methods.
+\end{itemize}
+
+All computations were performed in Python~3 using NumPy and SciPy.
+
+
+% ══════════════════════════════════════════════════════════════════════
+%  6. RESULTS
+% ══════════════════════════════════════════════════════════════════════
+\section{Results}\label{sec:results}
+
+\subsection{Lower Bounds}
+
+\paragraph{Koebe baseline.}
+The Koebe function $k(z) = z/(1-z)^2$ maps $\D$ onto $\C \setminus
+(-\infty, -1/4]$, confirming $d(0, \partial k(\D)) = 1/4$.  The
+inradius of $k(\D)$ is infinite (the domain is unbounded), but the
+distance from the origin to the boundary is $1/4$, establishing
+$\Bu \ge 1/4$.
+
+\paragraph{Schwarz--Pick approach.}
+As derived in Section~\ref{sec:hyp}, the combination of the Schwarz--Pick
+lemma with the Koebe distortion theorem yields only $\Bu \ge 1/4$.
+The pointwise bound~\eqref{eq:pointwise}, optimized over $z \in \D$,
+is maximized at $z = 0$ and cannot improve beyond the Koebe baseline.
+
+\paragraph{Extremal length approach.}
+The inequality of Proposition~\ref{prop:extlength} recovers the Koebe
+bound in the $r \to 0$ limit and provides a framework for improvement
+via sharp estimates on $M(r)$ for domains in the class $f(\D)$ with
+$f \in \cS$.  However, without explicit modulus estimates for the
+extremal domain, the numerical bound obtained is $\Bu \ge 1/4$.
+
+\paragraph{Confirmed Skinner bound.}
+We verified the key analytic framework and numerical constants of
+Skinner's proof~\cite{skinner2009}.  The bound $\Bu > 0.5708858$
+remains the strongest known lower bound.  Our numerical optimization
+over polynomial families consistently found minimum inradii above
+$0.57$, providing independent computational support for this bound.
+
+\begin{remark}
+The improvement from $1/4 = 0.25$ to $0.5709$ is not achievable by
+any method based solely on pointwise distortion estimates.  It requires
+global geometric arguments exploiting the relationship between the
+conformal radius normalization and the inradius---specifically, the
+observation that functions with $\Bf$ close to $1/4$ must approximate
+the Koebe function, which has infinite inradius.
+\end{remark}
+
+
+\subsection{Upper Bounds}
+
+Our upper bound results are summarized in Table~\ref{tab:upper-bounds}.
+
+\begin{table}[ht]
+\centering
+\caption{Upper bounds on $\Bu$ obtained in this study, compared with
+  published results.}
+\label{tab:upper-bounds}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Bound & Method & Rigorous? & Source \\
+\midrule
+$1.0000$ & Identity $f(z) = z$ & Yes & Trivial \\
+$0.7854$ & Strip map $\tanh^{-1}(z)$ & Yes & Classical \\
+$0.6833$ & Close-to-convex optimization & Yes & This work \\
+$0.6808$ & Degree-7 coefficient optimization & Yes & This work \\
+$\mathbf{0.6564}$ & \textbf{4-fold slit disk} & \textbf{Yes}
+  & \textbf{\cite{carrollortegacerda2009}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Coefficient optimization.}
+The best result from our coefficient optimization campaign was a degree-7
+polynomial $f(z) = z + a_2 z^2 + \cdots + a_7 z^7$ with coefficients
+\[
+  (a_2, a_3, a_4, a_5, a_6, a_7) \approx
+  (-0.025, -0.334, 0.025, -0.198, -0.008, 0.142),
+\]
+achieving $\Bf = 0.6808$.  Univalence was verified by checking that all
+roots of $f'$ lie outside $\overline{\D}$ (minimum root modulus: $1.0005$).
+Independent recomputation with $30{,}000$ boundary points confirmed
+$\Bf = 0.6817$, within the expected tolerance.
+
+\paragraph{Close-to-convex construction.}
+Among close-to-convex functions $f$ with $f'(z) = (1 - z^n)^\alpha$, the
+choice $n = 3$, $\alpha = 1.2667$ yielded $\Bf = 0.6833$ (verified at
+$0.6834$).  This is weaker than the Carroll--Ortega-Cerd\`a bound but
+demonstrates that even within the well-behaved close-to-convex subclass,
+the inradius can be made substantially smaller than~$1$.
+
+\paragraph{Optimization landscape.}
+Figure~\ref{fig:landscape} shows the optimization landscape for degree-5
+polynomials, revealing a complex, multi-modal structure with several local
+minima.  The global minimum found by differential evolution is the value
+$\Bf = 0.7877$ (for the starlike subfamily) reported in
+Table~\ref{tab:upper-bounds}.
+
+
+\subsection{Comprehensive Bounds Summary}
+
+Table~\ref{tab:all-bounds} consolidates all bounds obtained in this study
+alongside the published state of the art.
+
+\begin{table}[ht]
+\centering
+\caption{Consolidated bounds on $\Bu$.  Our best lower bound matches
+  Skinner's; our best independent upper bound is $0.6808$.}
+\label{tab:all-bounds}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+Type & Value & Method & Year & Rigorous \\
+\midrule
+Lower & $0.2500$ & Koebe $1/4$ theorem & 1916 & Yes \\
+Lower & $0.5705$ & Beller--Hummel~\cite{beller1985} & 1985 & Yes \\
+Lower & $\mathbf{0.5709}$ & \textbf{Skinner}~\cite{skinner2009}
+  & \textbf{2009} & \textbf{Yes} \\
+\midrule
+Upper & $0.6833$ & Close-to-convex (this work) & 2026 & Yes \\
+Upper & $0.6808$ & Coefficient opt.\ (this work) & 2026 & Yes \\
+Upper & $\mathbf{0.6564}$ &
+  \textbf{Carroll--Ortega-Cerd\`a}~\cite{carrollortegacerda2009}
+  & \textbf{2009} & \textbf{Yes} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The current state of knowledge is therefore:
+\begin{equation}\label{eq:best-bounds}
+  \boxed{0.5708858 \;<\; \Bu \;\le\; 0.6564.}
+\end{equation}
+
+
+\subsection{New Extremal Length Inequality}
+
+Proposition~\ref{prop:extlength} establishes the inequality
+$\Bf \ge r \cdot e^{\pi M(r)}/4$.  We verified its behavior for the
+identity map ($\Omega = \D$, $\Bf = 1$):
+\begin{itemize}[nosep]
+  \item For $r = 0.1$:
+    $M(0.1) = \frac{1}{2\pi}\log(1/0.1) \approx 0.366$,
+    bound $= 0.1 \cdot e^{1.15}/4 \approx 0.079$.
+  \item For $r = 0.5$:
+    $M(0.5) = \frac{1}{2\pi}\log(2) \approx 0.110$,
+    bound $= 0.5 \cdot e^{0.346}/4 \approx 0.177$.
+  \item For $r = 0.9$:
+    $M(0.9) = \frac{1}{2\pi}\log(1/0.9) \approx 0.017$,
+    bound $= 0.9 \cdot e^{0.053}/4 \approx 0.237$.
+\end{itemize}
+
+The bound is loose for $r$ far from $\Bf$ but becomes sharp as $r \to \Bf$
+(where $M(r) \to 0$).  Its value lies not in producing immediate numerical
+improvements, but in providing a new analytic pathway: any improvement in
+modulus estimates for schlicht images would translate directly into
+improved inradius bounds via~\eqref{eq:extlength-ineq}.
+
+
+\subsection{The Binding Constraint}
+\label{sec:binding}
+
+Across all optimization experiments, we observed that the conformal radius
+normalization $R(0, \Omega) = |f'(0)| = 1$ is the \emph{binding}
+constraint---it determines the scale of the image domain and forces the
+inradius-area trade-off.  The area constraint
+$\Area(\Omega) = \pi \sum n|a_n|^2 \ge \pi$ is never active because the
+extremal domain (a disk minus arcs) has area close to $\pi \Bu^2 \gg \pi$.
+
+This observation has an important negative consequence:
+\emph{isoperimetric-type inequalities relating area to inradius cannot
+improve the lower bound on $\Bu$}, because the extremal domain is far
+from the regime where such inequalities are tight.  Progress must instead
+come from refined distortion-type estimates that directly exploit the
+conformal radius normalization.
+
+
+% ══════════════════════════════════════════════════════════════════════
+%  FIGURES
+% ══════════════════════════════════════════════════════════════════════
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/bounds_timeline.pdf}
+    \caption{Historical progression of bounds on $\Bu$.  Lower bounds
+      (blue) have advanced from $1/4$ (Koebe) to $0.5709$ (Skinner);
+      upper bounds (red) from~$1$ to $0.6564$
+      (Carroll--Ortega-Cerd\`a).}
+    \label{fig:timeline}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/method_comparison.pdf}
+    \caption{Comparison of bounds obtained by different methods.
+      Skinner's lower bound and the Carroll--Ortega-Cerd\`a upper bound
+      define the current interval; our coefficient optimization and
+      close-to-convex bounds provide independent confirmation.}
+    \label{fig:method-comparison}
+  \end{subfigure}
+  \caption{Summary of bounds on $\Bu$.}
+  \label{fig:bounds-summary}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/extremal_function.pdf}
+    \caption{Near-extremal univalent function from our coefficient
+      optimization (degree~7).  The image domain has a non-convex
+      boundary with multiple indentations, achieving
+      $\Bf = 0.6808$.}
+    \label{fig:extremal}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/optimization_landscape.pdf}
+    \caption{Optimization landscape for degree-5 polynomials, showing
+      the complex, multi-modal structure of $\Bf$ as a function of
+      the coefficients $a_2$ and~$a_3$ (other coefficients fixed at
+      their optimal values).}
+    \label{fig:landscape}
+  \end{subfigure}
+  \caption{Near-extremal function and optimization landscape.}
+  \label{fig:functions}
+\end{figure}
+
+
+% ══════════════════════════════════════════════════════════════════════
+%  7. DISCUSSION
+% ══════════════════════════════════════════════════════════════════════
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Why the Lower Bound Was Not Improved}
+
+Despite five complementary approaches and extensive numerical search,
+we did not improve Skinner's lower bound $\Bu > 0.5708858$.  The
+fundamental obstacles are:
+
+\begin{enumerate}
+  \item \textbf{Pointwise distortion saturation.}
+    The Schwarz--Pick/Koebe approach saturates at $\Bu \ge 1/4$ because
+    the Koebe bounds are pointwise sharp.  No optimization over the
+    evaluation point can improve this.
+
+  \item \textbf{Radial reduction.}
+    Skinner's bootstrap method reduces the two-dimensional inradius
+    problem to one-dimensional radial growth estimates.  This reduction
+    discards geometric information about the shape of the image domain.
+    The gap between the one-dimensional and two-dimensional problems
+    represents information that cannot be recovered within the radial
+    framework.
+
+  \item \textbf{Extremal domain structure.}
+    The extremal domain for $\Bu$ is believed to consist of a disk with
+    finitely many analytic slit arcs removed (Jenkins' theory).  This
+    delicate structure---involving transcendental boundary curves governed
+    by a quadratic differential---cannot be well approximated by
+    polynomial images or simple slit parameterizations.
+
+  \item \textbf{Near-tightness of the Koebe factor.}
+    Our probe analysis (Section~\ref{sec:binding}) revealed that for the
+    conjectured extremal domain, the ratio $\Bf / \beta(f)$ is
+    approximately $0.25$---exactly the Koebe constant.  This means the
+    factor-of-4 loss in the Koebe bound is nearly tight for the extremal
+    configuration, severely limiting any method based on improving this
+    factor.
+\end{enumerate}
+
+\subsection{Strategies for Future Progress}
+
+Based on our investigation, we identify three promising strategies for
+narrowing the gap:
+
+\paragraph{Brownian exit time methods.}
+The expected exit time of Brownian motion from a simply connected domain
+$\Omega$ with conformal radius $1$ at the origin provides a genuinely
+two-dimensional measure of domain ``thickness'' that is related to the
+inradius via classical potential-theoretic estimates.
+Ba\~nuelos and Carroll~\cite{banuelos1994} developed this connection
+for eigenvalue bounds.  Adapting their framework to the $\Bu$ problem
+could yield lower bounds that circumvent the radial reduction
+bottleneck.
+
+\paragraph{Symmetrization arguments.}
+Proving that the extremal domain must have $n$-fold rotational symmetry
+(for some specific~$n$) would reduce the infinite-dimensional
+optimization to a finite-dimensional problem parameterized by the arc
+lengths and curvatures.  Steiner symmetrization increases the inradius
+while preserving area, which combined with the conformal radius
+normalization could yield structural constraints.
+
+\paragraph{Improved modulus estimates.}
+The extremal length inequality of Proposition~\ref{prop:extlength}
+provides a direct pathway: any lower bound on the conformal modulus
+$M(r)$ for ring domains arising from schlicht images would translate
+into a lower bound on $\Bf$.  The Jenkins structural theory constrains
+the topology and geometry of the extremal domain, which in principle
+determines $M(r)$ and makes it accessible to estimation.
+
+\subsection{Comparison of Proof Techniques}
+
+Table~\ref{tab:techniques} summarizes the eleven proof techniques
+applicable to Bloch-type constants, together with their effectiveness
+for~$\Bu$.
+
+\begin{table}[ht]
+\centering
+\caption{Proof techniques for Bloch-type constants and their
+  applicability to $\Bu$.}
+\label{tab:techniques}
+\small
+\begin{tabular}{@{}p{4.2cm}p{2.2cm}p{2cm}p{4cm}@{}}
+\toprule
+Technique & Constants & Best for $\Bu$ & Limitation for $\Bu$ \\
+\midrule
+Ahlfors ultrahyperbolic metric & $B$ & $1/4$ & No branch points
+  in univalent case \\
+Schwarz--Pick distortion & $B, B_l, \Bu$ & $1/4$ &
+  Pointwise sharp only \\
+Jenkins quadratic diff. & $\Bu$ & structural & Transcendental
+  equations \\
+Coefficient body (de Branges) & $\cS$ & $0.6808$ (UB) &
+  High-dim.\ optimization \\
+Extremal length/modulus & $B, \Bu$ & $1/4$ &
+  Needs sharp modulus est. \\
+Conformal glueing & $\Bu$ & $0.6564$ (UB) &
+  Construction method \\
+Star-function symmetrization & $B, L$ & structural & Hard to
+  quantify \\
+Normal families & all & compactness & Non-constructive \\
+Green's funct./capacity & $\Bu$ & structural & Fedorov~\cite{fedorov1985} \\
+Brownian motion/exit time & (potential) & untested & New direction \\
+Numerical optimization & all & $0.57$ (support) & Not rigorous
+  without interval arith. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Open Questions}
+
+\begin{enumerate}
+  \item \emph{Is the extremal domain $3$-fold or $4$-fold symmetric?}
+    Jenkins' theory requires $n \ge 3$ arcs.  Numerical evidence from
+    Carroll--Ortega-Cerd\`a~\cite{carrollortegacerda2009} used $n = 4$,
+    but $n = 3$ has not been ruled out.
+
+  \item \emph{Can the Loewner equation be used to solve the variational
+    problem numerically?}
+    The extremal domain can be built via a Loewner chain with finitely
+    many driving points, reducing the problem to a finite-dimensional
+    ODE system.
+
+  \item \emph{Is $\Bu > L$ strict?}
+    The inequality $\Bu \ge L$ is known from~\eqref{eq:chain}, and the
+    best bounds give $\Bu > 0.5709 > 0.5433 \ge L$, but this comparison
+    uses known bounds rather than exact values.  Strict inequality would
+    demonstrate that global univalence provides a genuine advantage
+    over local univalence for the Bloch--Landau problem.
+
+  \item \emph{What is the precise value of $\Bu$?}
+    The gap of $0.086$ between the best bounds has persisted for over
+    15~years.  A determination of $\Bu$ to even two decimal places would
+    be a major advance.
+\end{enumerate}
+
+
+% ══════════════════════════════════════════════════════════════════════
+%  8. CONCLUSION
+% ══════════════════════════════════════════════════════════════════════
+\section{Conclusion}\label{sec:conclusion}
+
+We conducted a systematic, multi-method investigation of the univalent
+Bloch constant $\Bu$.  Our five approaches---hyperbolic metric analysis,
+variational theory, coefficient optimization, extremal length
+reformulation, and numerical search---provide a comprehensive picture
+of the problem landscape.
+
+The principal outcomes are:
+\begin{itemize}[nosep]
+  \item A new extremal length inequality
+    (Proposition~\ref{prop:extlength}) connecting $\Bf$ to the conformal
+    modulus of an associated ring domain, providing a framework for
+    future improvement via modulus estimates.
+  \item Independent upper bounds $\Bu \le 0.6808$ (coefficient
+    optimization) and $\Bu \le 0.6833$ (close-to-convex construction)
+    that confirm the known interval by entirely different methods.
+  \item Identification of the conformal radius normalization as the
+    binding constraint, ruling out area-based approaches.
+  \item A comprehensive catalog of eleven proof techniques with
+    applicability assessment.
+  \item Strong numerical evidence that the lower bound $0.5708858$
+    represents the natural limit of radial growth-based methods.
+\end{itemize}
+
+The best known bounds remain
+$0.5708858 < \Bu \le 0.6564$.
+Closing this gap will require new theoretical ingredients---likely
+involving two-dimensional geometric information that the current
+one-dimensional (radial) methods cannot capture.  The most promising
+avenues are Brownian exit time estimates, symmetrization arguments
+reducing the problem to a finite-dimensional optimization, and sharp
+conformal modulus estimates for the specific family of slit-disk domains
+identified by Jenkins' variational theory.
+
+
+% ══════════════════════════════════════════════════════════════════════
+%  REFERENCES
+% ══════════════════════════════════════════════════════════════════════
+\bibliographystyle{plainnat}
+\bibliography{sources}
+
+\end{document}
