@@ -445,8 +445,15 @@ def save_results(results, output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     # Save position data as numpy arrays
-    pos_array = np.array([p for p in results["positions"]])
-    np.save(os.path.join(output_dir, "positions.npy"), pos_array)
+    # Handle variable-size arrays (from collisions reducing body count)
+    try:
+        pos_array = np.array([p for p in results["positions"]])
+        np.save(os.path.join(output_dir, "positions.npy"), pos_array)
+    except ValueError:
+        # Inhomogeneous shapes due to merging — save as list of arrays
+        import pickle
+        with open(os.path.join(output_dir, "positions.pkl"), "wb") as f:
+            pickle.dump(results["positions"], f)
 
     # Save energy log as CSV
     if results["energy"]:
@@ -474,7 +481,12 @@ def save_results(results, output_dir):
                                                     "body_j", "type"])
             writer.writeheader()
             for c in results["collisions"]:
-                writer.writerow(c)
+                writer.writerow({
+                    "timestep": c["step"],
+                    "body_i": c["body_i"],
+                    "body_j": c["body_j"],
+                    "type": c["type"],
+                })
 
     # Save metadata
     meta = {

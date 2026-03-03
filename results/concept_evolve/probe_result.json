@@ -1,0 +1,213 @@
+{
+  "bottleneck": "pure Python N-body simulation performance bottleneck: tree traversal overhead vs vectorized computation",
+  "research_summary": "Pure Python Barnes-Hut tree codes suffer a fundamental tension: the O(N log N) tree traversal is algorithmically superior to O(N^2) brute force, but its pointer-chasing, branch-heavy, recursive nature defeats Python's strengths (vectorized NumPy batch ops). pytreegrav solves this by implementing the octree as a numba jitclass, achieving near-C performance without leaving Python. Mike Grudic's blog demonstrates the crossover: a numba-JIT brute-force method beats pure-Python Barnes-Hut until ~10^4 particles, where algorithmic scaling finally dominates constant-factor overhead. Key research threads include: (1) Morton/Z-order linearization of octrees for cache-friendly flat-array traversal, (2) automatic vectorization of tree traversals via traversal splicing (Purdue, Jo/Kulkarni PACT 2013), (3) dual-tree traversal on GPUs splitting CPU tree-walk from GPU force computation (Fortin & Touche 2019), (4) Fast Multipole Methods with SIMD and rotation-accelerated operators (Taichi code, Mukherjee et al. 2020), (5) graph neural networks learning N-body force approximations to bypass tree traversal entirely (Martinkus et al. AAAI 2021, Ramos-Osuna et al. 2025), and (6) the bhut library offering NumPy/Dask backends for flexible scaling.",
+  "associations": [
+    {
+      "concept": "pointer-chasing penalty",
+      "expansion": "Python object graph traversal incurs ~100x overhead vs C due to reference counting, dict lookups for attributes, and lack of struct packing. Each node visit in a Python octree involves multiple hash table lookups, GIL acquisition, and cache-hostile memory patterns. This is the single largest contributor to the tree traversal overhead in pure Python."
+    },
+    {
+      "concept": "algorithmic crossover point",
+      "expansion": "There exists a critical N (typically 10^3-10^4) below which brute-force O(N^2) vectorized computation is faster than O(N log N) tree traversal due to constant-factor overhead. This crossover is language-dependent: in C it occurs at ~100 particles; in pure Python it can be ~50,000+ because tree overhead is so extreme. The crossover is a design decision boundary, not a fixed constant."
+    },
+    {
+      "concept": "memory layout vs algorithm complexity",
+      "expansion": "The fundamental tension: trees provide algorithmic efficiency (N log N) but terrible memory locality (pointer chasing, random access). Flat arrays provide cache-friendly sequential access ideal for SIMD/vectorization but force O(N^2) pairwise computation. The bottleneck IS this tradeoff \u2014 neither pure approach is optimal."
+    },
+    {
+      "concept": "recursive dispatch overhead in interpreted languages",
+      "expansion": "Each recursive call in Python pushes a frame object onto the call stack (~50+ attribute accesses per call). A tree of depth log_8(N) with branching factor 8 means ~N total node visits, each costing ~microseconds in Python vs ~nanoseconds in C. The recursion itself becomes the bottleneck, not the force computation."
+    },
+    {
+      "concept": "branch prediction failure in tree traversal",
+      "expansion": "The opening-angle criterion (theta = a/r) creates data-dependent branching that defeats CPU branch predictors. In vectorized computation, all particles follow the same code path. This hardware-level effect compounds the Python-level overhead."
+    },
+    {
+      "concept": "numba jitclass as the bridge technology",
+      "expansion": "pytreegrav demonstrates that implementing the octree as a numba jitclass eliminates the Python interpreter overhead while preserving the algorithmic advantage. The tree traversal is JIT-compiled to native code, reducing per-node overhead by ~100x. This is currently the state-of-the-art solution for 'pure Python' N-body codes."
+    },
+    {
+      "concept": "Morton ordering as tree linearization",
+      "expansion": "Z-order curves (Morton codes) map 3D spatial positions to a 1D sort key that preserves spatial locality. Sorting particles by Morton code and using binary search on the sorted array achieves octree-equivalent spatial queries with flat-array cache performance. This converts tree traversal into array scanning \u2014 directly amenable to vectorization."
+    },
+    {
+      "concept": "the dual-tree walk decomposition",
+      "expansion": "Fortin & Touche (2019) showed that splitting the tree walk (CPU) from force computation (GPU) enables hybrid architectures. The tree walk is inherently serial and branch-heavy; the force sums are embarrassingly parallel. This decomposition exposes the exact boundary of the bottleneck."
+    },
+    {
+      "concept": "learned force approximation",
+      "expansion": "Graph neural networks (Sanchez-Gonzalez et al. 2020, Martinkus et al. 2021) can learn to approximate N-body forces with hierarchical graph structures that reduce edges from O(N^2) to O(N). This replaces the tree traversal with a fixed-depth message-passing computation that is inherently vectorizable on GPUs."
+    },
+    {
+      "concept": "traversal splicing for SIMD",
+      "expansion": "Jo & Kulkarni (PACT 2013) showed that dynamically reordering tree traversals so that particles following similar paths are grouped together enables SIMD execution of the traversal itself. Similar traversals are batched, converting divergent pointer-chasing into coherent vectorized work."
+    }
+  ],
+  "forced_bridges": [
+    {
+      "from": "N-body tree traversal overhead",
+      "to": "database query optimization (B+ tree SIMD adaptation)",
+      "mechanism": "Zeuch et al. (EDBT 2014) adapted B+-trees for SIMD by replacing binary search on inner nodes with k-ary search on linearized node layouts. The same principle applies to octree inner nodes: instead of visiting children via pointers, pack child bounding-box data into SIMD-width arrays and perform parallel opening-angle tests on 4-8 children simultaneously. This converts the branching decision from serial pointer-chasing to a single vectorized comparison."
+    },
+    {
+      "from": "Python interpreter overhead in recursive tree walk",
+      "to": "compiler optimization: packed tree representations (Gibbon language, Vollmer et al.)",
+      "mechanism": "The Gibbon compiler (Indiana/Purdue) compiles tree transforms to operate on packed byte-array representations instead of pointer-based trees. Trees are serialized into contiguous memory in traversal order. Applying this principle to Python: serialize the octree into a numpy structured array in breadth-first or Morton order, then traverse via index arithmetic instead of pointer dereferencing. This eliminates Python object overhead entirely while maintaining tree semantics."
+    },
+    {
+      "from": "Barnes-Hut opening angle criterion branching",
+      "to": "adaptive mesh refinement (AMR) in computational fluid dynamics",
+      "mechanism": "AMR codes face the same problem: deciding where to refine (analogous to opening a tree node) requires per-cell branching decisions. The solution in AMR is to pre-compute refinement levels as a tagging pass, then process each level as a uniform grid batch. Applied to N-body: pre-compute a 'traversal depth map' for each particle (how deep into the tree it needs to go in each octant), then batch particles with similar depth profiles for vectorized force accumulation."
+    },
+    {
+      "from": "tree traversal cache misses",
+      "to": "web browser layout engine optimization (Meyerovich, Berkeley 2013)",
+      "mechanism": "Browser CSS layout engines perform tree traversals over DOM trees with attribute inheritance \u2014 structurally identical to gravity tree walks with multipole inheritance. Meyerovich showed that synthesizing parallel traversal schedules from attribute grammars achieves 3-30x speedups. The parallel schedule groups independent subtree computations for batch execution. N-body analogy: nodes at the same tree level with non-overlapping spatial influence can be processed in parallel batches."
+    },
+    {
+      "from": "N-body simulation force computation",
+      "to": "transformer attention mechanism (self-attention as all-pairs interaction)",
+      "mechanism": "Self-attention in transformers computes all-pairs interactions between tokens \u2014 structurally identical to brute-force N-body. Efficient attention methods (Performer, FlashAttention, hierarchical attention) use the same tricks as N-body: low-rank approximation (analogous to multipole expansion), chunked computation for memory locality, and hierarchical grouping. FlashAttention's tiling strategy for GPU SRAM could directly optimize brute-force N-body for small-N regimes where tree overhead dominates."
+    },
+    {
+      "from": "pure Python performance ceiling",
+      "to": "signal processing: polyphase filter banks",
+      "mechanism": "Polyphase filter banks decompose a complex filtering operation into multiple simpler, uniformly-structured sub-operations that can be vectorized. Applied to N-body: decompose the tree walk into 'interaction lists' at each tree level \u2014 uniform-length lists of (source_node, target_particle) pairs that can be processed as batch matrix operations. This is exactly what the Fast Multipole Method's interaction lists achieve, but reframed as a signal-processing decomposition."
+    },
+    {
+      "from": "octree construction overhead",
+      "to": "radix sort in GPU computing",
+      "mechanism": "Morton-code-based octree construction reduces tree building to: (1) compute Morton codes for all particles (embarrassingly parallel), (2) radix sort (O(N), GPU-friendly), (3) find octant boundaries via binary search on sorted array. This replaces recursive subdivision with sorting \u2014 a fundamentally vectorizable operation. The 'tree' is implicit in the sorted order."
+    },
+    {
+      "from": "recursive tree walk in Python",
+      "to": "continuation-passing style (CPS) in functional programming",
+      "mechanism": "CPS transforms recursion into iteration with explicit continuations. For tree walks, this means converting the recursive descent into a work-stack of pending node evaluations. In Python, this eliminates frame-creation overhead. More importantly, the work-stack can be sorted by spatial locality before processing, enabling batched memory access patterns. This is the software analog of hardware prefetching."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "Extremely small N (N < 50)",
+      "result": "Tree construction overhead completely dominates. The octree build alone costs more than the brute-force O(N^2) computation. In pure Python, the crossover is even worse: tree build + traversal for N=50 can be 100x slower than a numba-JIT brute-force sum. Paradoxically, the 'fast' algorithm is the slow one.",
+      "implication": "Hybrid approaches must detect small-N regimes and fall back to brute-force. pytreegrav already implements this auto-detection."
+    },
+    {
+      "constraint": "Highly clustered (non-uniform) particle distribution",
+      "result": "Tree depth becomes very unbalanced. Some branches reach depth 30+ while others terminate at depth 2. The opening-angle criterion causes particles near dense clusters to open almost every node, degrading to near-O(N^2) for those particles while distant particles remain O(log N). The variance in per-particle computation time defeats vectorization assumptions.",
+      "implication": "For highly clustered distributions, adaptive group-size tree nodes (not fixed octants) or FMM with error-controlled opening criteria (as in Taichi code) provide more uniform work distribution."
+    },
+    {
+      "constraint": "Very high accuracy requirement (theta < 0.1)",
+      "result": "At theta=0.1, pytreegrav shows the tree method is slower than brute-force for N=10^5 (63s tree vs 44s brute-force). The tree opens so many nodes that the traversal overhead exceeds the savings from approximation. The tree code's advantage exists only in a specific (theta, N) parameter space.",
+      "implication": "For high-accuracy applications, FMM with higher-order multipole expansions is strictly necessary. The Barnes-Hut monopole approximation cannot efficiently serve the high-accuracy regime at moderate N."
+    },
+    {
+      "constraint": "Streaming/online particle insertion (dynamic simulation)",
+      "result": "Rebuilding the octree every timestep is O(N log N) in tree construction alone. For pure Python, tree construction can dominate total runtime (up to 70% for N > 10^5). Morton-code sorting + implicit tree can reduce this since radix sort has lower constant factors, but in Python even sorting overhead is substantial without numba.",
+      "implication": "Persistent tree structures with incremental updates (inserting/removing particles) could amortize construction cost, but increase code complexity and are hostile to vectorization."
+    },
+    {
+      "constraint": "GPU-only execution (no CPU tree walk)",
+      "result": "The Fortin & Touche (2019) work showed that dual-tree traversal on GPUs requires a hybrid CPU-GPU split because the tree walk is too divergent for GPU SIMT execution. Pure GPU tree walks suffer massive warp divergence. However, BVH traversal in ray tracing (a structurally identical problem) achieves excellent GPU performance through stackless traversal and rope-based linking. The N-body community has not yet fully adopted ray-tracing GPU tree techniques.",
+      "implication": "Cross-pollination from GPU ray-tracing BVH traversal techniques could significantly improve GPU N-body tree walks."
+    },
+    {
+      "constraint": "Pure Python with no C extensions, no numba, no numpy",
+      "result": "In truly pure Python (CPython interpreter only), both brute-force and tree methods are catastrophically slow. However, the tree method's overhead is relatively worse because it creates thousands of Python objects (nodes). For N=1000, brute-force takes ~seconds while tree takes ~tens of seconds. The constant factor penalty is roughly 1000x vs compiled code.",
+      "implication": "Without any compilation or vectorization backend, the bottleneck is so severe that only algorithmic changes (reducing total operations count) matter. Approaches like truncated multipole interaction lists pre-computed once become essential."
+    },
+    {
+      "constraint": "Very high dimensionality (d >> 3)",
+      "result": "Octrees generalize to 2^d-trees, which become exponentially expensive as dimensionality increases. At d=10, each node has 1024 children. Tree traversal overhead grows exponentially with dimension while brute-force only grows linearly (N^2 * d). For d > 6, brute-force vectorized computation almost always wins over tree methods.",
+      "implication": "For high-dimensional N-body-like problems (molecular dynamics with many-body potentials, kernel density estimation), tree methods must be replaced by cover trees, ball trees, or random-projection-based approaches."
+    },
+    {
+      "constraint": "Adversarial particle placement (all particles on a line/plane)",
+      "result": "When particles are co-planar or co-linear, the octree degenerates: most octants are empty, and the tree becomes essentially a binary tree with many empty nodes. Construction and traversal waste time on empty-node checks. The effective branching factor drops from 8 to ~2, increasing tree depth and traversal cost by ~3x.",
+      "implication": "Lower-dimensional trees (quadtrees for 2D, binary trees for 1D) should be auto-selected based on particle distribution dimensionality detection."
+    }
+  ],
+  "steering_directions": [
+    {
+      "direction": "Morton-ordered interaction list precomputation",
+      "rationale": "Replace recursive tree traversal with a precomputed flat array of (source_node_index, target_particle_index) pairs, sorted by Morton code for cache locality. The tree walk happens once to generate the interaction list; subsequent force computation is a vectorized loop over the flat list. This separates the inherently serial 'what interacts with what' decision from the embarrassingly parallel 'compute the forces' step.",
+      "first_step": "Implement Morton encoding for particle positions, sort particles by Morton code, build a flat octree representation using sorted-array index ranges instead of pointer-based nodes. Benchmark tree-build time vs recursive construction.",
+      "expected_signal": "Tree construction should be 5-10x faster (sorting vs recursive subdivision). Interaction list generation should be ~same speed as recursive walk. But force computation over the flat interaction list should be 10-50x faster in NumPy/numba due to vectorization of the force kernel over contiguous memory."
+    },
+    {
+      "direction": "Hybrid adaptive depth-switching: brute-force leaves, tree for far-field",
+      "rationale": "Instead of traversing the tree all the way to individual leaves, stop at a configurable leaf size (e.g., 32-128 particles) and compute brute-force interactions within and between nearby leaf nodes using vectorized kernels. This is the FMM 'near-field' approach adapted for Barnes-Hut. It exploits the fact that small vectorized brute-force batches are faster than per-particle tree traversal.",
+      "first_step": "Modify octree construction to stop subdividing when node particle count drops below a threshold (e.g., N_leaf=64). For each target leaf, collect all source nodes at or above the opening-angle threshold into a 'far-field list' and all nearby leaf nodes into a 'near-field list'. Compute far-field via multipole approximation, near-field via vectorized brute-force.",
+      "expected_signal": "For N=10^5, the near-field brute-force should handle ~99% of force calculations (most interactions are with nearby particles in the same or adjacent leaves), and the vectorized kernel should be 20-50x faster than per-particle tree walk for these interactions. Total speedup of 5-15x over standard Barnes-Hut in Python."
+    },
+    {
+      "direction": "GNN-accelerated force surrogate with tree-code correction",
+      "rationale": "Train a lightweight graph neural network to predict approximate accelerations from particle positions using a hierarchical graph structure (as in Martinkus et al. 2021). Use the GNN prediction as a 'first guess' and apply tree-code corrections only where the GNN error exceeds a threshold. This amortizes tree traversal cost over many timesteps where the force field changes slowly.",
+      "first_step": "Generate training data using an accurate tree code (pytreegrav) for 1000 random particle configurations. Train a 3-layer message-passing GNN on the (positions, masses) -> accelerations mapping. Evaluate inference speed vs tree code computation speed for N=10^4.",
+      "expected_signal": "GNN inference should be 10-100x faster than tree code per timestep (single forward pass vs N tree walks). Accuracy should be ~1-5% for smooth distributions. The correction step using tree code should be needed only every 5-20 timesteps, reducing amortized tree overhead by that factor."
+    },
+    {
+      "direction": "Traversal splicing: batch similar tree walks for SIMD",
+      "rationale": "Following Jo & Kulkarni (PACT 2013), group particles whose tree walks visit similar sequences of nodes. Process these groups together, performing the same opening-angle decisions on batches of 4-8 particles simultaneously. When walks diverge, 'splice' the batch by partitioning into sub-batches. This converts the inherently scalar tree walk into a vectorized operation.",
+      "first_step": "Implement a breadth-first tree walk where, at each level, all target particles are processed together. For each tree node, compute opening angles for all target particles simultaneously (vectorized). Partition particles into 'open' and 'don't open' groups. Recurse on each group. Benchmark vs per-particle depth-first walk.",
+      "expected_signal": "For uniform distributions, ~60-80% of particles should make the same open/don't-open decision at each node, enabling effective vectorization. Expected 3-5x speedup in the walk phase from SIMD utilization. For clustered distributions, speedup drops to 1.5-2x due to increased walk divergence."
+    },
+    {
+      "direction": "Implicit octree via sorted Morton codes (treeless tree code)",
+      "rationale": "Eliminate the tree data structure entirely. Sort particles by Morton code. Use the sorted order to implicitly define octree hierarchy: contiguous ranges in the sorted array correspond to octree nodes at various levels. Compute center-of-mass and extent for each implicit node on-the-fly or in a pre-pass. Tree 'traversal' becomes binary search on the sorted array to find interaction boundaries.",
+      "first_step": "Implement 3D Morton encoding (bit interleaving) for particle positions. Sort particles by Morton code. Implement a function that, given a Morton code prefix and level, returns the array index range for all particles in that implicit octree node. Benchmark the implicit tree's force computation against explicit octree.",
+      "expected_signal": "Tree construction should be reduced to O(N log N) sort time (or O(N) with radix sort), which is 2-5x faster than explicit recursive construction. Memory usage drops by ~10x (no node objects). Force computation should be comparable or slightly faster due to cache-friendly sequential access. The main risk is that implicit node mass/COM computation adds overhead that offsets memory gains."
+    },
+    {
+      "direction": "FlashAttention-inspired tiled brute-force for moderate N",
+      "rationale": "For N in the 10^3-10^5 range where tree overhead is significant, adapt FlashAttention's GPU tiling strategy: divide particles into tiles of size B (e.g., 64), compute all-pairs forces within and between tiles using fused vectorized kernels that minimize memory traffic. This avoids tree construction entirely while keeping memory access patterns cache-friendly.",
+      "first_step": "Implement a tiled brute-force kernel: partition N particles into tiles of size B. For each pair of tiles, compute the B^2 pairwise forces using a vectorized NumPy kernel. Use spatial sorting (Morton order) to ensure nearby tiles are processed first, enabling early-exit optimizations based on tile-to-tile distance.",
+      "expected_signal": "For N=10^4, tiled brute-force should be within 2-3x of tree-code speed while being simpler and fully vectorized. For N=10^3, it should be 5-10x faster than tree code. The crossover where tree code becomes faster should shift from ~10^4 to ~10^5 particles."
+    },
+    {
+      "direction": "Compile-time tree specialization via staged metaprogramming",
+      "rationale": "Use Python's metaprogramming capabilities to generate specialized, unrolled tree traversal code at tree-build time. For a given tree structure, emit a flat sequence of operations (no branches, no recursion) that computes forces for the specific tree topology. This converts the tree walk into a straight-line program that can be JIT-compiled by numba.",
+      "first_step": "After building the tree, walk it once to generate a list of (action, node_data) tuples representing the traversal. Compile this list into a numba-jit function that executes the actions sequentially without branching. Benchmark against dynamic tree walk for a fixed particle configuration over multiple timesteps.",
+      "expected_signal": "For simulations where particle positions change slowly (the tree topology is mostly stable between timesteps), the specialized code should run 3-10x faster than dynamic traversal. Recompilation is needed only when the tree topology changes significantly (detectable via Morton code sequence edit distance)."
+    }
+  ],
+  "validation_checks": [
+    {
+      "direction": "Morton-ordered interaction list precomputation",
+      "check": "Compare force accuracy (RMS error vs brute-force) at identical theta values. The interaction list approach should produce bit-identical results to recursive traversal for the same theta. Measure: (1) interaction list generation time vs recursive walk time, (2) vectorized force computation time vs per-node force accumulation, (3) total time for N in [10^3, 10^4, 10^5, 10^6]. Success criterion: total time reduction > 3x for N > 10^4.",
+      "falsification_signal": "If interaction list generation takes longer than recursive traversal (due to sorting overhead), or if the flat force computation is not significantly faster (due to poor vectorization of variable-length interaction lists), the approach fails. Also check: memory usage should not exceed 2x the recursive approach."
+    },
+    {
+      "direction": "Hybrid adaptive depth-switching",
+      "check": "Profile the fraction of total force computation time spent in near-field vs far-field for various N_leaf thresholds [16, 32, 64, 128, 256]. Measure: (1) near-field vectorized brute-force time, (2) far-field multipole accumulation time, (3) total time vs pure Barnes-Hut and pure brute-force. Success: there exists an N_leaf that minimizes total time and is robust across particle distributions.",
+      "falsification_signal": "If optimal N_leaf varies wildly with particle distribution (e.g., 16 for uniform, 256 for clustered), the approach lacks robustness. If the near-field brute-force for large N_leaf creates O(N_leaf^2 * N_neighbors) overhead that exceeds tree walk savings, the approach is counterproductive."
+    },
+    {
+      "direction": "GNN-accelerated force surrogate",
+      "check": "Measure: (1) GNN inference time vs tree code time per timestep, (2) force prediction RMS error as function of timesteps since last tree-code correction, (3) total simulation error (energy conservation) over 1000 timesteps with various correction intervals. Success: amortized computation cost reduced by > 5x with energy conservation error < 1% per 1000 timesteps.",
+      "falsification_signal": "If GNN inference time (including data formatting and GPU transfer) exceeds tree code time for the target N range, the overhead is not justified. If force prediction error grows faster than linearly with timestep gap, corrections become too frequent to amortize. If training requires > 10^5 configurations to generalize, data generation cost is prohibitive."
+    },
+    {
+      "direction": "Traversal splicing for SIMD batching",
+      "check": "Measure SIMD utilization (fraction of lanes active) during batched tree walk for uniform and clustered distributions. Profile: (1) batch coherence ratio (fraction of particles making same decision at each node), (2) splice frequency (how often batches must be split), (3) total walk time vs scalar walk time. Success: SIMD utilization > 50% and total speedup > 2x for uniform distributions.",
+      "falsification_signal": "If batch coherence drops below 25% for typical astrophysical distributions (which are highly clustered), the SIMD lanes are mostly wasted and the overhead of batch management exceeds savings. In Python specifically, the overhead of managing particle groups in numpy arrays may exceed the SIMD benefit."
+    },
+    {
+      "direction": "Implicit octree via sorted Morton codes",
+      "check": "Benchmark: (1) Morton encode + sort time vs explicit tree build time, (2) implicit node COM computation time, (3) total force computation time. Verify that implicit traversal produces identical force values to explicit tree traversal. Measure memory usage: implicit should use < 20% of explicit tree memory. Success: total time equivalent or better for N > 10^4, memory 5x lower.",
+      "falsification_signal": "If on-the-fly COM computation for implicit nodes is expensive (requires scanning the array range for each node visit), the approach loses its advantage. If the binary search overhead for finding node boundaries exceeds pointer dereferencing cost, the implicit tree is slower for deep traversals. Check also: radix sort availability in Python (numpy's sort is comparison-based, not radix)."
+    },
+    {
+      "direction": "FlashAttention-inspired tiled brute-force",
+      "check": "Measure tiled brute-force time for tile sizes B in [32, 64, 128, 256] and N in [10^3, 10^4, 10^5]. Compare against: (1) naive brute-force, (2) Barnes-Hut tree code, (3) pytreegrav auto-selected method. Profile cache miss rates. Success: tiled method is fastest for N < 10^4 and within 2x of tree code for N = 10^5.",
+      "falsification_signal": "If tile-to-tile distance pruning is ineffective (most tile pairs still need computation), tiled brute-force degrades to O(N^2) with extra overhead. If Python/NumPy overhead per tile pair is significant (function call overhead for N/B * N/B tile pairs), the tiling approach is slower than monolithic vectorized brute-force."
+    },
+    {
+      "direction": "Compile-time tree specialization via staged metaprogramming",
+      "check": "Measure: (1) specialization compilation time vs tree walk time per timestep, (2) specialized execution time vs dynamic walk time, (3) tree topology stability across timesteps (edit distance of node visit sequences). Success: for simulations where tree topology is 90%+ stable between timesteps, amortized time including recompilation is 2x faster than dynamic walk.",
+      "falsification_signal": "If numba recompilation cost per specialization exceeds 100 timesteps of dynamic walk savings, the approach only pays off for very long simulations. If tree topology changes frequently (high-energy collisional systems), recompilation happens nearly every step and the approach is counterproductive. Also: numba JIT compilation of dynamically-generated functions may not be well-supported."
+    }
+  ],
+  "sub_problem": "pure Python N-body simulation performance bottleneck: tree traversal overhead vs vectorized computation",
+  "timestamp": "2026-03-03T19:44:31.145240+00:00"
+}

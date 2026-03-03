@@ -1,0 +1,24 @@
+I'll perform a deep concept probe on the pure Python N-body simulation performance bottleneck: tree traversal overhead vs vectorized computation. Let me start with research.
+Now let me get more specific information on key topics: pytreegrav's approach, the crossover point problem, and adjacent-domain solutions.
+Excellent. Now let me search for a few more specific areas - adjacent domain solutions and unusual constraints.
+Now I have substantial research material. Let me create the directory and write the analysis.
+Now let me write the comprehensive analysis file:
+Done. The probe result is at `/home/archivara/work/repo/results/concept_evolve/probe_result.json` — valid JSON, all required keys present.
+
+**Summary of the probe:**
+
+The core bottleneck is that Python's interpreted, object-heavy execution model catastrophically amplifies the constant-factor overhead of tree traversal (pointer chasing, recursive dispatch, branch-dependent control flow), while simultaneously being well-suited to vectorized brute-force computation via NumPy. This creates a crossover point (~10^4 particles in Python vs ~100 in C) where the O(N^2) method beats O(N log N).
+
+**Key findings from research:**
+- **pytreegrav** solves this via numba jitclass octrees, achieving near-C tree walk performance
+- **Morton-code implicit octrees** eliminate the tree data structure entirely, replacing it with sorted arrays
+- **Traversal splicing** (Purdue, PACT 2013) batches similar tree walks for SIMD execution
+- **GNN surrogates** (AAAI 2021) replace tree traversal with fixed-depth vectorizable message passing
+- **Dual-tree GPU decomposition** separates serial walk (CPU) from parallel force computation (GPU)
+
+**Most promising steering directions:**
+1. Morton-ordered interaction list precomputation (separates serial decisions from parallel computation)
+2. Hybrid leaf-size switching (brute-force small leaves, tree for far-field)
+3. FlashAttention-inspired tiled brute-force for moderate N (extends the vectorized regime)
+
+**Most surprising anomaly:** At theta=0.1 (high accuracy), the tree method is *slower* than brute-force even at N=10^5 — the algorithm's advantage exists only in a specific (theta, N) parameter region, not universally.
