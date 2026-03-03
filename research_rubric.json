@@ -1,13 +1,13 @@
 {
   "version": "1.0",
   "created_at": "2026-03-03T00:00:00Z",
-  "updated_at": "2026-03-03T20:28:45.012886+00:00",
+  "updated_at": "2026-03-03T20:39:26.870758+00:00",
   "current_agent": "orchestrator",
   "agent_status": {
     "orchestrator": {
       "status": "completed",
-      "started_at": "2026-03-03T00:00:00Z",
-      "completed_at": "2026-03-03T20:28:45.012868+00:00",
+      "started_at": "2026-03-03T21:15:00.000000+00:00",
+      "completed_at": "2026-03-03T20:39:26.870737+00:00",
       "error": null
     },
     "researcher": {
@@ -37,7 +37,7 @@
       "items": [
         {
           "id": "item_001",
-          "description": "Analyze repository structure and tooling capabilities",
+          "description": "Analyze repository structure, tooling capabilities, and agent hierarchy",
           "acceptance_criteria": "Produce `results/concept_evolve/repo_analysis.json` documenting: (1) all modules in `.archivara/` and `.opencode/` with their purposes, (2) the ConceptEvolve pipeline (evolve/probe/reframe/walk) and how sub-agents are dispatched, (3) the Semantic Scholar integration and BibTeX export capability, (4) the agent hierarchy (orchestrator, researcher, writer, reviewer, concept_worker) and their tool permissions, (5) the `results/concept_evolve/tree/` folder convention for concept cards. Must be valid JSON with at least 5 top-level sections.",
           "status": "pending",
           "notes": null,
@@ -45,42 +45,42 @@
         },
         {
           "id": "item_002",
-          "description": "DEFLATE format deep-dive: map the sequential dependency chain",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/001_deflate_format_analysis/concept.json` containing: (1) formal description of DEFLATE's three block types (uncompressed, fixed Huffman, dynamic Huffman), (2) bit-level diagram of the decode loop's sequential dependency chain (peek -> table lookup -> consume -> output -> repeat), (3) quantified critical-path latency per symbol on modern x86 (Skylake/Zen4) and ARM (M1/M4) citing cycle counts from Agner Fog or vendor manuals, (4) identification of the three serialization barriers (Huffman variable-length codes, LZ77 back-reference data dependency, bit-stream position tracking). Must cite at least 3 sources.",
+          "description": "DEFLATE format deep-dive: map the sequential dependency chain that limits decompression throughput",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/001_deflate_format_analysis/concept.json` containing: (1) formal description of DEFLATE's three block types (uncompressed, fixed Huffman, dynamic Huffman) with bit-level layout, (2) diagram of the decode loop's sequential dependency chain (peek bits -> table lookup -> consume variable bits -> output literal or execute copy -> repeat), (3) quantified critical-path latency per symbol on modern x86 (Zen4) and ARM (Apple M4) citing cycle counts from Agner Fog's instruction tables or vendor optimization manuals, (4) identification of the three fundamental serialization barriers: Huffman variable-length codes preventing bit-parallel decode, LZ77 back-reference data dependency on output history, and bit-stream position tracking requiring serial consumption. Must cite at least 3 technical sources (RFC 1951, Agner Fog tables, one microarchitecture manual).",
           "status": "pending",
           "notes": null,
           "error": null
         },
         {
           "id": "item_003",
-          "description": "Literature review: web search for DEFLATE decompression optimization papers and implementations",
-          "acceptance_criteria": "Using web search tools, locate and summarize at least 15 relevant sources covering: (a) optimized CPU implementations (zlib-ng, libdeflate, ISA-L, zlib-rs, zlib-cloudflare, zlib-chromium, WUFFS, fdeflate, dougallj's zlib fork), (b) parallel decompression (pugz, rapidgzip, pigz), (c) GPU approaches (nvCOMP/GDeflate, CUHD massively parallel Huffman), (d) hardware accelerators (Intel QAT, FPGA implementations), (e) foundational bit-IO and Huffman optimization (Fabian Giesen's series, Yann Collet's Huff0/FSE). Produce `results/concept_evolve/literature_review.json` with an array of objects each containing: title, authors, year, venue, url, category (cpu/parallel/gpu/hardware/foundational), key_insight (1-2 sentences), and relevance_score (1-10).",
+          "description": "Comprehensive literature review via web search: DEFLATE decompression optimization papers, codebases, and techniques",
+          "acceptance_criteria": "Using websearch and webfetch tools, locate and summarize at least 15 relevant sources covering: (a) optimized single-core CPU implementations (zlib-ng, libdeflate, ISA-L, zlib-rs, zlib-cloudflare, zlib-chromium, WUFFS, fdeflate, dougallj's experimental zlib fork), (b) parallel/multi-core decompression approaches (pugz, rapidgzip, pigz, pzstd analogs), (c) GPU-accelerated approaches (nvCOMP/GDeflate, CUHD massively parallel Huffman decoding), (d) hardware accelerators (Intel QAT, FPGA DEFLATE engines), (e) foundational bit-IO and entropy coding optimization (Fabian Giesen's 'Reading bits in far too many ways' series, Yann Collet's Huff0/FSE, ANS coding comparisons). Produce `results/concept_evolve/literature_review.json` with an array of objects each containing: title, authors, year, venue_or_url, category (one of: cpu_optimized, parallel, gpu, hardware, foundational), key_insight (1-2 sentences), reported_throughput_if_any, and relevance_score (1-10). Must include at least 3 sources per category.",
           "status": "pending",
-          "notes": null,
+          "notes": "Requires web search and web fetch for real-time information gathering",
           "error": null
         },
         {
           "id": "item_004",
-          "description": "Build sources.bib with BibTeX entries for all consulted sources",
-          "acceptance_criteria": "Create and maintain `sources.bib` in the repo root with valid BibTeX entries for at least 10 relevant papers and technical references. Must include entries for: RFC 1951 (Deutsch 1996), pugz (Kerbiriou & Chikhi 2019), rapidgzip (Knespel & Brunst 2023), massively parallel Huffman on GPUs (Weissenberger & Schmidt 2018), at least one ISA-L paper, at least one FPGA DEFLATE paper, and at least 4 additional sources. Each entry must have title, author, year, and either doi or url fields. Use Semantic Scholar bibtex export where available.",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted references",
+          "acceptance_criteria": "Create `sources.bib` in the repo root with valid BibTeX entries for at least 10 relevant papers and technical references. Must include entries for: (1) RFC 1951 - Deutsch 1996 DEFLATE specification, (2) pugz - Kerbiriou & Chikhi 2019/2020 parallel gzip decompression, (3) rapidgzip - Knespel & Brunst 2023 parallel random-access gzip, (4) Weissenberger & Schmidt 2018 massively parallel Huffman decoding on GPUs, (5) at least one Intel ISA-L reference, (6) at least one FPGA DEFLATE implementation paper, (7) libdeflate technical documentation or associated benchmarks, (8) Fabian Giesen's bit-reading optimization work, and (9) at least 2 additional sources. Each entry must have title, author, year, and either doi or url. Use the semantic_scholar bibtex command where paper IDs are available.",
           "status": "pending",
-          "notes": null,
+          "notes": "Use semantic_scholar bibtex export for entries where paper IDs are known",
           "error": null
         },
         {
           "id": "item_005",
-          "description": "Concept-tree exploration: run ConceptEvolve to generate cross-domain concept cards for DEFLATE speedup",
-          "acceptance_criteria": "Execute ConceptEvolve `evolve` with the topic 'Making DEFLATE decompression 2-5x faster than any existing implementation'. Verify that `results/concept_evolve/tree/` contains at least 8 concept folders, each with `concept.json` and `README.md`. Verify `results/concept_evolve/concept_cards.json` exists with at least 8 cards. Verify `results/concept_evolve/semantic_bridge.json` has nodes and edges. Verify `results/concept_evolve/tree/index.json` and `results/concept_evolve/tree/adjacency.json` exist. Delegate to a literature-graph-miner subagent to cross-reference the concept cards against the literature review and annotate each card with supporting citations.",
+          "description": "ConceptEvolve exploration: generate cross-domain concept cards for DEFLATE speedup strategies",
+          "acceptance_criteria": "Execute ConceptEvolve `evolve` with topic 'Making DEFLATE decompression 2-5x faster than any existing implementation by exploiting speculative execution, SIMD parallelism, and novel algorithmic decomposition'. Verify that `results/concept_evolve/tree/` contains at least 8 concept folders, each with `concept.json` and `README.md`. Verify `results/concept_evolve/concept_cards.json` exists with at least 8 cards spanning at least 3 distinct domains. Verify `results/concept_evolve/semantic_bridge.json` has nodes and edges forming a connected graph. Verify `results/concept_evolve/tree/index.json` and `results/concept_evolve/tree/adjacency.json` exist. Delegate to a literature-graph-miner subagent to cross-reference the concept cards against the literature review (item_003) and annotate each card with supporting citations from sources.bib.",
           "status": "pending",
-          "notes": "Requires subagent delegation: concept-tree-explorer for traversal, literature-graph-miner for citation cross-referencing",
+          "notes": "Requires subagent delegation: literature-graph-miner for citation cross-referencing against concept cards",
           "error": null
         },
         {
           "id": "item_006",
-          "description": "Competitive landscape analysis: benchmark claims and throughput comparison matrix",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/002_competitive_landscape/concept.json` containing a structured comparison matrix of all known DEFLATE decompression implementations with columns: name, language, single_core_throughput_MBps (on Silesia corpus or equivalent), parallelism_support, SIMD_usage, streaming_api, format_compatibility, license. Must include at least 10 implementations. Include a 'gap_analysis' field identifying the specific performance gaps between stock zlib (~250 MB/s), best single-core (~1100 MB/s libdeflate), and best parallel (~10 GB/s rapidgzip). Cite throughput numbers to specific benchmark sources.",
+          "description": "Competitive landscape analysis: benchmark claims and throughput comparison matrix across all known DEFLATE implementations",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/002_competitive_landscape/concept.json` containing a structured comparison matrix of all known DEFLATE decompression implementations with columns: name, language, single_core_throughput_MBps (on Silesia corpus or equivalent standard benchmark), parallelism_model (none/block-level/stream-level), SIMD_usage (none/SSE4/AVX2/NEON/SVE), streaming_api (yes/no), format_compatibility (deflate-only/gzip/zip/all), license, and notable_technique. Must include at least 12 implementations. Include a 'gap_analysis' field identifying the specific performance gaps: stock zlib (~250 MB/s), best optimized zlib-compatible (~450 MB/s zlib-ng), best single-core non-streaming (~1100 MB/s libdeflate), and best parallel (~10+ GB/s rapidgzip with many cores). All throughput numbers must cite specific benchmark sources from the literature review. Define explicit 2x and 5x target thresholds relative to the best single-core implementation.",
           "status": "pending",
-          "notes": null,
+          "notes": "Depends on item_003 for benchmark citations",
           "error": null
         }
       ]
@@ -92,42 +92,42 @@
       "items": [
         {
           "id": "item_007",
-          "description": "Establish benchmarking infrastructure and corpus selection",
-          "acceptance_criteria": "Create `results/concept_evolve/tree/003_benchmark_infra/concept.json` specifying: (1) benchmark corpus selection with rationale (must include Silesia corpus, Canterbury corpus, at least one large gzip file >1GB, PNG test suite, and synthetic worst-case inputs), (2) measurement methodology (wall-clock time, CPU cycles via perf/RDTSC, throughput in MB/s of decompressed output, L1/L2/L3 cache miss rates, branch misprediction rates), (3) statistical rigor requirements (minimum 10 runs, report median and p95, exclude first run for warmup), (4) hardware specification template (CPU model, frequency, cache sizes, memory bandwidth). Produce a `benchmarks/` folder specification with planned scripts.",
+          "description": "Establish benchmarking infrastructure, corpus selection, and measurement methodology",
+          "acceptance_criteria": "Create `results/concept_evolve/tree/003_benchmark_infra/concept.json` specifying: (1) benchmark corpus with rationale -- must include Silesia corpus (all 12 files), Canterbury corpus, at least one large gzip file >1GB (e.g., enwiki dump), a PNG test suite with varied image types, and synthetic worst-case inputs (maximum-distance references, all-literals, pathological Huffman distributions), (2) measurement methodology: wall-clock time via high-resolution timer, CPU cycles via rdtsc/perf_event, throughput as MB/s of decompressed output, cache miss rates (L1d, L2, LLC) via perf stat, branch misprediction rate, IPC (instructions per cycle), (3) statistical rigor: minimum 30 runs per measurement, report median and 95th percentile, first 5 runs excluded as warmup, Wilcoxon signed-rank test for pairwise comparisons at p<0.05, (4) hardware specification template requiring: CPU model + stepping, base/boost frequency, L1/L2/L3 cache sizes, memory bandwidth, compiler + flags. Produce a `benchmarks/README.md` specification describing the planned benchmark harness.",
           "status": "pending",
-          "notes": null,
+          "notes": "Delegate to concept-tree-explorer subagent to verify the benchmark design covers all concept-card scenarios from item_005",
           "error": null
         },
         {
           "id": "item_008",
-          "description": "Profile zlib reference implementation to identify hotspots",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/004_zlib_profiling/concept.json` with a detailed profile of zlib's inflate path showing: (1) percentage of time in each major function (inflate, inflate_fast, updatewindow, adler32, code table building), (2) branch misprediction hotspots with specific line numbers, (3) cache behavior analysis (table sizes, access patterns), (4) IPC measurement showing actual vs. theoretical throughput, (5) comparison of zlib's inflate_fast vs. the main inflate loop. Include profiling methodology and specific perf counters used. Reference prior work from literature review (item_003).",
+          "description": "Profile zlib reference implementation to identify hotspot functions and microarchitectural bottlenecks",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/004_zlib_profiling/concept.json` with a detailed profile of zlib 1.3.x inflate path showing: (1) percentage of execution time in each major function (inflate(), inflate_fast(), inflate_table(), updatewindow(), adler32()), (2) branch misprediction hotspots with specific source locations (file:line) in inflate_fast's main decode loop, (3) cache behavior analysis: Huffman table sizes vs. L1d capacity, sliding window access pattern vs. L2, (4) IPC measurement showing actual IPC (~1.2-1.5 expected) vs. theoretical pipeline width (4-6 on Zen4/M4), (5) quantified overhead of zlib's streaming API vs. one-shot decompression (inflate() call overhead, state save/restore cost), (6) comparison of inflate_fast's chunked approach vs. the main inflate() fallback. Must identify the top 3 bottlenecks by cycle contribution. Reference prior work from the literature review (item_003) to contextualize findings.",
           "status": "pending",
-          "notes": null,
+          "notes": "Depends on item_007 for measurement methodology",
           "error": null
         },
         {
           "id": "item_009",
-          "description": "Baseline throughput measurements across all reference implementations",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/005_baseline_measurements/concept.json` with measured decompression throughput (MB/s) for at least 5 implementations (zlib, zlib-ng, libdeflate, ISA-L, and one Rust implementation) on the benchmark corpus from item_007. Each measurement must include: mean, median, stddev, p95 throughput, and the hardware platform used. Results must be presented as a comparison table and must validate or contradict throughput claims from the literature review (item_003). Include a 'target_throughput' field defining the specific 2x and 5x targets relative to the best measured baseline.",
+          "description": "Baseline throughput measurements across reference implementations on standardized corpus",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/005_baseline_measurements/concept.json` with measured decompression throughput (MB/s of decompressed output) for at least 6 implementations: zlib (stock), zlib-ng, libdeflate, Intel ISA-L, one Rust implementation (zlib-rs or fdeflate), and one parallel implementation (rapidgzip or pugz). Each measurement must include: mean, median, stddev, p95 throughput on each Silesia corpus file and a weighted aggregate. Results must be presented as a comparison table and must validate or contradict throughput claims from the literature review (item_003), with explicit notes on discrepancies. Include a 'target_throughput' field defining specific 2x and 5x targets: e.g., if libdeflate measures 1050 MB/s, 2x = 2100 MB/s and 5x = 5250 MB/s single-core, or multi-core equivalents.",
           "status": "pending",
           "notes": "Depends on item_007 (benchmark infrastructure) and item_003 (literature throughput claims)",
           "error": null
         },
         {
           "id": "item_010",
-          "description": "Micro-benchmark the four critical bottleneck stages independently",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/006_microbenchmarks/concept.json` with isolated micro-benchmarks for: (1) Huffman table construction time (dynamic blocks of varying code-length distributions), (2) Huffman symbol decode throughput (symbols/second for various code-length distributions, measuring the 6-7 cycle critical path), (3) LZ77 copy throughput (varying distances 1-32768 and lengths 3-258, with and without SIMD chunk copy), (4) bit-buffer refill overhead (conditional vs. unconditional refill, measuring branch misprediction cost). Each micro-benchmark must report cycles per operation and identify which stage dominates for typical (Silesia) vs. adversarial inputs. Delegate to a concept-tree-explorer subagent to map these bottleneck measurements to the concept tree and identify which concepts address which bottlenecks.",
+          "description": "Micro-benchmark the four critical bottleneck stages of DEFLATE decompression independently",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/006_microbenchmarks/concept.json` with isolated micro-benchmarks for: (1) Huffman table construction time -- dynamic blocks of varying code-length alphabet sizes (19-entry, 286-entry, 30-entry distance), measuring cycles per table build, (2) Huffman symbol decode throughput -- symbols per second for various code-length distributions (uniform, Zipfian, degenerate), measuring the ~6-7 cycle critical path per symbol, (3) LZ77 copy throughput -- varying distances (1, 4, 32, 1024, 32768) and lengths (3, 10, 64, 258), with and without SIMD memcpy/memmove, measuring cycles per output byte, (4) bit-buffer refill overhead -- conditional refill (branch on bits remaining) vs. unconditional 64-bit refill with shift, measuring branch misprediction penalty. Each micro-benchmark must report cycles per operation and identify which stage dominates for: typical text (Silesia), binary executables, PNG-style filtered data, and adversarial inputs. Delegate to a concept-tree-explorer subagent to map bottleneck measurements to concept cards from item_005 and identify which concepts address which bottlenecks.",
           "status": "pending",
-          "notes": "Requires subagent delegation: concept-tree-explorer to map bottlenecks to concept cards",
+          "notes": "Requires subagent delegation: concept-tree-explorer to map bottleneck-to-concept connections",
           "error": null
         },
         {
           "id": "item_011",
-          "description": "Roofline model for DEFLATE decompression throughput limits",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/007_roofline_model/concept.json` containing: (1) a roofline analysis relating decompression throughput to compute intensity (operations per byte) and memory bandwidth, (2) theoretical single-core throughput ceiling derived from: CPU frequency, IPC limit, critical-path cycles per symbol, average symbols per byte of output, (3) theoretical multi-core throughput ceiling derived from: memory bandwidth, output bandwidth, number of cores, (4) identification of which regime (compute-bound or memory-bound) each optimization approach operates in, (5) specific numerical targets: what cycles/symbol and IPC would be needed to achieve 2x and 5x over libdeflate. Must reference the micro-benchmark results from item_010.",
+          "description": "Roofline model: derive theoretical throughput ceilings for single-core and multi-core DEFLATE decompression",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/007_roofline_model/concept.json` containing: (1) a roofline analysis relating decompression throughput to operational intensity (operations per byte of output) and memory bandwidth, (2) theoretical single-core throughput ceiling derived from: CPU frequency x IPC limit / critical-path-cycles-per-symbol / compression-ratio, with concrete numbers for Zen4 @ 5.0 GHz and Apple M4 @ 4.4 GHz, (3) theoretical multi-core throughput ceiling accounting for: memory bandwidth saturation point (at what core count does DDR5/LPDDR5 bandwidth become the bottleneck?), output write bandwidth, and inter-core synchronization overhead for block-boundary communication, (4) identification of which regime each optimization approach operates in: compute-bound (improving cycles/symbol), memory-bound (improving parallelism), or latency-bound (improving critical-path depth), (5) specific numerical targets: what cycles/symbol and IPC are needed to achieve 2x over libdeflate (~1100 MB/s) single-core, and what core-count/efficiency is needed for 5x. Must reference empirical micro-benchmark results from item_010.",
           "status": "pending",
-          "notes": "Depends on item_010 (micro-benchmarks) for empirical cycle counts",
+          "notes": "Depends on item_010 for empirical cycle counts per operation",
           "error": null
         }
       ]
@@ -139,50 +139,50 @@
       "items": [
         {
           "id": "item_012",
-          "description": "Novel approach 1: Speculative multi-symbol Huffman decode with rollback",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/008_speculative_multisymbol/concept.json` with: (1) detailed algorithm design for speculatively decoding 2-4 Huffman symbols in parallel from a single bit-buffer state by pre-computing conditional decode tables (if symbol 1 is N bits, symbol 2 starts at offset N), (2) analysis of the table size explosion (15^k entries for k speculative symbols) and practical strategies to limit it (restrict to short codes, use prediction), (3) rollback mechanism when speculation fails, (4) expected speedup calculation based on the roofline model from item_011, (5) comparison to Fabian Giesen's multi-stream approach and Oodle's 3-stream interleaving, explaining why this approach works within standard DEFLATE format constraints. Must cite at least 3 papers from sources.bib.",
+          "description": "Novel approach 1: Speculative multi-symbol Huffman decode with pre-computed conditional tables",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/008_speculative_multisymbol/concept.json` with: (1) detailed algorithm design for speculatively decoding 2-4 Huffman symbols per iteration from a single 64-bit bit-buffer by pre-computing conditional decode tables (entry key = packed bit window, value = {symbol_1, len_1, symbol_2, len_2, total_bits}), (2) analysis of the table size explosion: for max code length 15, a 2-symbol table needs 2^30 entries (impractical) -- describe the tiered approach (short-code fast table for codes <= 9 bits, then standard fallback) and quantify the practical table sizes for 2-symbol decode with root table of 9+9=18 bits (~1MB, fits L2), (3) rollback mechanism when the second symbol decode is invalid (crosses block boundary or hits end-of-block), (4) expected speedup calculation: reducing from ~6.5 cycles/symbol to ~4 cycles/two-symbols = ~3.25 cycles/symbol effective, validated against roofline from item_011, (5) comparison to: Fabian Giesen's interleaved multi-stream approach (requires format change), Oodle's 3-stream interleaving (proprietary, format change), and ISA-L's double-symbol decode (closest prior art). Must cite at least 3 entries from sources.bib.",
           "status": "pending",
-          "notes": "Depends on item_011 (roofline model) for speedup estimation",
+          "notes": "Depends on item_011 (roofline model) for speedup estimation framework",
           "error": null
         },
         {
           "id": "item_013",
-          "description": "Novel approach 2: Hybrid parallel decomposition with speculative block finding",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/009_hybrid_parallel/concept.json` with: (1) algorithm combining rapidgzip-style speculative block boundary detection with libdeflate-quality per-block decompression, (2) design for a work-stealing scheduler that dynamically balances block-level parallelism across N cores, (3) analysis of the false-positive rate and its impact on throughput (quantified from pugz/rapidgzip results), (4) strategy for handling single-block files (the worst case for block-level parallelism), (5) design for an optional pre-computed block index that eliminates speculation overhead for repeated decompression of the same file. Must compare quantitatively against rapidgzip's published results. Delegate to a literature-graph-miner subagent to mine the citation graph of Knespel & Brunst 2023 for additional parallel decompression techniques.",
+          "description": "Novel approach 2: Hybrid parallel decompression combining speculative block-finding with optimized per-block decode",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/009_hybrid_parallel/concept.json` with: (1) algorithm combining rapidgzip-style speculative DEFLATE block boundary detection (scanning for valid dynamic Huffman headers) with libdeflate-quality per-block single-core decompression, (2) design for a work-stealing thread pool scheduler: producer thread scans for block boundaries and enqueues block descriptors (compressed_offset, decompressed_offset_estimate); consumer threads decompresses blocks; coordinator thread validates decompressed offsets match and patches up cross-block LZ77 references, (3) analysis of false-positive rate for speculative block finding (quantified from pugz/rapidgzip published results: ~0.1-1% false starts) and its throughput impact, (4) strategy for the worst case: single-block files where block-level parallelism is impossible -- fall back to single-core optimized decode from approach 1, (5) design for optional pre-computed block index (stored as sidecar file or appended metadata) that eliminates speculation overhead for repeated decompression. Must compare quantitatively against rapidgzip's published 10 GB/s on 12 cores. Delegate to a literature-graph-miner subagent to mine the citation graph of Knespel & Brunst 2023 (rapidgzip) for additional parallel decompression techniques not yet covered.",
           "status": "pending",
-          "notes": "Requires subagent delegation: literature-graph-miner on rapidgzip citation graph",
+          "notes": "Requires subagent delegation: literature-graph-miner on rapidgzip citation graph for additional parallel techniques",
           "error": null
         },
         {
           "id": "item_014",
-          "description": "Novel approach 3: SIMD-accelerated branchless decode loop for modern microarchitectures",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/010_simd_branchless_decode/concept.json` with: (1) design for a branchless inner decode loop using SIMD gather instructions (VPGATHERDD on AVX2, or ARM SVE equivalent) to perform parallel table lookups for the literal/length/distance classification, (2) analysis of using SIMD shuffle-based multi-byte copy for LZ77 back-references (handling the overlapping-copy case with SIMD), (3) design for a 'fast path' that detects sequences of short-code literals and decodes them without per-symbol branching (extending dougallj's fast-path literal technique to decode 4-8 literals per iteration using SIMD), (4) cycle count analysis comparing the branchless SIMD path vs. scalar path on Zen4 and Apple M4, (5) fallback strategy for code distributions that defeat the fast path. Must cite dougallj's work and ISA-L's multi-byte decode approach.",
+          "description": "Novel approach 3: SIMD-accelerated branchless decode loop for modern x86-64 and AArch64 microarchitectures",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/010_simd_branchless_decode/concept.json` with: (1) design for a branchless inner decode loop eliminating the branch misprediction bottleneck: use conditional moves (CMOV) or predicated operations instead of branches for literal-vs-match classification, unconditional 64-bit bit-buffer refill every iteration (paying ~1 wasted cycle to avoid the conditional-refill branch misprediction), (2) SIMD-accelerated multi-byte LZ77 copy: using 16-byte SIMD loads/stores (SSE2/NEON) for all copy operations, handling the overlapping-copy case (distance < length) via repeated 16-byte overlapping copies with distance-based shuffle masks, (3) design for a 'short-code literal burst' fast path: detect when the next N symbols are all short-code (<= 8-bit) literals and decode them 4-8 at a time using a packed lookup table, extending dougallj's technique, (4) cycle count comparison: branchless SIMD path vs. scalar branchy path on Zen4 (expected: eliminate ~2 cycles/symbol from branch mispredictions) and Apple M4 (expected: smaller gain due to better branch predictor), (5) fallback strategy for when fast path is not applicable (long codes, many back-references) -- seamless transition to scalar path without pipeline flush. Must cite dougallj's work and ISA-L's inflate approach in sources.bib.",
           "status": "pending",
           "notes": null,
           "error": null
         },
         {
           "id": "item_015",
-          "description": "Novel approach 4: Bit-stream preprocessing for intra-block parallelism",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/011_bitstream_preprocessing/concept.json` with: (1) design for a lightweight first pass that scans a DEFLATE block's bitstream and records Huffman symbol boundaries (bit offsets) without fully decoding, exploiting the self-synchronization property of prefix codes, (2) analysis of the first-pass cost vs. the parallelism it enables (can the boundary scan be done faster than full decode?), (3) design for a second pass that uses the boundary information to decode symbols in parallel chunks, (4) handling of LZ77 data dependencies in the second pass (which copies can be resolved independently?), (5) comparison to GDeflate's bit-swizzling approach -- this approach preserves standard DEFLATE format but adds a runtime preprocessing step. Must quantify the theoretical speedup vs. preprocessing overhead.",
+          "description": "Novel approach 4: Two-pass decode with lightweight bit-boundary preprocessing for intra-block parallelism",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/011_bitstream_preprocessing/concept.json` with: (1) design for a two-pass algorithm: Pass 1 scans the bitstream using the Huffman table to record symbol boundaries (bit offsets and symbol types: literal/length/distance) into a compact index without writing output; Pass 2 uses the index to decode symbols and execute LZ77 copies, potentially partitioned across multiple threads, (2) cost analysis of Pass 1: since it must do full Huffman decode to find bit boundaries (prefix codes are not self-synchronizing mid-stream), Pass 1 costs approximately the same as full decode minus the copy work -- quantify the net benefit (only worthwhile if copy work is >30% of total), (3) alternative design: exploit the fact that dynamic Huffman blocks repeat the same code table -- if two threads start decoding from estimated mid-block positions, one will eventually synchronize with the correct bitstream (similar to pugz's approach but at sub-block granularity), (4) comparison to GDeflate's modified format with bit-swizzled blocks (our approach preserves standard DEFLATE format), (5) break-even analysis: for what block sizes and compression ratios does two-pass become faster than single-pass? Must quantify preprocessing overhead vs. parallelism benefit.",
           "status": "pending",
           "notes": null,
           "error": null
         },
         {
           "id": "item_016",
-          "description": "Novel approach 5: Adaptive decode strategy with runtime profiling",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/012_adaptive_decode/concept.json` with: (1) design for a decoder that profiles the first K symbols of each block and selects from multiple decode kernels: (a) fast-path all-literals kernel, (b) short-code-dominated kernel with larger root tables, (c) general kernel for complex code distributions, (d) parallel kernel for blocks exceeding a size threshold, (2) the profiling heuristics and switching criteria (code length histogram, literal vs. match ratio, block size), (3) expected overhead of the profiling step vs. speedup from specialization, (4) analysis of how this compares to WUFFS's compile-time specialization and ISA-L's runtime CPU dispatch. Must connect to at least 2 concept cards from the ConceptEvolve tree (item_005).",
+          "description": "Novel approach 5: Adaptive multi-kernel decode with runtime workload classification",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/012_adaptive_decode/concept.json` with: (1) design for a decoder that samples the first K symbols (K=64-256) of each dynamic Huffman block and selects from specialized decode kernels: (a) literal-dominated kernel (>80% literals): uses wide lookup table and burst decode, (b) short-code kernel (90%+ codes <= 9 bits): uses 9-bit root table only, no secondary table lookups, (c) copy-heavy kernel (>40% back-references): uses SIMD copy with prefetch of output history, (d) general kernel: full decode path for complex distributions, (e) parallel kernel: for blocks exceeding size threshold, applies approach from item_015, (2) the sampling heuristics: build code-length histogram during table construction (already available), compute literal/match ratio from first K symbols, measure average code length, (3) expected overhead: ~50-100 cycles for kernel selection vs. potential savings of 0.5-2 cycles/symbol over the general path, (4) comparison to WUFFS's compile-time specialization (static, cannot adapt to input) and ISA-L's runtime CPU feature dispatch (adapts to hardware, not workload). Must connect to at least 2 concept cards from the ConceptEvolve tree (item_005) via explicit cross-references.",
           "status": "pending",
           "notes": null,
           "error": null
         },
         {
           "id": "item_017",
-          "description": "Concept-tree synthesis: identify the highest-value concept paths and prune low-impact directions",
-          "acceptance_criteria": "Run ConceptEvolve `walk` on the concept tree from item_005 and produce `results/concept_evolve/tree/013_synthesis/concept.json` containing: (1) the top 5 concept paths ranked by estimated impact (based on roofline analysis from item_011), (2) for each path, a concrete implementation plan with estimated person-days of effort, (3) a dependency graph showing which novel approaches (items 012-016) depend on which concept cards, (4) identification of at least 2 'blind spot' areas where the concept tree has no coverage but the literature review suggests opportunities, (5) a prioritized roadmap ordering the approaches by expected return on effort. Delegate to a concept-tree-explorer subagent to traverse the full tree and identify missing cross-domain connections.",
+          "description": "Concept-tree synthesis: rank concept paths by estimated impact, identify blind spots, and produce prioritized implementation roadmap",
+          "acceptance_criteria": "Run ConceptEvolve `walk` on the concept tree from item_005 and produce `results/concept_evolve/tree/013_synthesis/concept.json` containing: (1) the top 5 highest-impact concept paths ranked by estimated throughput improvement (grounded in roofline analysis from item_011), (2) for each path: a concrete implementation plan with estimated effort in person-days, required hardware/software dependencies, and risk assessment (low/medium/high), (3) a dependency graph showing which novel approaches (items 012-016) map to which concept cards and which bottleneck stages (from item_010), (4) identification of at least 2 'blind spot' areas: optimization directions where the concept tree has no coverage but the literature review (item_003) or citation graph mining suggests real opportunity, (5) a prioritized 4-week roadmap ordering approaches by expected throughput-gain-per-effort-day. Delegate to a concept-tree-explorer subagent to traverse the full tree and identify missing cross-domain connections and unexplored adjacencies.",
           "status": "pending",
-          "notes": "Requires subagent delegation: concept-tree-explorer for full tree traversal and gap analysis",
+          "notes": "Requires subagent delegation: concept-tree-explorer for full tree traversal, gap analysis, and adjacency exploration",
           "error": null
         }
       ]
@@ -194,48 +194,48 @@
       "items": [
         {
           "id": "item_018",
-          "description": "Experiment 1: Implement and benchmark the speculative multi-symbol decode (approach 1)",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/014_exp_speculative/concept.json` with: (1) implementation in C or Rust of the speculative multi-symbol Huffman decode from item_012, (2) benchmark results on the Silesia corpus comparing against libdeflate and ISA-L baselines from item_009, (3) measurements of: throughput (MB/s), cycles per symbol, table memory usage, speculation success rate (% of iterations where all speculated symbols were correct), (4) analysis of which file types benefit most vs. least from speculation, (5) statistical significance test (p < 0.05) for any claimed speedup. Results must reference the roofline predictions from item_011.",
+          "description": "Experiment 1: Implement and benchmark speculative multi-symbol Huffman decode",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/014_exp_speculative/concept.json` with: (1) working implementation in C (with intrinsics) or Rust of the speculative 2-symbol Huffman decode from item_012, integrated into a complete DEFLATE decompressor, (2) benchmark results on all 12 Silesia corpus files comparing against libdeflate and ISA-L baselines from item_009, (3) measurements of: throughput (MB/s), cycles per output byte, cycles per symbol, speculation success rate (% of iterations where both symbols decoded correctly without rollback), table memory usage in bytes, (4) per-file analysis: which Silesia files benefit most (expected: text-heavy with short codes) vs. least (expected: already-compressed data with uniform code distributions), (5) statistical significance: Wilcoxon signed-rank test at p<0.05 for all pairwise comparisons with baselines. Results must validate or invalidate the roofline predictions from item_011.",
           "status": "pending",
           "notes": "Depends on items 009, 011, 012",
           "error": null
         },
         {
           "id": "item_019",
-          "description": "Experiment 2: Implement and benchmark hybrid parallel decomposition (approach 2)",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/015_exp_parallel/concept.json` with: (1) implementation of the hybrid parallel decompressor from item_013 supporting 1-N cores, (2) scaling analysis showing throughput vs. core count (1, 2, 4, 8, 16 cores) on at least 3 files of different sizes (1MB, 100MB, 1GB), (3) comparison against rapidgzip on the same files and hardware, (4) measurement of parallel efficiency (speedup / core_count) and identification of the scaling bottleneck, (5) analysis of the impact of block size distribution on parallel efficiency (many small blocks vs. few large blocks). Must achieve at least 2x over best single-core baseline on 4+ cores for files >= 100MB.",
+          "description": "Experiment 2: Implement and benchmark hybrid parallel decompression across core counts",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/015_exp_parallel/concept.json` with: (1) working implementation of the hybrid parallel decompressor from item_013 supporting configurable thread counts (1-N), (2) strong scaling analysis: throughput vs. core count (1, 2, 4, 8, 16 cores/threads) on at least 4 files of different sizes (1MB, 10MB, 100MB, 1GB compressed), (3) head-to-head comparison against rapidgzip on the same files and hardware, reporting both throughput and parallel efficiency (speedup / core_count), (4) identification of the scaling bottleneck: is it memory bandwidth, block-finding false positives, cross-block LZ77 dependencies, or thread synchronization? Quantify with roofline overlay, (5) weak scaling analysis: does throughput per core remain constant as file size increases? Must achieve at least 2x over best single-core baseline when using 4+ cores on files >= 10MB compressed.",
           "status": "pending",
           "notes": "Depends on items 009, 013",
           "error": null
         },
         {
           "id": "item_020",
-          "description": "Experiment 3: Implement and benchmark SIMD branchless decode (approach 3)",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/016_exp_simd/concept.json` with: (1) implementation of the SIMD branchless decode loop from item_014 targeting AVX2 (x86-64) and NEON (AArch64), (2) benchmark results on the Silesia corpus comparing against libdeflate scalar path, (3) measurements of: branch misprediction rate reduction (via perf counters), IPC improvement, throughput improvement, (4) analysis of the 'fast path hit rate' -- what percentage of decode iterations use the SIMD fast path vs. falling back to scalar, (5) identification of file characteristics that maximize/minimize SIMD benefit. Compare quantitatively against dougallj's reported speedups.",
+          "description": "Experiment 3: Implement and benchmark SIMD branchless decode loop on x86-64 and AArch64",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/016_exp_simd/concept.json` with: (1) working implementation of the branchless SIMD decode loop from item_014 with both AVX2 (x86-64) and NEON (AArch64) code paths, (2) benchmark results on full Silesia corpus comparing against: libdeflate's scalar inflate, ISA-L's SIMD-accelerated inflate, and the speculative multi-symbol decode from item_018, (3) microarchitectural measurements via perf counters: branch misprediction rate reduction (expected: 3-5% -> <1%), IPC improvement (expected: 1.3 -> 1.8+), cycles-per-symbol reduction, (4) fast-path hit rate analysis: what percentage of decode iterations use the short-code literal burst path vs. falling back to scalar, broken down by file type, (5) cross-platform comparison: does the branchless approach help more on Zen4 (weaker branch predictor, wider pipeline) or Apple M4 (stronger branch predictor)? Quantify the difference.",
           "status": "pending",
-          "notes": "Depends on items 009, 014",
+          "notes": "Depends on items 009, 014, optionally 018",
           "error": null
         },
         {
           "id": "item_021",
-          "description": "Experiment 4: Combined approach -- integrate best-performing techniques",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/017_exp_combined/concept.json` with: (1) implementation combining the best-performing techniques from experiments 1-3 into a single decoder, (2) benchmark results showing the combined throughput vs. each technique in isolation (do they stack?), (3) comparison against ALL baselines from item_009 on the full corpus, (4) analysis of interaction effects (does SIMD branchless decode conflict with speculative multi-symbol?), (5) final throughput numbers with confidence intervals, demonstrating whether the 2-5x target over stock zlib is achieved, and quantifying the speedup over the best existing implementation (libdeflate or ISA-L). Must include results on at least 5 different file types (text, binary, PNG, git pack, synthetic). Delegate to a literature-graph-miner subagent to find any recent (2024-2026) papers that may have attempted similar combinations.",
+          "description": "Experiment 4: Integrate all techniques into combined decoder and evaluate interaction effects",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/017_exp_combined/concept.json` with: (1) implementation combining the best-performing techniques from experiments 1-3 into a single adaptive decoder (using the kernel selection from item_016), (2) full benchmark against ALL baselines from item_009 on the complete Silesia corpus plus PNG, git-pack, and >1GB gzip inputs, (3) interaction analysis: do the techniques compose multiplicatively (best case), additively, or sub-additively (interference)? Specifically: does speculative multi-symbol decode conflict with branchless SIMD (both modify the inner loop), and does parallel decomposition stack on top of per-core optimizations? (4) final single-core throughput with confidence intervals -- does it achieve 2x over libdeflate? (5) final multi-core throughput at 4 and 8 cores -- does it achieve 5x over stock zlib? Present results in a summary table with columns: implementation, 1-core MB/s, 4-core MB/s, 8-core MB/s, speedup-vs-zlib, speedup-vs-libdeflate. Delegate to a literature-graph-miner subagent to search for any 2024-2026 publications that may have attempted similar technique combinations.",
           "status": "pending",
-          "notes": "Requires subagent delegation: literature-graph-miner for recent combination approaches. Depends on items 018-020",
+          "notes": "Requires subagent delegation: literature-graph-miner for recent (2024-2026) related work. Depends on items 018-020, 016",
           "error": null
         },
         {
           "id": "item_022",
-          "description": "Ablation study: quantify individual contribution of each optimization",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/018_ablation/concept.json` with: (1) ablation study removing one optimization at a time from the combined decoder (item_021) and measuring the throughput impact, (2) a stacked bar chart specification showing the additive contribution of each technique, (3) analysis of which optimizations are complementary vs. redundant, (4) identification of the single most impactful optimization and the 'diminishing returns' point, (5) comparison of the ablation results against the predictions from the roofline model (item_011) -- were the theoretical predictions accurate?",
+          "description": "Ablation study: quantify individual contribution of each optimization technique",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/018_ablation/concept.json` with: (1) systematic ablation study removing one optimization at a time from the combined decoder (item_021) and measuring throughput impact on 3 representative Silesia files (text: dickens, binary: x-ray, mixed: mr), (2) a waterfall/stacked contribution chart specification showing the additive (or sub-additive) contribution of: branchless decode, SIMD copy, speculative multi-symbol, unconditional refill, adaptive kernel selection, parallel decomposition, (3) interaction matrix: for each pair of optimizations, does enabling both give more or less than the sum of individual gains? (4) identification of the single most impactful optimization and the point of diminishing returns, (5) comparison of ablation results against the theoretical predictions from the roofline model (item_011): which predictions were accurate, which overestimated, and what explains the discrepancies (e.g., cache effects not modeled, branch predictor learning).",
           "status": "pending",
           "notes": "Depends on item_021 (combined implementation)",
           "error": null
         },
         {
           "id": "item_023",
-          "description": "Edge case and adversarial input evaluation",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/019_adversarial/concept.json` with: (1) correctness verification against the zlib test suite and a DEFLATE conformance test suite, (2) performance on adversarial inputs: maximum-length Huffman codes (15-bit), blocks with only back-references, blocks with only literals, distance-1 run-length encoded data, zip bombs, (3) comparison of adversarial-case throughput against baselines (does the novel decoder degrade worse or better than libdeflate/ISA-L on pathological inputs?), (4) memory safety analysis (no buffer overflows, no undefined behavior under any valid DEFLATE input), (5) fuzzing results (at least 1 hour of AFL/libFuzzer coverage with no crashes).",
+          "description": "Correctness verification, edge-case testing, and adversarial input robustness evaluation",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/019_adversarial/concept.json` with: (1) correctness verification: byte-for-byte output match against zlib on the entire Silesia corpus, Canterbury corpus, and a PNG test suite (at least 50 images), (2) DEFLATE conformance: pass all test vectors from the zlib test suite and Mark Adler's infcover test, (3) adversarial input performance: throughput on -- maximum 15-bit Huffman codes, blocks with only back-references (distance=1 RLE), blocks with only literals, near-maximum-size blocks (64KB uncompressed), minimum-size blocks (3-byte empty stored block), deeply nested zip/gzip containers, (4) performance ratio: does the novel decoder degrade more gracefully or less gracefully than libdeflate on adversarial inputs? Compute worst-case-to-best-case throughput ratio for each implementation, (5) memory safety: no buffer overflows or undefined behavior under any valid DEFLATE stream -- verified by at least 2 hours of coverage-guided fuzzing (AFL++ or libFuzzer) with no crashes and >80% edge coverage of the decode loop.",
           "status": "pending",
           "notes": "Depends on item_021",
           "error": null
@@ -249,32 +249,32 @@
       "items": [
         {
           "id": "item_024",
-          "description": "Comprehensive results analysis and comparison against prior work",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/020_final_analysis/concept.json` with: (1) summary table of all experimental results from Phase 4, (2) direct quantitative comparison against every implementation from the competitive landscape (item_006), (3) analysis of where the novel approaches succeeded vs. fell short of the 2-5x target, (4) identification of the remaining performance gap to the theoretical roofline from item_011, (5) discussion of which optimizations are format-compatible (standard DEFLATE) vs. require format extensions, (6) citations to at least 8 papers from sources.bib with specific comparisons to their reported results. Delegate to a concept-tree-explorer subagent to traverse the complete concept tree one final time and produce a 'lessons learned' annotation for each concept card.",
+          "description": "Comprehensive results analysis comparing against all prior work from the literature review",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/020_final_analysis/concept.json` with: (1) master results table aggregating all experimental data from Phase 4 (items 018-023), (2) direct quantitative comparison against every implementation from the competitive landscape matrix (item_006), with columns for: our single-core throughput, our multi-core throughput, their reported throughput, speedup ratio, and notes on measurement conditions, (3) analysis of where the 2-5x target was achieved vs. fell short, broken down by: file type, file size, compression ratio, and block structure, (4) remaining gap to the theoretical roofline (item_011): how many cycles/symbol remain to be eliminated and where they are spent, (5) discussion of format-compatible vs. format-extending optimizations: which of our techniques work on any valid DEFLATE stream, which assume certain block structures, which would benefit from format extensions like GDeflate, (6) explicit comparison with at least 8 specific results from papers cited in sources.bib, noting agreements, disagreements, and improvements. Delegate to a concept-tree-explorer subagent to traverse the complete concept tree one final time and produce a 'lessons_learned' annotation for each concept card.",
           "status": "pending",
-          "notes": "Requires subagent delegation: concept-tree-explorer for final tree annotation. Depends on all Phase 4 items",
+          "notes": "Requires subagent delegation: concept-tree-explorer for final tree annotation with lessons learned. Depends on all Phase 4 items",
           "error": null
         },
         {
           "id": "item_025",
-          "description": "Write technical report synthesizing all findings",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/021_technical_report/report.md` (Markdown) containing: (1) Abstract (200 words), (2) Introduction with motivation and problem statement, (3) Background covering DEFLATE format and prior optimization work (citing sources.bib), (4) Methodology describing the benchmark setup and novel approaches, (5) Results with tables and figure references for all experiments, (6) Discussion analyzing why each approach worked or failed, (7) Related Work section comparing against at least 10 cited implementations, (8) Conclusion with concrete recommendations for which approach to deploy in different contexts (single-core latency-sensitive, throughput-oriented multi-core, embedded/constrained). Total length: 3000-6000 words.",
+          "description": "Write technical report synthesizing all findings into a structured research paper",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/021_technical_report/report.md` (Markdown) containing: (1) Abstract (200-300 words) stating the problem, approach, and key result (Nx speedup achieved), (2) Introduction with motivation (DEFLATE ubiquity), problem statement (serial dependency chain limits throughput), and contribution summary, (3) Background covering DEFLATE format (RFC 1951), the decode bottleneck, and prior optimization work (citing 8+ entries from sources.bib), (4) Methodology: benchmark setup (item_007), novel approaches (items 012-016) with algorithm descriptions, (5) Results: tables and figure references for all experiments (items 018-023), (6) Discussion: why each approach worked or failed, interaction effects, comparison to theoretical predictions, (7) Related Work: detailed comparison against at least 10 cited implementations from sources.bib, organized by approach (single-core/parallel/GPU/hardware), (8) Conclusion: concrete deployment recommendations for 4 contexts (latency-sensitive single-core, throughput-oriented multi-core, embedded/constrained, format-evolution). Total length: 4000-8000 words. All cited works must appear in sources.bib.",
           "status": "pending",
           "notes": "Depends on item_024",
           "error": null
         },
         {
           "id": "item_026",
-          "description": "Produce visualization specifications for key results",
-          "acceptance_criteria": "Produce specifications in `figures/` for at least 4 figures: (1) `throughput_comparison.json` -- bar chart of all implementations' throughput on Silesia corpus, (2) `scaling_analysis.json` -- line plot of parallel throughput vs. core count, (3) `ablation_waterfall.json` -- waterfall chart showing cumulative impact of each optimization, (4) `roofline_overlay.json` -- roofline diagram with each implementation plotted showing compute vs. memory boundedness. Each specification must include: chart_type, data_source (referencing specific concept.json files), axis_labels, title, and a data array with the actual values to plot.",
+          "description": "Produce visualization specifications for key result figures",
+          "acceptance_criteria": "Produce specifications in `figures/` for at least 5 publication-quality figures: (1) `throughput_comparison.json` -- grouped bar chart of all implementations' decompression throughput on Silesia corpus aggregate, sorted by throughput, with error bars (p5-p95), (2) `scaling_analysis.json` -- line plot of parallel throughput vs. core count for 4 file sizes, with ideal-scaling reference line, (3) `ablation_waterfall.json` -- waterfall chart showing cumulative throughput gain from each optimization technique added incrementally, (4) `roofline_overlay.json` -- roofline diagram with operational intensity on x-axis and throughput on y-axis, each implementation plotted as a point, memory bandwidth ceiling and compute ceiling as lines, (5) `microarch_breakdown.json` -- stacked bar chart showing cycle breakdown per symbol (table lookup, bit consumption, copy, branch misprediction, other) for zlib vs. our decoder. Each specification must include: chart_type, data_source (referencing specific concept.json paths), axis_labels with units, title, legend_entries, and a data array with the actual numerical values to plot.",
           "status": "pending",
-          "notes": "Depends on items 022, 024",
+          "notes": "Depends on items 022, 024 for numerical data",
           "error": null
         },
         {
           "id": "item_027",
-          "description": "Future work roadmap and open problems",
-          "acceptance_criteria": "Produce `results/concept_evolve/tree/022_future_work/concept.json` with: (1) at least 5 concrete open problems identified during this research (e.g., intra-block parallelism without preprocessing, hardware-software co-design for DEFLATE, applying techniques to Brotli/Zstd), (2) for each open problem: estimated difficulty, potential impact, suggested approach, and relevant citations from sources.bib, (3) a 'technology transfer' section identifying which findings are immediately deployable in existing systems (zlib drop-in replacement, nginx module, PNG decoder, Git), (4) analysis of whether the DEFLATE format should be superseded vs. optimized further, citing the ecosystem lock-in argument. Must reference at least 3 concept cards from the tree that were not fully explored.",
+          "description": "Future work roadmap: open problems, technology transfer opportunities, and format evolution analysis",
+          "acceptance_criteria": "Produce `results/concept_evolve/tree/022_future_work/concept.json` with: (1) at least 5 concrete open problems with estimated difficulty (easy/medium/hard) and potential impact (low/medium/high): including intra-block parallelism without two-pass overhead, hardware-software co-design for next-gen DEFLATE accelerators, applying techniques to Brotli/Zstd decompression, GPU kernel design for standard DEFLATE (not GDeflate), and streaming API design that preserves optimization opportunities, (2) for each open problem: suggested approach, estimated person-months of effort, and at least one relevant citation from sources.bib, (3) 'technology transfer' section: which findings are immediately deployable as drop-in replacements in -- zlib-compatible libraries, nginx/Apache gzip decompression, PNG decoders (libpng, stb_image), Git pack-file decompression (libgit2), and browser content-encoding handlers, (4) format evolution analysis: should the community invest in DEFLATE optimization or migrate to Zstd/Brotli? Argue both sides citing ecosystem lock-in (billions of existing ZIP/gzip/PNG files), switching costs, and diminishing returns on DEFLATE optimization, (5) reference at least 3 concept cards from the tree that were identified as high-potential but not fully explored, with specific suggestions for follow-up research.",
           "status": "pending",
           "notes": null,
           "error": null
