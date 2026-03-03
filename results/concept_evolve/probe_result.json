@@ -1,0 +1,63 @@
+{
+  "probe_target": "Skinner's method bottleneck: radial growth estimates vs 2D domain geometry",
+  "description": "The growth theorem bootstrap reduces the 2D inradius problem to 1D radial estimates, losing geometric information about the extremal domain shape",
+  "forced_bridges": [
+    {
+      "domain": "Isoperimetric inequalities",
+      "connection": "The classical isoperimetric inequality relates area to boundary length. For simply connected domains with fixed conformal radius at the origin, there exist isoperimetric-type bounds: inradius(Omega) >= C * sqrt(Area(Omega)) for some constant C depending on the conformal radius. This directly constrains B_f using the 2D area information that Skinner's radial method discards.",
+      "concrete_tool": "The Bonnesen strengthening of the isoperimetric inequality provides a lower bound on inradius in terms of area and circumradius, applicable to f(D) for f in S."
+    },
+    {
+      "domain": "Harmonic measure and Brownian motion",
+      "connection": "The harmonic measure of the boundary of f(D) seen from an interior point w relates to the probability that a Brownian motion started at w exits through various boundary arcs. The expected exit time E[tau] from f(D) satisfies E[tau] >= inradius^2/(2d) (d = dimension). Combined with the conformal invariance of Brownian motion, this gives 2D bounds on B_f that use the full geometry of the domain.",
+      "concrete_tool": "Bañuelos-Carroll (1994) bounds on exit times for simply connected domains via inradius and conformal mapping estimates."
+    },
+    {
+      "domain": "Spectral theory of the Laplacian",
+      "connection": "The first Dirichlet eigenvalue lambda_1 of the Laplacian on f(D) satisfies lambda_1 <= pi^2/(4 * inradius^2) (Hayman's theorem). Combined with the Faber-Krahn inequality lambda_1 >= pi * j_{0,1}^2 / Area(Omega), this gives inradius >= j_{0,1}/(2*sqrt(pi/Area)). For f in S with Area >= pi, this yields inradius >= j_{0,1}/(2*sqrt(1)) = j_{0,1}/2 ≈ 1.20, but this bound is for the first eigenvalue which is loose.",
+      "concrete_tool": "Spectral bounds combined with Payne-Weinberger-type estimates specific to simply connected domains."
+    },
+    {
+      "domain": "Quasiconformal mapping theory",
+      "connection": "The extremal domain for B_u has boundary consisting of the unit circle plus arcs. The conformal welding that produces this domain can be analyzed via quasiconformal extensions. The Beurling-Ahlfors extension theorem gives bounds on the quasiconformal dilatation, which in turn constrains the geometry of the extremal domain.",
+      "concrete_tool": "Bishop's conformal welding theorem (2007) provides constructive bounds on the welding homeomorphism for slit-disk domains."
+    },
+    {
+      "domain": "Optimal transport and mass redistribution",
+      "connection": "The Monge-Kantorovich optimal transport between the uniform measure on D and the pushforward measure on f(D) has transport cost related to the distortion of f. For the extremal function minimizing B_f, the transport plan must balance the need for area coverage (pushforward measure) against the geometric constraint of small inradius. This provides a 2D framework complementary to Skinner's 1D radial approach.",
+      "concrete_tool": "The Brenier map (optimal transport with quadratic cost) between D and f(D), analyzed via the Monge-Ampère equation."
+    },
+    {
+      "domain": "Convex geometry and Steiner symmetrization",
+      "connection": "Steiner symmetrization of f(D) along any axis increases the inradius while preserving the area. If f(D) is not already symmetric, its symmetrization has a larger inradius, so the extremal domain must be symmetric. This provides structural information that constrains the 2D geometry beyond what radial estimates capture.",
+      "concrete_tool": "Apply Steiner symmetrization to candidate extremal domains and use the monotonicity of inradius under symmetrization to derive lower bounds."
+    }
+  ],
+  "steering_directions": [
+    {
+      "direction": "Area-inradius bounds via spectral/isoperimetric inequalities",
+      "first_step": "Compute pi * sum(n * |a_n|^2) for families of univalent functions with small B_f and verify that the area-based lower bound inradius >= sqrt(Area/pi) * C is nontrivial",
+      "expected_impact": "Could improve the lower bound from 0.25 to 0.3-0.4 but unlikely to reach 0.57 without additional refinement"
+    },
+    {
+      "direction": "Symmetrization argument for structural constraints on extremals",
+      "first_step": "Prove that the extremal domain for B_u must be n-fold symmetric (n >= 3) using Steiner symmetrization, narrowing the search space for both upper and lower bounds",
+      "expected_impact": "Structural constraint that enables tighter numerical bounds via restricted optimization"
+    },
+    {
+      "direction": "Harmonic measure / exit time bounds as a 2D replacement for radial growth",
+      "first_step": "Compute the expected Brownian exit time from f(D) for candidate extremal functions and verify that the exit time constraint implies B_f >= 0.57",
+      "expected_impact": "Potentially significant: exit time is a genuinely 2D quantity that captures the full geometry. Could lead to a conceptually new proof of B_u > 0.57."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "anomaly": "The extremal domain for B_u (disk minus arcs) is NOT the domain minimizing area among domains with given inradius. In fact, the slit disk has area close to pi*R^2 (nearly full disk), while a thin strip with the same inradius R would have much smaller area. This means the area constraint (Area >= pi) is NOT the binding constraint for B_u. The binding constraint is the conformal radius normalization R(0, Omega) = 1.",
+      "implication": "The conformal radius constraint is the key ingredient, not the area. This shifts the focus from isoperimetric arguments to conformal mapping estimates."
+    },
+    {
+      "anomaly": "The Bloch semi-norm beta(f) = sup_z |f'(z)|(1-|z|^2) satisfies B_f >= beta(f)/4 and beta(f) >= 1 for f in S. For the conjectured extremal (disk minus 4 arcs), beta(f*) ≈ 4*0.6564 ≈ 2.63. This means the extremal function has Bloch norm much larger than 1, suggesting that the Schwarz-Pick bound B_f >= beta/4 is loose for the extremal and that a tighter relationship between B_f and beta could improve bounds.",
+      "implication": "Investigate the ratio B_f/beta(f) for univalent functions. If min(B_f/beta(f)) > 1/4 for f in S, this gives an improved lower bound on B_u."
+    }
+  ]
+}

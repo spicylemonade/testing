@@ -1,0 +1,199 @@
+{
+  "title": "Landscape Map for Improving Bounds on the Univalent Bloch Constant B_u",
+  "current_bounds": {
+    "lower": 0.5708858,
+    "lower_source": "Skinner (2009)",
+    "upper": 0.6564,
+    "upper_source": "Carroll-Ortega-Cerda (2009)",
+    "gap": 0.0855142
+  },
+  "concept_tree_source": "results/concept_evolve/tree/",
+  "num_concepts": 14,
+  "adjacency_edges": 19,
+
+  "high_value_paths": [
+    {
+      "id": "path_1_lower_bound_distortion",
+      "concepts": [
+        "skinners_method_refinement",
+        "bonk_distortion_extension",
+        "koebe_distortion_refinement",
+        "de_branges_coefficient_bounds"
+      ],
+      "expected_impact": "High. This path chains the best existing lower-bound machinery (Skinner's C(r) iteration) through two layers of distortion improvement (Bonk's extension of Minda-type distortion to multiply-connected domains, and refined Koebe distortion with higher-order error terms) into de Branges-style coefficient optimization, enabling a tighter certificate for the infimum of B_f over all univalent f.",
+      "rank": 1,
+      "connection_to_Bu": "The current lower bound 0.5708858 derives from Skinner's subordination-chain argument applied to Koebe 1/4 distortion. Bonk's extension supplies sharper distortion factors C(r) near r=1, and feeding those into coefficient-bound optimization (de Branges machinery) should raise the certified lower bound by an estimated 0.005-0.02, potentially pushing past 0.58.",
+      "existing_edges_used": [
+        "skinners_method_refinement -> bonk_distortion_extension",
+        "bonk_distortion_extension -> koebe_distortion_refinement",
+        "koebe_distortion_refinement -> de_branges_coefficient_bounds"
+      ],
+      "domains_covered": [
+        "complex_analysis",
+        "geometric_function_theory",
+        "numerical_analysis",
+        "optimization"
+      ]
+    },
+    {
+      "id": "path_2_upper_bound_slit",
+      "concepts": [
+        "extremal_slit_domains",
+        "polya_chebotarev_higher_order",
+        "jenkins_criterion"
+      ],
+      "expected_impact": "High. Slit-domain constructions provide the most promising route to lowering the upper bound. Higher-order Polya-Chebotarev continuum analysis can identify slit geometries with smaller Bloch radii than the families searched so far, and Jenkins' criterion gives a necessary condition for extremality that prunes the search space.",
+      "rank": 2,
+      "connection_to_Bu": "Our phase-2 numerical search found B_f = 0.6833 for close-to-convex maps and B_f = 0.7500 for slit maps z + cz^n, but neither beats the Carroll-Ortega-Cerda upper bound of 0.6564. Multi-slit constructions guided by Polya-Chebotarev higher-order asymptotics could produce explicit univalent functions with B_f < 0.6564, directly lowering the upper bound. Jenkins' criterion then verifies whether a candidate slit domain satisfies the extremal variational condition.",
+      "existing_edges_used": [
+        "extremal_slit_domains -> polya_chebotarev_higher_order",
+        "extremal_slit_domains -> jenkins_criterion",
+        "jenkins_criterion -> extremal_slit_domains"
+      ],
+      "domains_covered": [
+        "conformal_mapping",
+        "extremal_problems",
+        "potential_theory"
+      ]
+    },
+    {
+      "id": "path_3_hyperbolic_covering",
+      "concepts": [
+        "schwarz_pick_hyperbolic",
+        "extremal_length_connection",
+        "covering_surface_ahlfors"
+      ],
+      "expected_impact": "Medium-High. This path provides a fundamentally different approach to the lower bound via hyperbolic-geometric and topological arguments, independent of the coefficient-based distortion methods of Path 1. Ahlfors' covering surface theory gives universal lower bounds on the size of schlicht discs through topological degree arguments, and extremal length provides a conformal invariant that bridges the Schwarz-Pick lemma to covering estimates.",
+      "rank": 3,
+      "connection_to_Bu": "The Schwarz-Pick lemma in hyperbolic geometry gives |f'(z)|(1-|z|^2) <= 2*rho for maps into a domain of injectivity radius rho. Connecting this to extremal length modules of path families in the image domain, and then applying Ahlfors' covering surface theory to count sheets and bound the Bloch radius from below, yields a lower bound on B_u that is complementary to the distortion-theoretic approach. Even a modest improvement here (e.g., B_u > 0.56 from purely topological methods) would cross-validate and potentially strengthen the Skinner bound.",
+      "existing_edges_used": [
+        "schwarz_pick_hyperbolic -> extremal_length_connection",
+        "schwarz_pick_hyperbolic -> covering_surface_ahlfors",
+        "covering_surface_ahlfors -> extremal_length_connection"
+      ],
+      "domains_covered": [
+        "hyperbolic_geometry",
+        "complex_analysis",
+        "conformal_mapping",
+        "potential_theory",
+        "algebraic_topology"
+      ]
+    },
+    {
+      "id": "path_4_variational_numerical",
+      "concepts": [
+        "variational_euler_lagrange",
+        "loewner_chain_optimization",
+        "numerical_extremal_search",
+        "de_branges_coefficient_bounds"
+      ],
+      "expected_impact": "Medium. A computational path that uses Euler-Lagrange conditions for the Bloch functional, parametrized via Loewner chains, to perform targeted numerical optimization. This can both discover candidate extremal functions and produce rigorous upper bounds via interval arithmetic.",
+      "rank": 4,
+      "connection_to_Bu": "The Euler-Lagrange equation for the functional B_f = inf_z (1-|z|^2)|f'(z)| characterizes extremal functions. Parametrizing univalent functions via Loewner chains (driving function mu(t)) converts the problem to optimal control, solvable numerically. The numerical extremal search then finds candidate minimizers, and de Branges coefficient bounds provide analytic certificates. This could both lower the upper bound (by finding f with small B_f) and raise the lower bound (by verifying that all extremal candidates satisfy B_f > threshold).",
+      "existing_edges_used": [
+        "variational_euler_lagrange -> loewner_chain_optimization",
+        "loewner_chain_optimization -> numerical_extremal_search",
+        "numerical_extremal_search -> de_branges_coefficient_bounds"
+      ],
+      "domains_covered": [
+        "calculus_of_variations",
+        "complex_analysis",
+        "optimal_control",
+        "numerical_analysis",
+        "optimization"
+      ]
+    }
+  ],
+
+  "missing_links": [
+    {
+      "from": "extremal_length_connection",
+      "to": "variational_euler_lagrange",
+      "rationale": "Extremal length is itself defined via a variational problem (supremum of moduli over admissible metrics). The Euler-Lagrange conditions for extremal metrics directly connect to the variational framework for the Bloch functional. This edge would allow Path 3 (hyperbolic/covering) to feed into Path 4 (variational/numerical), creating a bridge between the topological lower-bound approach and the computational optimization approach."
+    },
+    {
+      "from": "de_branges_coefficient_bounds",
+      "to": "koebe_distortion_refinement",
+      "rationale": "De Branges' proof of the Bieberbach conjecture provides sharp coefficient bounds |a_n| <= n for S, which directly imply distortion estimates through the identity f'(z) = 1 + sum n*a_n*z^{n-1}. Currently the edge only goes from koebe_distortion_refinement to de_branges_coefficient_bounds. The reverse direction is needed because improved coefficient bounds can feed back into sharper distortion estimates, closing the loop in Path 1."
+    },
+    {
+      "from": "loewner_chain_optimization",
+      "to": "extremal_slit_domains",
+      "rationale": "Loewner's original theory represents slit domains as solutions of the Loewner ODE with specific driving functions. Optimizing the Bloch functional over Loewner chains naturally produces slit-domain candidates. This missing link would connect the variational/numerical pipeline (Path 4) to the slit-domain constructions (Path 2), enabling cross-pollination between computational optimization and analytic extremal constructions."
+    },
+    {
+      "from": "covering_surface_ahlfors",
+      "to": "goodman_domain_generalization",
+      "rationale": "Ahlfors' covering surface theory applies to functions mapping into general domains, not just the disk. Goodman's domain generalization framework extends Bloch-type results to multiply-connected and non-simply-connected targets. Connecting these would allow topological covering arguments to be applied in the generalized setting, potentially revealing structural constraints on B_u that are invisible in the simply-connected case."
+    },
+    {
+      "from": "skinners_method_refinement",
+      "to": "numerical_extremal_search",
+      "rationale": "Skinner's method produces specific numerical parameters C(r) at each iteration step, which define a subordination chain. These parameters are natural starting points for numerical extremal search - the current best lower-bound candidates from Skinner's iteration should be fed directly into numerical optimization to explore perturbations. Currently these two concepts are disconnected in the graph despite being computationally adjacent."
+    }
+  ],
+
+  "proposed_experiments": [
+    {
+      "path_id": "path_1_lower_bound_distortion",
+      "description": "Implement Bonk's extended distortion theorem for the Bloch functional: compute C_Bonk(r) = inf_{f in S} (1-r^2)|f'(re^{i*theta})| using Bonk's 1990 refinement of the Koebe distortion theorem, which replaces the classical 1/4-theorem bound with a sharper estimate involving the second coefficient a_2. Iterate Skinner's subordination chain using C_Bonk(r) instead of the classical C(r), and propagate the improved distortion through de Branges coefficient bounds to certify a new lower bound.",
+      "expected_outcome": "A certified lower bound B_u > 0.575, improving the Skinner bound by approximately 0.004-0.008. The improvement comes from replacing the Koebe 1/4 constant with Bonk's sharper distortion factor, which is tightest for functions close to the expected extremal configuration.",
+      "priority": "critical",
+      "computational_requirements": "Moderate: requires implementing the Bonk distortion function C_Bonk(r) and modifying the existing Skinner iteration in results/phase2/reproduce_skinner.py. Estimated runtime: 1-4 hours on a single core.",
+      "success_criteria": "Certified B_u > 0.575 with rigorous error bounds"
+    },
+    {
+      "path_id": "path_2_upper_bound_slit",
+      "description": "Construct multi-slit univalent functions guided by Polya-Chebotarev higher-order continuum analysis. Specifically: (1) use the Polya-Chebotarev theorem to identify the minimal-capacity continuum E connecting points in the image of the unit circle under candidate extremal maps, (2) compute the transfinite diameter of E to higher order, (3) construct explicit slit domains whose complement approximates E, and (4) verify univalence and compute B_f for these constructions. Apply Jenkins' quadratic differential criterion to check extremality.",
+      "expected_outcome": "An explicit univalent function f with B_f < 0.6564, directly improving the Carroll-Ortega-Cerda upper bound. The close-to-convex family already achieves 0.6833; optimizing slit geometry via Polya-Chebotarev should push below 0.65. Target: B_f in the range [0.62, 0.65].",
+      "priority": "critical",
+      "computational_requirements": "High: requires symbolic computation of Polya-Chebotarev continua and numerical conformal mapping for multi-slit domains. The Jenkins criterion check involves computing the associated quadratic differential. Estimated runtime: 4-12 hours.",
+      "success_criteria": "Explicit univalent f with verified B_f < 0.6564"
+    },
+    {
+      "path_id": "path_3_hyperbolic_covering",
+      "description": "Derive a lower bound on B_u from Ahlfors' island theorem applied to the covering structure of univalent maps. Specifically: (1) for a univalent f: D -> C, use the Schwarz-Pick lemma to bound the hyperbolic-to-Euclidean metric ratio, (2) apply the Ahlfors five-islands theorem (or its quantitative refinements) to the image surface to guarantee the existence of a schlicht disc of radius >= R(f), (3) connect R(f) to B_f via the extremal length of the path family linking the schlicht disc to the boundary of f(D). The key novelty is using extremal length as the bridge between the covering-theoretic and metric-theoretic estimates.",
+      "expected_outcome": "A new proof that B_u > 0.55 via purely topological/hyperbolic methods, independent of the Skinner distortion approach. While this bound would be weaker than Skinner's 0.5708, it establishes a fundamentally different lower bound that could be strengthened by incorporating additional geometric information, and provides independent verification of the order of magnitude.",
+      "priority": "high",
+      "computational_requirements": "Low computational cost (primarily analytic work), but requires careful estimation of extremal length constants. Some numerical verification of covering-theoretic estimates.",
+      "success_criteria": "Rigorous proof that B_u > 0.55 via covering-surface methods"
+    },
+    {
+      "path_id": "path_1_lower_bound_distortion",
+      "description": "Systematic coefficient optimization for Skinner-type lower bounds: parametrize candidate extremal functions as f(z) = z + a_2*z^2 + ... + a_N*z^N (truncated at degree N=15-30) subject to univalence constraints, and minimize B_f = inf_{|z|<1} (1-|z|^2)|f'(z)| using semidefinite programming (SDP) with the Schur-Cohn univalence criterion encoded as a positive-semidefiniteness constraint. Use de Branges' sharp coefficient bounds to tighten the SDP relaxation.",
+      "expected_outcome": "Identification of candidate extremal functions (those nearly minimizing B_f) with B_f values in the range [0.57, 0.66], mapping the landscape of near-extremal configurations. This both cross-validates the existing bounds and may reveal structural properties (symmetry, coefficient decay rates) of the true extremal function.",
+      "priority": "high",
+      "computational_requirements": "Moderate-High: requires SDP solver (e.g., MOSEK or SCS) and careful formulation of the univalence constraint as an LMI. Degree N=15 is tractable; N=30 requires cluster computation. Estimated runtime: 2-8 hours per degree.",
+      "success_criteria": "Complete landscape of near-extremal polynomials for N=5..20, with verified B_f values and structural analysis of minimizers"
+    },
+    {
+      "path_id": "path_2_upper_bound_slit",
+      "description": "Targeted numerical search for upper-bound-beating slit domains: extend the phase-2 multi-slit search (results/phase2/upper_bound_results.json) by (1) using Goodman's domain generalization to consider non-radial slit configurations, (2) parametrizing slits via their Polya-Chebotarev capacity and angular distribution, and (3) applying gradient-free global optimization (differential evolution + basin hopping) over a 6-12 dimensional parameter space. Use Jenkins' criterion as a filter to focus on near-extremal candidates.",
+      "expected_outcome": "Discovery of a multi-slit univalent function with B_f < 0.68, significantly improving on the current best numerical upper bound of 0.6833 (close-to-convex, n=3, s=1.267). If the parametrization is rich enough, this may approach or beat the Carroll-Ortega-Cerda bound of 0.6564.",
+      "priority": "high",
+      "computational_requirements": "Moderate: extends existing code in results/phase2/. Requires adding non-radial slit parametrization and more sophisticated optimization. Estimated runtime: 6-24 hours with parallelization.",
+      "success_criteria": "Verified univalent function with B_f < 0.68, ideally approaching 0.66"
+    },
+    {
+      "path_id": "path_3_hyperbolic_covering",
+      "description": "Quantitative refinement of Ahlfors covering estimates using the Schwarz-Pick hyperbolic metric: compute the precise relationship between the hyperbolic injectivity radius of f(D) at f(0) and the Euclidean Bloch radius B_f, using the explicit formula for the hyperbolic metric on f(D). For specific families (slit domains, close-to-convex maps), compute both quantities numerically and establish whether the hyperbolic approach gives tighter bounds than the classical Euclidean distortion approach in certain parameter regimes.",
+      "expected_outcome": "A quantitative comparison table showing, for each function family in our phase-2 results, the Euclidean B_f versus the hyperbolic injectivity-based lower bound. Identification of parameter regimes where the hyperbolic approach is tighter, guiding the design of hybrid bounds that combine both methods.",
+      "priority": "medium",
+      "computational_requirements": "Low-Moderate: numerical computation of hyperbolic metrics on explicitly-given image domains. Can reuse the phase-2 function families. Estimated runtime: 1-3 hours.",
+      "success_criteria": "Quantitative comparison table for all phase-2 families, with identification of at least one regime where hyperbolic bounds are tighter"
+    }
+  ],
+
+  "synthesis": {
+    "recommended_priority_order": [
+      "Experiment 1 (Bonk distortion + Skinner iteration) - most direct path to improving the lower bound",
+      "Experiment 2 (Polya-Chebotarev slit constructions) - most promising for lowering the upper bound",
+      "Experiment 5 (Extended multi-slit numerical search) - complements Experiment 2 computationally",
+      "Experiment 4 (SDP coefficient optimization) - systematic exploration of near-extremal landscape",
+      "Experiment 3 (Ahlfors covering lower bound) - independent verification via different method",
+      "Experiment 6 (Hyperbolic vs Euclidean comparison) - foundational for hybrid approaches"
+    ],
+    "key_insight": "The 0.0855 gap between the lower bound (0.5708858) and upper bound (0.6564) is attacked from both sides. Paths 1 and 3 target the lower bound through distortion refinement and covering theory respectively. Path 2 targets the upper bound through explicit constructions. The missing links identified (especially extremal_length -> variational and loewner_chain -> extremal_slit_domains) would unify these approaches, enabling a single optimization framework that simultaneously searches for the tightest lower bound certificate and the smallest-Bloch-radius explicit function.",
+    "estimated_gap_reduction": "Conservative: gap reduced to [0.575, 0.650] = 0.075 (12% reduction). Optimistic: gap reduced to [0.580, 0.640] = 0.060 (30% reduction)."
+  }
+}

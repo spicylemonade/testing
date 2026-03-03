@@ -1,0 +1,65 @@
+{
+  "description": "Post-experiment concept path analysis for B_u bound improvement",
+  "more_promising_paths": [
+    {
+      "path_id": "conformal_welding_upper",
+      "concepts": ["extremal_slit_domains", "polya_chebotarev_higher_order", "jenkins_criterion"],
+      "reason": "Our numerical upper bound search (item_020) achieved B_f = 0.6833 using polynomial functions, but could not match the Carroll-Ortega-Cerdà bound of 0.6564. The gap suggests that slit-disk constructions using conformal welding and Schwarz-Christoffel mappings are fundamentally more effective for upper bounds. Implementing a dedicated Schwarz-Christoffel solver for n-fold symmetric slit disks (n=3,4,5,6) could potentially lower the upper bound below 0.6564.",
+      "numerical_evidence": "Our best polynomial upper bound: 0.6808 (degree 7). Carroll-Ortega-Cerdà: 0.6564 using 4-fold slit disk. The 0.024 gap suggests room for improvement via higher-order slit geometries.",
+      "recommended_experiments": [
+        "Implement Schwarz-Christoffel mapping to n-fold symmetric slit disks",
+        "Optimize slit parameters (depth, angular position) via gradient descent",
+        "Test n=3,5,6,8 symmetries in addition to n=4"
+      ]
+    },
+    {
+      "path_id": "coefficient_refinement_lower",
+      "concepts": ["de_branges_coefficient_bounds", "skinners_method_refinement", "bonk_distortion_extension"],
+      "reason": "The coefficient optimization (item_016) showed that degree-7 polynomials can achieve B_f as low as 0.6808 while maintaining univalence. This suggests that the coefficient constraint space (|a_n| <= n) still has significant unexplored region. Combining Skinner's bootstrap with explicit coefficient tracking could improve the lower bound by identifying which coefficient configurations are compatible with small B_f.",
+      "numerical_evidence": "Coefficient optimization best: B_f = 0.6808 at N=7. The best functions have coefficients far from the de Branges extremal (Koebe), suggesting the extremal for B_u has moderate coefficients.",
+      "recommended_experiments": [
+        "Track Taylor coefficients of near-extremal functions found by optimization",
+        "Derive coefficient-based lower bounds on B_f using the area theorem and Grunsky inequalities",
+        "Combine Skinner's iteration with coefficient constraints to sharpen the growth bound"
+      ]
+    }
+  ],
+  "paths_to_abandon": [
+    {
+      "path_id": "pure_isoperimetric",
+      "concepts": ["covering_surface_ahlfors", "extremal_length_connection"],
+      "reason": "The probe analysis (item_017) revealed that the area constraint (Area >= pi) is NOT the binding constraint for B_u. The extremal domain has area close to pi*R^2 (nearly full disk), far exceeding the minimum. Isoperimetric and extremal length bounds that depend on the area-inradius relationship therefore cannot be tight. The conformal radius normalization R(0,Omega)=1 is the true binding constraint, which is already captured by the Koebe theorem.",
+      "numerical_evidence": "Extremal length inequality B_f >= r*exp(pi*M(r))/4 evaluated to 0.079 for the identity (vs actual B_f = 1). The multiplicative gap of 12x confirms the bound is far too loose for practical use."
+    }
+  ],
+  "ranked_follow_up_experiments": [
+    {
+      "rank": 1,
+      "experiment": "Schwarz-Christoffel slit disk optimization",
+      "expected_improvement": "Upper bound reduction from 0.6564 to potentially 0.63-0.64",
+      "estimated_effort": "Medium (requires SC mapping implementation)",
+      "rationale": "Direct construction of candidate extremal domains"
+    },
+    {
+      "rank": 2,
+      "experiment": "Coefficient-constrained Skinner bootstrap",
+      "expected_improvement": "Lower bound improvement from 0.5708858 to 0.571-0.572",
+      "estimated_effort": "High (requires careful analysis of Skinner's C(r) with coefficient tracking)",
+      "rationale": "Most direct route to improving the lower bound"
+    },
+    {
+      "rank": 3,
+      "experiment": "Brownian exit time lower bound",
+      "expected_improvement": "Potentially large (new proof route), but uncertain",
+      "estimated_effort": "High (requires new theoretical development)",
+      "rationale": "Only known approach that captures full 2D geometry without Ahlfors covering theory"
+    },
+    {
+      "rank": 4,
+      "experiment": "Higher-degree polynomial search with GPU acceleration",
+      "expected_improvement": "Upper bound to 0.66-0.68 (approaching Carroll-Ortega-Cerdà)",
+      "estimated_effort": "Medium (engineering, not mathematics)",
+      "rationale": "Better explore the high-dimensional coefficient space at N=15-30"
+    }
+  ]
+}
