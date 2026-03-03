@@ -24,7 +24,7 @@ def main() -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     run = sub.add_parser("run")
-    run.add_argument("--method", default="baseline", choices=["baseline", "symplectic"])
+    run.add_argument("--method", default="baseline", choices=["baseline", "symplectic", "barnes_hut"])
     run.add_argument("--scenario", default="two_body", choices=["two_body", "three_body", "random"])
     run.add_argument("--n", type=int, default=16)
     run.add_argument("--steps", type=int, default=1000)
@@ -32,6 +32,9 @@ def main() -> int:
     run.add_argument("--seed", type=int, default=42)
     run.add_argument("--softening", type=float, default=1e-3)
     run.add_argument("--snapshot-every", type=int, default=1)
+    run.add_argument("--theta", type=float, default=0.7)
+    run.add_argument("--leaf-size", type=int, default=8)
+    run.add_argument("--bh-min-n", type=int, default=64)
     run.add_argument("--out", required=True)
 
     args = parser.parse_args()
@@ -48,6 +51,9 @@ def main() -> int:
                 softening=args.softening,
                 method=args.method,
                 snapshot_every=max(1, args.snapshot_every),
+                theta=args.theta,
+                leaf_size=max(1, args.leaf_size),
+                bh_min_n=max(2, args.bh_min_n),
             ),
         )
         payload = {
@@ -59,6 +65,9 @@ def main() -> int:
                 "dt": args.dt,
                 "seed": args.seed,
                 "softening": args.softening,
+                "theta": args.theta,
+                "leaf_size": args.leaf_size,
+                "bh_min_n": args.bh_min_n,
             },
             "trajectory": result,
         }

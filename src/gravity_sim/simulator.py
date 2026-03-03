@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Callable
 
 import numpy as np
 
@@ -13,6 +14,9 @@ class SimConfig:
     g: float = 1.0
     method: str = "baseline"
     snapshot_every: int = 1
+    theta: float = 0.7
+    leaf_size: int = 8
+    bh_min_n: int = 64
 
 
 def accelerations(positions: np.ndarray, masses: np.ndarray, g: float, softening: float) -> np.ndarray:
@@ -39,8 +43,9 @@ def step_baseline_euler(
     dt: float,
     g: float,
     softening: float,
+    accel_fn: Callable[[np.ndarray, np.ndarray, float, float], np.ndarray] = accelerations,
 ) -> tuple[np.ndarray, np.ndarray]:
-    acc = accelerations(positions, masses, g, softening)
+    acc = accel_fn(positions, masses, g, softening)
     new_positions = positions + velocities * dt
     new_velocities = velocities + acc * dt
     return new_positions, new_velocities
@@ -53,9 +58,10 @@ def step_symplectic_leapfrog(
     dt: float,
     g: float,
     softening: float,
+    accel_fn: Callable[[np.ndarray, np.ndarray, float, float], np.ndarray] = accelerations,
 ) -> tuple[np.ndarray, np.ndarray]:
     # Kick-drift symplectic Euler (single force evaluation per step).
-    acc = accelerations(positions, masses, g, softening)
+    acc = accel_fn(positions, masses, g, softening)
     new_velocities = velocities + dt * acc
     new_positions = positions + dt * new_velocities
     return new_positions, new_velocities
@@ -94,8 +100,25 @@ def simulate(
     velocities = velocities.astype(np.float64, copy=True)
     masses = masses.astype(np.float64, copy=True)
 
-    if config.method not in {"baseline", "symplectic"}:
+    if config.method not in {"baseline", "symplectic", "barnes_hut"}:
         raise ValueError(f"Unsupported method: {config.method}")
+
+    accel_fn: Callable[[np.ndarray, np.ndarray, float, float], np.ndarray] = accelerations
+    if config.method == "barnes_hut":
+        from .barnes_hut import accelerations_barnes_hut
+
+        def _bh_accel(pos: np.ndarray, m: np.ndarray, g: float, soft: float) -> np.ndarray:
+            return accelerations_barnes_hut(
+                pos,
+                m,
+                g,
+                soft,
+                theta=config.theta,
+                leaf_size=config.leaf_size,
+                min_n_direct=config.bh_min_n,
+            )
+
+        accel_fn = _bh_accel
 
     frames = []
 
@@ -116,7 +139,7 @@ def simulate(
     record(step=0, time=0.0)
     time = 0.0
     for step in range(1, config.steps + 1):
-        if config.method == "baseline":
+        if config.method in {"baseline", "barnes_hut"}:
             positions, velocities = step_baseline_euler(
                 positions,
                 velocities,
@@ -124,6 +147,7 @@ def simulate(
                 config.dt,
                 config.g,
                 config.softening,
+                accel_fn=accel_fn,
             )
         else:
             positions, velocities = step_symplectic_leapfrog(
@@ -133,6 +157,7 @@ def simulate(
                 config.dt,
                 config.g,
                 config.softening,
+                accel_fn=accel_fn,
             )
         time += config.dt
         record(step=step, time=time)
