@@ -1,0 +1,30 @@
+{
+  "sub_problem": "hybrid fixed-step symplectic and barnes-hut strategy for minimal gravity simulation",
+  "timestamp": "2026-03-03T04:22:00+00:00",
+  "associations": [
+    "Symplectic stepping reduces secular drift in low-dimensional orbital tests.",
+    "Barnes-Hut approximation provides dominant throughput gains at N>=512.",
+    "Approximation error from high theta can suppress stability gains if close encounters dominate."
+  ],
+  "forced_bridges": [
+    "fixed_step_integrator + newtonian_force_kernel + diagnostics_metrics_contract",
+    "barnes_hut_force_contract + cli_manifest_reproducibility"
+  ],
+  "anomaly_results": [
+    "random_n64 in symplectic_eval shows worse drift than baseline under current parameterization, indicating scenario-sensitive stability behavior.",
+    "Barnes-Hut speedups remain large while error increases with theta, motivating coupled theta-dt sweeps."
+  ],
+  "steering_directions": [
+    {
+      "direction": "Introduce hybrid symplectic+Barnes-Hut method for high-N runs.",
+      "rationale": "Combines stability-oriented integration with proven scalability gains.",
+      "first_step": "Implement symplectic kick-drift-kick using Barnes-Hut accelerations with theta=0.8.",
+      "expected_signal": "At N=512, throughput remains >4x baseline while max energy drift falls vs Euler+Barnes-Hut."
+    }
+  ],
+  "validation_checks": [
+    "Compare hybrid against baseline, symplectic-direct, and Euler-Barnes-Hut on identical seeds.",
+    "Track max energy drift, runtime/step, and final-position error against direct baseline.",
+    "Verify deterministic replay under seed=42 with canonical JSON outputs."
+  ]
+}
