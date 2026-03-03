@@ -1,0 +1,70 @@
+{
+  "problem": "binary GCD critical path optimization",
+  "framings": [
+    {
+      "domain": "Digital Circuit Design / VLSI",
+      "reframing": "Minimizing the propagation delay through the longest combinational logic path in a hardware binary GCD datapath, where iterative subtract-and-shift operations create deep logic chains that limit clock frequency.",
+      "key_insight": "The critical path in a binary GCD hardware unit is dominated by the conditional subtraction and comparison logic; restructuring the datapath to use carry-lookahead or speculative computation can collapse multiple serial dependencies into parallel ones.",
+      "suggested_technique": "Pipeline stage insertion (retiming), carry-lookahead adders for the subtraction step, and speculative dual-path execution where both possible outcomes of a comparison are computed simultaneously and the correct one is selected via a multiplexer.",
+      "mapping_back": "Each pipeline stage or speculative computation trick directly reduces the number of gate delays on the critical path, translating to a higher achievable clock frequency for the GCD unit and fewer cycles on the longest-latency iteration.",
+      "candidate_folder_name": "vlsi_critical_path_retiming"
+    },
+    {
+      "domain": "Compiler Optimization / Instruction Scheduling",
+      "reframing": "The binary GCD algorithm compiled to machine code has a long dependency chain of conditional branches and data-dependent shifts; the critical path is the longest chain of dependent instructions that cannot be overlapped by the processor pipeline.",
+      "key_insight": "Branch mispredictions and serial data dependencies (count-trailing-zeros \u2192 shift \u2192 compare \u2192 subtract) form the latency bottleneck; converting control flow to data flow (branchless code) and exploiting hardware CTZ instructions can dramatically shorten the dependency chain.",
+      "suggested_technique": "If-conversion to eliminate branches (CMOV/select instructions), use of intrinsic __builtin_ctz for trailing-zero counting, loop unrolling, and software pipelining to overlap iterations on out-of-order cores.",
+      "mapping_back": "Reducing the instruction-level critical path directly maps to fewer cycles per GCD iteration, optimizing the same algorithmic bottleneck but at the compiled-code level rather than the gate level.",
+      "candidate_folder_name": "compiler_dep_chain_reduction"
+    },
+    {
+      "domain": "Project Management / Operations Research",
+      "reframing": "Model the binary GCD computation as a project network (activity-on-node) where each operation (compare, subtract, shift) is a task with dependencies; the critical path is the longest path through this network determining the minimum project completion time.",
+      "key_insight": "In CPM/PERT analysis, the critical path can only be shortened by 'crashing' activities on it \u2014 spending extra resources (area, parallelism) to reduce the duration of bottleneck tasks \u2014 while non-critical tasks have float that can be exploited.",
+      "suggested_technique": "Apply CPM crashing: identify the cheapest-to-crash activities on the critical path (e.g., replace a ripple subtractor with a faster CLA), compute cost-time tradeoff curves, and iteratively crash until the critical path shifts to a different chain.",
+      "mapping_back": "The crashing decisions correspond to microarchitectural or algorithmic substitutions (faster adder, speculative execution) that reduce the latency of the rate-limiting step in the binary GCD computation.",
+      "candidate_folder_name": "cpm_crashing_analysis"
+    },
+    {
+      "domain": "Graph Theory / Network Flow",
+      "reframing": "Represent the data-flow graph of a single binary GCD iteration as a directed acyclic graph (DAG) where nodes are operations and edge weights are latencies; the critical path is the longest weighted path from source to sink in this DAG.",
+      "key_insight": "The longest-path problem in a DAG can be solved in linear time via topological sort; more importantly, the structure of the DAG reveals which edges can be contracted (operation fusion) or which nodes can be parallelized to reduce the longest path length.",
+      "suggested_technique": "Topological-sort-based longest path identification, followed by node splitting (decomposing expensive operations into parallel sub-operations), edge contraction (fusing cheap sequential operations), and applying Dilworth's theorem to find the minimum number of parallel chains covering all operations.",
+      "mapping_back": "Shortening the longest path in the operation DAG directly corresponds to reducing the latency of one GCD iteration; parallelizable independent chains map to hardware lanes or SIMD operations that can execute concurrently.",
+      "candidate_folder_name": "dag_longest_path_optimization"
+    },
+    {
+      "domain": "Control Theory / Feedback Systems",
+      "reframing": "The binary GCD algorithm is an iterative feedback loop: at each step, the system state (u, v) is transformed by a nonlinear function (subtract, shift) and fed back until convergence. The 'critical path' is the settling time of this discrete dynamical system.",
+      "key_insight": "Convergence speed depends on the contraction rate of the state mapping; each iteration roughly halves at least one operand, giving logarithmic convergence. Accelerating convergence means increasing the contraction factor per iteration \u2014 processing multiple bits per step.",
+      "suggested_technique": "Multi-bit acceleration (processing k trailing zeros or k bits of quotient per step, analogous to increasing loop gain), look-ahead techniques that predict several iterations' worth of shifts, or transforming the system to a faster-converging coordinate system (e.g., plus-minus GCD variants).",
+      "mapping_back": "A higher contraction rate per iteration means fewer total iterations to reach GCD, directly optimizing the total critical path latency across the entire algorithm execution.",
+      "candidate_folder_name": "feedback_convergence_acceleration"
+    },
+    {
+      "domain": "Parallel / Distributed Computing",
+      "reframing": "The binary GCD's sequential nature (each iteration depends on the previous result) makes it inherently difficult to parallelize \u2014 it resembles a long serial prefix computation. The critical path is the span (parallel depth) of the computation.",
+      "key_insight": "While individual iterations are serial, speculative parallelism can be exploited: predict the outcome of comparisons and execute multiple future iterations simultaneously along different speculative branches, discarding incorrect ones (analogous to speculative execution in processors or parallel prefix methods).",
+      "suggested_technique": "Speculative parallel execution trees, where 2^k possible future states are computed in parallel for k steps ahead; also, batched GCD computation across multiple independent GCD instances using SIMD/GPU parallelism (inter-problem parallelism when intra-problem parallelism is limited).",
+      "mapping_back": "Reducing the span of the computation DAG or amortizing overhead across parallel GCD instances directly optimizes throughput and/or latency, addressing the critical path bottleneck through parallelism rather than sequential speedup.",
+      "candidate_folder_name": "parallel_span_reduction"
+    },
+    {
+      "domain": "Information Theory / Coding Theory",
+      "reframing": "Each iteration of the binary GCD algorithm extracts information about the GCD by eliminating bits from the operands. The critical path length corresponds to the total number of bits of information that must be serially extracted before the GCD is fully determined.",
+      "key_insight": "The algorithm processes roughly 1 bit of 'mutual information' between the operands per iteration; the theoretical minimum number of iterations is related to the total bit-length of the inputs. Processing multiple bits per step is analogous to using a higher-rate code to extract information faster.",
+      "suggested_technique": "Multi-bit GCD algorithms (e.g., Lehmer's method or k-ary GCD) that process multiple bits per iteration, analogous to higher-order modulation in communication systems; approximate GCD methods that use most-significant-bit information to make larger jumps.",
+      "mapping_back": "Increasing the information extraction rate per iteration directly reduces the total number of iterations (critical path length), achieving the same algorithmic result with fewer serial steps.",
+      "candidate_folder_name": "information_rate_multibit_gcd"
+    },
+    {
+      "domain": "Biological Evolution / Genetic Algorithms",
+      "reframing": "Consider the binary GCD critical path as a fitness landscape optimization problem: each possible implementation (algorithm variant, hardware configuration, instruction sequence) is a genotype, and the critical path latency is the fitness to be minimized.",
+      "key_insight": "The design space of binary GCD implementations is vast (choice of adder type, pipeline depth, speculation degree, algorithm variant) with complex interdependencies; evolutionary search can explore non-obvious combinations that a human designer might miss, especially when targeting a specific technology node or ISA.",
+      "suggested_technique": "Multi-objective genetic algorithm (NSGA-II) optimizing for critical path latency, area, and power simultaneously; chromosomes encode design choices (adder topology, number of pipeline stages, branch prediction strategy, iteration-merging degree); fitness evaluation via RTL simulation or cycle-accurate modeling.",
+      "mapping_back": "The Pareto-optimal solutions found by the GA represent concrete implementation configurations for the binary GCD unit that achieve minimal critical path latency for a given area/power budget, directly applicable as design specifications.",
+      "candidate_folder_name": "evolutionary_design_space_exploration"
+    }
+  ],
+  "timestamp": "2026-03-03T07:47:23.749097+00:00"
+}
