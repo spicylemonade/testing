@@ -1,0 +1,25 @@
+{
+  "symbolic_name": "cmov_abs_pattern",
+  "description": "Replace conditional branches in the sign/swap step of binary GCD with a branchless absolute-value and conditional-move sequence. Uses SUB, NEG, CMOV to compute |a-b| and min(a,b) without any JCC instructions.",
+  "domains": [
+    "x86 microarchitecture",
+    "branchless programming",
+    "GCD algorithms"
+  ],
+  "mathematical_formalization": "Given a,b: diff = a - b; mask = diff >> 63 (arithmetic shift); abs_diff = (diff ^ mask) - mask; min_val = b ^ ((a ^ b) & mask)",
+  "analogical_connections": [
+    "Branchless min/max in sorting networks",
+    "Predicated execution in GPU shaders",
+    "Constant-time comparison in cryptography"
+  ],
+  "implementation_hypothesis": "The inner loop becomes: sub rax,rbx; cmovl rbx,rax; neg rax; cmovs rax,rbx; tzcnt rcx,rax; sarx rax,rax,rcx. Zero JCC.",
+  "experiment_seed": "Compile with -O3, verify via objdump no JCC in hot loop. Measure branch mispredictions with perf stat.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "assembly_analysis.md",
+    "benchmark.cpp"
+  ],
+  "generated_at": "2026-03-03T12:00:00Z",
+  "project_folder": "results/concept_evolve/tree/001_cmov_abs_pattern"
+}

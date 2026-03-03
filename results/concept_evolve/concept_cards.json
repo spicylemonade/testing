@@ -1,0 +1,102 @@
+[
+  {
+    "symbolic_name": "cmov_abs_pattern",
+    "description": "Replace conditional branches in the sign/swap step of binary GCD with a branchless absolute-value and conditional-move sequence. Uses SUB, NEG, CMOV to compute |a-b| and min(a,b) without any JCC instructions.",
+    "domains": ["x86 microarchitecture", "branchless programming", "GCD algorithms"],
+    "mathematical_formalization": "Given a,b: diff = a - b; mask = diff >> 63 (arithmetic shift); abs_diff = (diff ^ mask) - mask; min_val = b ^ ((a ^ b) & mask)",
+    "analogical_connections": ["Branchless min/max in sorting networks", "Predicated execution in GPU shaders", "Constant-time comparison in cryptography"],
+    "implementation_hypothesis": "The inner loop becomes: sub rax,rbx; cmovl rbx,rax; neg rax; cmovs rax,rbx; tzcnt rcx,rax; sarx rax,rax,rcx. Zero JCC.",
+    "experiment_seed": "Compile with -O3, verify via objdump no JCC in hot loop. Measure branch mispredictions with perf stat.",
+    "folder_plan": ["concept.json", "README.md", "assembly_analysis.md", "benchmark.cpp"]
+  },
+  {
+    "symbolic_name": "tzcnt_dependency_chain",
+    "description": "The critical path in binary GCD is the loop-carried dependency chain: SUB -> TZCNT -> SARX -> next SUB. TZCNT has 3-cycle latency on modern Intel/AMD. Total chain is 5-7 cycles per iteration.",
+    "domains": ["CPU pipeline analysis", "instruction scheduling", "loop optimization"],
+    "mathematical_formalization": "Critical path: t_iter = lat(SUB) + lat(TZCNT) + lat(SARX) = 1 + 3 + 1 = 5 cycles (Skylake). With CMOV in chain: +1 cycle.",
+    "analogical_connections": ["Critical path analysis in VLSI timing", "Amdahl's law applied to instruction chains", "Loop pipelining in DSP"],
+    "implementation_hypothesis": "To break the chain: (1) speculative dual-path execution, (2) lookup table for small values, (3) move TZCNT before ABS to overlap with CMOV",
+    "experiment_seed": "Use llvm-mca to measure exact critical path latency. Compare theoretical vs measured.",
+    "folder_plan": ["concept.json", "README.md", "critical_path.md"]
+  },
+  {
+    "symbolic_name": "simd_batch_gcd",
+    "description": "Process multiple independent GCD pairs simultaneously using AVX2/AVX-512. Main challenge: TZCNT has no SIMD equivalent - must emulate via bit isolation and LZCNT.",
+    "domains": ["SIMD programming", "data-parallel algorithms", "AVX-512"],
+    "mathematical_formalization": "For 4 pairs in AVX2: 4x SUB, 4x blend (replaces CMOV), 4x NEG+blend (abs), 4x emulated TZCNT, 4x variable shift.",
+    "analogical_connections": ["SIMD sorting networks", "GPU warp-level parallel reduction", "Vectorized polynomial evaluation"],
+    "implementation_hypothesis": "Emulate TZCNT: t = v & (-v) isolates lowest bit; use VPLZCNTD or VPSHUFB nibble lookup for bit position.",
+    "experiment_seed": "Implement batch of 4 GCDs in AVX2. Measure throughput vs 4 sequential scalar GCDs.",
+    "folder_plan": ["concept.json", "README.md", "simd_impl.h"]
+  },
+  {
+    "symbolic_name": "divstep_constant_time",
+    "description": "Adapt Bernstein-Yang 2019 divstep for plain GCD. Fixed iteration count (2n-1 for n-bit) with no data-dependent branches. Constant-time but more total iterations.",
+    "domains": ["cryptographic algorithms", "modular arithmetic", "constant-time programming"],
+    "mathematical_formalization": "divstep(delta,f,g): if delta>0 and g_odd: (1-delta,g,(g-f)/2); elif g_odd: (1+delta,f,(g+f)/2); else: (1+delta,f,g/2).",
+    "analogical_connections": ["Matrix exponentiation for Fibonacci", "Lehmer's GCD improvement", "Continued fraction representation"],
+    "implementation_hypothesis": "Fixed 127 iterations for 64-bit. Each: 2 CMOV (conditional swap) + 1 conditional add + 1 right shift. All branchless.",
+    "experiment_seed": "Compare divstep (fixed 127 iters) vs binary GCD (variable ~64 avg). Profile total cycles.",
+    "folder_plan": ["concept.json", "README.md", "divstep_gcd.h"]
+  },
+  {
+    "symbolic_name": "lut_small_gcd",
+    "description": "Precomputed lookup table for small operands. 8-bit: 64KB table. Hybrid: run binary GCD until operands < 256, then O(1) table lookup.",
+    "domains": ["lookup table optimization", "cache-aware algorithms", "hybrid algorithms"],
+    "mathematical_formalization": "table[a][b] = gcd(a,b) for a,b in [0,255]. Size = 256*256 = 64KB. Fits in L1 cache.",
+    "analogical_connections": ["Memoization in DP", "Hardware ROM function evaluation", "Finite field log tables"],
+    "implementation_hypothesis": "When both operands < 256, return table[a][b]. Saves ~8 final iterations. Must verify L1 cache impact.",
+    "experiment_seed": "Profile iteration count distribution. Measure speedup from LUT early-exit on 64-bit inputs.",
+    "folder_plan": ["concept.json", "README.md", "lut_gcd.h"]
+  },
+  {
+    "symbolic_name": "speculative_dual_path",
+    "description": "Execute two loop bodies: one assuming ctz=1, one computing actual ctz. Select correct result via CMOV. Overlaps iterations.",
+    "domains": ["speculative execution", "instruction-level parallelism", "branch prediction"],
+    "mathematical_formalization": "Speculate: diff1 = (a-b)>>1. Actual: ctz=tzcnt(a-b); diff_actual=(a-b)>>ctz. result = (ctz==1)?diff1:diff_actual.",
+    "analogical_connections": ["Hardware branch prediction", "Dual-rail logic", "Optimistic concurrency control"],
+    "implementation_hypothesis": "ctz=1 occurs ~50% of the time for random inputs. When correct, save TZCNT latency from critical path.",
+    "experiment_seed": "Measure ctz distribution. Profile IPC improvement. Check register pressure overhead.",
+    "folder_plan": ["concept.json", "README.md", "speculative_gcd.h"]
+  },
+  {
+    "symbolic_name": "lehmer_hybrid_256bit",
+    "description": "For 256-bit: extract top 64 bits, compute cofactors via fast 64-bit half-GCD, apply transformation matrix to reduce full-width operands.",
+    "domains": ["multi-precision arithmetic", "matrix-based reduction", "GMP internals"],
+    "mathematical_formalization": "Extract top 64 bits. Compute 2x2 cofactor matrix from 64-bit half-GCD. Apply: a'=u00*a+u01*b; b'=u10*a+u11*b.",
+    "analogical_connections": ["Strassen matrix multiplication", "GMP mpn_hgcd", "Continued fraction acceleration"],
+    "implementation_hypothesis": "For 256-bit: extract top limb, run branchless 64-bit GCD for cofactors, multiply 4-limb numbers by 2x2 matrix. Repeat.",
+    "experiment_seed": "Compare against naive 256-bit binary GCD. Measure iteration reduction and limb multiplication cost.",
+    "folder_plan": ["concept.json", "README.md", "lehmer_256.h"]
+  },
+  {
+    "symbolic_name": "approximate_gcd_convergence",
+    "description": "Analyze binary GCD convergence rate: E[iterations] ~ 0.706*n for n-bit inputs. Use this to set fixed iteration bounds and eliminate loop-termination branch.",
+    "domains": ["algorithm analysis", "probability theory", "number theory"],
+    "mathematical_formalization": "E[iterations] = 0.706*n. Worst case (Fibonacci-adjacent): ~1.44*n iterations.",
+    "analogical_connections": ["Convergence of iterative solvers", "Markov chain mixing time", "Randomized algorithm analysis"],
+    "implementation_hypothesis": "Fixed upper bound of ceil(1.5*n) iterations. After that, one operand guaranteed to be 0. No data-dependent loop exit.",
+    "experiment_seed": "Empirically measure iteration count over 10M random pairs. Verify theoretical bounds.",
+    "folder_plan": ["concept.json", "README.md", "convergence_analysis.py"]
+  },
+  {
+    "symbolic_name": "compiler_autovectorization",
+    "description": "Study how GCC/Clang handle branchless GCD patterns. Identify when compiler reintroduces branches or defeats CMOV usage.",
+    "domains": ["compiler optimization", "code generation", "ISA extensions"],
+    "mathematical_formalization": "Compiler may transform ternary to CMOV only with specific flag patterns. Risk: CMOV for swap but JCC for loop exit.",
+    "analogical_connections": ["Compiler barriers in lock-free code", "Volatile in embedded systems", "Inline asm vs intrinsics"],
+    "implementation_hypothesis": "Use __builtin_ctzll, explicit ternary for CMOV generation, or inline asm for guaranteed branchless code.",
+    "experiment_seed": "Compare GCC vs Clang assembly output. Test 3 styles: plain C, builtins, inline asm.",
+    "folder_plan": ["concept.json", "README.md", "compiler_comparison.md"]
+  },
+  {
+    "symbolic_name": "linux_kernel_gcd_evolution",
+    "description": "Linux kernel gcd.c evolution from naive Euclidean to Zhaoxiu Zeng's binary GCD with __ffs. Lessons from kernel optimization practices.",
+    "domains": ["Linux kernel", "systems programming", "code archaeology"],
+    "mathematical_formalization": "Kernel: factor shared 2s, then iterate: if(a>b) swap; b-=a; b>>=__ffs(b). Has data-dependent swap branch.",
+    "analogical_connections": ["Evolution of memcpy implementations", "Kernel scheduler optimization", "CRC32 instruction adoption"],
+    "implementation_hypothesis": "Kernel prioritizes portability. Our version targets specific ISA (BMI2, AVX) for maximum throughput.",
+    "experiment_seed": "Extract kernel gcd.c, compile for x86-64, compare assembly against our optimized version.",
+    "folder_plan": ["concept.json", "README.md", "kernel_gcd_analysis.md"]
+  }
+]

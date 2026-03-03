@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "tzcnt_dependency_chain",
+  "description": "The critical path in binary GCD is the loop-carried dependency chain: SUB -> TZCNT -> SARX -> next SUB. TZCNT has 3-cycle latency on modern Intel/AMD. Total chain is 5-7 cycles per iteration.",
+  "domains": [
+    "CPU pipeline analysis",
+    "instruction scheduling",
+    "loop optimization"
+  ],
+  "mathematical_formalization": "Critical path: t_iter = lat(SUB) + lat(TZCNT) + lat(SARX) = 1 + 3 + 1 = 5 cycles (Skylake). With CMOV in chain: +1 cycle.",
+  "analogical_connections": [
+    "Critical path analysis in VLSI timing",
+    "Amdahl's law applied to instruction chains",
+    "Loop pipelining in DSP"
+  ],
+  "implementation_hypothesis": "To break the chain: (1) speculative dual-path execution, (2) lookup table for small values, (3) move TZCNT before ABS to overlap with CMOV",
+  "experiment_seed": "Use llvm-mca to measure exact critical path latency. Compare theoretical vs measured.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "critical_path.md"
+  ],
+  "generated_at": "2026-03-03T12:00:00Z",
+  "project_folder": "results/concept_evolve/tree/002_tzcnt_dependency_chain"
+}

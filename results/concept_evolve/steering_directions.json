@@ -1,0 +1,20 @@
+[
+  {
+    "direction": "Optimize the scalar branchless binary GCD inner loop to minimize loop-carried dependency chain below 6 cycles via TZCNT-before-ABS reordering and CMOV fusion",
+    "rationale": "The dependency chain SUB->ABS->TZCNT->SARX is the fundamental bottleneck. Reordering to compute TZCNT on the raw difference (before absolute value) allows TZCNT and ABS to execute in parallel, shaving 1-2 cycles off the critical path.",
+    "first_step": "Implement the reordered inner loop: diff=a-b; ctz=tzcnt(diff); abs_diff=abs(diff); min=cmov; shifted=sarx(abs_diff,ctz). Profile with llvm-mca.",
+    "expected_signal": "llvm-mca shows critical path <= 5 cycles per iteration. Measured throughput improves by 15-25% over naive ordering."
+  },
+  {
+    "direction": "Combine branchless scalar GCD with LUT early-termination for a hybrid that eliminates the expensive tail iterations",
+    "rationale": "The last 8-10 iterations of binary GCD operate on small values where both operands fit in 8 bits. A 64KB lookup table provides O(1) completion, skipping the most variable-length tail of the algorithm.",
+    "first_step": "Generate 256x256 GCD lookup table. Profile iteration count distribution to quantify expected savings. Implement hybrid with fallback threshold at 8 bits.",
+    "expected_signal": "Average cycle count for 64-bit GCD drops by 8-12% due to eliminating ~8 iterations. L1 cache miss rate stays below 1%."
+  },
+  {
+    "direction": "Implement SIMD batch GCD for throughput-oriented workloads processing 4-8 independent pairs simultaneously",
+    "rationale": "While single-pair latency is hard to improve past the dependency chain limit, throughput can be multiplied by processing independent pairs via AVX2/AVX-512. This is the path to strict outperformance on batch workloads.",
+    "first_step": "Implement AVX2 batch-of-4 GCD with emulated TZCNT via VPAND/VPSUBD/bit-manipulation. Benchmark against 4 sequential scalar GCDs.",
+    "expected_signal": "Batch throughput is 2-3x higher than sequential scalar on uniform random 64-bit inputs."
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "simd_batch_gcd",
+  "description": "Process multiple independent GCD pairs simultaneously using AVX2/AVX-512. Main challenge: TZCNT has no SIMD equivalent - must emulate via bit isolation and LZCNT.",
+  "domains": [
+    "SIMD programming",
+    "data-parallel algorithms",
+    "AVX-512"
+  ],
+  "mathematical_formalization": "For 4 pairs in AVX2: 4x SUB, 4x blend (replaces CMOV), 4x NEG+blend (abs), 4x emulated TZCNT, 4x variable shift.",
+  "analogical_connections": [
+    "SIMD sorting networks",
+    "GPU warp-level parallel reduction",
+    "Vectorized polynomial evaluation"
+  ],
+  "implementation_hypothesis": "Emulate TZCNT: t = v & (-v) isolates lowest bit; use VPLZCNTD or VPSHUFB nibble lookup for bit position.",
+  "experiment_seed": "Implement batch of 4 GCDs in AVX2. Measure throughput vs 4 sequential scalar GCDs.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "simd_impl.h"
+  ],
+  "generated_at": "2026-03-03T12:00:00Z",
+  "project_folder": "results/concept_evolve/tree/003_simd_batch_gcd"
+}

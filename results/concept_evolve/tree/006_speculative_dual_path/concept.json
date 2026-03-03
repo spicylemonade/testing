@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "speculative_dual_path",
+  "description": "Execute two loop bodies: one assuming ctz=1, one computing actual ctz. Select correct result via CMOV. Overlaps iterations.",
+  "domains": [
+    "speculative execution",
+    "instruction-level parallelism",
+    "branch prediction"
+  ],
+  "mathematical_formalization": "Speculate: diff1 = (a-b)>>1. Actual: ctz=tzcnt(a-b); diff_actual=(a-b)>>ctz. result = (ctz==1)?diff1:diff_actual.",
+  "analogical_connections": [
+    "Hardware branch prediction",
+    "Dual-rail logic",
+    "Optimistic concurrency control"
+  ],
+  "implementation_hypothesis": "ctz=1 occurs ~50% of the time for random inputs. When correct, save TZCNT latency from critical path.",
+  "experiment_seed": "Measure ctz distribution. Profile IPC improvement. Check register pressure overhead.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "speculative_gcd.h"
+  ],
+  "generated_at": "2026-03-03T12:00:00Z",
+  "project_folder": "results/concept_evolve/tree/006_speculative_dual_path"
+}

@@ -1,0 +1,34 @@
+{
+  "nodes": [
+    {"id": "cmov_abs_pattern", "domain": "x86 microarchitecture"},
+    {"id": "tzcnt_dependency_chain", "domain": "CPU pipeline analysis"},
+    {"id": "simd_batch_gcd", "domain": "SIMD programming"},
+    {"id": "divstep_constant_time", "domain": "cryptographic algorithms"},
+    {"id": "lut_small_gcd", "domain": "lookup table optimization"},
+    {"id": "speculative_dual_path", "domain": "speculative execution"},
+    {"id": "lehmer_hybrid_256bit", "domain": "multi-precision arithmetic"},
+    {"id": "approximate_gcd_convergence", "domain": "algorithm analysis"},
+    {"id": "compiler_autovectorization", "domain": "compiler optimization"},
+    {"id": "linux_kernel_gcd_evolution", "domain": "Linux kernel"}
+  ],
+  "edges": [
+    {"source": "cmov_abs_pattern", "target": "tzcnt_dependency_chain", "relation": "CMOV pattern defines the dependency chain to analyze"},
+    {"source": "tzcnt_dependency_chain", "target": "speculative_dual_path", "relation": "breaking dependency chain motivates speculation"},
+    {"source": "tzcnt_dependency_chain", "target": "lut_small_gcd", "relation": "LUT eliminates final iterations of chain"},
+    {"source": "cmov_abs_pattern", "target": "simd_batch_gcd", "relation": "scalar CMOV pattern must be vectorized"},
+    {"source": "simd_batch_gcd", "target": "compiler_autovectorization", "relation": "compiler may auto-vectorize the scalar pattern"},
+    {"source": "divstep_constant_time", "target": "approximate_gcd_convergence", "relation": "divstep uses fixed iteration count based on convergence bound"},
+    {"source": "divstep_constant_time", "target": "cmov_abs_pattern", "relation": "divstep inner loop uses same branchless primitives"},
+    {"source": "lehmer_hybrid_256bit", "target": "cmov_abs_pattern", "relation": "inner 64-bit GCD uses branchless pattern"},
+    {"source": "lehmer_hybrid_256bit", "target": "divstep_constant_time", "relation": "divstep provides alternative inner loop for 256-bit"},
+    {"source": "linux_kernel_gcd_evolution", "target": "cmov_abs_pattern", "relation": "kernel version is the starting point to optimize"},
+    {"source": "lut_small_gcd", "target": "approximate_gcd_convergence", "relation": "convergence analysis determines when LUT kicks in"}
+  ],
+  "bridge_chains": [
+    ["cmov_abs_pattern", "tzcnt_dependency_chain", "speculative_dual_path"],
+    ["cmov_abs_pattern", "simd_batch_gcd", "compiler_autovectorization"],
+    ["divstep_constant_time", "approximate_gcd_convergence", "lut_small_gcd"],
+    ["lehmer_hybrid_256bit", "divstep_constant_time", "cmov_abs_pattern"],
+    ["linux_kernel_gcd_evolution", "cmov_abs_pattern", "tzcnt_dependency_chain"]
+  ]
+}
