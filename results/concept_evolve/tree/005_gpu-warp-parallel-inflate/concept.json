@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "gpu_warp_parallel_inflate",
+  "description": "Map the DEFLATE inflate algorithm onto GPU warps where each thread handles one aspect of the decode pipeline: Huffman table lookup, symbol classification (literal vs. length-distance pair), and LZ77 copy execution. Uses warp-level primitives for coordination instead of shared memory.",
+  "domains": [
+    "GPU_computing",
+    "data_compression",
+    "systems_programming"
+  ],
+  "mathematical_formalization": "Map inflate to a 3-stage GPU pipeline: Stage 1 (Huffman decode): warp of 32 threads, each decodes 1 symbol per cycle from swizzled bitstream. Stage 2 (classify): __ballot_sync() separates literals from copy commands. Stage 3 (execute): literals written directly, copies use warp-cooperative memcpy. Throughput = 32 * f_clock * utilization_factor. CODAG architecture: no specialized thread roles, maximize parallel decode streams.",
+  "analogical_connections": [
+    "Assembly line manufacturing: each station performs one operation, products flow through",
+    "Network packet processing pipeline: header parse, classify, forward in stages",
+    "CODAG paper: eliminate specialized thread groups, let GPU scheduler handle latency"
+  ],
+  "implementation_hypothesis": "Use NVIDIA's nvCOMP GDeflate as baseline. Improve by: (1) replacing shared-memory-based LZ77 copy with register-file-based copy for short distances (<32 bytes), (2) using warp shuffle instructions for copy distances that span threads, (3) overlapping Huffman decode of block N+1 with LZ77 execution of block N using CUDA streams.",
+  "experiment_seed": "Implement on CUDA using an NVIDIA A100. Compare against nvCOMP's GDeflate baseline. Test with Silesia corpus and real-world ZIP archives. Measure GB/s throughput and GPU utilization (SM occupancy, memory bandwidth utilization).",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-03T10:06:02.428121+00:00",
+  "project_folder": "concept_evolve/tree/005_gpu-warp-parallel-inflate"
+}

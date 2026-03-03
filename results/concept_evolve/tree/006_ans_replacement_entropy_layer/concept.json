@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "ans_replacement_entropy_layer",
+  "description": "Replace DEFLATE's Huffman coding layer with Asymmetric Numeral Systems (ANS), which provides arithmetic-coding compression ratios at Huffman-decoding speed. ANS decoding requires only a single table lookup and state update per symbol, and multiple ANS streams can be trivially interleaved for SIMD/superscalar execution.",
+  "domains": ["information_theory", "data_compression", "computer_architecture"],
+  "mathematical_formalization": "ANS state transition: x' = D[x mod M] + (x div M) * freq[s] where D is decode table, M = table size (power of 2), freq[s] = frequency of symbol s. Decoding cost = 1 table lookup + 1 multiply + 1 add per symbol. Compare to Huffman: 1 table lookup + variable bit-shift per symbol. ANS achieves H(S) bits/symbol vs Huffman's ceil(H(S)) bits/symbol.",
+  "analogical_connections": [
+    "Number system design: ANS encodes information in the choice of number system, like positional notation",
+    "Zstandard's FSE: practical ANS implementation achieving ~50% faster decode than Huffman",
+    "Interleaved entropy coders (Giesen 2014): ANS streams naturally interleave without metadata overhead"
+  ],
+  "implementation_hypothesis": "Create a DEFLATE-compatible format variant that replaces Huffman coding with tANS (tabled ANS). Keep LZ77 layer identical. The tANS table size = 2^11 (2048 entries), fitting in L1 cache. Implement 4-way interleaved tANS decoder: 4 independent state variables, 4 table lookups per iteration, yielding 4 symbols per cycle on a superscalar CPU.",
+  "experiment_seed": "Build a tANS-based DEFLATE variant encoder/decoder. Compare compression ratio (should be ~1-3% better than Huffman DEFLATE), decode speed (target 2x faster than libdeflate's Huffman decode), and encode speed on Silesia + Canterbury corpora."
+}

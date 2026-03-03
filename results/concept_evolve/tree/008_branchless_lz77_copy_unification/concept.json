@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "branchless_lz77_copy_unification",
+  "description": "Eliminate branches in the LZ77 decode loop by unifying literal and copy operations into a single branchless operation. Both literals and copies become memcpy-like operations: literals copy from the compressed stream, copies from the output buffer. A conditional move selects the source pointer.",
+  "domains": ["compiler_optimization", "data_compression", "microarchitecture"],
+  "mathematical_formalization": "For each decoded token T: source_ptr = cmov(is_literal, comp_ptr, output_ptr - distance). length = decode_length(T). memcpy(output_ptr, source_ptr, length). output_ptr += length. comp_ptr += is_literal * consumed_bytes. Branch misprediction cost B_miss ~ 15-20 cycles on modern CPUs. If literal/copy ratio is ~50/50, branchless saves ~0.5 * B_miss per token.",
+  "analogical_connections": [
+    "cbloom's branchless LZ77 decoder: unify literal runs and match copies",
+    "GPU predicated execution: no branches, all threads execute all paths",
+    "SIMD masked operations: process all elements, mask out unwanted results"
+  ],
+  "implementation_hypothesis": "Restructure DEFLATE decode loop so that after Huffman decoding a symbol: (1) compute is_copy = (symbol >= 256), (2) compute source = select(comp_ptr, out_ptr - dist, is_copy), (3) compute length = select(1, match_length, is_copy), (4) execute fixed-size memcpy (e.g., always copy 258 bytes, but only advance output by actual length). Use CMOV on x86, CSEL on ARM.",
+  "experiment_seed": "Implement branchless decode loop in C with x86 intrinsics. Profile branch misprediction rates vs branching baseline using perf stat. Measure throughput on files with different literal/match ratios (PNG images vs text files)."
+}

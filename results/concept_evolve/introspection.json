@@ -1,0 +1,115 @@
+{
+  "associations": [
+    {
+      "trigger": "DEFLATE is a serial FSM",
+      "expansions": [
+        "What other serial FSMs have been successfully parallelized? Regular expression matching (re2), JSON parsing (simdjson), UTF-8 validation (Daniel Lemire's work)",
+        "simdjson achieves 2.5 GB/s JSON parsing by treating the problem as SIMD-friendly classification first, FSM second",
+        "Could we treat DEFLATE as a classification problem first? Classify bit patterns into symbol boundaries, then decode",
+        "The 'embarrassingly sequential' barrier in FSMs was broken by Zhao et al. (ASPLOS 2014) with principled speculation -- 46 citations shows this is mature"
+      ]
+    },
+    {
+      "trigger": "Huffman codes have variable length",
+      "expansions": [
+        "Variable-length codes are the core serialization problem: you can't know where symbol N+1 starts until you finish symbol N",
+        "ANS solves this differently: fixed-state-size transitions. Zstandard's adoption proves this is production-ready",
+        "What if we constrain codes to power-of-2 lengths? Loses ~0.5% compression but enables fixed-width decode batches",
+        "Canonical Huffman codes already sort by length -- could we exploit this ordering for SIMD gather operations?"
+      ]
+    },
+    {
+      "trigger": "LZ77 back-references create data dependencies",
+      "expansions": [
+        "Copy distance <= match length creates a true data dependency (overlapping copy). This is ~5-10% of copies in practice",
+        "Non-overlapping copies (distance > length) are embarrassingly parallel -- they are just memcpy operations",
+        "Could we classify copies into dependent/independent sets at compression time and emit them in parallel-friendly order?",
+        "Video codecs face the same problem with motion compensation -- H.264 uses slice-level parallelism, could DEFLATE use block-level?",
+        "The FPGA 'refine and recycle' method (Fang et al., 2020) handles this by retrying failed copies -- applicable to CPU too"
+      ]
+    },
+    {
+      "trigger": "Format compatibility constraint",
+      "expansions": [
+        "Any solution that modifies the format breaks billions of existing files. This is the hardest constraint",
+        "GDeflate (NVIDIA) chose to modify the format -- but only the bit ordering, not the semantics. Clever middle ground",
+        "pugz/rapidgzip prove you CAN parallelize existing gzip files without format changes, using speculative decode",
+        "Could a transparent proxy layer exist? Accept standard DEFLATE, transcode to parallel-friendly format on-the-fly",
+        "HTTP's Content-Encoding: gzip is the largest use case. A proxy could serve pre-parallelized content"
+      ]
+    },
+    {
+      "trigger": "10+ GB/s decompression",
+      "expansions": [
+        "At 10 GB/s, decompression approaches DRAM bandwidth limits (~50 GB/s for DDR5)",
+        "Memory bandwidth becomes the bottleneck, not compute. This is a qualitative shift in the optimization landscape",
+        "Iguana (Sneller) achieves 13 GB/s on a single core with AVX-512 -- this IS at the memory bandwidth frontier",
+        "Beyond this point, improvement requires either: (a) reducing output size (keep compressed), (b) in-place decode, (c) streaming output"
+      ]
+    }
+  ],
+  "blind_spots": [
+    {
+      "area": "ARM and RISC-V architectures",
+      "description": "Most research focuses on x86 (AVX-512) and NVIDIA GPUs. ARM SVE/SVE2 and RISC-V Vector Extension offer different SIMD models that may enable novel approaches. Apple Silicon (M-series) has wide decode and excellent branch prediction, potentially favoring different optimization strategies than Intel/AMD.",
+      "severity": "high"
+    },
+    {
+      "area": "Small file performance",
+      "description": "Most benchmarks use large files (Silesia corpus, multi-MB). Real-world web traffic (HTTP) involves many small compressed payloads (1-100KB). Parallelization overhead may dominate for small inputs. The optimal strategy for small files is fundamentally different: minimize startup cost, not maximize throughput.",
+      "severity": "high"
+    },
+    {
+      "area": "Power and energy efficiency",
+      "description": "Faster decompression via SIMD/GPU uses more power. For mobile devices, edge computing, and data centers (where power = cost), the metric should be bytes decompressed per joule, not per second. The IEEE GZIP accelerator paper (20.5 Gbps at 14nm) highlights this dimension, but most software papers ignore it.",
+      "severity": "medium"
+    },
+    {
+      "area": "Compression-side co-design",
+      "description": "All 12 concepts focus on faster DEcompression. But the compressor can be modified to produce decompression-friendly output: shorter blocks, more uniform code distributions, strategic sync point insertion, LZ77 match length clamping. This co-design dimension is underexplored.",
+      "severity": "medium"
+    },
+    {
+      "area": "Error resilience and security",
+      "description": "Speculative parallel decompression creates new attack surfaces: crafted inputs could cause speculative decoders to write to arbitrary memory (analogous to Spectre). Zip bombs and decompression bombs become harder to detect when processing is parallel. Security auditing of novel decompressors is essential.",
+      "severity": "medium"
+    },
+    {
+      "area": "End-to-end system integration",
+      "description": "Decompression rarely happens in isolation. In real systems, decompressed data feeds immediately into parsers (JSON, XML), renderers (PNG), or indexers (Git). Co-optimizing decompression with downstream consumers (e.g., decompress-and-parse in a single pass) may yield larger gains than optimizing decompression alone.",
+      "severity": "medium"
+    },
+    {
+      "area": "Existing highly-optimized implementations",
+      "description": "libdeflate is already extremely fast (hand-optimized C with SIMD). The paper 'pugz' showed only 5x over libdeflate by using 20+ threads. Single-thread improvements over libdeflate may be in the 10-30% range, not 2-5x. The '2-5x faster' target likely requires either parallelism or format changes.",
+      "severity": "high"
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "What if we could ONLY use 1 CPU core, no SIMD, no parallelism?",
+      "result": "Focus shifts entirely to microarchitectural optimization: branch elimination, table layout, prefetch, and possibly replacing Huffman with tANS. Best-case improvement ~30-50% over libdeflate. The branchless LZ77 and memory layout concepts become primary. This scenario favors concepts 006 (ANS), 007 (prefetch), 008 (branchless), 011 (memory layout).",
+      "insight": "The 2-5x target is IMPOSSIBLE on a single scalar core for standard DEFLATE. This proves that either parallelism or format changes are necessary."
+    },
+    {
+      "constraint": "What if the compressed data is streamed (cannot seek or random access)?",
+      "result": "Block boundary detection and sync point discovery become impossible because we cannot scan ahead. Only pipeline-stage parallelism survives: overlap Huffman decode with LZ77 copy execution. Multi-stream Huffman and ANS interleaving still work if the format supports them. The streaming constraint kills concepts 001 and 012 but amplifies 003 and 006.",
+      "insight": "HTTP chunked-encoding and network streaming are major DEFLATE use cases. Solutions must work for streaming, not just files."
+    },
+    {
+      "constraint": "What if decompression must happen on a GPU with no CPU fallback?",
+      "result": "Standard DEFLATE is a terrible fit for GPUs due to serial Huffman decode and irregular LZ77 copies. GDeflate's bit-swizzling becomes mandatory. The GPU scenario collapses concepts 003, 004, 006, 007, 008, 011 (CPU-centric) and amplifies 002, 005. Neural entropy warmstart (010) could run on GPU tensor cores. This is a clean separation: GPU solutions require format modification.",
+      "insight": "The CPU vs GPU dichotomy creates two distinct solution spaces with minimal overlap."
+    },
+    {
+      "constraint": "What if we have unlimited cores but memory bandwidth is halved?",
+      "result": "Decompression becomes pure memory-bandwidth-bound. Adding cores doesn't help because all threads compete for the same memory bus. The optimal strategy becomes: (a) decompress in-place to minimize memory traffic, (b) keep data compressed as long as possible, (c) use narrow output (decompress-and-filter in one pass). This extreme makes concept 007 (prefetch) critical and 001/012 (parallel threads) useless.",
+      "insight": "Future memory-bandwidth-constrained systems (e.g., CXL-attached memory) may shift the optimization target from compute to bandwidth."
+    },
+    {
+      "constraint": "What if we require bit-exact compatibility with zlib output?",
+      "result": "All format-modification concepts (002, 003, 005, 006) are eliminated. Only sequential optimization and speculative parallelism survive. The solution space collapses to: rapidgzip-style parallel decode (001, 012), microarchitectural optimization (007, 008, 011), and possibly FPGA acceleration (009). This is the most constrained scenario and the most practically relevant.",
+      "insight": "Backward compatibility is the single most powerful constraint on the solution space. It eliminates roughly half the concepts."
+    }
+  ]
+}

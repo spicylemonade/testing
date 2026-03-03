@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "speculative_block_boundary_detection",
+  "description": "Parallelize DEFLATE decompression by speculatively detecting block boundaries within a compressed stream, enabling multiple threads to begin decoding at different offsets simultaneously. Inspired by pugz and rapidgzip, this technique uses trial-and-error Huffman table reconstruction at candidate bit positions, validating results via checksum or semantic consistency.",
+  "domains": ["parallel_computing", "information_theory", "bioinformatics"],
+  "mathematical_formalization": "Let B = {b_0, b_1, ..., b_n} be candidate bit positions in compressed stream C. For each b_i, spawn thread T_i that attempts inflate(C[b_i:]) with speculative Huffman tables H_spec. A candidate is valid iff checksum(output(T_i)) matches within a sliding window of W bytes. Expected parallelism P = n * p_success where p_success ~ 1/2^k for k-bit alignment probability.",
+  "analogical_connections": [
+    "DNA sequence alignment: finding reading frames in an unknown genome is analogous to finding valid decode start points",
+    "Speculative execution in CPU pipelines: predict branch outcomes and roll back on misprediction",
+    "Radio signal synchronization: finding preamble patterns in noisy bitstreams"
+  ],
+  "implementation_hypothesis": "Divide compressed stream into N equal chunks. For each chunk boundary, scan nearby bit positions (within ~256 bits) for valid DEFLATE block headers (BFINAL, BTYPE fields). Use heuristic scoring: a candidate position is likely valid if the reconstructed Huffman table has plausible code-length distributions (sum of 2^-l_i = 1). Validate by decompressing forward and checking for LZ77 back-reference consistency.",
+  "experiment_seed": "Take a 1GB gzip file, split at 128 candidate positions using 128 threads. Measure: (a) fraction of candidates that successfully decode, (b) wall-clock time vs sequential libdeflate, (c) correctness via byte-exact comparison with reference output."
+}

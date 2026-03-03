@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "interleaved_multi_stream_huffman",
+  "description": "Split a single Huffman-coded bitstream into K independent sub-streams that can be decoded in parallel using instruction-level parallelism (ILP) or SIMD. Each sub-stream uses the same codebook but has independent bit-buffer state, eliminating the serial dependency chain that limits single-stream Huffman decoding.",
+  "domains": ["data_compression", "computer_architecture", "information_theory"],
+  "mathematical_formalization": "Partition symbol sequence S = s_1, s_2, ..., s_n into K interleaved sub-sequences S_k = {s_i : i mod K = k}. Each S_k is independently Huffman-coded into bitstream B_k. Decode K sub-streams simultaneously: total throughput T = min(K * T_single, T_memory). Optimal K = pipeline_depth / decode_latency, typically K=3-6 for modern x86.",
+  "analogical_connections": [
+    "Fabian Giesen's interleaved entropy coders: ANS streams interleaved for superscalar decode",
+    "Time-division multiplexing: multiple logical channels sharing one physical medium",
+    "Superscalar CPU execution: multiple independent instruction streams in flight simultaneously"
+  ],
+  "implementation_hypothesis": "Modify DEFLATE blocks to contain K=6 interleaved Huffman sub-streams with shared codebook. Each sub-stream has its own 64-bit bit buffer. The decoder loop reads 6 symbols per iteration: load 6 bit buffers, perform 6 table lookups (no data dependency), advance 6 bit pointers, store 6 symbols. This saturates the CPU's load/store units and hides Huffman table lookup latency.",
+  "experiment_seed": "Implement 3-stream and 6-stream Huffman decoders following Giesen's Oodle design. Measure IPC (instructions per cycle) and throughput vs single-stream baseline. Verify on Intel Golden Cove and AMD Zen 4 microarchitectures."
+}

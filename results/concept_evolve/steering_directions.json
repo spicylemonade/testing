@@ -1,0 +1,26 @@
+[
+  {
+    "direction": "Backward-compatible parallel inflate via speculative block discovery",
+    "rationale": "This is the ONLY path to 2-5x speedup that works with existing DEFLATE files (billions already exist). rapidgzip proved it works (55x over gzip with 128 cores, 5.6 GB/s on Silesia). The key insight from pugz is that DEFLATE block boundaries can be probabilistically discovered in the compressed bitstream. No format changes needed. This approach has the widest real-world applicability: gzip files, ZIP archives, HTTP responses, Git packfiles -- all benefit immediately.",
+    "first_step": "Implement a SIMD-accelerated DEFLATE block header scanner that identifies candidate bit positions where a valid dynamic Huffman table could begin. Use AVX2 pcmpistri for pattern matching. Benchmark false positive rate against the pugz/rapidgzip approaches.",
+    "expected_signal": "If the scanner finds valid block boundaries in >80% of tested gzip files with <5% false positive rate, and the overhead of speculative decode + validation is <20% of sequential decode time, the approach is viable for 4-8x speedup with 8-16 cores."
+  },
+  {
+    "direction": "Drop-in libdeflate replacement with microarchitectural optimizations",
+    "rationale": "libdeflate is the current gold standard for sequential DEFLATE decompression. But it leaves performance on the table: no software prefetch for LZ77 copies, branch-heavy literal/match dispatch, and suboptimal table layout for modern CPUs with 48KB L1D. A carefully optimized replacement could achieve 30-50% improvement on a single core with zero API changes. This compounds with the parallel approach: better single-thread performance means fewer cores needed. The practical impact is enormous because libdeflate is used in htslib (genomics), Chromium (web), and many other critical paths.",
+    "first_step": "Profile libdeflate's inflate function with perf to identify the top 5 performance bottlenecks (branch mispredictions, cache misses, port contention). Focus on the Huffman decode inner loop and LZ77 copy dispatch. Prototype a branchless decode loop and measure IPC improvement.",
+    "expected_signal": "If perf shows >10% of cycles lost to branch mispredictions in the inflate hot loop, and a branchless prototype reduces this by 5x, the 30-50% single-thread speedup target is achievable."
+  },
+  {
+    "direction": "DEFLATE-Next: a backward-compatible format extension with parallel decode hooks",
+    "rationale": "The most impactful long-term approach is a format extension (like GDeflate for GPUs, but for CPUs). Add optional sync markers and interleaved entropy streams to DEFLATE blocks. Old decoders ignore the markers (graceful degradation). New decoders use them for 4-8x parallel speedup. This follows the successful pattern of PNG's APNG extension and HTTP/2's backward compatibility with HTTP/1.1. The key technical innovations: (a) tANS entropy coding with 4-way interleaving (50% faster than Huffman per-stream + 4x parallelism), (b) explicit block-boundary markers at known bit positions, (c) LZ77 copy distance hints that enable prefetching.",
+    "first_step": "Design the format extension as an RFC-style specification. Implement a prototype encoder that produces standard DEFLATE blocks augmented with optional extension markers in reserved bit positions. Verify that existing decoders (zlib, libdeflate, zlib-ng) all correctly decode the augmented streams.",
+    "expected_signal": "If the prototype encoder produces streams that pass zlib's inflate validation AND new-format decoders achieve >3x throughput on a single core compared to libdeflate, the format extension is worth standardizing."
+  },
+  {
+    "direction": "GPU-native decompression for storage and networking",
+    "rationale": "GPUDirect Storage and DPDK enable data to flow directly from NVMe/NIC to GPU memory without CPU involvement. If DEFLATE decompression happens on the GPU, it eliminates a PCIe round-trip and frees the CPU entirely. NVIDIA's GDeflate shows this is viable (requires format modification). The opportunity: pre-compress data in GDeflate format at rest, decompress on GPU at >100 GB/s across all SMs. This is transformative for cloud analytics (Sneller's use case), genomics (BAM files), and AI data pipelines.",
+    "first_step": "Benchmark nvCOMP's GDeflate implementation on an A100/H100 GPU with realistic workloads (ZIP archives, gzip HTTP payloads). Identify the throughput bottleneck: is it Huffman decode, LZ77 copy, or memory bandwidth? Profile with Nsight Compute to find warp divergence and memory access patterns.",
+    "expected_signal": "If GDeflate on H100 achieves >50 GB/s for typical web content compression ratios (3:1-5:1), it's already competitive with the effective bandwidth of NVMe-to-GPU direct transfer, making GPU decompression a net positive even accounting for the re-compression cost."
+  }
+]

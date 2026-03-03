@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "neural_entropy_model_warmstart",
+  "description": "Use a small neural network to predict the Huffman code distribution for a DEFLATE block before decoding it, enabling precomputation of optimized lookup tables. The neural model is trained on statistics from millions of real-world compressed files and can predict code distributions from the first few bytes of a block header.",
+  "domains": [
+    "machine_learning",
+    "data_compression",
+    "information_theory"
+  ],
+  "mathematical_formalization": "Given DEFLATE block header H (3-5 bytes), neural model M: H -> P(symbols) predicts probability distribution P. From P, precompute optimal decode table T_predicted. If KL(P_actual || P_predicted) < epsilon, T_predicted can be used directly, saving table construction time t_build. Expected speedup on table construction = t_build * (1 - p_miss) where p_miss = P(KL > epsilon).",
+  "analogical_connections": [
+    "Weather forecasting: predict future conditions from current observations to prepare resources",
+    "CPU branch target prediction: predict destinations before instruction decode completes",
+    "Transfer learning in ML: pre-trained models warm-start new tasks"
+  ],
+  "implementation_hypothesis": "Train a tiny MLP (2 hidden layers, 64 units each) on code-length distributions from 1M real DEFLATE blocks. Input: block header bytes + running statistics. Output: predicted code lengths for 288 lit/len symbols and 32 distance symbols. At decode time: (1) predict tables from header, (2) begin decoding with predicted tables, (3) in parallel, construct actual tables from block header, (4) if predicted tables are wrong, discard speculative output and restart.",
+  "experiment_seed": "Collect training data by instrumenting libdeflate to log (header_bytes, code_length_arrays) for millions of DEFLATE blocks from diverse sources. Train neural model. Measure prediction accuracy and end-to-end decode speedup from avoided table construction.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-03T10:06:02.430159+00:00",
+  "project_folder": "concept_evolve/tree/010_neural-entropy-model-warmstart"
+}

@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "simd_bitstream_swizzling",
+  "description": "Reorganize the compressed bitstream layout so that bits from independent decode operations are interleaved across SIMD lanes, enabling 16-32 symbols to be decoded simultaneously in a single vector instruction. This is the core technique behind NVIDIA's GDeflate and Sneller's Iguana compressor.",
+  "domains": ["computer_architecture", "data_compression", "signal_processing"],
+  "mathematical_formalization": "Given DEFLATE bitstream S of N bits, define swizzle function sigma: [N] -> [N] such that for SIMD width W, sigma(i) maps bit i to lane (i mod W) at position floor(i/W). Decompression becomes D_parallel(sigma(S)) where each lane independently decodes its bit subsequence. Throughput T = W * T_scalar when dependencies are eliminated.",
+  "analogical_connections": [
+    "Matrix transposition in linear algebra: reorganizing data layout for cache-friendly access",
+    "Frequency-division multiplexing in telecommunications: multiple signals on one channel via interleaving",
+    "AoS-to-SoA transformation in game engines: restructuring data for SIMD-friendly processing"
+  ],
+  "implementation_hypothesis": "At compression time, modify the DEFLATE encoder to emit bits in a swizzled order matching AVX-512 lane structure (32 lanes of 16 bits). Each lane contains an independent sub-stream of Huffman codes. The decoder uses vpcompressb/vpexpandb to gather bits, VPERMB to route decoded symbols, and operates on 32 symbols per cycle. Requires format modification but maintains DEFLATE compression ratios.",
+  "experiment_seed": "Implement a GDeflate-style swizzled encoder/decoder pair using AVX-512 intrinsics. Benchmark decompression throughput on Silesia corpus against libdeflate, zlib-ng, and ISA-L. Target: >8 GB/s single-core on Ice Lake."
+}

@@ -1,0 +1,156 @@
+{
+  "modules": {
+    ".archivara/concept_evolve.py": {
+      "purpose": "ConceptEvolve CLI: concept-tree exploration via OpenCode sub-agents. Supports evolve (generate cross-domain concept cards), probe (deep analysis of a bottleneck), reframe (re-cast problem in multiple domains), and walk (traverse concept paths). Launches sub-agents via `opencode run` subprocess, post-processes filesystem artifacts.",
+      "key_functions": ["evolve", "probe", "reframe", "walk", "_run_sub_agent", "_ensure_concept_folders", "_walk_paths"],
+      "outputs": ["results/concept_evolve/concept_cards.json", "results/concept_evolve/semantic_bridge.json", "results/concept_evolve/introspection.json", "results/concept_evolve/steering_directions.json", "results/concept_evolve/tree/*/concept.json"]
+    },
+    ".archivara/semantic_scholar.py": {
+      "purpose": "Semantic Scholar API client for literature graph traversal: search, citations, references, recommendations, citation graphs, and BibTeX export. Includes retry logic with exponential backoff.",
+      "key_functions": ["search", "citations", "references", "recommend", "citation_graph", "bibtex_entry"],
+      "api_base": "https://api.semanticscholar.org/graph/v1"
+    },
+    ".archivara/opencode.json": {
+      "purpose": "OpenCode configuration: model selection (claude-opus-4-6), provider settings, permission matrix, and agent definitions. Central config for all sub-agent orchestration.",
+      "model": "anthropic/claude-opus-4-6",
+      "default_agent": "build"
+    },
+    ".archivara/logs/": {
+      "purpose": "Logging directory for archivara operations"
+    },
+    ".opencode/tools/concept_evolve.ts": {
+      "purpose": "OpenCode tool wrapper for ConceptEvolve Python CLI. Exposes evolve/probe/reframe/walk commands as native OpenCode tools with proper argument handling.",
+      "interface": {"command": "enum[evolve,probe,reframe,walk]", "topic": "optional string", "seed": "optional string", "depth": "optional number"},
+      "timeout_ms": 1200000
+    },
+    ".opencode/tools/semantic_scholar.ts": {
+      "purpose": "OpenCode tool wrapper for Semantic Scholar Python CLI. Exposes search/citations/references/recommend/graph/bibtex as native OpenCode tools.",
+      "interface": {"command": "enum[search,citations,references,recommend,graph,bibtex]", "query": "optional string", "limit": "optional number"}
+    },
+    ".opencode/agents/concept-tree-explorer.md": {
+      "purpose": "Subagent definition for concept tree exploration. Read-only (no write/edit tools). Traverses concept folders, identifies missing links, proposes next experiments.",
+      "mode": "subagent",
+      "tools_enabled": ["webfetch", "websearch", "todoread", "todowrite"]
+    },
+    ".opencode/agents/literature-graph-miner.md": {
+      "purpose": "Subagent definition for citation graph mining. Read-only. Prioritizes citation chains connecting distant domains, reports actionable leads.",
+      "mode": "subagent",
+      "tools_enabled": ["webfetch", "websearch", "todoread", "todowrite"]
+    },
+    ".opencode/package.json": {
+      "purpose": "Node.js package manifest for OpenCode plugin dependencies",
+      "dependencies": {"@opencode-ai/plugin": "1.2.15"}
+    }
+  },
+  "agent_roles": {
+    "orchestrator": {
+      "description": "Planning-only rubric author",
+      "mode": "primary",
+      "concept_evolve_access": false,
+      "semantic_scholar_access": false,
+      "notes": "Explicitly denies concept_evolve bash commands"
+    },
+    "researcher": {
+      "description": "Execution-heavy research worker",
+      "mode": "primary",
+      "concept_evolve_access": true,
+      "semantic_scholar_access": true,
+      "notes": "Full tool access for research execution"
+    },
+    "writer": {
+      "description": "Paper writing and synthesis worker",
+      "mode": "primary",
+      "concept_evolve_access": false,
+      "semantic_scholar_access": true,
+      "notes": "Can query literature but not run concept evolution"
+    },
+    "reviewer": {
+      "description": "Peer review and quality control worker",
+      "mode": "primary",
+      "concept_evolve_access": false,
+      "semantic_scholar_access": true,
+      "notes": "Read-oriented with literature access for verification"
+    },
+    "concept_worker": {
+      "description": "ConceptEvolve sub-worker (no recursive concept tool)",
+      "mode": "primary",
+      "concept_evolve_access": false,
+      "semantic_scholar_access": true,
+      "notes": "Used by concept_evolve.py sub-agents; has bash/read/write/edit/websearch/webfetch but no concept_evolve to prevent recursion"
+    },
+    "concept-tree-explorer": {
+      "description": "Explore concept trees and identify high-value concept paths",
+      "mode": "subagent",
+      "tools": ["webfetch", "websearch", "todoread", "todowrite"],
+      "notes": "Read-only subagent for tree traversal and analysis"
+    },
+    "literature-graph-miner": {
+      "description": "Mine citation graphs for transferable ideas and supporting evidence",
+      "mode": "subagent",
+      "tools": ["webfetch", "websearch", "todoread", "todowrite"],
+      "notes": "Read-only subagent for citation chain discovery"
+    }
+  },
+  "concept_evolve_pipeline": {
+    "stages": [
+      {
+        "name": "evolve",
+        "description": "Cross-domain concept generation. Takes a topic string, launches sub-agent to research across 3+ domains, generates 10+ concept cards with mathematical formalizations, builds semantic bridge graph, produces introspection and steering directions.",
+        "outputs": ["concept_cards.json", "semantic_bridge.json", "introspection.json", "steering_directions.json", "tree/*/concept.json", "tree/*/README.md", "tree/index.json", "tree/adjacency.json", "tree/walk_paths.json"],
+        "caching": "Results cached for 7200s (2h) based on normalized topic match",
+        "locking": "Uses fcntl file lock to prevent concurrent evolve runs",
+        "retries": 2
+      },
+      {
+        "name": "probe",
+        "description": "Deep analysis of a specific bottleneck or sub-problem. Produces associations, forced bridges, anomaly results, steering directions, and validation checks.",
+        "outputs": ["probe_result.json"],
+        "timeout_seconds": 480,
+        "retries": 2
+      },
+      {
+        "name": "reframe",
+        "description": "Re-casts the problem in 8+ distinct domains. Each reframing includes domain, insight, technique, and mapping back to original problem.",
+        "outputs": ["reframings.json"],
+        "timeout_seconds": 360,
+        "retries": 2
+      },
+      {
+        "name": "walk",
+        "description": "Traverses the concept tree's adjacency graph. Filters paths by optional seed concept, respects depth limits. Requires prior evolve run.",
+        "outputs": ["walk_session.json"],
+        "prerequisites": ["evolve"]
+      }
+    ],
+    "sub_agent_model": "anthropic/claude-opus-4-6",
+    "sub_agent_agent": "build",
+    "post_processing": "Python creates concept folders, adjacency graph, and walk paths from sub-agent filesystem artifacts"
+  },
+  "semantic_scholar_integration": {
+    "python_cli": {
+      "path": ".archivara/semantic_scholar.py",
+      "commands": ["search", "citations", "references", "recommend", "graph", "bibtex"],
+      "api_endpoint": "https://api.semanticscholar.org/graph/v1",
+      "recommendation_endpoint": "https://api.semanticscholar.org/recommendations/v1/papers",
+      "fields_requested": "paperId,title,authors,year,citationCount,abstract,externalIds,venue,url",
+      "retry_strategy": "6 attempts with exponential backoff (0.75 * 2^attempt seconds, max 8s)",
+      "output_formats": ["pretty_print", "json", "bibtex"],
+      "save_to_file": "Optional --save flag for JSON output"
+    },
+    "opencode_tool_wrapper": {
+      "path": ".opencode/tools/semantic_scholar.ts",
+      "integration": "Calls Python CLI via child_process.execFileSync",
+      "always_json": "Appends --json flag for all non-bibtex commands"
+    },
+    "usage_patterns": [
+      "search: Find papers by query text",
+      "citations: Get papers citing a given paper (forward graph)",
+      "references: Get papers referenced by a given paper (backward graph)",
+      "recommend: Get recommendations based on seed paper IDs",
+      "graph: Build full citation graph from seed query (roots + fanout)",
+      "bibtex: Generate BibTeX entry for a paper ID, append to sources.bib"
+    ]
+  },
+  "generated_at": "2026-03-03T10:00:00Z",
+  "audit_version": "1.0"
+}

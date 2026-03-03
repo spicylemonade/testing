@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "cache_prefetch_sliding_window",
+  "description": "Optimize LZ77 back-reference resolution by prefetching copy source data into L1 cache before the copy operation executes, overlapping memory latency with Huffman decoding computation. Uses a two-pass approach: first pass decodes all commands, second pass executes copies with prefetched data.",
+  "domains": [
+    "computer_architecture",
+    "systems_programming",
+    "data_compression"
+  ],
+  "mathematical_formalization": "For copy command (distance d, length l), prefetch address = output_ptr - d. Prefetch latency L_p ~ 4 cycles (L1 hit) to ~200 cycles (L2/L3 miss). If Huffman decode of next K symbols takes T_decode cycles, prefetch is free when T_decode >= L_p. Optimal prefetch distance K* = L_p / T_per_symbol. For L_p=12 cycles and T_per_symbol=3 cycles, K*=4 symbols lookahead.",
+  "analogical_connections": [
+    "Rapidgzip's cache prefetching architecture: prefetch decoded blocks for parallel validation",
+    "CPU out-of-order execution: reorder operations to hide memory latency",
+    "Database query optimization: prefetch rows during index traversal"
+  ],
+  "implementation_hypothesis": "Modify the inflate inner loop to use software prefetch instructions (e.g., _mm_prefetch with _MM_HINT_T0). When a length-distance pair is decoded, immediately issue a prefetch for the copy source. Continue decoding 4-8 more symbols before executing the copy. Use a small circular command buffer (16 entries) to decouple decode from execute stages.",
+  "experiment_seed": "Profile libdeflate's inflate with perf counters to measure L1/L2 cache miss rates during LZ77 copy. Implement prefetch-augmented decoder. Measure improvement in cache miss rate and throughput on files with varying back-reference distance distributions.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-03T10:06:02.428934+00:00",
+  "project_folder": "concept_evolve/tree/007_cache-prefetch-sliding-window"
+}

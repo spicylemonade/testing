@@ -1,0 +1,135 @@
+{
+  "nodes": [
+    {"id": "speculative_block_boundary_detection", "domain": "parallel_computing"},
+    {"id": "simd_bitstream_swizzling", "domain": "computer_architecture"},
+    {"id": "interleaved_multi_stream_huffman", "domain": "data_compression"},
+    {"id": "fsm_enumerative_speculation", "domain": "automata_theory"},
+    {"id": "gpu_warp_parallel_inflate", "domain": "GPU_computing"},
+    {"id": "ans_replacement_entropy_layer", "domain": "information_theory"},
+    {"id": "cache_prefetch_sliding_window", "domain": "computer_architecture"},
+    {"id": "branchless_lz77_copy_unification", "domain": "compiler_optimization"},
+    {"id": "fpga_pipelined_dual_path_decode", "domain": "hardware_design"},
+    {"id": "neural_entropy_model_warmstart", "domain": "machine_learning"},
+    {"id": "memory_layout_restructuring", "domain": "performance_engineering"},
+    {"id": "probabilistic_sync_point_discovery", "domain": "information_theory"}
+  ],
+  "edges": [
+    {
+      "source": "speculative_block_boundary_detection",
+      "target": "probabilistic_sync_point_discovery",
+      "relation": "Sync point discovery provides the candidate positions that speculative block boundary detection validates"
+    },
+    {
+      "source": "speculative_block_boundary_detection",
+      "target": "fsm_enumerative_speculation",
+      "relation": "Both use speculative parallelism: block detection speculates on position, FSM speculation speculates on state"
+    },
+    {
+      "source": "simd_bitstream_swizzling",
+      "target": "gpu_warp_parallel_inflate",
+      "relation": "Bitstream swizzling is the format-level prerequisite for GPU warp-parallel decoding to work efficiently"
+    },
+    {
+      "source": "simd_bitstream_swizzling",
+      "target": "interleaved_multi_stream_huffman",
+      "relation": "Both reorganize data layout for parallelism; swizzling operates at bit level, interleaving at stream level"
+    },
+    {
+      "source": "interleaved_multi_stream_huffman",
+      "target": "ans_replacement_entropy_layer",
+      "relation": "ANS naturally supports stream interleaving (Giesen 2014), making it the ideal entropy coder for multi-stream decode"
+    },
+    {
+      "source": "interleaved_multi_stream_huffman",
+      "target": "memory_layout_restructuring",
+      "relation": "Multi-stream decode multiplies table access pressure, making cache-optimized table layout critical"
+    },
+    {
+      "source": "fsm_enumerative_speculation",
+      "target": "fpga_pipelined_dual_path_decode",
+      "relation": "FPGA dual-path decode is a hardware instantiation of the FSM speculative parallelism concept"
+    },
+    {
+      "source": "fsm_enumerative_speculation",
+      "target": "gpu_warp_parallel_inflate",
+      "relation": "GPU warps can execute multiple speculative FSM paths simultaneously using thread-level parallelism"
+    },
+    {
+      "source": "gpu_warp_parallel_inflate",
+      "target": "cache_prefetch_sliding_window",
+      "relation": "GPU shared memory acts as an explicit managed cache; prefetch strategies apply to both CPU and GPU LZ77 copy"
+    },
+    {
+      "source": "ans_replacement_entropy_layer",
+      "target": "neural_entropy_model_warmstart",
+      "relation": "Neural model can predict ANS state distributions for faster table construction, or pre-warm tANS decode tables"
+    },
+    {
+      "source": "cache_prefetch_sliding_window",
+      "target": "branchless_lz77_copy_unification",
+      "relation": "Both optimize the LZ77 copy inner loop: prefetch hides latency, branchless removes control-flow overhead"
+    },
+    {
+      "source": "cache_prefetch_sliding_window",
+      "target": "memory_layout_restructuring",
+      "relation": "Prefetch effectiveness depends on data layout; restructured memory improves prefetch hit rates"
+    },
+    {
+      "source": "branchless_lz77_copy_unification",
+      "target": "gpu_warp_parallel_inflate",
+      "relation": "GPU architectures naturally execute branchless (predicated) code; LZ77 unification maps directly to SIMT execution"
+    },
+    {
+      "source": "fpga_pipelined_dual_path_decode",
+      "target": "speculative_block_boundary_detection",
+      "relation": "FPGA speculative paths can implement hardware-accelerated block boundary detection with clock-cycle granularity"
+    },
+    {
+      "source": "neural_entropy_model_warmstart",
+      "target": "memory_layout_restructuring",
+      "relation": "Predicted code distributions enable pre-optimized table layouts before actual decoding begins"
+    },
+    {
+      "source": "probabilistic_sync_point_discovery",
+      "target": "cache_prefetch_sliding_window",
+      "relation": "Discovered sync points define cache-coherent decompression segments that can be prefetched independently"
+    },
+    {
+      "source": "memory_layout_restructuring",
+      "target": "fsm_enumerative_speculation",
+      "relation": "Compact table layout reduces working set size, enabling more speculative FSM paths to fit in cache simultaneously"
+    }
+  ],
+  "bridge_chains": [
+    {
+      "name": "format_to_silicon",
+      "path": ["simd_bitstream_swizzling", "gpu_warp_parallel_inflate", "fpga_pipelined_dual_path_decode"],
+      "description": "Crosses from data format design through GPU software to custom hardware: the same bit-reorganization concept expressed at increasing levels of hardware specificity",
+      "domains_crossed": ["data_compression", "GPU_computing", "hardware_design"]
+    },
+    {
+      "name": "speculation_stack",
+      "path": ["probabilistic_sync_point_discovery", "speculative_block_boundary_detection", "fsm_enumerative_speculation", "fpga_pipelined_dual_path_decode"],
+      "description": "Escalating speculation from probabilistic position discovery to multi-state FSM enumeration to hardware dual-path execution",
+      "domains_crossed": ["information_theory", "parallel_computing", "automata_theory", "hardware_design"]
+    },
+    {
+      "name": "entropy_evolution",
+      "path": ["interleaved_multi_stream_huffman", "ans_replacement_entropy_layer", "neural_entropy_model_warmstart"],
+      "description": "Evolution of entropy decoding: from parallelized Huffman through ANS replacement to ML-predicted entropy models",
+      "domains_crossed": ["data_compression", "information_theory", "machine_learning"]
+    },
+    {
+      "name": "microarchitecture_optimization_chain",
+      "path": ["memory_layout_restructuring", "cache_prefetch_sliding_window", "branchless_lz77_copy_unification", "interleaved_multi_stream_huffman"],
+      "description": "Progressive microarchitectural optimization: cache layout -> prefetch -> branch elimination -> ILP exploitation",
+      "domains_crossed": ["performance_engineering", "computer_architecture", "compiler_optimization", "data_compression"]
+    },
+    {
+      "name": "ml_meets_hardware",
+      "path": ["neural_entropy_model_warmstart", "ans_replacement_entropy_layer", "simd_bitstream_swizzling", "fpga_pipelined_dual_path_decode"],
+      "description": "Machine learning predictions feed into optimized entropy coding, which is physically reorganized for SIMD, then cast into silicon",
+      "domains_crossed": ["machine_learning", "information_theory", "computer_architecture", "hardware_design"]
+    }
+  ]
+}
