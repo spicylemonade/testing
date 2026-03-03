@@ -1,0 +1,86 @@
+{
+  "problem": "minimal gravity simulation",
+  "framings": [
+    {
+      "domain": "Hierarchical Spatial Decomposition (Computational Astrophysics)",
+      "reframing": "A minimal gravity simulation is a problem of approximating long-range pairwise interactions at scale. The Barnes-Hut algorithm reframes the N-body gravitational problem as a tree traversal: recursively partition space into an octree, store centers of mass at internal nodes, and approximate distant clusters as single macro-particles when the ratio of cell size to distance falls below a threshold theta. This reduces O(N^2) to O(N log N).",
+      "key_insight": "Most gravitational influence on a particle comes from nearby bodies; distant bodies can be lumped together without perceptible loss in accuracy. The 'minimal' simulation arises from controlling the opening angle theta to trade accuracy for speed.",
+      "suggested_technique": "Barnes-Hut octree with tunable theta parameter. Construct a spatial octree, compute centers of mass bottom-up, then walk the tree per particle using the theta criterion (cell_width / distance < theta) to decide direct vs. approximate force calculation.",
+      "mapping_back": "For the minimal gravity simulation, implement a quad-tree (2D) or oct-tree (3D) with an adjustable theta. A theta of 0.5-1.0 gives the 'minimal' computation with acceptable accuracy. This is the canonical answer to 'how to do gravity cheaply.'",
+      "candidate_folder_name": "barnes_hut_octree"
+    },
+    {
+      "domain": "Electrostatics / Molecular Dynamics (Fast Multipole Method)",
+      "reframing": "Gravity and electrostatic Coulomb forces share the same 1/r^2 form. Molecular dynamics packages face identical scaling challenges when computing electrostatic interactions among millions of atoms. The Fast Multipole Method (FMM), developed by Greengard and Rokhlin, achieves O(N) complexity by expanding far-field potentials as multipole series and translating them hierarchically through a tree structure.",
+      "key_insight": "The 1/r^2 force kernel has a smooth multipole expansion that converges rapidly for well-separated clusters. By controlling the expansion order p, you get a rigorous error bound \u2014 a principled dial for 'minimal' computation.",
+      "suggested_technique": "Fast Multipole Method (FMM) with adaptive order. Use a hierarchical tree and multipole/local expansions. Upward pass: build multipole expansions. Downward pass: translate to local expansions. Direct sum only for near-field neighbors. Control accuracy via expansion order p.",
+      "mapping_back": "FMM provides asymptotically optimal O(N) gravity with guaranteed error bounds. For a 'minimal' simulation, use low-order (p=2-4) expansions. The multipole machinery is more complex to implement than Barnes-Hut but offers strictly better scaling and formal error control.",
+      "candidate_folder_name": "fast_multipole_method"
+    },
+    {
+      "domain": "Graph Neural Networks / Learned Physics",
+      "reframing": "A minimal gravity simulation can be reframed as a learned message-passing problem on a graph. Each body is a node with mass, position, and velocity features. Edges connect nearby bodies (within a cutoff radius). A Graph Neural Network learns to predict accelerations by passing messages along edges, effectively learning an implicit force law from simulation data. The GNS (Graph Network-based Simulator) framework by DeepMind demonstrated this for particulate and fluid systems.",
+      "key_insight": "You don't need to compute explicit force laws at all \u2014 a neural network can learn the mapping from local neighborhoods to accelerations. 'Minimal' becomes about the minimal learned representation that captures the dynamics.",
+      "suggested_technique": "Graph Network-based Simulator (GNS). Encode particles as graph nodes, connect within radius r, use an Encode-Process-Decode architecture: encoder embeds features, processor runs M message-passing steps, decoder predicts per-node accelerations. Train on ground-truth trajectories from a full simulation.",
+      "mapping_back": "For a minimal gravity simulation, GNS trades offline training cost for extremely fast inference. Once trained, the model predicts accelerations in O(N * M * k) where k is average neighbors and M is message-passing steps. Useful when you need many fast rollouts (e.g., games, real-time visualization).",
+      "candidate_folder_name": "graph_neural_simulator"
+    },
+    {
+      "domain": "Social Physics / Urban Geography (Gravity Model of Migration)",
+      "reframing": "In social science, the gravity model predicts interaction intensity between two locations as proportional to their 'masses' (population, GDP) and inversely proportional to the distance between them \u2014 directly analogous to Newton's law. A 'minimal gravity simulation' becomes: what is the simplest model that captures spatial interaction patterns? Tinbergen (1962) showed that bilateral trade flows follow T_ij = G * M_i^a * M_j^b / D_ij^c, a direct gravitational analog.",
+      "key_insight": "Gravity-like interactions are universal: they appear whenever entities with 'mass' (importance, size) interact across 'distance' (geographic, social, or network distance). The minimal model is the one that captures the power-law decay with the fewest parameters.",
+      "suggested_technique": "Parameterized gravity model with distance decay calibration. Model interaction F_ij = G * m_i^alpha * m_j^beta / d_ij^gamma. Fit alpha, beta, gamma to observed data using Poisson pseudo-maximum-likelihood (PPML) regression, which handles zeros and heteroscedasticity in flow data.",
+      "mapping_back": "For a minimal gravity simulation, this reframing suggests abstracting bodies to (mass, position) pairs and computing only the aggregate flow/force field, not individual trajectories. Useful for visualizations or games where the qualitative pattern matters more than orbital precision.",
+      "candidate_folder_name": "social_gravity_model"
+    },
+    {
+      "domain": "Swarm Intelligence / Metaheuristic Optimization (Gravitational Search Algorithm)",
+      "reframing": "The Gravitational Search Algorithm (GSA) by Rashedi et al. (2009) reframes gravity as an optimization strategy: candidate solutions are 'masses' in search space, with heavier (fitter) solutions exerting stronger gravitational pull. All agents accelerate toward the best solutions. A 'minimal gravity simulation' becomes: what is the simplest gravitational dynamics that drives a population toward optimal solutions?",
+      "key_insight": "Gravity naturally implements a weighted aggregation toward high-fitness regions. The gravitational constant G decays over time, shifting from exploration (global search) to exploitation (local refinement). 'Minimal' means stripping gravity to its optimization essence: mass-weighted attraction with annealing.",
+      "suggested_technique": "Gravitational Search Algorithm (GSA). Initialize N agents with random positions. Each iteration: compute fitness, assign mass proportional to fitness, compute gravitational force on each agent from all others, update velocity and position. Decay G exponentially to shift from exploration to exploitation.",
+      "mapping_back": "For a minimal gravity simulation, GSA reveals that you can simplify dynamics by making mass a function of some 'quality' metric and letting the system self-organize. This maps to adaptive gravity where only the most massive bodies exert significant force, naturally pruning computation.",
+      "candidate_folder_name": "gravitational_search_optimization"
+    },
+    {
+      "domain": "Symplectic Integration / Numerical Methods (Leapfrog/Verlet)",
+      "reframing": "A minimal gravity simulation is fundamentally a time-integration problem. The question becomes: what is the simplest integrator that preserves the Hamiltonian structure of gravitational dynamics? The leapfrog (St\u00f6rmer-Verlet) method alternates half-step velocity updates with full-step position updates, is symplectic (preserves phase-space volume), time-reversible, and second-order accurate \u2014 all with just one force evaluation per step.",
+      "key_insight": "A non-symplectic integrator (like forward Euler) will cause orbits to spiral outward or inward due to energy drift. The 'minimal' integrator is not the simplest code but the simplest structure-preserving one. Leapfrog is that integrator: minimal code, maximal conservation.",
+      "suggested_technique": "Kick-Drift-Kick (KDK) leapfrog integrator. v(t+dt/2) = v(t) + a(t)*dt/2 [kick]; x(t+dt) = x(t) + v(t+dt/2)*dt [drift]; compute a(t+dt) from new positions; v(t+dt) = v(t+dt/2) + a(t+dt)*dt/2 [kick]. Adaptive timestep via the Adaptive Verlet method scales dt based on vector field normalization.",
+      "mapping_back": "For the minimal gravity simulation, use leapfrog as the time integrator. It is the minimal correct choice: one force evaluation per step, no matrix inversions, near-perfect energy conservation over long times. Pair with Barnes-Hut for forces and you have a minimal yet correct simulation.",
+      "candidate_folder_name": "symplectic_leapfrog_integrator"
+    },
+    {
+      "domain": "Dimensionality Reduction / Data Visualization (t-SNE as Particle Dynamics)",
+      "reframing": "t-SNE and UMAP are literally particle simulations in disguise. Each data point is a 'particle' in low-dimensional space, subject to attractive forces (between neighbors in high-D) and repulsive forces (between all points, like gravity reversed). Barnes-Hut t-SNE explicitly uses the Barnes-Hut octree algorithm from astrophysics to compute the repulsive forces efficiently. A 'minimal gravity simulation' maps to: what is the minimal force model that arranges N points to reflect high-dimensional structure?",
+      "key_insight": "t-SNE's repulsion term is an N-body problem with a Student-t kernel instead of 1/r^2. The Attraction-Repulsion Spectrum (B\u00f6hm et al., 2022) shows that tuning the balance between attraction and repulsion controls cluster tightness vs. manifold faithfulness \u2014 a direct analog to gravitational vs. pressure forces.",
+      "suggested_technique": "Attraction-Repulsion Swarming (ARS). Model points as interacting agents with tunable attraction kernel K_a(r) and repulsion kernel K_r(r). Normalize forces by total influence (not by pairwise count). Use Barnes-Hut tree for the repulsive N-body sum. Step with a fixed dt=1 iteration.",
+      "mapping_back": "For a minimal gravity simulation, this reveals that gravity is one instance of a general attraction-repulsion dynamic. The minimal formulation: compute attractive forces from a sparse neighbor graph + repulsive forces via tree approximation. This same engine powers both galaxy simulation and data visualization.",
+      "candidate_folder_name": "attraction_repulsion_embedding"
+    },
+    {
+      "domain": "Force-Directed Graph Layout (Information Visualization)",
+      "reframing": "Force-directed graph drawing (Fruchterman-Reingold, 1991) positions graph nodes by simulating a physical system: edges are springs (attractive forces via Hooke's law) and all node pairs exert repulsive forces (like charged particles or inverse-square gravity). A 'minimal gravity simulation' becomes: what is the simplest force model that produces an aesthetically pleasing, crossing-minimized layout of a network?",
+      "key_insight": "Fruchterman-Reingold uses a simulated annealing-like cooling schedule: the 'temperature' limits maximum displacement per step, decreasing over iterations. This is the minimal control needed to ensure convergence. The repulsive force uses 1/d (not 1/d^2), deliberately simplified from true gravity for layout aesthetics.",
+      "suggested_technique": "Fruchterman-Reingold with grid-variant optimization. Repulsive force: f_r(d) = -k^2/d for all pairs. Attractive force: f_a(d) = d^2/k for edges only. Use a grid spatial hash to limit repulsive calculations to 2k-neighborhood. Cool temperature linearly. k = sqrt(area/N) sets ideal spacing.",
+      "mapping_back": "For a minimal gravity simulation, this suggests: (1) you can simplify the force law (1/d instead of 1/d^2) when qualitative behavior matters more than physical accuracy; (2) use spatial hashing instead of tree structures for simpler implementation; (3) a cooling/damping schedule is essential for convergence.",
+      "candidate_folder_name": "force_directed_graph_layout"
+    },
+    {
+      "domain": "Smoothed Particle Hydrodynamics (Continuum Mechanics)",
+      "reframing": "SPH replaces a continuous gravitational field with a set of interpolation particles carrying mass, each spreading its influence via a smoothing kernel W(r, h). Self-gravity in SPH is computed by treating particles as both fluid elements and gravitational sources. A 'minimal gravity simulation' becomes: what is the minimal kernel approximation that captures the gravitational potential field from a particle distribution?",
+      "key_insight": "SPH's kernel smoothing naturally provides gravitational softening (avoiding singularities at r=0) and adaptive resolution (the smoothing length h adapts to local density). The 'minimal' simulation uses the fewest neighbor particles in the kernel sum while maintaining consistency \u2014 recent work (Wissing et al., 2026) optimizes kernels for convergence without added cost.",
+      "suggested_technique": "SPH self-gravity with optimized kernel. Use a compact-support kernel (e.g., Wendland C4) with adaptive smoothing length h_i set so each particle has ~32-64 neighbors. Gravity is softened at scale h. Pair with a tree for long-range forces. Kernel choice directly controls accuracy-cost tradeoff.",
+      "mapping_back": "For a minimal gravity simulation, SPH suggests softening the gravitational potential with a compact kernel to avoid singularities and reduce the effective neighbor count. An SPH-like approach gives a continuum-flavored gravity that is naturally adaptive and numerically stable, useful for fluid-like N-body problems.",
+      "candidate_folder_name": "smoothed_particle_gravity"
+    },
+    {
+      "domain": "Attention Mechanisms / Transformer Architecture (Deep Learning)",
+      "reframing": "Self-attention in transformers computes a weighted sum over all tokens, where the weight between token i and token j is softmax(Q_i . K_j / sqrt(d)). This is structurally identical to a gravitational calculation: each 'body' (token) exerts influence on all others, weighted by a compatibility kernel (dot-product similarity) and normalized. A 'minimal gravity simulation' maps to: what is the minimal attention mechanism \u2014 the fewest queries, keys, and interaction computations \u2014 that captures the dominant interactions?",
+      "key_insight": "Efficient attention methods (linear attention, sparse attention, flash attention) solve the same O(N^2) scaling problem as N-body gravity. Techniques like local windowed attention + global tokens mirror the near-field/far-field split in Barnes-Hut and FMM. Gravity is attention over physical space.",
+      "suggested_technique": "Sparse attention with local + global structure. Compute exact attention for k nearest neighbors (near-field). Add a small set of 'summary' tokens that attend to all others (far-field approximation, analogous to multipole centers of mass). This gives O(N * k + N * s) where s is the number of summary tokens.",
+      "mapping_back": "For a minimal gravity simulation, sparse attention suggests: keep exact pairwise forces for nearby bodies and use a small set of 'sentinel' or 'summary' bodies to approximate far-field contributions. This is a neural-architecture-inspired version of the near-field/far-field decomposition, potentially learnable and adaptive.",
+      "candidate_folder_name": "sparse_attention_gravity"
+    }
+  ],
+  "timestamp": "2026-03-03T19:23:39.142457+00:00"
+}
