@@ -1,0 +1,300 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-03T00:00:00Z",
+  "updated_at": "2026-03-03T08:40:43.750394+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-03T00:00:00Z",
+      "completed_at": "2026-03-03T08:40:43.750290+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and tooling capabilities",
+          "acceptance_criteria": "Produce results/concept_evolve/repo_analysis.json listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, .opencode/tools/*.ts, .opencode/agents/*.md), their purposes, inter-module dependencies, and available agent roles (orchestrator, researcher, writer, reviewer, concept_worker). File must be valid JSON with at least 6 module entries.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct web search for parallel DEFLATE decompression literature",
+          "acceptance_criteria": "Use websearch and webfetch to find at least 15 relevant papers, blog posts, and technical reports on: (a) parallel decompression of DEFLATE/LZ77/Huffman streams, (b) speculative parallel parsing of compressed data, (c) GPU-accelerated decompression (e.g., nvcomp, GDeflate), (d) alternative approaches like pugz, libdeflate, zlib-ng, ISA-L. Save raw search results to results/concept_evolve/literature_search_raw.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Build citation graph using Semantic Scholar for core DEFLATE parallelism papers",
+          "acceptance_criteria": "Use the semantic_scholar tool (graph command) to build a citation graph seeded by queries: 'parallel DEFLATE decompression', 'speculative parallel LZ77 decoding', 'GPU lossless decompression'. Save graph with at least 30 nodes and 20 edges to results/concept_evolve/citation_graph.json. Identify the 5 most-cited hub papers.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "Create sources.bib in the repo root containing valid BibTeX entries for at least 10 relevant papers. Must include entries for: libdeflate (Biggers), zlib-ng, ISA-L, pugz (Lecompte et al.), GDeflate/nvcomp, at least one paper on speculative decompression, and at least one on SIMD Huffman decoding. Each entry must have title, author, year, and URL/DOI fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Run ConceptEvolve to generate cross-domain concept tree for parallel decompression",
+          "acceptance_criteria": "Execute concept_evolve evolve with topic 'Fast parallel decompression of DEFLATE streams in ZIP archives targeting 3x throughput over libdeflate on multi-core x86-64'. Verify results/concept_evolve/tree/ contains at least 8 concept folders each with concept.json and README.md. Verify results/concept_evolve/concept_cards.json, semantic_bridge.json, and steering_directions.json all exist and are valid JSON.",
+          "status": "pending",
+          "notes": "Requires subagent delegation: concept-tree-explorer for traversal, literature-graph-miner for citation chain analysis",
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Synthesize problem decomposition from literature and concept tree",
+          "acceptance_criteria": "Produce results/concept_evolve/problem_decomposition.md that identifies at least 4 independent sub-problems from the DEFLATE parallelism challenge: (1) block boundary detection, (2) Huffman table reconstruction at arbitrary entry points, (3) LZ77 back-reference resolution across block boundaries, (4) work partitioning and load balancing. Each sub-problem must reference at least 2 entries from sources.bib and link to relevant concept folders in results/concept_evolve/tree/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Build and benchmark libdeflate as single-threaded baseline",
+          "acceptance_criteria": "Clone and build libdeflate from source. Create a benchmark harness (C or C++) that decompresses at least 3 real-world ZIP files (>=100 MB each: one with many small files, one with few large files, one mixed). Record throughput in MB/s, wall-clock time, CPU utilization, and memory bandwidth usage. Save results to results/baselines/libdeflate_benchmark.json with at least 3 test cases and 5 repeated runs each.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Benchmark additional baselines: zlib, zlib-ng, ISA-L, pigz",
+          "acceptance_criteria": "Build and benchmark zlib 1.3+, zlib-ng, Intel ISA-L, and pigz (for multi-file parallelism baseline) on the same test corpus. Save results to results/baselines/all_baselines.json. Include throughput, latency, and thread utilization metrics. Document which operations each tool parallelizes (pigz: file-level only; ISA-L: SIMD within single stream).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Profile DEFLATE decompression to identify bottlenecks",
+          "acceptance_criteria": "Use perf/VTune or equivalent profiler on libdeflate decompression of the test corpus. Identify and document: (a) percentage of time in Huffman decoding vs. LZ77 copy vs. I/O, (b) cache miss rates, (c) branch misprediction rates, (d) memory bandwidth utilization as fraction of theoretical max. Save profiling report to results/baselines/profile_report.json with quantified breakdowns summing to 100%.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Characterize test corpus DEFLATE stream properties",
+          "acceptance_criteria": "Write a tool to analyze the DEFLATE streams in the test corpus: count blocks per stream, block types (stored/static/dynamic Huffman), average block size, back-reference distance distribution (percentage within 1KB, 4KB, 32KB), and Huffman code statistics. Save to results/baselines/stream_analysis.json. This data directly informs which parallelization strategies are viable.",
+          "status": "pending",
+          "notes": "Requires subagent delegation: explorer subagent to analyze DEFLATE internals and map to parallelization feasibility",
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Establish target metrics and success criteria",
+          "acceptance_criteria": "Produce results/baselines/target_metrics.md defining: (a) primary metric: wall-clock throughput in GB/s on test corpus, (b) target: >=3x libdeflate throughput, (c) secondary metrics: CPU efficiency (useful work per core-second), memory overhead, latency to first byte, (d) hardware specification: document exact CPU model, core count, cache sizes, memory bandwidth of test machine. Reference baseline numbers from item_007.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Design and prototype multi-entry-point speculative decompression",
+          "acceptance_criteria": "Implement a prototype that: (1) splits a DEFLATE stream at N evenly-spaced byte offsets, (2) attempts to sync to valid Huffman block boundaries at each split point using heuristic validation, (3) speculatively decompresses each segment in parallel, (4) resolves cross-boundary LZ77 back-references in a merge pass. Document the algorithm in results/concept_evolve/tree/ under a dedicated concept folder. Measure sync success rate on test corpus (target: >80% of split points find valid boundary within 1KB scan).",
+          "status": "pending",
+          "notes": "Core novel contribution. Must cite pugz (item_004) approach and document how this differs.",
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Design and prototype ZIP-level file-parallel decompression with work-stealing",
+          "acceptance_criteria": "Implement a multi-threaded ZIP decompressor that: (1) parses the central directory to identify all member files, (2) dispatches per-file DEFLATE decompression tasks to a thread pool, (3) uses work-stealing for load balancing when file sizes are skewed. Measure throughput on the many-small-files test case. Save design document to a concept folder in results/concept_evolve/tree/ and prototype code to results/prototypes/zip_parallel/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Explore and prototype SIMD-accelerated block boundary detection",
+          "acceptance_criteria": "Prototype a SIMD-based scanner (SSE4.2/AVX2) that rapidly identifies potential DEFLATE block boundaries by scanning for BFINAL/BTYPE bit patterns and validating Huffman table headers. Measure scanning throughput (target: >10 GB/s) and false-positive rate (<5%). Document approach in a concept folder. Compare against linear scan baseline.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Design hybrid approach combining file-level and intra-stream parallelism",
+          "acceptance_criteria": "Design a two-level parallelism strategy: outer level parallelizes across ZIP members (item_013), inner level applies speculative intra-stream parallelism (item_012) to members above a size threshold (e.g., >1 MB). Document the scheduling policy, thread allocation heuristic, and expected speedup model. Produce results/concept_evolve/tree/NNN_hybrid_parallel/concept.json with mathematical formalization of expected speedup using Amdahl's law with measured serial fractions from item_009.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Investigate prefetch and memory hierarchy optimizations for parallel decompression",
+          "acceptance_criteria": "Prototype explicit prefetch instructions and cache-aware output buffer management for the parallel decompressor. Measure impact on cache miss rates vs. baseline from item_009. Document L1/L2/L3 cache utilization patterns for parallel vs. sequential decompression. Target: reduce cache misses by >=20% compared to naive parallel approach.",
+          "status": "pending",
+          "notes": "Requires subagent delegation: concept-tree-explorer to identify cross-links between memory hierarchy concepts and compression concepts in the tree",
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Concept-tree expansion: probe blind spots and alternative paradigms",
+          "acceptance_criteria": "Use ConceptEvolve probe on at least 2 identified blind spots from the concept tree's introspection.json. Run ConceptEvolve reframe on the core problem. Verify results/concept_evolve/probe_result.json and results/concept_evolve/reframings.json are produced with at least 3 steering directions each. Integrate at least one novel direction into a new concept folder under results/concept_evolve/tree/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Construct comprehensive benchmark suite with diverse real-world ZIP files",
+          "acceptance_criteria": "Assemble a benchmark suite of at least 6 ZIP files (>=100 MB each) covering: (a) Linux kernel source tarball, (b) game asset archive, (c) Java JAR/WAR, (d) document archive (.docx collection), (e) scientific dataset, (f) software distribution. Document compression ratios, file count, and average member size for each. Save manifest to results/experiments/benchmark_suite.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Run scaling experiments: throughput vs. thread count (1-16 threads)",
+          "acceptance_criteria": "For each prototype (file-parallel, speculative intra-stream, hybrid), measure throughput at 1, 2, 4, 8, 12, and 16 threads on all benchmark files. Record results in results/experiments/scaling_data.json. Generate scaling plots saved to figures/scaling_*.png showing throughput vs. threads for each approach and baseline. Identify the approach that first exceeds 3x libdeflate throughput and at how many threads.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Measure speculative decompression accuracy and overhead",
+          "acceptance_criteria": "For the speculative parallel approach (item_012), measure: (a) block boundary sync success rate per split count (2, 4, 8, 16 splits), (b) wasted work from failed speculations as percentage of total, (c) merge-pass overhead, (d) correctness verification (byte-identical output to libdeflate). Save to results/experiments/speculation_accuracy.json. Target: >=90% sync success rate with <=15% wasted work at 8 splits.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Compare against prior work throughput numbers from literature",
+          "acceptance_criteria": "Create results/experiments/literature_comparison.json comparing achieved throughput against published numbers from: pugz, ISA-L, zlib-ng, libdeflate, and any GPU approaches found in the literature review. Normalize comparisons to account for different hardware. Reference specific entries from sources.bib for each comparison. Include at least 5 prior-work data points.",
+          "status": "pending",
+          "notes": "Requires subagent delegation: literature-graph-miner to extract and verify published throughput numbers from papers found in Phase 1",
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Ablation study: contribution of each parallelism component",
+          "acceptance_criteria": "Measure throughput with each component enabled/disabled independently: (a) file-level parallelism only, (b) intra-stream speculation only, (c) SIMD boundary detection on/off, (d) prefetch optimizations on/off, (e) full hybrid. Present results as a table in results/experiments/ablation.json showing the marginal contribution of each component in GB/s and percentage improvement.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Stress test correctness across edge cases",
+          "acceptance_criteria": "Verify byte-identical decompression output against reference (libdeflate) for: (a) all benchmark files, (b) ZIP files with stored (uncompressed) members, (c) files using ZIP64 extensions, (d) streams with maximum back-reference distances (32KB), (e) single-block and multi-block DEFLATE streams. Save pass/fail report to results/experiments/correctness_report.json with 100% pass rate required.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Write final results analysis with statistical rigor",
+          "acceptance_criteria": "Produce results/analysis/final_results.md containing: (a) summary table of all approaches vs. baselines with mean throughput, std deviation, and 95% confidence intervals, (b) best achieved speedup over libdeflate with statistical significance test (p < 0.05), (c) analysis of when each approach wins/loses (file size, compression ratio, file count), (d) Amdahl's law analysis showing theoretical vs. achieved parallel efficiency. Must reference at least 5 entries from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Generate publication-quality figures",
+          "acceptance_criteria": "Generate and save to figures/: (a) throughput_comparison.png \u2014 bar chart of all approaches on all benchmarks, (b) scaling_efficiency.png \u2014 parallel efficiency vs. thread count, (c) speculation_accuracy.png \u2014 sync success rate vs. number of split points, (d) architecture_diagram.png \u2014 system architecture of the hybrid approach. All figures must have axis labels, legends, and be at least 300 DPI.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Document limitations, failure modes, and future work",
+          "acceptance_criteria": "Produce results/analysis/limitations.md covering: (a) workloads where the approach does NOT achieve 3x speedup and why, (b) failure modes of speculative decompression (adversarial inputs, pathological block structures), (c) memory overhead scaling, (d) applicability to gzip-only streams (no ZIP central directory), (e) at least 3 concrete future research directions. Must cite relevant prior work from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Compile concept-tree final state and research narrative",
+          "acceptance_criteria": "Use ConceptEvolve walk to traverse the final concept tree. Produce results/concept_evolve/final_narrative.md that: (a) traces the 3 most productive concept paths from the tree, (b) identifies which cross-domain bridges yielded actionable insights, (c) documents which steering directions from Phase 1 were pursued and their outcomes, (d) lists concepts that were abandoned and why. Must reference specific concept folders in results/concept_evolve/tree/.",
+          "status": "pending",
+          "notes": "Requires subagent delegation: concept-tree-explorer to traverse and score all paths, synthesize into narrative",
+          "error": null
+        },
+        {
+          "id": "item_028",
+          "description": "Produce reproducibility package and final sources.bib validation",
+          "acceptance_criteria": "Create results/analysis/reproducibility.md with: (a) exact build instructions for all prototypes, (b) test corpus download/generation scripts, (c) command-line invocations to reproduce all benchmark results, (d) hardware and software version specifications. Validate sources.bib contains >=10 entries, all referenced at least once in documentation. Verify all JSON files in results/ are valid JSON.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 28,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 28
+  }
+}
