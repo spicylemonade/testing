@@ -1,0 +1,292 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-03T12:00:00Z",
+  "updated_at": "2026-03-03T06:25:46.157315+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-03T12:00:00Z",
+      "completed_at": "2026-03-03T06:25:46.157288+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and tooling capabilities",
+          "acceptance_criteria": "Produce results/phase1/repo_analysis.md documenting: (1) all modules in .archivara/ and .opencode/ with their purposes, (2) available subagent capabilities (concept-tree-explorer, literature-graph-miner), (3) tool interfaces (concept_evolve.py commands, semantic_scholar.py commands), and (4) directory layout for results/concept_evolve/tree/. Document must be at least 500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive web and academic literature review on GCD algorithms",
+          "acceptance_criteria": "Using web search and Semantic Scholar, identify and summarize at least 15 relevant sources covering: (1) Euclid's algorithm and its complexity, (2) Stein's binary GCD algorithm (1967), (3) Lehmer's GCD algorithm, (4) Schonhage's recursive/sub-quadratic GCD, (5) Pornin's optimized binary GCD for modular inversion (2020), (6) Algorithmica/Slotin's branchless binary GCD analysis, (7) Lemire's hybrid binary GCD benchmarks (2013, 2024), (8) Sreedhar-Horowitz-Torng XGCD hardware accelerator (CHES 2022), (9) libc++ std::gcd update PR #77747. Create results/phase1/literature_review.md with structured summaries of each source.",
+          "status": "pending",
+          "notes": "Delegate literature graph mining to literature-graph-miner subagent for citation traversal",
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted works",
+          "acceptance_criteria": "sources.bib in repo root contains valid BibTeX entries for at least 10 relevant papers/sources. Must include entries for: Stein 1967, Knuth TAOCP Vol 2 (GCD sections), Pornin 2020 optimized binary GCD, Sreedhar et al. 2022 XGCD hardware, Lemire 2013/2024 blog posts, Slotin/Algorithmica binary GCD chapter, and at least 4 additional relevant academic works. Each entry must have title, author, year, and venue/URL.",
+          "status": "pending",
+          "notes": "Use semantic_scholar bibtex command for academic papers; manually create entries for blog posts and web resources",
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Analyze the microarchitectural bottlenecks of Stein's binary GCD on modern x86-64 and ARM64 CPUs",
+          "acceptance_criteria": "Produce results/phase1/bottleneck_analysis.md that identifies and explains: (1) branch misprediction costs in the inner loop (citing Agner Fog's tables), (2) critical path analysis showing dependency chains for ctz->shift->subtract->compare, (3) latency of TZCNT/BSF on Intel Ice Lake, Zen 4, and Apple M-series, (4) latency of CMOV vs branch on same architectures, (5) quantified cycle cost per iteration with and without mispredictions. Must reference at least 3 sources from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Run concept-tree exploration to discover cross-domain algorithmic ideas",
+          "acceptance_criteria": "Execute concept_evolve evolve on the topic 'branchless integer GCD algorithm optimization' and concept_evolve probe on 'branch misprediction elimination in iterative integer algorithms'. Results materialized in results/concept_evolve/tree/ with at least 8 concept folders, each containing concept.json, literature.json, and README.md. Produce results/phase1/concept_synthesis.md summarizing top 5 most promising cross-domain ideas (e.g., from signal processing, cryptographic constant-time techniques, SIMD reduction patterns).",
+          "status": "pending",
+          "notes": "Delegate to concept-tree-explorer subagent for walk and synthesis",
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Characterize the input distribution landscape for 64-bit to 256-bit GCD workloads",
+          "acceptance_criteria": "Produce results/phase1/input_characterization.md documenting: (1) statistical properties of random 64-bit GCD pairs (expected iteration count, probability of coprimality ~6/pi^2), (2) worst-case inputs (consecutive Fibonacci numbers), (3) common real-world distributions (cryptographic primes, small-vs-large, near-equal magnitudes), (4) how input distribution affects relative performance of Euclidean vs. binary vs. hybrid approaches, (5) specific 128-bit and 256-bit considerations (multi-word arithmetic costs). Must cite at least 2 sources.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Set up build system and benchmarking infrastructure",
+          "acceptance_criteria": "Create a Rust project (Cargo.toml) or C++ project (CMakeLists.txt) in the repo root with: (1) src/ directory for algorithm implementations, (2) benches/ directory using criterion (Rust) or Google Benchmark (C++), (3) tests/ directory with correctness tests, (4) CI-reproducible benchmark harness that reports cycles/operation, throughput (ops/sec), and IPC. Build and run successfully with a single command documented in README.md.",
+          "status": "pending",
+          "notes": "Depends on item_001 for repo structure understanding",
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement and benchmark 5 baseline GCD algorithms for 64-bit integers",
+          "acceptance_criteria": "Implement and benchmark these 5 algorithms in src/: (1) Euclidean (naive modulo), (2) Stein's binary GCD (textbook), (3) Optimized binary GCD with CTZ (Algorithmica/Slotin variant), (4) Hybrid binary GCD (Lemire's single-division-then-binary), (5) std::gcd or language standard library. Each implementation must pass correctness tests against at least 10,000 random pairs + known edge cases (0, 1, coprime, equal, Fibonacci pairs, powers of 2). Benchmark results stored in results/phase2/baseline_64bit.json with mean, median, p99 latency per pair.",
+          "status": "pending",
+          "notes": "Depends on item_007",
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Profile baseline implementations using hardware performance counters",
+          "acceptance_criteria": "Using perf stat (Linux) or equivalent, collect for each baseline algorithm on 64-bit random inputs: (1) total cycles, (2) instructions retired, (3) IPC, (4) branch mispredictions, (5) branch misprediction rate, (6) L1 cache misses. Store raw perf data in results/phase2/perf_counters/ and produce results/phase2/profiling_report.md with a comparison table. The optimized binary GCD must show measurably fewer branch mispredictions than textbook Stein's. Compare against findings from literature review (item_002).",
+          "status": "pending",
+          "notes": "Depends on item_008; delegate analysis synthesis to a subagent",
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement and benchmark baseline GCD for 128-bit and 256-bit integers",
+          "acceptance_criteria": "Extend the baseline suite to support 128-bit (using __int128 or u128) and 256-bit (using a custom or library-provided wide integer type) GCD. Implement at least Euclidean and optimized binary GCD for both widths. Benchmark results stored in results/phase2/baseline_wide.json. Document the performance cliff between 64-bit and 128-bit (expected ~4x slowdown) and between 128-bit and 256-bit in results/phase2/wide_int_analysis.md. Identify the dominant cost (multi-word shifts, multi-word subtraction, or CTZ emulation).",
+          "status": "pending",
+          "notes": "Depends on item_008",
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Establish the performance target (cycles/GCD) that constitutes 'outperforming' the state of the art",
+          "acceptance_criteria": "Produce results/phase2/performance_targets.md defining: (1) the exact cycle count of the best baseline per width (64/128/256-bit), (2) a minimum improvement threshold of 10% fewer cycles on random inputs to claim 'outperformance', (3) statistical methodology (number of trials, warm-up, confidence intervals at 95%), (4) specific input distributions to test (uniform random, skewed, worst-case). Reference the Algorithmica ~91ns/pair result and Lemire's 17M ops/sec hybrid result as calibration points from literature.",
+          "status": "pending",
+          "notes": "Depends on items 008, 009, 010",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Design and implement a fully branchless binary GCD using CMOV and arithmetic identities",
+          "acceptance_criteria": "Implement in src/ a GCD variant where the inner loop compiles to zero conditional branches (only CMOV/CSEL). Verify with objdump/godbolt that no JNE/JE/JCC instructions appear in the hot loop (except the single loop-exit branch). The implementation must: (1) use the CTZ-before-abs trick from Algorithmica to shorten the critical path, (2) replace min/swap with conditional moves, (3) pass all correctness tests from item_008. Store the disassembly in results/phase3/branchless_asm.txt.",
+          "status": "pending",
+          "notes": "Depends on items 005, 008; core novel contribution",
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Explore SIMD-parallel GCD: compute GCD of multiple independent pairs simultaneously",
+          "acceptance_criteria": "Design and implement a batched GCD function that processes N=4 (AVX2) or N=8 (AVX-512) independent 64-bit GCD pairs simultaneously using SIMD intrinsics. Document the vectorization strategy in results/phase3/simd_design.md covering: (1) how CTZ is emulated in SIMD (no native TZCNT for vectors), (2) lane-divergence handling (different pairs finish at different iterations), (3) expected throughput vs latency tradeoffs. Implementation must pass correctness tests on at least 1000 batches of random inputs. Even if throughput gain is modest, document why and what the limiting factors are.",
+          "status": "pending",
+          "notes": "Depends on item_005 concept exploration for cross-domain SIMD ideas; delegate design-space exploration to subagent",
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Investigate a lookup-table-accelerated GCD for the final iterations",
+          "acceptance_criteria": "Implement a hybrid approach where: (1) the main loop uses the branchless binary GCD until both values fit in k bits (k=8 or k=16), (2) a precomputed lookup table provides the GCD for all pairs of k-bit values. Measure and document: (a) table size in bytes, (b) L1 cache pressure impact, (c) iteration count reduction, (d) net speedup vs. pure branchless version. Store results in results/phase3/lut_analysis.md. The implementation must be correct for all 64-bit inputs.",
+          "status": "pending",
+          "notes": "Depends on item_012",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Design a novel approximate-then-exact GCD strategy inspired by Lehmer's algorithm",
+          "acceptance_criteria": "Implement a 64-bit GCD that uses Lehmer-style cofactor matrix computation: extract the top k bits of both operands, compute a sequence of quotients on the small values, accumulate them in a 2x2 matrix, then apply the matrix to the full-width values in one step. This reduces the number of full-width operations. Implementation must: (1) be correct on all test cases, (2) document the matrix accumulation step clearly in results/phase3/lehmer_hybrid_design.md, (3) compare iteration counts vs. pure binary GCD. Reference Lehmer's original approach and Jebelean's improvements from sources.bib.",
+          "status": "pending",
+          "notes": "Depends on items 005, 008; explore concept tree for 'divide-and-conquer on bit-width' ideas",
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Investigate constant-time GCD techniques from cryptographic literature for timing-safe variant",
+          "acceptance_criteria": "Implement a constant-time (no data-dependent branches or memory accesses) GCD for 64-bit integers, drawing on Pornin 2020's techniques. Document in results/phase3/constant_time_analysis.md: (1) the constant-time inner loop design, (2) how it differs from the variable-time branchless version, (3) performance cost of constant-time guarantee, (4) formal argument or citation for why the fixed iteration count is sufficient. Must cite Pornin 2020 and at least one other constant-time implementation from sources.bib.",
+          "status": "pending",
+          "notes": "Depends on item_012; relevant for cryptographic applications",
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Develop an optimized 128-bit and 256-bit branchless GCD leveraging the best 64-bit techniques",
+          "acceptance_criteria": "Extend the best-performing 64-bit approach (branchless, LUT-hybrid, or Lehmer-hybrid) to 128-bit and 256-bit operands. Implementation must: (1) handle multi-word CTZ efficiently (check low word first, fall through to high word), (2) use inline assembly or compiler intrinsics for multi-word subtraction with borrow, (3) pass correctness tests on at least 5,000 random wide-integer pairs + edge cases. Benchmark and store results in results/phase3/wide_novel.json. Document design decisions in results/phase3/wide_design.md.",
+          "status": "pending",
+          "notes": "Depends on items 012, 014, 015; builds on whichever 64-bit approach wins",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Run comprehensive benchmarks of all novel approaches against all baselines across input distributions",
+          "acceptance_criteria": "Execute benchmarks for all implementations (5 baselines + all novel variants from Phase 3) across: (1) uniform random 64-bit pairs (N=1,000,000), (2) uniform random 128-bit and 256-bit pairs (N=100,000), (3) skewed inputs where one operand is much smaller, (4) near-coprime inputs, (5) worst-case inputs (consecutive Fibonacci numbers at each bit-width). Store all results in results/phase4/benchmarks/ as JSON. Produce results/phase4/benchmark_summary.md with tables and speedup ratios. At least one novel approach must show >= 10% improvement over best baseline on uniform random 64-bit inputs.",
+          "status": "pending",
+          "notes": "Depends on all Phase 3 items; delegate parallel benchmark execution if possible",
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Collect hardware performance counter data for all novel approaches",
+          "acceptance_criteria": "Run perf stat on all novel implementations collecting: cycles, instructions, IPC, branch-mispredictions, branch-misprediction-rate, L1-dcache-load-misses. Store raw data in results/phase4/perf_data/. Produce results/phase4/perf_comparison.md with: (1) table comparing all approaches on each metric, (2) analysis explaining why the best approach wins (fewer mispredictions? shorter critical path? better IPC?), (3) comparison to Phase 2 baseline perf data showing improvement. Must reference the bottleneck analysis from item_004.",
+          "status": "pending",
+          "notes": "Depends on item_018",
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Perform statistical rigor analysis on benchmark results",
+          "acceptance_criteria": "For the top 3 performing algorithms: (1) run 30 independent benchmark trials with system noise mitigation (CPU pinning, frequency governor set to performance, no other workloads), (2) compute mean, standard deviation, 95% confidence intervals, (3) perform paired t-test or Wilcoxon signed-rank test to determine if differences are statistically significant (p < 0.05), (4) report effect sizes (Cohen's d). Store statistical analysis in results/phase4/statistical_analysis.md. Speedup claims must be backed by p < 0.05.",
+          "status": "pending",
+          "notes": "Depends on item_018",
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Test portability across compiler versions and optimization levels",
+          "acceptance_criteria": "Compile and benchmark the best novel approach under: (1) GCC with -O2 and -O3, (2) Clang/LLVM with -O2 and -O3, (3) with and without -march=native. Document in results/phase4/portability.md: (a) whether the compiler emits the expected branchless assembly in all cases, (b) any cases where the compiler 'un-branchifies' the code (inserts branches instead of CMOV), (c) performance variation across compilers. If the approach relies on inline assembly, document the portability implications.",
+          "status": "pending",
+          "notes": "Depends on item_018",
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Validate correctness with exhaustive testing for small bit-widths and fuzz testing for large",
+          "acceptance_criteria": "Perform: (1) exhaustive correctness verification for all 16-bit x 16-bit pairs (65536^2 = ~4.3 billion pairs, or a representative subset of 100M pairs) against a known-correct reference, (2) fuzz testing with random 64/128/256-bit inputs for at least 10 million pairs per width, (3) property-based testing verifying gcd(a,b) divides both a and b, and no larger divisor exists. Zero failures required. Store test results summary in results/phase4/correctness_report.md.",
+          "status": "pending",
+          "notes": "Depends on Phase 3 implementations",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Produce formal correctness argument or proof sketch for the novel algorithm",
+          "acceptance_criteria": "Write results/phase5/correctness_proof.md containing: (1) formal statement of the algorithm as a loop invariant, (2) proof that the loop invariant is maintained at each step, (3) proof of termination (strictly decreasing measure), (4) proof that the output equals gcd(a,b). The argument must be rigorous enough that a mathematician could verify it. Reference the relevant identities (gcd(a-b, min(a,b)) = gcd(a,b) for odd a,b, etc.).",
+          "status": "pending",
+          "notes": "Depends on the chosen best novel approach from Phase 4",
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Write a comprehensive research report synthesizing all findings",
+          "acceptance_criteria": "Produce results/phase5/research_report.md (at least 3000 words) with sections: (1) Abstract, (2) Introduction and motivation, (3) Related work (citing at least 10 entries from sources.bib), (4) Algorithm description with pseudocode, (5) Implementation details (ISA-specific optimizations), (6) Experimental setup, (7) Results with tables and reference to figures/, (8) Analysis explaining why the approach works at the microarchitectural level, (9) Limitations and future work (256-bit, ARM NEON, GPU), (10) Conclusion. Must compare quantitatively against Algorithmica's ~2x-over-std::gcd result and Lemire's hybrid binary GCD benchmarks.",
+          "status": "pending",
+          "notes": "Depends on all Phase 4 items; delegate initial draft to writer agent",
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Generate publication-quality figures for the report",
+          "acceptance_criteria": "Create at least 4 figures in figures/ directory: (1) bar chart comparing cycles/GCD across all algorithms for 64-bit, (2) bar chart for 128-bit and 256-bit, (3) dependency graph diagram of the novel inner loop vs. baseline inner loop (similar to Algorithmica's diagrams), (4) scatter plot or heatmap of performance across input distributions. Figures must be in SVG or PNG format, clearly labeled, with legends and axis titles. Referenced in the research report (item_024).",
+          "status": "pending",
+          "notes": "Depends on item_024 for context; can be created in parallel with report writing",
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Conduct concept-tree retrospective and document transferable insights",
+          "acceptance_criteria": "Review all concept folders in results/concept_evolve/tree/ and produce results/phase5/concept_retrospective.md documenting: (1) which concept-tree paths led to the most useful ideas, (2) which cross-domain analogies proved fruitful vs. dead ends, (3) at least 2 transferable insights that could apply to other iterative number-theoretic algorithms (modular exponentiation, extended GCD, Jacobi symbol). Must reference specific concept cards by folder name.",
+          "status": "pending",
+          "notes": "Delegate to concept-tree-explorer subagent for walk and retrospective analysis",
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Update README.md with project summary, build instructions, and key results",
+          "acceptance_criteria": "README.md contains: (1) project title and one-paragraph summary, (2) build and run instructions, (3) table of key benchmark results (best novel vs. best baseline, with speedup percentage), (4) link to full research report, (5) citation information. Must be well-formatted markdown.",
+          "status": "pending",
+          "notes": "Final item; depends on all previous items",
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
