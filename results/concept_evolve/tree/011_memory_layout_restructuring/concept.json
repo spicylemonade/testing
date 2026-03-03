@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "memory_layout_restructuring",
+  "description": "Restructure the in-memory layout of DEFLATE's Huffman decode tables and LZ77 sliding window for optimal cache line utilization. Pack hot-path table entries (short codes, common symbols) into a single cache line, and use a tiered table structure to minimize cache misses for rare long codes.",
+  "domains": ["computer_architecture", "data_compression", "performance_engineering"],
+  "mathematical_formalization": "Huffman table T has 2^max_bits entries. Access frequency f(i) follows Zipf distribution. Partition T into T_hot (entries with f(i) > threshold, ~90% of accesses, fits in 1-2 cache lines = 128 bytes) and T_cold (remaining entries). Expected cache misses = |T_cold|/line_size * sum(f(i) for i in T_cold). Tiered lookup: first consult T_hot (L1 hit), overflow to T_cold only for rare long codes.",
+  "analogical_connections": [
+    "Database index design: B-tree nodes sized to match disk pages for minimal I/O",
+    "CPU TLB: small fast table for common translations, page table walk for rare ones",
+    "libdeflate's existing tiered approach: primary table for short codes, secondary for long codes"
+  ],
+  "implementation_hypothesis": "Profile real DEFLATE workloads to determine hot-code distribution. Design a 3-tier lookup: Tier 0 (8-bit lookup, 256 entries = 4 cache lines, handles ~85% of symbols), Tier 1 (12-bit lookup for overflow, 4K entries), Tier 2 (15-bit full lookup for rare codes). Align Tier 0 to cache line boundaries. Use __builtin_expect() to hint branch predictor that Tier 0 hits are likely.",
+  "experiment_seed": "Instrument libdeflate's Huffman decoder to log access patterns. Compute access frequency distribution. Implement 3-tier table and compare cache miss rates (via perf counters) and decode throughput against libdeflate's 2-tier design."
+}

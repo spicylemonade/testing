@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "fpga_pipelined_dual_path_decode",
+  "description": "Implement DEFLATE decompression as a deeply-pipelined FPGA circuit with dual speculative Huffman decode paths running in parallel. One path decodes the primary thread, the other speculatively decodes from a predicted position, achieving up to 2x throughput when speculation succeeds.",
+  "domains": ["hardware_design", "data_compression", "speculative_computing"],
+  "mathematical_formalization": "Primary thread PT decodes at position p. Speculative thread ST decodes at position p + delta where delta is predicted from average bits-per-symbol. Throughput = T_PT + p_success * T_ST where p_success = probability speculation is correct. IEEE paper reports 69% throughput improvement with single checkpoint. With N checkpoints: p_success ~ 1 - (1-p_single)^N.",
+  "analogical_connections": [
+    "IEEE 2019 GZIP accelerator: dual-path out-of-order speculative Huffman decoder at 20.5 Gbps",
+    "CPU branch prediction: predict-and-verify paradigm from microprocessor design",
+    "RAID-1 mirroring: redundant paths for reliability, here repurposed for performance"
+  ],
+  "implementation_hypothesis": "FPGA implementation on Xilinx Alveo U250. Primary decoder pipeline: 8 stages (bit fetch, Huffman lookup, symbol classify, LZ77 resolve, output write). Speculative decoder shares Huffman tables but has independent state. Multiple checkpoints stored in BRAM for ST recovery. Target: 43.3 bits/cycle (matching A-SSCC 2024 paper) on a modern FPGA at 300MHz = ~1.6 GB/s per instance.",
+  "experiment_seed": "Implement in SystemVerilog or Chisel. Synthesize for Xilinx UltraScale+. Measure throughput, resource utilization (LUTs, BRAM, DSPs), and speculation success rate across different compression levels."
+}
