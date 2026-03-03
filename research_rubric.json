@@ -1,0 +1,292 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-03T12:00:00Z",
+  "updated_at": "2026-03-03T20:33:29.288555+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-03T12:00:00Z",
+      "completed_at": "2026-03-03T20:33:29.288541+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and available tooling",
+          "acceptance_criteria": "Document in results/concept_evolve/tree/repo_analysis.md listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, .opencode/tools/, .opencode/agents/), their purposes, inter-module dependencies, and which agent profiles (orchestrator, researcher, writer, reviewer, concept_worker) map to which capabilities. Minimum 500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive literature review on R(5,5) bounds using web search and Semantic Scholar",
+          "acceptance_criteria": "Use websearch, webfetch, and semantic_scholar tools to find and summarize at least 15 papers on R(5,5) bounds. Must cover: (1) Exoo 1989 lower bound R(5,5)>=43 via cyclic constructions, (2) McKay-Radziszowski 1991/1995 upper bound cascade, (3) Angeltveit-McKay 2017 R(5,5)<=48 and 2024 R(5,5)<=46 LP+case-checking approach, (4) Campos-Griffiths-Morris-Sahasrabudhe 2023 asymptotic breakthrough R(k)<=(4-epsilon)^k, (5) Razborov flag algebra method and Lidicky-Pfender SDP adaptation for small Ramsey, (6) De Loera-Wesley Nullstellensatz algebraic encoding, (7) Paley graph constructions and their limitations, (8) Alon spectral/eigenvalue methods. Write results/concept_evolve/literature_review.md with structured sections per approach.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "File sources.bib exists in repo root with valid BibTeX entries for at least 15 relevant papers. Must include entries for: Exoo 1989, McKay-Radziszowski (R(4,5)=25 and R(5,5) upper bounds), Angeltveit-McKay 2017 and 2024, Campos-Griffiths-Morris-Sahasrabudhe 2023, Razborov 2007 (flag algebras), Lidicky-Pfender 2018 (SDP+Ramsey), De Loera-Wesley 2023 (Nullstellensatz), Ge et al. 2022 (study of Exoo's bound), Alon 1986 (eigenvalues and Ramsey), Xu-Xie-Radziszowski 2004 (constructive lower bounds). Use semantic_scholar bibtex command where possible.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Subagent delegation: Mine citation graph around R(5,5) core papers to discover overlooked connections",
+          "acceptance_criteria": "Use literature-graph-miner subagent to build a citation graph seeded from the 5 most-cited R(5,5) papers. Identify at least 3 cross-domain citation chains (e.g., coding theory -> Ramsey, information theory -> extremal graphs). Store graph as results/concept_evolve/citation_graph.json with nodes, edges, and annotated bridge_chains. Report must include at least 2 papers from outside pure combinatorics that have cited or been cited by R(5,5) work.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Map the gap: precisely characterize what is known vs unknown in 43 <= R(5,5) <= 46",
+          "acceptance_criteria": "Produce results/concept_evolve/tree/001_gap_anatomy/concept.json and README.md analyzing: (1) the exact structure of all known (5,5)-good graphs on 42 vertices (Exoo's constructions + variants from Ge et al. 2022), (2) which values n in {43,44,45} have been partially ruled out and by what methods, (3) the LP relaxation constraints that drove the upper bound from 48 to 46, (4) a taxonomy of obstacles: what specifically makes the lower bound hard to raise and the upper bound hard to lower. Minimum 800 words in README.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Implement baseline graph property checker for (5,5)-Ramsey goodness",
+          "acceptance_criteria": "Python script at results/concept_evolve/tools/ramsey_checker.py that: (1) takes an adjacency matrix or edge list as input, (2) checks if graph is (5,5)-good (no K5 clique and no independent set of size 5), (3) reports clique number and independence number, (4) computes degree sequence, edge count, and triangle count. Must include unit tests verifying correctness on Exoo's 42-vertex graph and on K5 (which should fail). Tests pass when run.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement spectral analysis toolkit for candidate Ramsey graphs",
+          "acceptance_criteria": "Python script at results/concept_evolve/tools/spectral_analyzer.py computing: (1) adjacency matrix eigenvalues, (2) Laplacian eigenvalues, (3) Hoffman bound on clique/independence number, (4) eigenvalue interlacing constraints. Tested on Paley(41) graph and Exoo's 42-vertex construction. Output includes whether Hoffman bound is tight or has slack, stored as JSON. Must cite Alon 1986 and Nikiforov spectral Ramsey work from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement flag algebra density calculator for small graphs",
+          "acceptance_criteria": "Python module at results/concept_evolve/tools/flag_density.py that: (1) enumerates all labeled graphs on up to 5 vertices, (2) computes subgraph densities (homomorphism density and induced subgraph density) for a given host graph, (3) can set up the basic flag algebra SDP constraints for forbidden K5 and independent K5. Must include documentation referencing Razborov 2007 and Lidicky-Pfender 2018 from sources.bib. Output density profiles as JSON.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Establish baseline metrics on all known (5,5,42)-graphs",
+          "acceptance_criteria": "Run spectral analyzer and flag density calculator on Exoo's constructions and all known variants from Ge et al. 2022. Produce results/concept_evolve/baselines.json containing: degree sequences, spectral gaps, triangle densities, C4 densities, P3 densities, Hoffman bound slack values. Tabulate at least 3 distinct (5,5,42)-graph families. Include comparison against random graphs of same density.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Subagent delegation: Run ConceptEvolve to generate cross-domain concept cards for R(5,5) attack strategies",
+          "acceptance_criteria": "Use concept_evolve tool with 'evolve' command on topic 'Narrowing the Ramsey number R(5,5) bounds using algebraic, spectral, probabilistic, information-theoretic, and topological methods'. Verify that results/concept_evolve/concept_cards.json contains at least 8 concept cards, results/concept_evolve/semantic_bridge.json has nodes and edges, and at least 5 concept folders exist under results/concept_evolve/tree/ each with concept.json and README.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Novel approach 1: Entropy-compression method adapted from the Campos-Griffiths-Morris-Sahasrabudhe framework for small n",
+          "acceptance_criteria": "Develop and document in results/concept_evolve/tree/002_entropy_compression/README.md a concrete adaptation of the CGMS 'book algorithm' entropy-compression argument to the specific case n=45 or n=46. Must: (1) formalize the book structure for (5,5)-colorings on n vertices, (2) derive explicit density constraints using the absorber technique from CGMS adapted to k=5, (3) identify whether the argument gives any leverage at n=45 that LP alone does not, (4) include mathematical derivations (not just prose). Create concept.json with formalization. Cite Campos et al. 2023, Gupta-Wei-Norin-Ndiaye 2024 optimized bound R(k,k)<=(3.8)^k from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Novel approach 2: Algebraic Nullstellensatz certificates for non-existence of (5,5,43)-graphs with constrained structure",
+          "acceptance_criteria": "In results/concept_evolve/tree/003_nullstellensatz/README.md, develop a polynomial system whose satisfiability is equivalent to existence of (5,5)-good graphs on 43 vertices with specific structural constraints (e.g., fixed degree regularity, specific automorphism group). Following De Loera-Wesley 2023, derive degree bounds on Nullstellensatz certificates. Prove at least one structural impossibility (e.g., 'no 20-regular (5,5,43)-graph exists') or document precisely why the certificate degree explodes. Include concept.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Novel approach 3: Spectral gap obstruction \u2014 prove eigenvalue constraints that eliminate candidate parameters",
+          "acceptance_criteria": "In results/concept_evolve/tree/004_spectral_obstruction/README.md, systematically apply Hoffman-type eigenvalue bounds combined with interlacing to constrain parameters of hypothetical (5,5,n)-graphs for n in {43,44,45}. Must: (1) derive a list of feasible degree-eigenvalue pairs for each n, (2) use Nikiforov-type spectral Ramsey bounds to eliminate at least 2 parameter combinations, (3) compare remaining feasible parameters against LP relaxation constraints from Angeltveit-McKay. Produce a machine-readable table in concept.json of eliminated vs surviving parameter regimes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Novel approach 4: Topological obstruction via simplicial complex analysis of clique/independence complexes",
+          "acceptance_criteria": "In results/concept_evolve/tree/005_topological_obstruction/README.md, define the clique complex and independence complex of candidate (5,5)-good graphs. Investigate whether topological invariants (Betti numbers, Euler characteristic, connectivity of neighborhood links) impose constraints that narrow the gap. Must: (1) compute topological invariants for Exoo's 42-vertex graph, (2) derive at least one topological necessary condition for (5,5)-goodness, (3) check whether the condition is violated for n=43. Include concept.json with formal definitions. Cite relevant topological combinatorics work from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Novel approach 5: Information-theoretic bounds via graph entropy and Sidorenko-type inequalities",
+          "acceptance_criteria": "In results/concept_evolve/tree/006_information_theoretic/README.md, apply graph entropy (Korner entropy or conditional graph entropy) to derive density constraints on (5,5)-good graphs. Must: (1) compute graph entropy for Exoo's construction, (2) derive an entropy-based upper bound on the number of edges in (5,5,n)-graphs, (3) compare with the LP-derived edge count constraints from Angeltveit-McKay, (4) determine if the entropy bound is tighter for any n in {43,44,45}. Include concept.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Subagent delegation: Concept-tree exploration to identify highest-value synthesis paths across the 5 novel approaches",
+          "acceptance_criteria": "Use concept-tree-explorer subagent to traverse results/concept_evolve/tree/ folders, read all concept.json files, and identify: (1) the top 3 most promising approach combinations (e.g., spectral+entropy, Nullstellensatz+topological), (2) missing conceptual links between approaches, (3) a ranked list of next experiments. Output stored in results/concept_evolve/tree/synthesis_paths.json with fields: path_id, approaches, synergy_rationale, expected_gain, feasibility_score (1-10).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Novel approach 6: Hybrid flag-algebra + spectral certificate for R(5,5) <= 45",
+          "acceptance_criteria": "In results/concept_evolve/tree/007_hybrid_flag_spectral/README.md, attempt to combine flag algebra density constraints with spectral gap bounds to derive R(5,5) <= 45. Must: (1) set up the SDP with flag algebra constraints for n=45, incorporating spectral eigenvalue constraints as additional SDP variables, (2) document whether the combined certificate is feasible (proves R(5,5)<=45) or infeasible (the constraints are not tight enough), (3) if infeasible, characterize exactly which constraints have the most slack \u2014 this identifies the bottleneck for future work. Include concept.json and any SDP formulation files.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Experiment: Systematically test structural constraints on hypothetical (5,5,43)-graphs",
+          "acceptance_criteria": "Run spectral analyzer and flag density tools on all feasible parameter regimes from item_013. For each surviving regime, test: (1) does Hoffman bound have slack? (2) are flag density constraints from item_008 violated? (3) do entropy bounds from item_015 eliminate it? Produce results/concept_evolve/experiments/structural_elimination.json with a row per parameter regime and columns: regime_id, degree, spectral_gap, hoffman_slack, flag_feasible, entropy_feasible, overall_status (eliminated/surviving). At least 5 regimes tested.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Experiment: Evaluate CGMS entropy-compression at n=45 with explicit constants",
+          "acceptance_criteria": "Implement the calculation from item_011 numerically. Compute the explicit bound that the CGMS-style argument gives for k=5 using the optimized parameters from Gupta et al. 2024 (3.8^k). Compare: does (3.8)^5 = ~792 help with the specific upper bound (which concerns a single n, not asymptotics)? Document in results/concept_evolve/experiments/cgms_k5_evaluation.md whether the asymptotic improvement translates to any concrete improvement for small k=5, with full numerical details. If not, explain precisely why the constants are too loose.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Experiment: Construct candidate (5,5,43)-graphs using Paley-like algebraic constructions",
+          "acceptance_criteria": "Explore constructions based on: (1) Paley graphs on primes p=43 (check if Paley(43) is (5,5)-good \u2014 it is not, since 43 is prime but we need to verify and characterize why), (2) generalized Paley constructions using higher-order residues, (3) Cayley graphs on Z/43Z with carefully chosen connection sets. For each construction, run the Ramsey checker from item_006. Produce results/concept_evolve/experiments/algebraic_constructions.json listing each construction, its clique number, independence number, and how close it comes to being (5,5)-good. Test at least 10 distinct constructions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Experiment: Test topological invariant predictions against known (5,5)-good and (5,5)-bad graphs",
+          "acceptance_criteria": "Compute the topological invariants defined in item_014 for: (1) Exoo's 42-vertex (5,5)-good graph, (2) at least 3 known (5,5)-bad graphs on 43-46 vertices (random or structured), (3) random (5,5)-good graphs on <= 42 vertices (if any can be generated). Determine whether the topological necessary condition from item_014 correctly classifies good vs bad graphs. Produce results/concept_evolve/experiments/topological_validation.json. Report precision/recall of the topological classifier.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Subagent delegation: Use ConceptEvolve probe to investigate the tightest bottleneck identified across all experiments",
+          "acceptance_criteria": "Based on results from items 018-021, identify the single most constraining bottleneck preventing progress (e.g., 'the LP relaxation at n=45 has 0.3 slack in the e4 density constraint'). Run concept_evolve probe on this specific bottleneck. Verify results/concept_evolve/probe_result.json contains: associations, forced_bridges, anomaly_results, and at least 3 steering_directions. At least one steering direction must reference a technique from outside Ramsey theory.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Synthesize all results into a coherent bound-narrowing assessment",
+          "acceptance_criteria": "Produce results/concept_evolve/synthesis.md (minimum 2000 words) containing: (1) a table comparing all 6 novel approaches on dimensions of {tightness of bound, computational cost, generalizability, novelty}, (2) a clear statement of which approaches succeeded in eliminating parameter regimes or tightening bounds and by how much, (3) an honest assessment of which approaches failed and why, (4) the best combined result: what is the tightest bound interval the research achieves (e.g., 43 <= R(5,5) <= 45, or identification of structural impossibilities at specific n). Compare all results against prior work from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Write formal research note suitable for arXiv submission",
+          "acceptance_criteria": "Produce results/concept_evolve/paper_draft.md containing: (1) Title, (2) Abstract (150-250 words), (3) Introduction citing at least 10 papers from sources.bib, (4) Preliminaries section defining notation, (5) Main Results section presenting any new bounds or structural results, (6) Proof/Analysis sections for each novel contribution, (7) Discussion comparing with Angeltveit-McKay 2024 and CGMS 2023, (8) Future Directions section, (9) References. Even if no new bound is achieved, the paper should document the structural analysis and approach taxonomy as a contribution. Minimum 4000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Subagent delegation: Peer review of paper draft and experimental methodology",
+          "acceptance_criteria": "Use concept-tree-explorer subagent as a reviewer to: (1) check all mathematical claims in paper_draft.md for logical consistency, (2) verify that all cited papers from sources.bib are real and correctly attributed (spot-check at least 5 via websearch), (3) identify any overclaims or gaps in reasoning, (4) rate the paper on novelty (1-10), correctness (1-10), significance (1-10), and clarity (1-10). Store review in results/concept_evolve/peer_review.json with fields: summary, strengths, weaknesses, scores, requested_changes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Create reproducibility package and final concept tree index",
+          "acceptance_criteria": "Verify all scripts in results/concept_evolve/tools/ run without errors. Ensure results/concept_evolve/tree/index.json lists all concept folders with correct paths. Create results/concept_evolve/reproducibility.md documenting: (1) how to run each tool, (2) expected outputs, (3) dependencies (Python packages needed), (4) a DAG of which results depend on which tools. Every concept folder under results/concept_evolve/tree/ must have both concept.json and README.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Final gap assessment and open problems catalog",
+          "acceptance_criteria": "Produce results/concept_evolve/open_problems.md listing: (1) the current best bounds after this research (with honest statement if unchanged from 43 <= R(5,5) <= 46), (2) a ranked list of the top 5 most promising directions not yet fully explored, (3) for each direction, the specific next step, estimated effort (person-months), and probability of success, (4) explicit connections to the concept tree \u2014 which concept folders correspond to which open problems. Must reference steering directions from item_022 probe results.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
