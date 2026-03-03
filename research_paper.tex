@@ -1,0 +1,223 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage[numbers]{natbib}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue,hypertexnames=false]{hyperref}
+
+\title{A Minimal Gravity Simulator: Reproducible Baselines, Symplectic Stability, and Barnes--Hut Scaling}
+\author{Research Pipeline Authoring Agent}
+\date{March 3, 2026}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+{\LARGE A Minimal Gravity Simulator: Reproducible Baselines, Symplectic Stability, and Barnes--Hut Scaling\par}
+\vspace{1.5cm}
+{\large Research Pipeline Authoring Agent\par}
+\vspace{0.5cm}
+{\large March 3, 2026\par}
+\vfill
+\begin{minipage}{0.9\textwidth}
+\small
+This paper documents a complete end-to-end study for a minimal two-dimensional Newtonian gravity simulator.
+All claims are grounded in repository artifacts under \texttt{results/} and \texttt{figures/}, with provenance tied to recorded commit hashes and execution manifests.
+\end{minipage}
+\end{titlepage}
+
+\begin{abstract}
+We present a publication-oriented evaluation of a minimal, deterministic gravity simulator that progresses from a direct-force Euler baseline to two advanced method families: fixed-step symplectic integration and Barnes--Hut force approximation.
+The baseline implementation is reproducible at the artifact level (hash-identical repeated runs for fixed seeds), but it fails key fidelity and runtime thresholds.
+Across seeded two-body experiments, symplectic stepping reduces median maximum energy drift from 1.8696\% to 0.000800\% (99.96\% reduction) at near-equal runtime.
+In a chaotic three-body setup, symplectic updates still reduce median drift by 71.05\% (from 1.764\,$\times\,10^6$\% to 5.106\,$\times\,10^5$\%), but absolute stability remains poor.
+For high-$N$ random systems, Barnes--Hut achieves substantial throughput gains, with best speedups of 7.38$\times$ at $N=512$ and 5.80$\times$ at $N=1024$, while offering tunable error through the opening angle $\theta$.
+Robustness sweeps show strong sensitivity of drift to timestep and softening, and the runtime target of $\leq 1.0$ ms/step at baseline $N=256$ remains unmet (observed 287.924 ms/step).
+These results validate the minimal simulator as a reproducible research scaffold and identify concrete paths for hybrid and adaptive follow-up work.
+\end{abstract}
+
+\section{Introduction}
+Minimal N-body simulators are useful for method prototyping, educational reproducibility, and controlled algorithmic comparisons before scaling to production astrophysical systems.
+However, a minimal implementation still needs to satisfy three scientific constraints: deterministic reproducibility, physically meaningful diagnostics, and transparent speed--accuracy tradeoffs.
+
+This study targets the repository objective defined in the project problem statement: build a deterministic Newtonian simulator and evaluate it against explicit thresholds on energy drift, angular momentum drift, orbit error, and runtime per step.
+The repository evolution in git history reflects this staged design: deterministic baseline implementation, metric instrumentation, symplectic evaluation, Barnes--Hut scaling, controlled experiment matrix execution, statistical analysis, and final figure synthesis.
+
+The main contributions are:
+\begin{enumerate}
+    \item A deterministic baseline pipeline with canonical JSON output and manifest-linked provenance.
+    \item A controlled comparison of baseline Euler and symplectic stepping across two-body, three-body, and random-$N$ scenarios.
+    \item A Barnes--Hut scaling study that quantifies throughput improvement and final-position error tradeoff for multiple $\theta$ values.
+    \item A statistical and sensitivity analysis with bootstrap confidence intervals, effect sizes, and explicit threshold pass/fail checks.
+\end{enumerate}
+
+\section{Related Work}
+The method choices are motivated by three established threads in the literature.
+
+First, hierarchical force approximation methods (Barnes--Hut treecodes and beyond) are the canonical route to reducing the $\mathcal{O}(N^2)$ cost of direct pairwise force evaluation.
+Barnes and Hut established the core tree approximation framework \citep{barnes1986}, while fast multipole methods characterize the asymptotic frontier \citep{greengard1987}.
+Production-scale systems such as GADGET-2 and PKDGRAV3 demonstrate the practical importance of force-approximation throughput under real simulation workloads \citep{springel2005,potter2017}.
+
+Second, geometric and symplectic integrators are a standard strategy for reducing secular drift in long-horizon gravitational dynamics \citep{yoshida1990,forest1990,wisdom1991}.
+Modern open-source ecosystems continue this line through high-performance implementations (for example WHFast) and high-accuracy adaptive alternatives such as IAS15 \citep{reintamayo2015,reinspiegel2015}.
+
+Third, hybrid and adaptive approaches address close encounters and mixed stiffness regimes, where fixed-step methods can struggle \citep{duncan1998,chambers1999,rein2019}.
+This study does not implement those hybrid policies yet, but uses them as a discussion baseline for future work.
+
+\section{Background \& Preliminaries}
+The simulator is a 2D, float64, Newtonian N-body model with softened gravity and fixed timestep integration.
+For bodies $i$ and $j$ at positions $\mathbf{r}_i$ and $\mathbf{r}_j$, mass $m_j$, gravitational constant $G$, and Plummer softening $\epsilon$, acceleration is
+\begin{equation}
+\mathbf{a}_i = \sum_{j \neq i} G m_j \frac{\mathbf{r}_j - \mathbf{r}_i}{\left(\lVert \mathbf{r}_j - \mathbf{r}_i \rVert^2 + \epsilon^2\right)^{3/2}}.
+\end{equation}
+
+The key diagnostics follow the preregistered protocol:
+\begin{itemize}
+    \item max energy drift (\%): $100\,\max_t |E(t)-E(0)|/|E(0)|$,
+    \item max angular momentum drift (\%),
+    \item center-of-mass drift,
+    \item runtime per step and throughput.
+\end{itemize}
+
+Thresholds from the problem statement are: energy drift $\leq 0.10\%$, angular drift $\leq 0.01\%$, two-body orbit error $\leq 1.0\%$, and baseline runtime $\leq 1.0$ ms/step at $N=256$.
+
+\section{Method}
+\subsection*{Implementation architecture}
+The simulator supports three methods via a single CLI entry point:
+\texttt{baseline}, \texttt{symplectic}, and \texttt{barnes\_hut}.
+Core state includes positions, velocities, masses, timestep metadata, and per-frame diagnostics.
+
+\subsection*{Numerical methods}
+\textbf{Baseline (Euler + direct force):}
+explicit Euler updates with direct pairwise force accumulation.
+
+\textbf{Symplectic:}
+a fixed-step kick-drift symplectic Euler variant (single force evaluation per step).
+
+\textbf{Barnes--Hut:}
+a quadtree approximation with opening-angle control $\theta$, leaf-size control, and direct-force fallback below \texttt{bh\_min\_n}.
+In current code, Barnes--Hut uses the Euler stepping path, which introduces a known force/integrator confound.
+
+\subsection*{Provenance from repository history}
+Key implementation milestones are visible in git history: baseline simulator and smoke reproducibility, metric pipeline, symplectic evaluation, Barnes--Hut implementation, experiment matrix execution, and final analysis/figures.
+Artifacts used in this paper include commit-pinned metadata in \texttt{results/research/*.json} and \texttt{results/experiments/*.json}, plus per-run hashes in \texttt{results/experiments/raw/run\_manifest.jsonl}.
+
+\section{Experimental Setup}
+\subsection*{Scenarios and matrix}
+The controlled matrix evaluates three methods (baseline, symplectic, Barnes--Hut) over three scenarios:
+two-body ($N=2$), three-body ($N=3$), and random ($N=64$), each with seeds $\{42,43,44,45,46\}$.
+This yields 45 total runs with complete method--scenario--seed coverage.
+
+For scalability, separate random-$N$ sweeps use $N\in\{256,512,1024\}$ with fixed $dt=8\times10^{-4}$ and $\theta\in\{0.5,0.8,1.2\}$.
+
+\subsection*{Sensitivity and statistics}
+Robustness sweeps vary baseline random-$N64$ timestep ($dt\in\{5\times10^{-4},10^{-3},2\times10^{-3}\}$) and softening ($\epsilon\in\{5\times10^{-4},10^{-3},2\times10^{-3}\}$) over five seeds.
+Statistical summaries use bootstrap median confidence intervals (95\%) and paired effect sizes against baseline.
+
+\subsection*{Environment and reproducibility controls}
+Artifacts report Python 3.10.17 and Linux platform metadata, along with command strings, commit hash, and SHA-256 artifact checksums.
+Baseline deterministic replay checks show hash equality for repeated two-body and random-$N64$ runs at fixed seed.
+
+\section{Results}
+\subsection*{Symplectic behavior in low-body regimes}
+Figure~\ref{fig:symplectic} compares baseline and symplectic medians for two-body and three-body setups.
+In two-body dynamics (Figure~\ref{fig:symp-two}), symplectic integration cuts median max energy drift from 1.869582\% to 0.000800\% with near-identical runtime (0.053002 vs 0.052449 ms/step in matrix medians).
+In three-body dynamics (Figure~\ref{fig:symp-three}), median drift decreases by 71.05\% (1.764\,$\times\,10^6$\% to 5.106\,$\times\,10^5$\%), while runtime remains near parity.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/final/claim_01_two_body_drift_runtime.pdf}
+        \caption{Two-body drift reduction and runtime parity.}
+        \label{fig:symp-two}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/final/claim_02_three_body_energy_runtime.pdf}
+        \caption{Three-body relative drift improvement with similar runtime.}
+        \label{fig:symp-three}
+    \end{subfigure}
+    \caption{Symplectic vs baseline comparisons across low-body scenarios. Both panels are generated from repository artifacts and correspond to final claims on stability/runtime behavior.}
+    \label{fig:symplectic}
+\end{figure}
+
+\subsection*{Barnes--Hut scaling tradeoff}
+Figure~\ref{fig:bh-tradeoff} shows the Barnes--Hut speed--error frontier for $N\geq 512$.
+At $N=512$, best observed speedup is 7.38$\times$ ($\theta=1.2$) with 1.039\% final-position error; a lower-error point at $\theta=0.5$ gives 3.62$\times$ speedup with 0.034\% error.
+At $N=1024$, best speedup is 5.80$\times$ with 0.0875\% error, while the best-accuracy point reaches 0.0049\% error at 3.99$\times$ speedup.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.78\textwidth]{figures/final/claim_03_barnes_hut_speed_error_tradeoff.pdf}
+    \caption{Barnes--Hut speedup versus final-position error for $N\geq 512$. Marker shape indicates opening angle $\theta$, highlighting a tunable throughput--accuracy frontier above the no-speedup baseline.}
+    \label{fig:bh-tradeoff}
+\end{figure}
+
+\subsection*{Sensitivity and threshold gap}
+Figure~\ref{fig:sensitivity-runtime} reports two key outcomes.
+First, drift is sensitive to both timestep and softening: median baseline random-$N64$ energy drift rises from 3197\% to 8826\% as $dt$ increases from $5\times10^{-4}$ to $2\times10^{-3}$, and decreases from 13708\% to 1223\% as softening increases from $5\times10^{-4}$ to $2\times10^{-3}$.
+Second, the runtime threshold remains far from satisfied: baseline $N=256$ mean step time is 287.924 ms/step versus a 1.0 ms/step target.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/final/claim_04_sensitivity_and_runtime_gap.pdf}
+    \caption{(Left) Drift sensitivity heatmap over timestep and softening for baseline random-$N64$. (Right) Runtime threshold comparison for baseline $N=256$.}
+    \label{fig:sensitivity-runtime}
+\end{figure}
+
+\subsection*{Aggregate numeric summary}
+Table~\ref{tab:medians} compacts the primary matrix medians used throughout this paper.
+
+\begin{table}[t]
+\centering
+\caption{Median max energy drift and runtime per step from controlled matrix runs (5 seeds per method--scenario pair).}
+\label{tab:medians}
+\begin{tabular}{llrr}
+\toprule
+Scenario & Method & Max energy drift (\%) & Runtime/step (ms) \\
+\midrule
+two\_body & baseline & 1.869582 & 0.053002 \\
+two\_body & symplectic & 0.000800 & 0.052449 \\
+two\_body & barnes\_hut & 1.869582 & 0.054556 \\
+three\_body & baseline & 1764098.861714 & 0.073516 \\
+three\_body & symplectic & 510626.610583 & 0.073511 \\
+three\_body & barnes\_hut & 1764098.861714 & 0.074828 \\
+random & baseline & 7200.133936 & 17.929302 \\
+random & symplectic & 9466.710616 & 17.858629 \\
+random & barnes\_hut & 8154.874973 & 11.810874 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Threshold checks pass for two-body energy, angular momentum, and orbit error, but fail for baseline runtime at $N=256$.
+Therefore, the project-level threshold verdict remains \textbf{FAIL} despite partial methodological gains.
+
+\section{Discussion}
+The findings support a mixed conclusion.
+The simulator successfully demonstrates two expected method-level behaviors from prior literature: (i) substantial invariant-drift improvement from symplectic stepping in low-body settings \citep{wisdom1991,yoshida1990,forest1990}, and (ii) strong high-$N$ throughput gains with Barnes--Hut and a controllable error tradeoff \citep{barnes1986,springel2005,potter2017}.
+
+At the same time, the study exposes critical limits that align with known challenges in N-body integration.
+Absolute three-body drift remains very large, random-$N64$ symplectic energy drift is not uniformly better than baseline, and runtime remains far from the project threshold.
+These gaps are consistent with the absence of adaptive close-encounter handling and with integrator/force confounding in the current Barnes--Hut path \citep{duncan1998,chambers1999,rein2019}.
+
+From a reproducibility perspective, the work is strong on deterministic artifacts and provenance but still has portability gaps in replay command conventions.
+A next-phase priority is to unify metric contracts across scripts and introduce a hybrid symplectic-Barnes--Hut ablation to deconfound force and integrator effects.
+
+\section{Conclusion}
+This paper documents a complete evidence chain for a minimal gravity simulator, from deterministic baseline construction to statistical evaluation and figure-backed claims.
+Symplectic stepping provides major two-body drift gains at runtime parity, and Barnes--Hut provides substantial high-$N$ speedups with tunable error.
+However, project-level acceptance remains incomplete because absolute stability in difficult regimes and baseline runtime targets are not yet met.
+
+The current artifact set is therefore best viewed as a reproducible foundation rather than a finalized high-fidelity simulator.
+Future work should prioritize metric-contract unification, hybrid/deconfounded ablations, adaptive close-encounter control, and long-horizon expanded scenario coverage.
+
+\bibliographystyle{plainnat}
+\bibliography{sources}
+
+\end{document}
