@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-03T12:00:00Z",
+  "updated_at": "2026-03-03T21:35:39.223136+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-03T12:00:00Z",
+      "completed_at": "2026-03-03T21:35:39.223118+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and existing infrastructure",
+          "acceptance_criteria": "Document listing all modules (.archivara/, .opencode/, figures/, results/), their purposes, available tools (Semantic Scholar API, literature-graph-miner agent), and programming languages present. Confirm no prior Bloch-constant code exists.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive web and database literature search on univalent Bloch constant B_u",
+          "acceptance_criteria": "Search Semantic Scholar, Google Scholar, and arXiv for: 'univalent Bloch constant', 'schlicht Bloch constant', 'Skinner 2009 Bloch', 'Bloch constant lower bound', 'Landau constant bounds', 'extremal univalent functions'. Collect at least 15 relevant papers. Record title, authors, year, journal, DOI, and key results for each.",
+          "status": "pending",
+          "notes": "Use Semantic Scholar tool and websearch. Delegate citation-graph mining to literature-graph-miner subagent starting from Skinner 2009 (DOI:10.1080/17476930903197199) and Bhowmik-Sen 2023 (DOI:10.4153/S0008439523000346).",
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "File sources.bib exists in repo root with valid BibTeX entries for at least 15 papers including: Bloch 1925, Ahlfors-Grunsky 1937, Rademacher 1943, Goodman 1935/1945, Bonk 1990, Yanagihara 1995, Chen-Gauthier 1996, Baernstein-Vinson 1998, Xiong 1998, Chen-Shiba 2004, Rettinger 2008, Carroll-Ortega-Cerda 2009, Skinner 2009, Bhowmik-Sen 2023. Each entry has author, title, journal, year, DOI where available.",
+          "status": "pending",
+          "notes": "Use semantic_scholar bibtex command for each paper. Manually supplement any entries not found.",
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Deep-dive into Skinner 2009: reconstruct the proof technique for B_u > 0.5708858",
+          "acceptance_criteria": "Written summary (in results/ or as markdown) of Skinner's method: (1) the starting lower-bound function B(|z|) for |f(z)| over class S, (2) the implicit iteration C(|z|) >= B(|z|), (3) the Koebe distortion/growth estimates used, (4) how the final numerical bound 0.5708858 is extracted, (5) identified bottlenecks or conservatism in the proof that could be tightened.",
+          "status": "pending",
+          "notes": "Fetch paper via DOI 10.1080/17476930903197199 or locate PDF. This is the critical step for understanding the state of the art.",
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Map the chain B <= B_l <= L <= B_u with all known bounds, conjectured values, and proof techniques",
+          "acceptance_criteria": "A structured comparison table (in results/constants_chain.md or JSON) listing for each of B, B_l, L, B_u: best lower bound, best upper bound, conjectured exact value (if any), key technique for each bound, and year/author. Must cite at least 10 entries from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Investigate Carroll-Ortega-Cerda 2009 harmonic symmetry / conformal welding technique and assess transferability to B_u bounds",
+          "acceptance_criteria": "Written analysis of: (1) the Polya-Chebotarev extremal domain construction, (2) how harmonic symmetry and conformal glueing yield the upper bound ~0.6564 for the univalent Bloch-Landau constant A, (3) whether this technique or domain construction can produce a non-trivial upper bound B_u < 1, and (4) relationship between constant A and constant B_u. Must reference the arXiv preprint 0806.2282.",
+          "status": "pending",
+          "notes": "Delegate initial exploration to literature-graph-miner subagent with seed: Carroll & Ortega-Cerda 2009.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement numerical computation of B_f for a given univalent function f",
+          "acceptance_criteria": "Python module (e.g. bloch_computation.py) that: (1) takes a univalent analytic function f on D (represented as Taylor coefficients or callable), (2) computes f(D) numerically on a grid, (3) identifies the largest univalent disk in f(D) via boundary tracing or covering-radius estimation, (4) returns B_f to at least 6 decimal places. Validated on f(z)=z (should give B_f=1) and f(z)=z/(1-z)^2 (Koebe function, B_f should be computable analytically).",
+          "status": "pending",
+          "notes": "Use numpy, scipy. Consider conformal mapping libraries (e.g. cxroots, mpmath).",
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement Skinner's lower-bound iteration numerically to reproduce B_u > 0.5708858",
+          "acceptance_criteria": "Python script (e.g. skinner_baseline.py) that: (1) implements the starting bound function B(r) from class S growth estimates, (2) implements the iterative improvement C(r) >= B(r) as described in Skinner 2009, (3) numerically extracts the lower bound for B_u, (4) reproduces a value >= 0.5708858 (within numerical tolerance). Output logged to results/skinner_baseline.json.",
+          "status": "pending",
+          "notes": "This is the critical baseline. Must match or exceed 0.5708858. If we cannot reproduce, identify the gap before proceeding.",
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement parametrized families of univalent functions for upper-bound search",
+          "acceptance_criteria": "Python module (e.g. univalent_families.py) implementing at least 3 parametrized families: (1) Koebe-type functions z/(1-e^{i*theta}*z)^2, (2) slit-domain mappings with adjustable slit geometry, (3) starlike/convex functions with free parameters. Each family must verify univalence (via coefficient conditions or area theorem) and compute B_f. A sweep over parameters must be demonstrated with results saved to results/upper_bound_sweep.json.",
+          "status": "pending",
+          "notes": "The minimum B_f found across all families gives an upper bound for B_u. Even a bound B_u <= 0.95 would be non-trivial progress.",
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Establish testing framework and validation suite",
+          "acceptance_criteria": "Test file (tests/test_bloch.py) with at least 10 unit tests covering: (1) B_f computation for known functions (identity, Koebe, rotations), (2) Skinner iteration convergence, (3) univalence verification for parametrized families, (4) numerical stability checks with different grid resolutions. All tests pass.",
+          "status": "pending",
+          "notes": "Use pytest. This ensures all subsequent experiments build on verified code.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Attempt to tighten Skinner's lower bound via refined Koebe distortion estimates",
+          "acceptance_criteria": "Investigate at least 3 refinement strategies: (1) use higher-order terms in the Koebe growth/distortion theorem (beyond leading order), (2) incorporate the Bieberbach/de Branges coefficient bounds |a_n| <= n into the iteration, (3) use the Fekete-Szego inequality or Grunsky inequalities for sharper coefficient control. For each strategy, implement the modified iteration numerically and record the resulting lower bound. At least one strategy must produce a bound strictly greater than 0.5708858. Document all attempts in results/refined_lower_bounds.json.",
+          "status": "pending",
+          "notes": "This is the primary avenue for achieving a tighter lower bound. Even an improvement to 0.571 would be significant given the bound has stood since 2009.",
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Develop an optimization-based approach to the lower bound using semidefinite programming or linear programming",
+          "acceptance_criteria": "Formulate the B_u lower-bound problem as an optimization problem: minimize B_f over the class S subject to coefficient constraints (|a_n| <= n, area theorem, Grunsky inequalities). Implement using cvxpy or scipy.optimize. The SDP/LP relaxation must: (1) be mathematically justified (i.e., any feasible solution gives a valid lower bound), (2) produce a bound >= 0.57, (3) be documented with the dual certificate or relaxation gap. Results saved to results/optimization_lower_bound.json.",
+          "status": "pending",
+          "notes": "Delegate initial feasibility study to researcher agent. Key insight: coefficient constraints on class S are SDP-representable via Grunsky matrix conditions.",
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Search for non-trivial upper bound B_u < 1 by constructing explicit near-extremal univalent functions",
+          "acceptance_criteria": "Systematically construct univalent functions with small B_f: (1) investigate functions mapping D onto domains with narrow passages or bottlenecks that limit schlicht disk size, (2) consider conformal maps to slit planes, comb domains, or snowflake-like domains, (3) use numerical conformal mapping (Schwarz-Christoffel toolbox or equivalent) for at least 5 domain types. Record the minimum B_f found. Any bound B_u <= c with c < 1 and c documented with explicit function is acceptable. Results in results/upper_bound_constructions.json.",
+          "status": "pending",
+          "notes": "The gap between 0.5708858 and 1 is enormous. Even B_u <= 0.99 would be novel. Key idea: domains like D minus a thin corridor approaching 0 could force B_f to be small while maintaining f'(0) = 1.",
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Explore probabilistic/Brownian motion connection to B_u via Banuelos' framework",
+          "acceptance_criteria": "Following Banuelos' 'four unknown constants' framework: (1) express B_u in terms of the exit time of Brownian motion from simply connected domains, (2) investigate whether Monte Carlo simulation of Brownian motion paths can provide numerical estimates of B_u, (3) implement a Monte Carlo estimator and run at least 10^6 sample paths. Report the estimated B_u with confidence intervals. Compare against 0.5708858 and the trivial upper bound 1. Results in results/brownian_motion_estimate.json.",
+          "status": "pending",
+          "notes": "This may not yield rigorous bounds but can guide intuition about the true value of B_u and identify candidate extremal domains.",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Investigate whether modern techniques from SLE/conformal field theory give new constraints on B_u",
+          "acceptance_criteria": "Literature survey and feasibility analysis: (1) search for connections between SLE (Schramm-Loewner Evolution) and extremal problems for univalent functions, (2) investigate whether the SLE(6) connection to Brownian motion and conformal invariance gives information about extremal domains for B_u, (3) assess whether Loewner chain representations of S can be leveraged computationally. Written analysis in results/sle_feasibility.md citing at least 3 relevant papers added to sources.bib.",
+          "status": "pending",
+          "notes": "Delegate exploration to literature-graph-miner subagent with seeds: SLE + Bloch constant, Loewner chain extremal problems.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_016",
+          "description": "Systematic numerical experiment: sweep over refined iteration parameters to maximize lower bound",
+          "acceptance_criteria": "Run the refined Skinner-type iterations from item_011 with: (1) varying truncation orders N in {5, 10, 20, 50, 100} for coefficient expansions, (2) varying grid resolutions for the radial variable r, (3) varying numbers of iteration steps. Record the best lower bound achieved at each configuration. Produce a convergence plot (saved to figures/lower_bound_convergence.png). The best bound must be documented with full reproducibility information in results/best_lower_bound.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Systematic numerical experiment: upper bound search over parametrized domains",
+          "acceptance_criteria": "Run the upper-bound search from items 009 and 013 with: (1) at least 10 domain families, (2) at least 1000 parameter configurations per family, (3) numerical verification of univalence for each candidate. Record: minimum B_f found, the corresponding function/domain description, and parameter values. Results in results/best_upper_bound.json. At least one figure showing the extremal domain saved to figures/extremal_domain.png.",
+          "status": "pending",
+          "notes": "Use scipy.optimize or genetic/evolutionary optimization to search parameter spaces efficiently.",
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Rigorous verification of the best new lower bound with interval arithmetic",
+          "acceptance_criteria": "If a lower bound exceeding 0.5708858 was found in items 011/012/016: (1) implement the computation using interval arithmetic (mpmath with arbitrary precision, or the python-flint library), (2) verify that all inequalities hold rigorously with controlled rounding, (3) produce a certificate that B_u > [new bound] with a fully rigorous proof sketch. The interval arithmetic computation must be documented in results/rigorous_verification.json with all intermediate bounds.",
+          "status": "pending",
+          "notes": "A non-rigorous numerical improvement is valuable but a rigorous one is publication-worthy. Use mpmath.iv (interval arithmetic) or implement manual interval tracking.",
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Compare all results against prior work from literature review",
+          "acceptance_criteria": "Produce a comparison table (results/comparison_with_literature.md) showing: (1) our best lower bound vs. Skinner 2009 (0.5708858), (2) our best upper bound vs. trivial (1), (3) our computational estimates vs. any conjectured values, (4) techniques used vs. techniques in prior work. Must reference at least 8 entries from sources.bib. Include a discussion of whether our improvements are marginal or substantial.",
+          "status": "pending",
+          "notes": "Delegate synthesis and cross-referencing to researcher agent.",
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Convergence and sensitivity analysis of all numerical methods",
+          "acceptance_criteria": "For each numerical method used (Skinner iteration, optimization, Monte Carlo, conformal mapping): (1) test convergence as grid/sample size increases, (2) report sensitivity to numerical parameters, (3) estimate the number of digits of accuracy achieved. At least 3 convergence plots saved to figures/. Summary in results/numerical_analysis.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_021",
+          "description": "Write main results document summarizing all findings",
+          "acceptance_criteria": "File results/main_results.md containing: (1) statement of the problem and known bounds, (2) summary of our new bounds (lower and upper) with precise numerical values, (3) description of methods used for each bound, (4) comparison with prior work (citing sources.bib), (5) discussion of the significance and novelty of the results. At least 2000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Document all proof sketches for rigorous bounds",
+          "acceptance_criteria": "File results/proof_sketches.md with: (1) for each rigorous bound claimed, a complete proof sketch that a mathematician could verify, (2) explicit identification of which steps are rigorous vs. numerical, (3) references to the specific code files and functions that implement each step. Must be self-contained enough for independent verification.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Create comprehensive figures for all key results",
+          "acceptance_criteria": "At least 5 figures in figures/ directory: (1) lower_bound_convergence.png - convergence of iterative lower bound, (2) upper_bound_landscape.png - heatmap of B_f over parameter spaces, (3) extremal_domain.png - visualization of the domain giving smallest B_f, (4) constants_chain.png - visual comparison of B, B_l, L, B_u with old and new bounds, (5) method_comparison.png - comparison of different approaches. All figures have proper labels, titles, and legends.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Update sources.bib with any additional references discovered during research",
+          "acceptance_criteria": "sources.bib contains BibTeX entries for all papers cited anywhere in the results/ directory. Total count must be at least 20 entries. Each entry is valid BibTeX with no parsing errors (verify with a BibTeX parser or manual check).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Final summary: state the best achieved bounds and identify open directions",
+          "acceptance_criteria": "File results/final_summary.md containing: (1) the single best lower bound achieved (with whether it is rigorous or numerical), (2) the single best upper bound achieved (with whether it is rigorous or numerical), (3) the narrowed interval for B_u, (4) a ranked list of at least 5 promising future directions for further tightening, (5) an honest assessment of which approaches succeeded and which failed. The document must explicitly state whether B_u > 0.5708858 was achieved rigorously.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
