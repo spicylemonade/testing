@@ -1,0 +1,276 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-03T00:00:00Z",
+  "updated_at": "2026-03-03T18:55:51.342720+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-03T00:00:00Z",
+      "completed_at": "2026-03-03T18:55:51.342705+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and document existing tooling",
+          "acceptance_criteria": "Produce results/concept_evolve/tree/repo_analysis.md listing all modules (.archivara/, .opencode/, figures/, results/), their purposes, inter-module dependencies, and available agent capabilities (orchestrator, researcher, writer, reviewer, concept_worker). File must be >500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Literature review: N-body gravity simulation methods",
+          "acceptance_criteria": "Use web search to find and review at least 10 relevant papers and repositories covering: Newtonian N-body simulation, numerical integration schemes (Euler, Verlet, leapfrog, RK4, symplectic integrators), Barnes-Hut tree algorithm, fast multipole method. Create sources.bib in repo root with valid BibTeX entries for all consulted sources. At least 10 entries required.",
+          "status": "pending",
+          "notes": "Must use websearch and semantic_scholar tools. Delegate citation graph mining to literature-graph-miner subagent.",
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Literature review: Real-time physics visualization and interactive simulations",
+          "acceptance_criteria": "Search for state-of-the-art approaches to real-time gravity visualization (WebGL, Canvas 2D, Three.js, Pygame, etc.). Add at least 5 additional BibTeX entries to sources.bib covering visualization and interactive simulation techniques. Document findings in results/concept_evolve/tree/lit_review_visualization.md.",
+          "status": "pending",
+          "notes": "Subagent delegation: use literature-graph-miner to traverse citation chains from foundational visualization papers.",
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Concept-tree exploration: Cross-domain reframing of gravity simulation",
+          "acceptance_criteria": "Run concept_evolve reframe on 'minimal gravity simulation' to generate at least 8 cross-domain analogies (e.g., molecular dynamics, crowd simulation, orbital mechanics, fluid particles). Output must exist in results/concept_evolve/tree/ with at least one concept card per domain. Document top 3 transferable ideas in results/concept_evolve/tree/cross_domain_insights.md.",
+          "status": "pending",
+          "notes": "Forces concept-tree exploration via the ConceptEvolve engine.",
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Define scope and requirements for minimal gravity simulator",
+          "acceptance_criteria": "Produce results/concept_evolve/tree/requirements.md specifying: target language/platform, minimum particle count (at least 100), required features (gravitational attraction, collision detection, visualization), performance targets (>30 FPS for 100 bodies), integration method candidates ranked by complexity vs accuracy trade-off. Must cite at least 3 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_006",
+          "description": "Implement naive O(N^2) pairwise gravity simulation with Euler integration",
+          "acceptance_criteria": "Working Python script (src/gravity_sim.py) that: (1) simulates N gravitational bodies with configurable N>=100, (2) uses direct O(N^2) pairwise force computation, (3) uses forward Euler integration, (4) outputs position data per timestep to results/baseline/. Script runs without errors and produces at least 1000 timesteps of simulation data for N=50.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_007",
+          "description": "Implement energy conservation metric",
+          "acceptance_criteria": "Add total energy computation (kinetic + gravitational potential) to the simulation. Log energy at each timestep. Produce results/baseline/energy_drift.csv with columns [timestep, total_energy, kinetic_energy, potential_energy]. For the Euler baseline with N=50 over 1000 steps, report the relative energy drift percentage.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement basic 2D visualization",
+          "acceptance_criteria": "Create src/visualize.py that renders body positions as a 2D scatter plot animation. Must support: (1) reading simulation output from results/, (2) generating either a live animation window or saved GIF/MP4 in figures/. At least one visualization artifact must exist in figures/ after running.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Establish performance benchmarks for baseline",
+          "acceptance_criteria": "Measure and record wall-clock time per timestep for N in {10, 50, 100, 200, 500}. Store results in results/baseline/performance.csv with columns [N, time_per_step_ms, total_time_s]. Verify O(N^2) scaling by plotting N vs time_per_step in figures/baseline_scaling.png. Fit a polynomial and confirm exponent is approximately 2.0 (between 1.8 and 2.2).",
+          "status": "pending",
+          "notes": "Subagent delegation: use concept-tree-explorer to identify performance bottlenecks and propose optimization paths.",
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement test suite for physics correctness",
+          "acceptance_criteria": "Create tests/test_physics.py with at least 5 unit tests: (1) two-body Keplerian orbit period within 5% of analytical solution, (2) momentum conservation within 1e-10, (3) energy computation correctness against hand-calculated values, (4) force symmetry (F_ij = -F_ji), (5) zero-force for single body. All tests pass.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Implement Velocity Verlet (Stormer-Verlet) integrator",
+          "acceptance_criteria": "Add Velocity Verlet integration to src/gravity_sim.py as a selectable method. Run the same N=50, 1000-step scenario as baseline. Energy drift must be at least 10x smaller than forward Euler. Store results in results/verlet/ with same CSV format as baseline.",
+          "status": "pending",
+          "notes": "Compare against symplectic integrator papers cited in sources.bib.",
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Implement leapfrog (kick-drift-kick) symplectic integrator",
+          "acceptance_criteria": "Add leapfrog integration as a third selectable method. Demonstrate bounded energy oscillation (no secular drift) over 10000 timesteps for N=50. Produce results/leapfrog/energy_drift.csv showing energy remains within 0.1% of initial value. Compare quantitatively against Euler and Verlet in results/integrator_comparison.csv.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement Barnes-Hut tree-based force approximation",
+          "acceptance_criteria": "Create src/barneshut.py implementing the Barnes-Hut octree (or quadtree for 2D) algorithm with configurable theta parameter. For theta=0.5, force accuracy must be within 5% of direct summation for 95% of bodies. Must reduce time complexity demonstrably: for N=500, Barnes-Hut must be at least 2x faster than direct O(N^2). Store timing results in results/barneshut/performance.csv.",
+          "status": "pending",
+          "notes": "Cite Barnes & Hut 1986 from sources.bib.",
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Concept-tree exploration: Novel optimization strategies",
+          "acceptance_criteria": "Run concept_evolve evolve on 'gravity simulation performance optimization' to explore cross-domain optimization strategies (GPU parallelism, spatial hashing, adaptive timestep, etc.). Produce at least 3 concept cards in results/concept_evolve/tree/ with actionable optimization ideas. Select and document the most promising approach in results/concept_evolve/tree/optimization_selection.md with justification referencing at least 2 papers from sources.bib.",
+          "status": "pending",
+          "notes": "Subagent delegation: concept-tree-explorer must traverse the generated tree and identify highest-value paths.",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement adaptive timestep control",
+          "acceptance_criteria": "Add adaptive timestep to the simulation based on closest-approach distance or maximum acceleration. Must maintain energy conservation within 0.5% over 10000 steps while using at least 30% fewer total force evaluations than fixed timestep for the same physical duration. Document the adaptive criterion and comparison in results/adaptive/comparison.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement collision detection and response",
+          "acceptance_criteria": "Add elastic or inelastic collision handling (configurable). Bodies that overlap within a softening radius merge or bounce. Test with a scenario of 20 bodies in a confined region where collisions are guaranteed within 500 timesteps. Produce results/collisions/collision_log.csv recording each collision event (timestep, body_i, body_j, type). At least 5 collision events recorded.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_017",
+          "description": "Comparative experiment: integrator accuracy vs performance",
+          "acceptance_criteria": "Run all three integrators (Euler, Verlet, Leapfrog) on identical initial conditions (N=100, 5000 steps, random seed 42) with 5 different timestep sizes (dt in {0.001, 0.005, 0.01, 0.05, 0.1}). Produce results/experiments/integrator_accuracy.csv with columns [integrator, dt, final_energy_drift_pct, wall_time_s, momentum_drift]. Generate figures/integrator_comparison.png showing energy drift vs dt for all three methods. Cite and compare against theoretical convergence orders from literature.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Scaling experiment: direct vs Barnes-Hut",
+          "acceptance_criteria": "Benchmark direct O(N^2) vs Barnes-Hut for N in {50, 100, 200, 500, 1000, 2000}. Produce results/experiments/scaling.csv with columns [method, N, theta, time_per_step_ms]. Generate figures/scaling_comparison.png with log-log plot showing O(N^2) vs O(N log N) scaling. Barnes-Hut crossover point (where it becomes faster) must be identified and documented.",
+          "status": "pending",
+          "notes": "Subagent delegation: use concept-tree-explorer to analyze scaling results and propose next experiments.",
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Physical scenario: solar system model",
+          "acceptance_criteria": "Create scenarios/solar_system.json with real mass ratios and orbital radii for Sun + 4 inner planets. Simulate for at least 1 Earth-year equivalent with leapfrog integrator. Verify orbital periods match known values within 10%. Produce figures/solar_system_orbits.png showing orbital traces. Document deviations in results/experiments/solar_system_validation.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Physical scenario: gravitational collapse of random cloud",
+          "acceptance_criteria": "Initialize N=200 bodies uniformly distributed in a sphere with zero initial velocity. Simulate gravitational collapse and subsequent dynamics for 2000 timesteps. Produce figures/collapse_sequence.png (4-panel time series at t=0, t=500, t=1000, t=2000). Measure and report the collapse timescale and compare against the analytical free-fall time (cite Binney & Tremaine or equivalent from sources.bib).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Barnes-Hut accuracy experiment: theta parameter sweep",
+          "acceptance_criteria": "For N=200, sweep theta in {0.0, 0.3, 0.5, 0.7, 1.0, 1.5}. Measure force error (RMS relative to direct summation) and wall-clock time. Produce results/experiments/theta_sweep.csv and figures/theta_tradeoff.png showing accuracy-vs-speed trade-off curve. Identify optimal theta value for <1% force error.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Synthesize experimental results into findings document",
+          "acceptance_criteria": "Produce results/findings.md (>2000 words) covering: (1) summary of all integrator comparisons with quantitative results, (2) Barnes-Hut vs direct scaling analysis, (3) physical validation results (solar system, collapse), (4) adaptive timestep findings, (5) collision handling evaluation. Must include inline references to at least 8 papers from sources.bib. Must reference specific figures from figures/ directory.",
+          "status": "pending",
+          "notes": "Subagent delegation: use writer agent for synthesis, reviewer agent for quality check.",
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Generate final concept-tree summary",
+          "acceptance_criteria": "Run concept_evolve walk to produce a complete traversal of the concept tree accumulated during the project. Output must exist in results/concept_evolve/tree/final_summary.md listing all explored concepts, which were adopted, which were discarded, and why. Must reference at least 3 cross-domain insights discovered during concept exploration.",
+          "status": "pending",
+          "notes": "Forces final concept-tree traversal and documentation.",
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Update README with project overview and usage instructions",
+          "acceptance_criteria": "README.md must contain: (1) project title and one-paragraph description, (2) installation/dependency instructions, (3) usage examples for running simulation with different integrators and N values, (4) description of directory structure (src/, results/, figures/, scenarios/, tests/), (5) summary of key findings with references to results/findings.md. Must be >500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Final review: all tests pass and all artifacts exist",
+          "acceptance_criteria": "Run full test suite (tests/test_physics.py) -- all tests pass. Verify existence of all required artifacts: sources.bib (>=15 entries), results/findings.md, results/baseline/, results/verlet/, results/leapfrog/, results/barneshut/, results/adaptive/, results/collisions/, results/experiments/, figures/ (>=5 figures), results/concept_evolve/tree/ (>=5 files). Produce a checklist in results/final_checklist.md with pass/fail for each item.",
+          "status": "pending",
+          "notes": "Subagent delegation: reviewer agent performs final quality check across all deliverables.",
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
