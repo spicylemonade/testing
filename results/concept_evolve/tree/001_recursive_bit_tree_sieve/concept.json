@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "recursive_bit_tree_sieve",
+  "description": "Angeltveit's algorithm recursively builds Collatz trajectories by adding one bit at a time from the least significant bit, treating the search space as a binary tree. Each node represents a residue class mod 2^k, and branches are pruned when T^k(n_0) < n_0 (Descent Sieve). This transforms exhaustive verification into a tree search with aggressive early termination.",
+  "domains": ["number_theory", "tree_search_algorithms", "combinatorial_optimization"],
+  "mathematical_formalization": "For n_0 < 2^k with T^k(n_0) known, extend to n_0 and n_0 + 2^k using: T^{k+1}(n_0 + 2^k) = (T^k(n_0) + 3^f) / 2 if T^k(n_0) is odd, or (3(T^k(n_0) + 3^f) + 1) / 2 if even, where f = f_k(n_0) counts odd applications. Prune when T^k(n_0) < n_0.",
+  "analogical_connections": [
+    "Binary trie traversal in IP routing tables — each bit decides a branch",
+    "Branch-and-bound in combinatorial optimization — prune when lower bound exceeds incumbent",
+    "Wavelet decomposition — multi-resolution analysis from coarse to fine bits"
+  ],
+  "implementation_hypothesis": "Implement a recursive DFS over bit positions 0..N-A. At each level k, compute T^k for both children (n_0 and n_0+2^k). Apply Descent Sieve, Path-Merging Sieve, and Odd-Even-Even Sieve at each node. Emit survivors at depth N-A for GPU processing. Use 128-bit integers for intermediate values.",
+  "experiment_seed": "Benchmark the recursive bit-tree against a flat sieve of size 2^34 (Barina's approach) for N=50. Measure: fraction of integers surviving, wall-clock time, and maximum recursion depth. Compare pruning rates of each sieve type independently."
+}

@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "odd_even_even_trajectory_join",
+  "description": "The Odd-Even-Even (OEE) Sieve (Lemma 2.9, from Eliahou 2023) exploits a structural property: if the Collatz sequence from m contains a run of odd steps followed by at least 2 even steps, then m's trajectory joins that of (m-1)/2. When (m-1)/2 < n (the original starting number), this eliminates n from verification. This pattern-matching approach is akin to finite automaton-based string matching.",
+  "domains": [
+    "automata_theory",
+    "dynamical_systems",
+    "number_theory"
+  ],
+  "mathematical_formalization": "Let m = T^k(n). If there exist l > 0 odd steps followed by >= 2 even steps in the sequence from m, then the trajectory of m joins T^{l+2}((m-1)/2). Pruning condition: (m-1)/2 < n. Detection: track state machine with states {INIT, ODD_RUN, EVEN1, EVEN2_PRUNE}.",
+  "analogical_connections": [
+    "Aho-Corasick multi-pattern matching \u2014 finite automaton detects multiple patterns in one pass",
+    "Symbolic dynamics in ergodic theory \u2014 classify orbits by their symbolic itineraries (O/E sequences)",
+    "Protocol state machines in network verification \u2014 detect invalid state transitions for pruning"
+  ],
+  "implementation_hypothesis": "Implement a 2-bit state machine alongside the recursive bit-tree traversal: state = (in_odd_run, seen_one_even). On each step: if odd, set in_odd_run=true, seen_one_even=false; if even and in_odd_run and not seen_one_even, set seen_one_even=true; if even and seen_one_even, check (m-1)/2 < n and prune. Encode state transitions in the bitvector precomputation for Step 2.",
+  "experiment_seed": "Measure OEE pruning rate independently and in combination with Descent + Path-Merging sieves. Determine the marginal contribution of OEE for N=40..60. Test whether extending the pattern to 'odd run + 3 even steps' provides additional pruning worth the complexity.",
+  "folder_plan": {
+    "base_dir": "010_odd_even_even_trajectory_join",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.344827+00:00",
+  "project_folder": "concept_evolve/tree/010_odd-even-even-trajectory-join"
+}

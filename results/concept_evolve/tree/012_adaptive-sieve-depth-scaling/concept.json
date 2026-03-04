@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "adaptive_sieve_depth_scaling",
+  "description": "Angeltveit's key insight is that the fraction of integers surviving all sieves decreases as N grows \u2014 empirically ~1.9x per additional bit, meaning the algorithm becomes MORE efficient at higher N. For N=45, only 0.0506% of integers survive; extrapolated to N=72, only ~0.0127% survive. This self-improving property is analogous to the concentration of measure phenomenon in high-dimensional probability: as dimension (=N) increases, random Collatz trajectories are increasingly likely to exhibit descent.",
+  "domains": [
+    "probability_theory",
+    "dynamical_systems",
+    "asymptotic_analysis"
+  ],
+  "mathematical_formalization": "Let S(N) = #{n < 2^N : n survives all sieves} / 2^N. Empirically: S(N) \u2248 C * alpha^N with alpha \u2248 0.95 (i.e., 1/1.9 per bit). Heuristic explanation: each additional bit gives an independent ~47.4% chance of descent (since 306/485 \u2248 0.631 of steps are even in expectation for a random trajectory). The concentration follows from the law of large numbers applied to the random walk log T^k(n) / log n.",
+  "analogical_connections": [
+    "Concentration of measure in high dimensions \u2014 random vectors cluster near expected behavior",
+    "Erdos-Renyi phase transition \u2014 as parameter grows, qualitative behavior changes sharply",
+    "Lossy compression rate-distortion tradeoff \u2014 more data enables better compression ratios"
+  ],
+  "implementation_hypothesis": "Implement an adaptive algorithm that dynamically adjusts A (number of high bits handled by bitvectors) based on N. For larger N, increase A from 6 to 10 or higher, as the recursive step produces fewer survivors per unit of work. Add a calibration phase that runs the recursive step for a small sample and estimates S(N), then chooses optimal (A, B) parameters.",
+  "experiment_seed": "Run the complete algorithm for N=35..55 on a single GPU. Plot S(N) vs N on a semi-log scale. Fit the exponential model S(N) = C * alpha^N. Extrapolate to N=72, 77, 80. Compare predicted vs. actual computation time for N=50..55 to validate the model.",
+  "folder_plan": {
+    "base_dir": "012_adaptive_sieve_depth_scaling",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.346966+00:00",
+  "project_folder": "concept_evolve/tree/012_adaptive-sieve-depth-scaling"
+}

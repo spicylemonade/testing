@@ -1,0 +1,130 @@
+{
+  "nodes": [
+    {"id": "recursive_bit_tree_sieve", "domain": "tree_search_algorithms"},
+    {"id": "descent_ratio_pruning", "domain": "optimization_theory"},
+    {"id": "mod9_preimage_residue_filter", "domain": "number_theory"},
+    {"id": "bitvector_lookahead_compression", "domain": "data_compression"},
+    {"id": "gpu_warp_uniform_dispatch", "domain": "GPU_computing"},
+    {"id": "path_merging_deduplication", "domain": "compiler_optimization"},
+    {"id": "rational_approximation_bound", "domain": "numerical_analysis"},
+    {"id": "distributed_work_unit_sharding", "domain": "distributed_computing"},
+    {"id": "information_directed_branch_prune", "domain": "information_theory"},
+    {"id": "odd_even_even_trajectory_join", "domain": "automata_theory"},
+    {"id": "memoized_3f_lookup_table", "domain": "dynamic_programming"},
+    {"id": "adaptive_sieve_depth_scaling", "domain": "probability_theory"}
+  ],
+  "edges": [
+    {
+      "source": "recursive_bit_tree_sieve",
+      "target": "descent_ratio_pruning",
+      "relation": "The bit-tree is the search structure; descent pruning is the primary elimination rule applied at each node"
+    },
+    {
+      "source": "recursive_bit_tree_sieve",
+      "target": "path_merging_deduplication",
+      "relation": "Path-merging is a secondary pruning rule applied during bit-tree traversal when descent fails"
+    },
+    {
+      "source": "recursive_bit_tree_sieve",
+      "target": "odd_even_even_trajectory_join",
+      "relation": "OEE is a tertiary pruning rule applied during bit-tree traversal, checking symbolic step patterns"
+    },
+    {
+      "source": "recursive_bit_tree_sieve",
+      "target": "bitvector_lookahead_compression",
+      "relation": "Survivors of the bit-tree are passed to the bitvector stage for further sieving of the top A bits"
+    },
+    {
+      "source": "bitvector_lookahead_compression",
+      "target": "mod9_preimage_residue_filter",
+      "relation": "The mod-9 sieve is incorporated into the bitvector via bitwise AND, combining two filters in one operation"
+    },
+    {
+      "source": "bitvector_lookahead_compression",
+      "target": "gpu_warp_uniform_dispatch",
+      "relation": "Bitvectors are stored in GPU shared memory; warp-uniform dispatch ensures efficient access patterns"
+    },
+    {
+      "source": "descent_ratio_pruning",
+      "target": "rational_approximation_bound",
+      "relation": "The rational approximation 485/306 provides the exact integer criterion that makes descent pruning rigorous"
+    },
+    {
+      "source": "rational_approximation_bound",
+      "target": "bitvector_lookahead_compression",
+      "relation": "The dip_B values in bitvectors are computed using the 485/306 approximation to determine descent thresholds"
+    },
+    {
+      "source": "gpu_warp_uniform_dispatch",
+      "target": "distributed_work_unit_sharding",
+      "relation": "Individual GPU kernels process work units; distributed sharding assigns work units across multiple GPUs"
+    },
+    {
+      "source": "gpu_warp_uniform_dispatch",
+      "target": "memoized_3f_lookup_table",
+      "relation": "GPU Step 3 iteration can use either LUT-based acceleration or run-length approaches, trading cache for computation"
+    },
+    {
+      "source": "information_directed_branch_prune",
+      "target": "recursive_bit_tree_sieve",
+      "relation": "Information-directed ordering replaces DFS in the bit-tree to optimize CPU-GPU pipeline overlap"
+    },
+    {
+      "source": "information_directed_branch_prune",
+      "target": "bitvector_lookahead_compression",
+      "relation": "The information gain of a branch depends on the density of its corresponding bitvector BV_i"
+    },
+    {
+      "source": "adaptive_sieve_depth_scaling",
+      "target": "recursive_bit_tree_sieve",
+      "relation": "The adaptive scaling property determines optimal recursion depth N-A based on the survival rate S(N)"
+    },
+    {
+      "source": "adaptive_sieve_depth_scaling",
+      "target": "distributed_work_unit_sharding",
+      "relation": "As N grows and S(N) shrinks, work units become smaller, affecting load balance across distributed workers"
+    },
+    {
+      "source": "path_merging_deduplication",
+      "target": "mod9_preimage_residue_filter",
+      "relation": "Both exploit the preimage structure of the Collatz map — mod-9 detects T-preimages, path-merging detects T^k-preimages"
+    },
+    {
+      "source": "odd_even_even_trajectory_join",
+      "target": "path_merging_deduplication",
+      "relation": "Both detect trajectory merges but via different mechanisms: OEE uses step-pattern automata, path-merging uses mod-3 residues"
+    },
+    {
+      "source": "memoized_3f_lookup_table",
+      "target": "rational_approximation_bound",
+      "relation": "The LUT stores 3^f values that directly feed into the 485f <= 306k descent criterion"
+    }
+  ],
+  "bridge_chains": [
+    {
+      "name": "number_theory_to_GPU_pipeline",
+      "path": ["descent_ratio_pruning", "rational_approximation_bound", "bitvector_lookahead_compression", "gpu_warp_uniform_dispatch"],
+      "description": "Transforms a number-theoretic descent criterion into an integer inequality, encodes it in compressed bitvectors, and dispatches to GPU with uniform workloads. Crosses: optimization_theory -> numerical_analysis -> data_compression -> GPU_computing."
+    },
+    {
+      "name": "tree_search_to_distributed_computation",
+      "path": ["recursive_bit_tree_sieve", "information_directed_branch_prune", "gpu_warp_uniform_dispatch", "distributed_work_unit_sharding"],
+      "description": "Explores the Collatz search space as a binary tree, orders exploration by information gain, dispatches to GPUs, and distributes across supercomputer clusters. Crosses: tree_search -> information_theory -> GPU_computing -> distributed_computing."
+    },
+    {
+      "name": "automata_to_compression",
+      "path": ["odd_even_even_trajectory_join", "path_merging_deduplication", "mod9_preimage_residue_filter", "bitvector_lookahead_compression"],
+      "description": "Detects trajectory patterns via finite automata, identifies path merges via modular arithmetic, filters by residue classes, and compresses all checks into bitwise AND operations. Crosses: automata_theory -> compiler_optimization -> number_theory -> data_compression."
+    },
+    {
+      "name": "probability_to_architecture",
+      "path": ["adaptive_sieve_depth_scaling", "recursive_bit_tree_sieve", "memoized_3f_lookup_table", "gpu_warp_uniform_dispatch"],
+      "description": "Uses probabilistic analysis of survival rates to set algorithm parameters, which determine recursion depth, lookup table sizes, and GPU dispatch granularity. Crosses: probability_theory -> tree_search -> dynamic_programming -> GPU_computing."
+    },
+    {
+      "name": "dynamical_systems_to_fault_tolerance",
+      "path": ["adaptive_sieve_depth_scaling", "distributed_work_unit_sharding"],
+      "description": "The concentration-of-measure property of Collatz dynamics (fewer survivors at higher N) directly impacts work-unit sizing and fault-tolerance strategies in distributed verification. Crosses: dynamical_systems -> distributed_computing."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "information_directed_branch_prune",
+  "description": "Inspired by information-theoretic branch-and-prune algorithms (Ahmed et al. 2023), we propose using information gain metrics to order Collatz bit-tree exploration. Instead of DFS, use the 'dip' value as priority: explore low-dip branches first to find survivors quickly for GPU dispatch, overlapping CPU recursion with GPU computation.",
+  "domains": ["information_theory", "tree_search_algorithms", "number_theory"],
+  "mathematical_formalization": "Information gain of branch b: IG(b) ~ -log2(density(BV_{f-f_min})). Priority queue: explore branches with highest expected survival first. Pipeline overlap: launch GPU kernel when 2^16 survivors accumulated.",
+  "analogical_connections": [
+    "Information-directed sampling in bandits",
+    "A* search with admissible heuristic",
+    "Huffman coding — assign shorter codes to more common events"
+  ],
+  "implementation_hypothesis": "Replace DFS with priority queue ordered by (f - f_min, current_dip). Process low-dip-high-f branches first. Launch GPU kernels asynchronously when batches of 2^16 are ready.",
+  "experiment_seed": "Compare DFS vs priority-queue orderings. Measure GPU utilization, wall-clock time, peak memory."
+}

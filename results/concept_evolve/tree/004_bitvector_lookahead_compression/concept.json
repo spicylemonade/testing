@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "bitvector_lookahead_compression",
+  "description": "Angeltveit precomputes bitvectors of length 2^B (B=24) that encode which of the next B Collatz steps lead to descent or path-merging. These bitvectors incorporate multiple sieves into a single bitwise AND. Bits are reordered for GPU cache locality: consecutive entries for n_0 + a*2^{N-A} are adjacent.",
+  "domains": ["data_compression", "GPU_computing", "cache_optimization"],
+  "mathematical_formalization": "For each m in {0,...,2^B-1}, compute dip_B(m) = max over k in {0,...,B} of (306k - 485*f_k(m)). Entry a of BV_i corresponds to a*3^f mod 2^B, ensuring spatial locality for consecutive a values.",
+  "analogical_connections": [
+    "Bloom filters — compact probabilistic set membership via bit arrays",
+    "GPU texture atlas packing — reorder data for spatial coherence in cache lines",
+    "Succinct data structures (rank/select) — encode combinatorial structures in near-optimal bits"
+  ],
+  "implementation_hypothesis": "Precompute bitvectors on CPU in ~3 seconds. Store in GPU L2 cache (fits at B=24, 2MB). For each survivor from recursive step, extract last B bits of T^{N-A}(n), look up in BV_i. Use popcount on the AND result to count survivors per warp.",
+  "experiment_seed": "Benchmark B=20,22,24,26 on GPUs with different L2 cache sizes. Measure cache hit rate and throughput."
+}

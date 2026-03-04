@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "mod9_preimage_residue_filter",
+  "description": "The mod 9 Preimage Sieve exploits that integers congruent to 2, 4, 5, or 8 mod 9 lie on the trajectory of a smaller integer \u2014 they are preimages under T or T^3. This eliminates 4/9 (~44.4%) of all candidates from verification. The sieve generalizes to mod 3^k but with diminishing returns. Angeltveit implements this via bitwise AND of precomputed bitvectors, avoiding expensive modular arithmetic on the GPU.",
+  "domains": [
+    "number_theory",
+    "signal_processing",
+    "error_correcting_codes"
+  ],
+  "mathematical_formalization": "T(2n+1) = 3n+2, so any m \u2261 2 mod 3 is T(some smaller n). T^3(8n+3) = 9n+4, so any m \u2261 4 mod 9 is T^3(some smaller n). Combined: {n : n mod 9 \u2208 {0,1,3,6,7}} survive. Survival rate = 5/9 \u2248 55.6%.",
+  "analogical_connections": [
+    "Syndrome decoding in error-correcting codes \u2014 use residue to identify correctable patterns",
+    "Polyphase filter banks in signal processing \u2014 decompose signal by residue modulo decimation factor",
+    "Chinese Remainder Theorem reconstruction \u2014 combine local residue information for global inference"
+  ],
+  "implementation_hypothesis": "Precompute 9 bitvectors of length 2^A (A=10), one per mod-9 class of the starting value. For each output of the recursive step, compute n mod 9 once, select the appropriate bitvector, and AND it with the lookahead bitvector. This reduces mod-9 overhead from O(2^A) to O(1) per residue class.",
+  "experiment_seed": "Compare runtime of naive mod-9 check (integer division per candidate) vs. bitvector AND approach on GPU for 10^12 candidates. Measure throughput in candidates/second. Test extending to mod-27 and mod-81 to quantify diminishing returns.",
+  "folder_plan": {
+    "base_dir": "003_mod9_preimage_residue_filter",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.339777+00:00",
+  "project_folder": "concept_evolve/tree/003_mod9-preimage-residue-filter"
+}

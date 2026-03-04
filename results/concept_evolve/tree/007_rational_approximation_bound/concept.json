@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "rational_approximation_bound",
+  "description": "The growth rate of Collatz trajectories is governed by ln(3)/ln(2). Angeltveit uses the rational approximation 485/306 > ln(3)/ln(2) to derive an exact integer criterion: if 485*f <= 306*k then T^k(n) < n for n > 99781. This converts floating-point comparisons into exact integer arithmetic, critical for GPU correctness.",
+  "domains": ["number_theory", "numerical_analysis", "formal_verification"],
+  "mathematical_formalization": "3^306 / 2^485 = 0.9989..., so 3^f / 2^k < 1 whenever 485*f <= 306*k. For n > 99781: T^k(n) <= n * (3/2)^f * (1 + 1/(3*99783))^f / 2^{k-f} < n when 485*f <= 306*k.",
+  "analogical_connections": [
+    "Continued fraction approximation in Diophantine analysis",
+    "Fixed-point arithmetic in DSP",
+    "Lyapunov exponent estimation in dynamical systems"
+  ],
+  "implementation_hypothesis": "Replace all floating-point comparisons with the integer test 485*f_count <= 306*step_count. Precompute dip values for bitvectors. Maintain running counts during Step 3 iteration.",
+  "experiment_seed": "Compare tightness of 485/306 against higher convergents. Measure false-positive rate and computational cost of tighter bounds."
+}

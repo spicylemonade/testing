@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "bitvector_lookahead_compression",
+  "description": "Angeltveit precomputes bitvectors of length 2^B (B=24) that encode which of the next B Collatz steps lead to descent or path-merging. These bitvectors incorporate the Descent, Path-Merging, and Odd-Even-Even sieves, enabling all three checks with a single bitwise AND. The bits are reordered so that consecutive entries for n_0 + a*2^{N-A} are adjacent, enabling coalesced memory access on GPUs.",
+  "domains": [
+    "data_compression",
+    "GPU_computing",
+    "cache_optimization"
+  ],
+  "mathematical_formalization": "For each m \u2208 {0,...,2^B-1}, compute dip_B(m) = max over k \u2208 {0,...,B} of (306k - 485*f_k(m)), incorporating path-merging and OEE extensions. Entry a of BV_i corresponds to a*3^f mod 2^B, ensuring spatial locality for consecutive a values.",
+  "analogical_connections": [
+    "Bloom filters \u2014 compact probabilistic set membership via bit arrays",
+    "GPU texture atlas packing \u2014 reorder data for spatial coherence in cache lines",
+    "Succinct data structures (rank/select) \u2014 encode combinatorial structures in near-optimal bits"
+  ],
+  "implementation_hypothesis": "Precompute bitvectors on CPU in ~3 seconds. Store in GPU L2 cache (fits at B=24, 2MB). For each survivor from recursive step, extract last B bits of T^{N-A}(n), look up in BV_i. Use popcount on the AND result to count survivors per warp. Reorder bits using multiplication by 3^f mod 2^B for coalesced access.",
+  "experiment_seed": "Benchmark B=20,22,24,26 on GPUs with different L2 cache sizes (RTX 3060 vs A100). Measure cache hit rate and throughput. Test whether Morton-curve reordering outperforms the 3^f-mod-2^B reordering for spatial locality.",
+  "folder_plan": {
+    "base_dir": "004_bitvector_lookahead_compression",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.340488+00:00",
+  "project_folder": "concept_evolve/tree/004_bitvector-lookahead-compression"
+}

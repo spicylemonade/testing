@@ -1,0 +1,206 @@
+[
+  {
+    "symbolic_name": "recursive_bit_tree_sieve",
+    "description": "Angeltveit's algorithm recursively builds Collatz trajectories by adding one bit at a time from the least significant bit, treating the search space as a binary tree. Each node represents a residue class mod 2^k, and branches are pruned when T^k(n_0) < n_0 (Descent Sieve). This transforms exhaustive verification into a tree search with aggressive early termination.",
+    "domains": ["number_theory", "tree_search_algorithms", "combinatorial_optimization"],
+    "mathematical_formalization": "For n_0 < 2^k with T^k(n_0) known, extend to n_0 and n_0 + 2^k using: T^{k+1}(n_0 + 2^k) = (T^k(n_0) + 3^f) / 2 if T^k(n_0) is odd, or (3(T^k(n_0) + 3^f) + 1) / 2 if even, where f = f_k(n_0) counts odd applications. Prune when T^k(n_0) < n_0.",
+    "analogical_connections": [
+      "Binary trie traversal in IP routing tables — each bit decides a branch",
+      "Branch-and-bound in combinatorial optimization — prune when lower bound exceeds incumbent",
+      "Wavelet decomposition — multi-resolution analysis from coarse to fine bits"
+    ],
+    "implementation_hypothesis": "Implement a recursive DFS over bit positions 0..N-A. At each level k, compute T^k for both children (n_0 and n_0+2^k). Apply Descent Sieve, Path-Merging Sieve, and Odd-Even-Even Sieve at each node. Emit survivors at depth N-A for GPU processing. Use 128-bit integers for intermediate values.",
+    "experiment_seed": "Benchmark the recursive bit-tree against a flat sieve of size 2^34 (Barina's approach) for N=50. Measure: fraction of integers surviving, wall-clock time, and maximum recursion depth. Compare pruning rates of each sieve type independently.",
+    "folder_plan": {
+      "base_dir": "001_recursive_bit_tree_sieve",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "descent_ratio_pruning",
+    "description": "The Descent Sieve leverages the fact that if T^k(n_0) < n_0 for any residue class representative n_0, then T^k(n) < n for ALL n sharing the same k least significant bits (Theorem 2.5, Angeltveit 2026). This ratio-based pruning eliminates entire exponentially-sized families of integers from a single comparison, analogous to dominance pruning in scheduling theory.",
+    "domains": ["number_theory", "optimization_theory", "scheduling"],
+    "mathematical_formalization": "If n_1 = n_0 + a * 2^k and T^k(n_0) < n_0, then T^k(n_1)/n_1 <= T^k(n_0)/n_0 < 1, hence T^k(n_1) < n_1. The proof uses the monotonicity of T(m)/m = 3/(2(1 + 1/(3m))) for odd m, yielding ratio T^k(n)/n = prod_{i odd} (3/2)(1 + 1/(3*T^i(n))).",
+    "analogical_connections": [
+      "Dominance pruning in single-machine scheduling — if job A dominates B in all extensions, prune B",
+      "Alpha-beta pruning in game trees — a position proved losing for all continuations need not be explored",
+      "Coarsening in multigrid methods — prove convergence at coarse scale, inherit at fine scale"
+    ],
+    "implementation_hypothesis": "At each recursion level k in the bit-tree, compute ratio_k = T^k(n_0) / n_0 using fixed-point arithmetic. If ratio_k < 1.0, prune. Track ratio bounds through the recursion to enable speculative pruning (predict future descent from current trajectory slope).",
+    "experiment_seed": "For N=40..60, measure the fraction of residue classes pruned by the Descent Sieve alone at each depth k. Plot the survival curve. Test whether adding a 'speculative descent' check (ratio_k < 1.05) reduces survivors without false negatives.",
+    "folder_plan": {
+      "base_dir": "002_descent_ratio_pruning",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "mod9_preimage_residue_filter",
+    "description": "The mod 9 Preimage Sieve exploits that integers congruent to 2, 4, 5, or 8 mod 9 lie on the trajectory of a smaller integer — they are preimages under T or T^3. This eliminates 4/9 (~44.4%) of all candidates from verification. The sieve generalizes to mod 3^k but with diminishing returns. Angeltveit implements this via bitwise AND of precomputed bitvectors, avoiding expensive modular arithmetic on the GPU.",
+    "domains": ["number_theory", "signal_processing", "error_correcting_codes"],
+    "mathematical_formalization": "T(2n+1) = 3n+2, so any m ≡ 2 mod 3 is T(some smaller n). T^3(8n+3) = 9n+4, so any m ≡ 4 mod 9 is T^3(some smaller n). Combined: {n : n mod 9 ∈ {0,1,3,6,7}} survive. Survival rate = 5/9 ≈ 55.6%.",
+    "analogical_connections": [
+      "Syndrome decoding in error-correcting codes — use residue to identify correctable patterns",
+      "Polyphase filter banks in signal processing — decompose signal by residue modulo decimation factor",
+      "Chinese Remainder Theorem reconstruction — combine local residue information for global inference"
+    ],
+    "implementation_hypothesis": "Precompute 9 bitvectors of length 2^A (A=10), one per mod-9 class of the starting value. For each output of the recursive step, compute n mod 9 once, select the appropriate bitvector, and AND it with the lookahead bitvector. This reduces mod-9 overhead from O(2^A) to O(1) per residue class.",
+    "experiment_seed": "Compare runtime of naive mod-9 check (integer division per candidate) vs. bitvector AND approach on GPU for 10^12 candidates. Measure throughput in candidates/second. Test extending to mod-27 and mod-81 to quantify diminishing returns.",
+    "folder_plan": {
+      "base_dir": "003_mod9_preimage_residue_filter",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "bitvector_lookahead_compression",
+    "description": "Angeltveit precomputes bitvectors of length 2^B (B=24) that encode which of the next B Collatz steps lead to descent or path-merging. These bitvectors incorporate the Descent, Path-Merging, and Odd-Even-Even sieves, enabling all three checks with a single bitwise AND. The bits are reordered so that consecutive entries for n_0 + a*2^{N-A} are adjacent, enabling coalesced memory access on GPUs.",
+    "domains": ["data_compression", "GPU_computing", "cache_optimization"],
+    "mathematical_formalization": "For each m ∈ {0,...,2^B-1}, compute dip_B(m) = max over k ∈ {0,...,B} of (306k - 485*f_k(m)), incorporating path-merging and OEE extensions. Entry a of BV_i corresponds to a*3^f mod 2^B, ensuring spatial locality for consecutive a values.",
+    "analogical_connections": [
+      "Bloom filters — compact probabilistic set membership via bit arrays",
+      "GPU texture atlas packing — reorder data for spatial coherence in cache lines",
+      "Succinct data structures (rank/select) — encode combinatorial structures in near-optimal bits"
+    ],
+    "implementation_hypothesis": "Precompute bitvectors on CPU in ~3 seconds. Store in GPU L2 cache (fits at B=24, 2MB). For each survivor from recursive step, extract last B bits of T^{N-A}(n), look up in BV_i. Use popcount on the AND result to count survivors per warp. Reorder bits using multiplication by 3^f mod 2^B for coalesced access.",
+    "experiment_seed": "Benchmark B=20,22,24,26 on GPUs with different L2 cache sizes (RTX 3060 vs A100). Measure cache hit rate and throughput. Test whether Morton-curve reordering outperforms the 3^f-mod-2^B reordering for spatial locality.",
+    "folder_plan": {
+      "base_dir": "004_bitvector_lookahead_compression",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "gpu_warp_uniform_dispatch",
+    "description": "GPU Collatz verification suffers from warp divergence because different starting numbers require vastly different numbers of iterations. Angeltveit's algorithm mitigates this by grouping 2^16 values with the same f (number of odd steps in the first N-A iterations) into a single GPU kernel invocation, ensuring similar workloads per thread. Barina's approach uses a different strategy: batching intervals of 2^40 numbers.",
+    "domains": ["GPU_computing", "load_balancing", "parallel_algorithms"],
+    "mathematical_formalization": "Warp efficiency = (active_threads * cycles_used) / (warp_size * total_cycles). For uniform f, the expected number of surviving candidates per thread is E[survivors|f] ≈ C * (density of BV_i), and the expected iteration count in Step 3 is approximately proportional to f. Grouping by f minimizes variance within warps.",
+    "analogical_connections": [
+      "Work-stealing in task-parallel runtimes (Cilk) — balance heterogeneous tasks across workers",
+      "Packet classification in network routers — group flows by prefix length for uniform processing",
+      "Batch normalization in neural networks — normalize activations within a batch for stable training"
+    ],
+    "implementation_hypothesis": "Sort recursive step outputs by f value. Launch one CUDA kernel per f-group of 2^16 values. Within each kernel, each thread processes one n_0, applies BV_i sieve via bitwise AND, then iterates Step 3 for survivors. Use shared memory for the bitvector segment. Profile with NVIDIA Nsight to measure warp utilization.",
+    "experiment_seed": "Compare three dispatch strategies: (1) sequential intervals (Barina), (2) f-grouped dispatch (Angeltveit), (3) dynamic work-stealing. Measure warp efficiency, memory bandwidth utilization, and total verification throughput on RTX 3060 and A100.",
+    "folder_plan": {
+      "base_dir": "005_gpu_warp_uniform_dispatch",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "path_merging_deduplication",
+    "description": "The Path-Merging Sieve detects when the trajectory of n joins the trajectory of a smaller number n_1, even if T^k(n) has not yet descended below n. Specifically, if T^k(n) ≡ 2 mod 3 and (2*T^k(n) - 1)/3 < n, then n's trajectory merges with a previously-verified path. This is analogous to deduplication in distributed file systems or common subexpression elimination in compilers.",
+    "domains": ["number_theory", "compiler_optimization", "distributed_systems"],
+    "mathematical_formalization": "If m = T^k(n) ≡ 2 mod 3, then m = T((2m-1)/3). If (2m-1)/3 < n, then convergence of (2m-1)/3 implies convergence of n. Detection: m mod 3 depends only on last k bits of n (since k >= 1 implies 3^f * a ≡ 0 mod 3 for a contribution from higher bits).",
+    "analogical_connections": [
+      "Common subexpression elimination — detect that two computations converge to same intermediate value",
+      "Content-addressable deduplication in storage — identify identical blocks by hash regardless of source",
+      "Topological sort merging in DAGs — when two paths reach the same node, process it once"
+    ],
+    "implementation_hypothesis": "During recursive bit-tree traversal, track m mod 3 using Lemma 2.8 (count even steps after last odd step) instead of explicit mod-3 division. This avoids expensive division operations. Implement as a 2-bit counter that resets on odd steps and increments on even steps. Path merging applies when counter is even and (2m-1)/3 < n.",
+    "experiment_seed": "Measure the additional pruning rate of Path-Merging Sieve beyond Descent Sieve alone, for N=40..60. Compare computational cost of mod-3 detection via Lemma 2.8 counter vs. explicit modular arithmetic. Profile on both CPU (Rust) and GPU (CUDA).",
+    "folder_plan": {
+      "base_dir": "006_path_merging_deduplication",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "rational_approximation_bound",
+    "description": "The growth rate of Collatz trajectories is governed by the ratio of 3-multiplications to 2-divisions, characterized by ln(3)/ln(2) ≈ 1.585. Angeltveit uses the rational approximation 485/306 > ln(3)/ln(2) to derive a tight arithmetic criterion: if 485*f <= 306*k (where f = odd steps, k = total steps), then T^k(n) < n for n > 99781. This converts a floating-point comparison into exact integer arithmetic, critical for GPU verification correctness.",
+    "domains": ["number_theory", "numerical_analysis", "formal_verification"],
+    "mathematical_formalization": "3^306 / 2^485 = 0.9989..., so 3^f / 2^k < 1 whenever 485*f <= 306*k. For n > 99781: T^k(n) <= n * (3/2)^f * (1 + 1/(3*99783))^f / 2^{k-f} < n when 485*f <= 306*k. The bound 99781 comes from ensuring (1 + 1/(3*99783))^306 * 0.9989 < 1.",
+    "analogical_connections": [
+      "Continued fraction approximation in Diophantine analysis — rational bounds for irrational quantities",
+      "Fixed-point arithmetic in DSP — replace floating-point with exact integer ratios for determinism",
+      "Lyapunov exponent estimation — rational bounds on growth rates in dynamical systems"
+    ],
+    "implementation_hypothesis": "Replace all floating-point comparisons in the sieve with the integer test: 485*f_count <= 306*step_count. Precompute the dip values dip_B(m) = max_{k=0..B}(306*k - 485*f_k(m)) for bitvector construction. For GPU Step 3, maintain running counts of odd/even steps and check the integer inequality after each block of 16 steps.",
+    "experiment_seed": "Compare the tightness of 485/306 against other convergents of ln(3)/ln(2) (e.g., 306191/193205). Measure: false-positive rate (numbers that pass the bound but actually descend), computational cost of the tighter bound. Test whether using the next convergent measurably improves pruning rate.",
+    "folder_plan": {
+      "base_dir": "007_rational_approximation_bound",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "distributed_work_unit_sharding",
+    "description": "Barina's verification project distributes work across European supercomputers in units of 2^40 consecutive integers. Each work unit takes ~10 seconds on a modern GPU. Angeltveit's algorithm instead shards by the last k bits (55, 1168, or 278699 cases of similar running time), which is inherently non-sequential but enables better load balancing. Both approaches face the classic distributed computing challenge of fault tolerance and progress tracking.",
+    "domains": ["distributed_computing", "fault_tolerance", "computational_number_theory"],
+    "mathematical_formalization": "Barina: partition [1, 2^N] into intervals [i*2^40, (i+1)*2^40) for i = 0,...,2^{N-40}-1. Angeltveit: partition by residue classes mod 2^k, yielding C(k) ≈ 0.08% * 2^k cases, each with ~2^{N-k}/C(k) effective integers to check. Load balance: Var(T_i) / E[T_i]^2 measures uniformity.",
+    "analogical_connections": [
+      "MapReduce shuffling — partition data by key for balanced reducer loads",
+      "BOINC volunteer computing — distribute independent work units with checkpointing",
+      "Consistent hashing in distributed databases — shard by hash for uniform distribution"
+    ],
+    "implementation_hypothesis": "Implement a work-unit server (like Barina's pcbarina.fit.vutbr.cz) that tracks completion status. For Angeltveit-style sharding, precompute the ~278699 cases on the coordinator, assign batches to GPU workers. Workers report back a checksum (hash of all path records found). Coordinator validates checksums against CPU-computed reference for a random sample.",
+    "experiment_seed": "Simulate both sharding strategies for N=72 with heterogeneous GPU fleet (mix of RTX 3060, 4090, A100). Measure: makespan, load imbalance factor, network overhead. Test a hybrid approach: Angeltveit sharding for the recursive phase, Barina-style intervals for Step 3 residuals.",
+    "folder_plan": {
+      "base_dir": "008_distributed_work_unit_sharding",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "information_directed_branch_prune",
+    "description": "Inspired by information-theoretic branch-and-prune algorithms (Ahmed et al. 2023, used for RIS phase optimization), we propose applying information gain metrics to decide which branches of the Collatz bit-tree to explore first. Instead of DFS, use the 'dip' value (306k - 485f) as a heuristic priority: branches with higher dip values are more likely to be pruned by the bitvector lookahead, so explore low-dip branches first to find survivors quickly for GPU dispatch.",
+    "domains": ["information_theory", "tree_search_algorithms", "number_theory"],
+    "mathematical_formalization": "Information gain of exploring branch b: IG(b) = H(survive|parent) - H(survive|parent, b), where H is entropy. Approximate: IG ≈ -log2(density(BV_{f-f_min})) for the corresponding bitvector. Priority queue: explore branches with highest expected survival first to minimize GPU idle time.",
+    "analogical_connections": [
+      "Information-directed sampling in bandits — explore actions that maximize information about the optimum",
+      "A* search with admissible heuristic — use dip value as heuristic for distance to pruning",
+      "Huffman coding — assign shorter codes (less exploration) to more common events (more prunable branches)"
+    ],
+    "implementation_hypothesis": "Replace DFS in Algorithm 2 with a priority queue ordered by (f - f_min, current_dip). Process low-dip-high-f branches first, as they generate fewer GPU work items. Maintain a running count of dispatched GPU work items; when a batch of 2^16 is ready, launch a GPU kernel while continuing CPU-side tree exploration. This overlaps CPU recursion with GPU computation.",
+    "experiment_seed": "Implement both DFS and priority-queue orderings for the recursive step. Measure: GPU utilization (fraction of time kernels are running), total wall-clock time, peak memory usage. Test on N=55 to compare with Angeltveit's reported 3636-second GPU time.",
+    "folder_plan": {
+      "base_dir": "009_information_directed_branch_prune",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "odd_even_even_trajectory_join",
+    "description": "The Odd-Even-Even (OEE) Sieve (Lemma 2.9, from Eliahou 2023) exploits a structural property: if the Collatz sequence from m contains a run of odd steps followed by at least 2 even steps, then m's trajectory joins that of (m-1)/2. When (m-1)/2 < n (the original starting number), this eliminates n from verification. This pattern-matching approach is akin to finite automaton-based string matching.",
+    "domains": ["automata_theory", "dynamical_systems", "number_theory"],
+    "mathematical_formalization": "Let m = T^k(n). If there exist l > 0 odd steps followed by >= 2 even steps in the sequence from m, then the trajectory of m joins T^{l+2}((m-1)/2). Pruning condition: (m-1)/2 < n. Detection: track state machine with states {INIT, ODD_RUN, EVEN1, EVEN2_PRUNE}.",
+    "analogical_connections": [
+      "Aho-Corasick multi-pattern matching — finite automaton detects multiple patterns in one pass",
+      "Symbolic dynamics in ergodic theory — classify orbits by their symbolic itineraries (O/E sequences)",
+      "Protocol state machines in network verification — detect invalid state transitions for pruning"
+    ],
+    "implementation_hypothesis": "Implement a 2-bit state machine alongside the recursive bit-tree traversal: state = (in_odd_run, seen_one_even). On each step: if odd, set in_odd_run=true, seen_one_even=false; if even and in_odd_run and not seen_one_even, set seen_one_even=true; if even and seen_one_even, check (m-1)/2 < n and prune. Encode state transitions in the bitvector precomputation for Step 2.",
+    "experiment_seed": "Measure OEE pruning rate independently and in combination with Descent + Path-Merging sieves. Determine the marginal contribution of OEE for N=40..60. Test whether extending the pattern to 'odd run + 3 even steps' provides additional pruning worth the complexity.",
+    "folder_plan": {
+      "base_dir": "010_odd_even_even_trajectory_join",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "memoized_3f_lookup_table",
+    "description": "Lemma 2.3 shows that T^k(n_0 + a*2^k) = T^k(n_0) + 3^f * a, where f counts odd applications. This enables a lookup table indexed by the last k bits of n: one table entry stores (T^k(n_0 mod 2^k), f_k(n_0 mod 2^k)), allowing k Collatz steps to be computed in O(1). Barina uses k=16 on CPU; Angeltveit uses k=16 on CPU but avoids tables on GPU due to memory latency. This is directly analogous to memoization in dynamic programming.",
+    "domains": ["dynamic_programming", "computer_architecture", "number_theory"],
+    "mathematical_formalization": "LUT[r] = (T^k(r), f_k(r)) for r = 0,...,2^k - 1. Then T^k(n) = LUT[n mod 2^k].T + LUT[n mod 2^k].f * (n >> k). Total: T^k(n) = T_r + 3^{f_r} * a where n = r + a*2^k. Table size: 2^k * (sizeof(T_r) + sizeof(f_r)) bytes.",
+    "analogical_connections": [
+      "Transposition tables in chess engines — cache previously computed positions for O(1) retrieval",
+      "Rainbow tables in cryptanalysis — precompute hash chains for O(1) reversal",
+      "Memoization in recursive Fibonacci — store subproblem solutions to avoid recomputation"
+    ],
+    "implementation_hypothesis": "On CPU: allocate 2^16 * 16 bytes = 1MB lookup table (fits in L1 cache). For each candidate n, extract lower 16 bits, look up (T_r, f_r), compute T^16(n) = T_r + 3^{f_r} * (n >> 16). Repeat until T^k(n) < n. On GPU: use Algorithm 2 from Barina (alternating odd/even runs) instead, as random LUT access thrashes GPU cache.",
+    "experiment_seed": "Benchmark LUT sizes k=8,12,16,20 on CPU and GPU. Measure: L1/L2 cache hit rates, throughput in steps/second. On GPU, compare LUT approach vs. Barina's run-length approach vs. direct step-by-step computation. Determine the crossover point where LUT becomes slower due to cache misses.",
+    "folder_plan": {
+      "base_dir": "011_memoized_3f_lookup_table",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "adaptive_sieve_depth_scaling",
+    "description": "Angeltveit's key insight is that the fraction of integers surviving all sieves decreases as N grows — empirically ~1.9x per additional bit, meaning the algorithm becomes MORE efficient at higher N. For N=45, only 0.0506% of integers survive; extrapolated to N=72, only ~0.0127% survive. This self-improving property is analogous to the concentration of measure phenomenon in high-dimensional probability: as dimension (=N) increases, random Collatz trajectories are increasingly likely to exhibit descent.",
+    "domains": ["probability_theory", "dynamical_systems", "asymptotic_analysis"],
+    "mathematical_formalization": "Let S(N) = #{n < 2^N : n survives all sieves} / 2^N. Empirically: S(N) ≈ C * alpha^N with alpha ≈ 0.95 (i.e., 1/1.9 per bit). Heuristic explanation: each additional bit gives an independent ~47.4% chance of descent (since 306/485 ≈ 0.631 of steps are even in expectation for a random trajectory). The concentration follows from the law of large numbers applied to the random walk log T^k(n) / log n.",
+    "analogical_connections": [
+      "Concentration of measure in high dimensions — random vectors cluster near expected behavior",
+      "Erdos-Renyi phase transition — as parameter grows, qualitative behavior changes sharply",
+      "Lossy compression rate-distortion tradeoff — more data enables better compression ratios"
+    ],
+    "implementation_hypothesis": "Implement an adaptive algorithm that dynamically adjusts A (number of high bits handled by bitvectors) based on N. For larger N, increase A from 6 to 10 or higher, as the recursive step produces fewer survivors per unit of work. Add a calibration phase that runs the recursive step for a small sample and estimates S(N), then chooses optimal (A, B) parameters.",
+    "experiment_seed": "Run the complete algorithm for N=35..55 on a single GPU. Plot S(N) vs N on a semi-log scale. Fit the exponential model S(N) = C * alpha^N. Extrapolate to N=72, 77, 80. Compare predicted vs. actual computation time for N=50..55 to validate the model.",
+    "folder_plan": {
+      "base_dir": "012_adaptive_sieve_depth_scaling",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  }
+]

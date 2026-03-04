@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "descent_ratio_pruning",
+  "description": "The Descent Sieve leverages the fact that if T^k(n_0) < n_0 for any residue class representative n_0, then T^k(n) < n for ALL n sharing the same k least significant bits (Theorem 2.5, Angeltveit 2026). This ratio-based pruning eliminates entire exponentially-sized families of integers from a single comparison, analogous to dominance pruning in scheduling theory.",
+  "domains": [
+    "number_theory",
+    "optimization_theory",
+    "scheduling"
+  ],
+  "mathematical_formalization": "If n_1 = n_0 + a * 2^k and T^k(n_0) < n_0, then T^k(n_1)/n_1 <= T^k(n_0)/n_0 < 1, hence T^k(n_1) < n_1. The proof uses the monotonicity of T(m)/m = 3/(2(1 + 1/(3m))) for odd m, yielding ratio T^k(n)/n = prod_{i odd} (3/2)(1 + 1/(3*T^i(n))).",
+  "analogical_connections": [
+    "Dominance pruning in single-machine scheduling \u2014 if job A dominates B in all extensions, prune B",
+    "Alpha-beta pruning in game trees \u2014 a position proved losing for all continuations need not be explored",
+    "Coarsening in multigrid methods \u2014 prove convergence at coarse scale, inherit at fine scale"
+  ],
+  "implementation_hypothesis": "At each recursion level k in the bit-tree, compute ratio_k = T^k(n_0) / n_0 using fixed-point arithmetic. If ratio_k < 1.0, prune. Track ratio bounds through the recursion to enable speculative pruning (predict future descent from current trajectory slope).",
+  "experiment_seed": "For N=40..60, measure the fraction of residue classes pruned by the Descent Sieve alone at each depth k. Plot the survival curve. Test whether adding a 'speculative descent' check (ratio_k < 1.05) reduces survivors without false negatives.",
+  "folder_plan": {
+    "base_dir": "002_descent_ratio_pruning",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.338965+00:00",
+  "project_folder": "concept_evolve/tree/002_descent-ratio-pruning"
+}

@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "odd_even_even_trajectory_join",
+  "description": "The OEE Sieve (from Eliahou 2023, Lemma 2.9) exploits that if a Collatz sequence from m has a run of odd steps followed by >= 2 even steps, then m's trajectory joins that of (m-1)/2. When (m-1)/2 < n, this eliminates n. Detected via a finite automaton on the step sequence.",
+  "domains": ["automata_theory", "dynamical_systems", "number_theory"],
+  "mathematical_formalization": "If T^k(n) = m and there exist l > 0 odd steps followed by >= 2 even steps from m, then trajectory of m joins T^{l+2}((m-1)/2). Prune when (m-1)/2 < n. State machine: {INIT, ODD_RUN, EVEN1, EVEN2_PRUNE}.",
+  "analogical_connections": [
+    "Aho-Corasick multi-pattern matching",
+    "Symbolic dynamics in ergodic theory",
+    "Protocol state machines in network verification"
+  ],
+  "implementation_hypothesis": "2-bit state machine alongside recursive traversal: state = (in_odd_run, seen_one_even). Reset on odd, increment on even, prune when both flags set and (m-1)/2 < n. Encode in bitvector precomputation.",
+  "experiment_seed": "Measure OEE pruning rate independently and in combination with other sieves for N=40..60."
+}

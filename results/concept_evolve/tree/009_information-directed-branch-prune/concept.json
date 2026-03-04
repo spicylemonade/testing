@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "information_directed_branch_prune",
+  "description": "Inspired by information-theoretic branch-and-prune algorithms (Ahmed et al. 2023, used for RIS phase optimization), we propose applying information gain metrics to decide which branches of the Collatz bit-tree to explore first. Instead of DFS, use the 'dip' value (306k - 485f) as a heuristic priority: branches with higher dip values are more likely to be pruned by the bitvector lookahead, so explore low-dip branches first to find survivors quickly for GPU dispatch.",
+  "domains": [
+    "information_theory",
+    "tree_search_algorithms",
+    "number_theory"
+  ],
+  "mathematical_formalization": "Information gain of exploring branch b: IG(b) = H(survive|parent) - H(survive|parent, b), where H is entropy. Approximate: IG \u2248 -log2(density(BV_{f-f_min})) for the corresponding bitvector. Priority queue: explore branches with highest expected survival first to minimize GPU idle time.",
+  "analogical_connections": [
+    "Information-directed sampling in bandits \u2014 explore actions that maximize information about the optimum",
+    "A* search with admissible heuristic \u2014 use dip value as heuristic for distance to pruning",
+    "Huffman coding \u2014 assign shorter codes (less exploration) to more common events (more prunable branches)"
+  ],
+  "implementation_hypothesis": "Replace DFS in Algorithm 2 with a priority queue ordered by (f - f_min, current_dip). Process low-dip-high-f branches first, as they generate fewer GPU work items. Maintain a running count of dispatched GPU work items; when a batch of 2^16 is ready, launch a GPU kernel while continuing CPU-side tree exploration. This overlaps CPU recursion with GPU computation.",
+  "experiment_seed": "Implement both DFS and priority-queue orderings for the recursive step. Measure: GPU utilization (fraction of time kernels are running), total wall-clock time, peak memory usage. Test on N=55 to compare with Angeltveit's reported 3636-second GPU time.",
+  "folder_plan": {
+    "base_dir": "009_information_directed_branch_prune",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.344137+00:00",
+  "project_folder": "concept_evolve/tree/009_information-directed-branch-prune"
+}

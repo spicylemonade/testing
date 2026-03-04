@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "memoized_3f_lookup_table",
+  "description": "Lemma 2.3 shows T^k(n_0 + a*2^k) = T^k(n_0) + 3^f * a, enabling a lookup table indexed by the last k bits: one entry stores (T^k(r), f_k(r)), allowing k Collatz steps in O(1). Barina uses k=16 on CPU; Angeltveit avoids tables on GPU due to cache pressure. This is direct dynamic programming memoization.",
+  "domains": ["dynamic_programming", "computer_architecture", "number_theory"],
+  "mathematical_formalization": "LUT[r] = (T^k(r), f_k(r)) for r = 0,...,2^k-1. Then T^k(n) = LUT[n mod 2^k].T + LUT[n mod 2^k].3f * (n >> k). Table size: 2^k * (sizeof(T_r) + sizeof(f_r)) bytes.",
+  "analogical_connections": [
+    "Transposition tables in chess engines",
+    "Rainbow tables in cryptanalysis",
+    "Memoization in recursive Fibonacci"
+  ],
+  "implementation_hypothesis": "On CPU: 2^16 * 16 bytes = 1MB table (fits L1). Extract lower 16 bits, lookup, compute T^16(n) in O(1). Repeat. On GPU: avoid LUT, use run-length alternation (Barina Algorithm 2) instead.",
+  "experiment_seed": "Benchmark LUT sizes k=8,12,16,20 on CPU and GPU. Measure cache hit rates and throughput. Determine crossover where LUT becomes slower."
+}

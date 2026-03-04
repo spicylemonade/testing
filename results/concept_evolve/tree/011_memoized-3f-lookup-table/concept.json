@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "memoized_3f_lookup_table",
+  "description": "Lemma 2.3 shows that T^k(n_0 + a*2^k) = T^k(n_0) + 3^f * a, where f counts odd applications. This enables a lookup table indexed by the last k bits of n: one table entry stores (T^k(n_0 mod 2^k), f_k(n_0 mod 2^k)), allowing k Collatz steps to be computed in O(1). Barina uses k=16 on CPU; Angeltveit uses k=16 on CPU but avoids tables on GPU due to memory latency. This is directly analogous to memoization in dynamic programming.",
+  "domains": [
+    "dynamic_programming",
+    "computer_architecture",
+    "number_theory"
+  ],
+  "mathematical_formalization": "LUT[r] = (T^k(r), f_k(r)) for r = 0,...,2^k - 1. Then T^k(n) = LUT[n mod 2^k].T + LUT[n mod 2^k].f * (n >> k). Total: T^k(n) = T_r + 3^{f_r} * a where n = r + a*2^k. Table size: 2^k * (sizeof(T_r) + sizeof(f_r)) bytes.",
+  "analogical_connections": [
+    "Transposition tables in chess engines \u2014 cache previously computed positions for O(1) retrieval",
+    "Rainbow tables in cryptanalysis \u2014 precompute hash chains for O(1) reversal",
+    "Memoization in recursive Fibonacci \u2014 store subproblem solutions to avoid recomputation"
+  ],
+  "implementation_hypothesis": "On CPU: allocate 2^16 * 16 bytes = 1MB lookup table (fits in L1 cache). For each candidate n, extract lower 16 bits, look up (T_r, f_r), compute T^16(n) = T_r + 3^{f_r} * (n >> 16). Repeat until T^k(n) < n. On GPU: use Algorithm 2 from Barina (alternating odd/even runs) instead, as random LUT access thrashes GPU cache.",
+  "experiment_seed": "Benchmark LUT sizes k=8,12,16,20 on CPU and GPU. Measure: L1/L2 cache hit rates, throughput in steps/second. On GPU, compare LUT approach vs. Barina's run-length approach vs. direct step-by-step computation. Determine the crossover point where LUT becomes slower due to cache misses.",
+  "folder_plan": {
+    "base_dir": "011_memoized_3f_lookup_table",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.345679+00:00",
+  "project_folder": "concept_evolve/tree/011_memoized-3f-lookup-table"
+}

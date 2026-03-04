@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "path_merging_deduplication",
+  "description": "The Path-Merging Sieve detects when the trajectory of n joins the trajectory of a smaller number n_1, even if T^k(n) has not yet descended below n. Specifically, if T^k(n) \u2261 2 mod 3 and (2*T^k(n) - 1)/3 < n, then n's trajectory merges with a previously-verified path. This is analogous to deduplication in distributed file systems or common subexpression elimination in compilers.",
+  "domains": [
+    "number_theory",
+    "compiler_optimization",
+    "distributed_systems"
+  ],
+  "mathematical_formalization": "If m = T^k(n) \u2261 2 mod 3, then m = T((2m-1)/3). If (2m-1)/3 < n, then convergence of (2m-1)/3 implies convergence of n. Detection: m mod 3 depends only on last k bits of n (since k >= 1 implies 3^f * a \u2261 0 mod 3 for a contribution from higher bits).",
+  "analogical_connections": [
+    "Common subexpression elimination \u2014 detect that two computations converge to same intermediate value",
+    "Content-addressable deduplication in storage \u2014 identify identical blocks by hash regardless of source",
+    "Topological sort merging in DAGs \u2014 when two paths reach the same node, process it once"
+  ],
+  "implementation_hypothesis": "During recursive bit-tree traversal, track m mod 3 using Lemma 2.8 (count even steps after last odd step) instead of explicit mod-3 division. This avoids expensive division operations. Implement as a 2-bit counter that resets on odd steps and increments on even steps. Path merging applies when counter is even and (2m-1)/3 < n.",
+  "experiment_seed": "Measure the additional pruning rate of Path-Merging Sieve beyond Descent Sieve alone, for N=40..60. Compare computational cost of mod-3 detection via Lemma 2.8 counter vs. explicit modular arithmetic. Profile on both CPU (Rust) and GPU (CUDA).",
+  "folder_plan": {
+    "base_dir": "006_path_merging_deduplication",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.341906+00:00",
+  "project_folder": "concept_evolve/tree/006_path-merging-deduplication"
+}

@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "distributed_work_unit_sharding",
+  "description": "Barina's verification project distributes work across European supercomputers in units of 2^40 consecutive integers. Each work unit takes ~10 seconds on a modern GPU. Angeltveit's algorithm instead shards by the last k bits (55, 1168, or 278699 cases of similar running time), which is inherently non-sequential but enables better load balancing. Both approaches face the classic distributed computing challenge of fault tolerance and progress tracking.",
+  "domains": [
+    "distributed_computing",
+    "fault_tolerance",
+    "computational_number_theory"
+  ],
+  "mathematical_formalization": "Barina: partition [1, 2^N] into intervals [i*2^40, (i+1)*2^40) for i = 0,...,2^{N-40}-1. Angeltveit: partition by residue classes mod 2^k, yielding C(k) \u2248 0.08% * 2^k cases, each with ~2^{N-k}/C(k) effective integers to check. Load balance: Var(T_i) / E[T_i]^2 measures uniformity.",
+  "analogical_connections": [
+    "MapReduce shuffling \u2014 partition data by key for balanced reducer loads",
+    "BOINC volunteer computing \u2014 distribute independent work units with checkpointing",
+    "Consistent hashing in distributed databases \u2014 shard by hash for uniform distribution"
+  ],
+  "implementation_hypothesis": "Implement a work-unit server (like Barina's pcbarina.fit.vutbr.cz) that tracks completion status. For Angeltveit-style sharding, precompute the ~278699 cases on the coordinator, assign batches to GPU workers. Workers report back a checksum (hash of all path records found). Coordinator validates checksums against CPU-computed reference for a random sample.",
+  "experiment_seed": "Simulate both sharding strategies for N=72 with heterogeneous GPU fleet (mix of RTX 3060, 4090, A100). Measure: makespan, load imbalance factor, network overhead. Test a hybrid approach: Angeltveit sharding for the recursive phase, Barina-style intervals for Step 3 residuals.",
+  "folder_plan": {
+    "base_dir": "008_distributed_work_unit_sharding",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.343455+00:00",
+  "project_folder": "concept_evolve/tree/008_distributed-work-unit-sharding"
+}

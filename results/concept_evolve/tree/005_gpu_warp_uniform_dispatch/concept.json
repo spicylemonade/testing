@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "gpu_warp_uniform_dispatch",
+  "description": "GPU Collatz verification suffers from warp divergence because different starting numbers require different iteration counts. Angeltveit mitigates this by grouping 2^16 values with the same f (odd-step count) into a single kernel, ensuring similar workloads per thread. Barina batches intervals of 2^40 numbers instead.",
+  "domains": ["GPU_computing", "load_balancing", "parallel_algorithms"],
+  "mathematical_formalization": "Warp efficiency = (active_threads * cycles_used) / (warp_size * total_cycles). For uniform f, E[survivors|f] ~ C * density(BV_i), and iteration count in Step 3 ~ proportional to f. Grouping by f minimizes variance within warps.",
+  "analogical_connections": [
+    "Work-stealing in Cilk — balance heterogeneous tasks across workers",
+    "Packet classification in routers — group flows by prefix length",
+    "Batch normalization in neural networks — normalize within batch for stability"
+  ],
+  "implementation_hypothesis": "Sort recursive step outputs by f value. Launch one CUDA kernel per f-group of 2^16 values. Each thread processes one n_0, applies BV_i sieve, then iterates Step 3 for survivors. Use shared memory for the bitvector segment.",
+  "experiment_seed": "Compare sequential intervals vs f-grouped dispatch vs dynamic work-stealing. Measure warp efficiency and throughput."
+}

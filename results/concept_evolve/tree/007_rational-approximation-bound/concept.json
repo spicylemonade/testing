@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "rational_approximation_bound",
+  "description": "The growth rate of Collatz trajectories is governed by the ratio of 3-multiplications to 2-divisions, characterized by ln(3)/ln(2) \u2248 1.585. Angeltveit uses the rational approximation 485/306 > ln(3)/ln(2) to derive a tight arithmetic criterion: if 485*f <= 306*k (where f = odd steps, k = total steps), then T^k(n) < n for n > 99781. This converts a floating-point comparison into exact integer arithmetic, critical for GPU verification correctness.",
+  "domains": [
+    "number_theory",
+    "numerical_analysis",
+    "formal_verification"
+  ],
+  "mathematical_formalization": "3^306 / 2^485 = 0.9989..., so 3^f / 2^k < 1 whenever 485*f <= 306*k. For n > 99781: T^k(n) <= n * (3/2)^f * (1 + 1/(3*99783))^f / 2^{k-f} < n when 485*f <= 306*k. The bound 99781 comes from ensuring (1 + 1/(3*99783))^306 * 0.9989 < 1.",
+  "analogical_connections": [
+    "Continued fraction approximation in Diophantine analysis \u2014 rational bounds for irrational quantities",
+    "Fixed-point arithmetic in DSP \u2014 replace floating-point with exact integer ratios for determinism",
+    "Lyapunov exponent estimation \u2014 rational bounds on growth rates in dynamical systems"
+  ],
+  "implementation_hypothesis": "Replace all floating-point comparisons in the sieve with the integer test: 485*f_count <= 306*step_count. Precompute the dip values dip_B(m) = max_{k=0..B}(306*k - 485*f_k(m)) for bitvector construction. For GPU Step 3, maintain running counts of odd/even steps and check the integer inequality after each block of 16 steps.",
+  "experiment_seed": "Compare the tightness of 485/306 against other convergents of ln(3)/ln(2) (e.g., 306191/193205). Measure: false-positive rate (numbers that pass the bound but actually descend), computational cost of the tighter bound. Test whether using the next convergent measurably improves pruning rate.",
+  "folder_plan": {
+    "base_dir": "007_rational_approximation_bound",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.342716+00:00",
+  "project_folder": "concept_evolve/tree/007_rational-approximation-bound"
+}

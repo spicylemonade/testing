@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "gpu_warp_uniform_dispatch",
+  "description": "GPU Collatz verification suffers from warp divergence because different starting numbers require vastly different numbers of iterations. Angeltveit's algorithm mitigates this by grouping 2^16 values with the same f (number of odd steps in the first N-A iterations) into a single GPU kernel invocation, ensuring similar workloads per thread. Barina's approach uses a different strategy: batching intervals of 2^40 numbers.",
+  "domains": [
+    "GPU_computing",
+    "load_balancing",
+    "parallel_algorithms"
+  ],
+  "mathematical_formalization": "Warp efficiency = (active_threads * cycles_used) / (warp_size * total_cycles). For uniform f, the expected number of surviving candidates per thread is E[survivors|f] \u2248 C * (density of BV_i), and the expected iteration count in Step 3 is approximately proportional to f. Grouping by f minimizes variance within warps.",
+  "analogical_connections": [
+    "Work-stealing in task-parallel runtimes (Cilk) \u2014 balance heterogeneous tasks across workers",
+    "Packet classification in network routers \u2014 group flows by prefix length for uniform processing",
+    "Batch normalization in neural networks \u2014 normalize activations within a batch for stable training"
+  ],
+  "implementation_hypothesis": "Sort recursive step outputs by f value. Launch one CUDA kernel per f-group of 2^16 values. Within each kernel, each thread processes one n_0, applies BV_i sieve via bitwise AND, then iterates Step 3 for survivors. Use shared memory for the bitvector segment. Profile with NVIDIA Nsight to measure warp utilization.",
+  "experiment_seed": "Compare three dispatch strategies: (1) sequential intervals (Barina), (2) f-grouped dispatch (Angeltveit), (3) dynamic work-stealing. Measure warp efficiency, memory bandwidth utilization, and total verification throughput on RTX 3060 and A100.",
+  "folder_plan": {
+    "base_dir": "005_gpu_warp_uniform_dispatch",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:56:46.341153+00:00",
+  "project_folder": "concept_evolve/tree/005_gpu-warp-uniform-dispatch"
+}

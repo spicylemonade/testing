@@ -1,0 +1,26 @@
+[
+  {
+    "direction": "Implement Angeltveit's recursive bit-tree algorithm with all four sieves on GPU",
+    "rationale": "Angeltveit's 2026 paper claims 50-100x speedup over Barina's state-of-the-art, but no independent reproduction exists. The algorithm's key innovation — treating verification as a binary tree search with three pruning sieves plus bitvector lookahead — combines ideas from tree search, data compression, and modular arithmetic in a novel way. Reproducing and optimizing this is the highest-impact next step for the field.",
+    "first_step": "Implement Algorithm 2 (recursive bit-tree with Descent Sieve only) in Rust for CPU. Validate against known results for N=40 (should find 756,583,624 survivors per Angeltveit's paper). Then add Path-Merging and OEE sieves incrementally, measuring marginal pruning contribution.",
+    "expected_signal": "Survivor count at N=40 matching 756,583,624 (±0 since the algorithm is deterministic). CPU throughput of 2^35-36 integers/second on a modern CPU. Each additional sieve should reduce survivors by 5-15%."
+  },
+  {
+    "direction": "Develop a delay-record-specific sieve that preserves trajectory height information",
+    "rationale": "Current sieves are optimized for convergence verification (proving T^k(n) eventually descends). Delay record search — finding n with the largest stopping time — cannot use Descent, Path-Merging, or OEE sieves. A new approach is needed: instead of pruning descending trajectories, identify residue classes whose trajectories are predicted to have unusually long non-descent. This inverts the sieving philosophy from 'eliminate easy cases' to 'prioritize hard cases'.",
+    "first_step": "For each residue class mod 2^k (k=20), compute the average trajectory length before first descent. Identify the top 0.1% of residue classes by expected trajectory length. Test whether these classes contain a disproportionate share of known delay records (from Barina's path records table and OEIS A284668). If so, design a sieve that focuses computation on these classes.",
+    "expected_signal": "If the top 0.1% of residue classes by expected trajectory length contain >50% of known delay records, this confirms that trajectory length is predictable from low bits and a targeted search is viable. Expected 10-100x speedup for delay record search."
+  },
+  {
+    "direction": "Build a probabilistic model of sieve survival rates to predict optimal algorithm parameters",
+    "rationale": "Angeltveit's parameters (A=6 or 10, B=24) were chosen by benchmarking, but the survival rate S(N) decreases predictably as N grows. A probabilistic model based on the random walk interpretation of Collatz trajectories (Lagarias-Weiss 1992) could predict optimal (A, B) for any target N without expensive trial runs. This would also predict the total computation required for verification targets like N=75, 77, or 80.",
+    "first_step": "Model each Collatz step as a Bernoulli random variable: odd with probability p = ln(2)/(ln(2)+ln(2)) is incorrect; actually, for random odd numbers, half the time T(n) is odd and half even. Use the known heuristic that f_k/k → ln(2)/(ln(2)+ln(3)) ≈ 0.387. Derive the distribution of dip_B(m) values analytically using the CLT applied to the random walk S_k = 306k - 485f_k. Compare predicted BV_i densities against Angeltveit's Figure 4.1.",
+    "expected_signal": "Predicted BV_0 density within 10% of the measured 0.0199 (Angeltveit's Table). If the model is accurate, it can predict computation time for N=72 to within a factor of 2, enabling informed resource planning for verification campaigns."
+  },
+  {
+    "direction": "Explore FPGA implementation of the bitvector sieve stage for power-efficient verification",
+    "rationale": "GPUs are power-hungry (300W+ for modern cards). The bitvector sieve operation (bitwise AND + popcount) is ideal for FPGA implementation: it requires no floating point, minimal branching, and high throughput on simple bitwise operations. An FPGA cluster could achieve comparable throughput at 10-50x lower power consumption, making large-scale volunteer computing more accessible.",
+    "first_step": "Design an RTL module for the bitvector AND + popcount operation targeting Xilinx Alveo U250. Estimate throughput based on FPGA clock speed (250 MHz) × pipeline depth × number of parallel AND units. Compare energy efficiency (candidates/joule) against RTX 3060 GPU.",
+    "expected_signal": "FPGA throughput within 2x of GPU for the bitvector stage, at 10-20x lower power. If confirmed, this opens the door to FPGA-based volunteer computing for Collatz verification."
+  }
+]

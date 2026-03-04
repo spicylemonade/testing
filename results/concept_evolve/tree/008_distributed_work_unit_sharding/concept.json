@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "distributed_work_unit_sharding",
+  "description": "Barina distributes work across supercomputers in units of 2^40 consecutive integers (~10s on GPU). Angeltveit shards by residue class (55 to 278699 cases of similar runtime). Both face distributed computing challenges of fault tolerance and progress tracking.",
+  "domains": ["distributed_computing", "fault_tolerance", "computational_number_theory"],
+  "mathematical_formalization": "Barina: partition [1, 2^N] into intervals [i*2^40, (i+1)*2^40). Angeltveit: partition by residue classes mod 2^k, yielding C(k) cases. Load balance: Var(T_i) / E[T_i]^2 measures uniformity.",
+  "analogical_connections": [
+    "MapReduce shuffling — partition by key for balanced loads",
+    "BOINC volunteer computing — distribute independent work units with checkpointing",
+    "Consistent hashing in distributed databases"
+  ],
+  "implementation_hypothesis": "Work-unit server tracks completion status. For Angeltveit sharding, precompute ~278699 cases on coordinator, assign batches to GPU workers. Workers report checksums. Coordinator validates against CPU reference sample.",
+  "experiment_seed": "Simulate both sharding strategies for N=72 with heterogeneous GPU fleet. Measure makespan, load imbalance, network overhead."
+}

@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "path_merging_deduplication",
+  "description": "The Path-Merging Sieve detects when the trajectory of n joins the trajectory of a smaller number n_1, even if T^k(n) has not yet descended below n. If T^k(n) is congruent to 2 mod 3 and (2*T^k(n) - 1)/3 < n, then n's path merges with a previously-verified path. Analogous to common subexpression elimination in compilers.",
+  "domains": ["number_theory", "compiler_optimization", "distributed_systems"],
+  "mathematical_formalization": "If m = T^k(n) and m is congruent to 2 mod 3, then m = T((2m-1)/3). If (2m-1)/3 < n, convergence of (2m-1)/3 implies convergence of n. Detection: m mod 3 depends only on last k bits of n.",
+  "analogical_connections": [
+    "Common subexpression elimination in compilers",
+    "Content-addressable deduplication in storage",
+    "Topological sort merging in DAGs"
+  ],
+  "implementation_hypothesis": "Track m mod 3 using Lemma 2.8 (count even steps after last odd step) instead of explicit division. Implement as a 2-bit counter: reset on odd steps, increment on even steps. Path merging applies when counter is even and (2m-1)/3 < n.",
+  "experiment_seed": "Measure additional pruning rate beyond Descent Sieve alone for N=40..60. Compare mod-3 counter vs explicit modular arithmetic cost."
+}
