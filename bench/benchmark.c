@@ -235,12 +235,11 @@ static int decode_libdeflate(const uint8_t *src, size_t src_len,
     return (r == LIBDEFLATE_SUCCESS) ? 0 : -1;
 }
 
-/* 5. Our fast decoder (placeholder — returns -1 until implemented) */
+/* 5. Our fast decoder */
 static int decode_fast(const uint8_t *src, size_t src_len,
                        uint8_t *dst, size_t dst_cap, size_t *out_len) {
-    (void)src; (void)src_len; (void)dst; (void)dst_cap; (void)out_len;
-    /* TODO: call fd_inflate_fast once implemented */
-    return -1;
+    int rc = fd_inflate_fast(src, src_len, dst, dst_cap, out_len);
+    return (rc == FD_OK) ? 0 : -1;
 }
 
 /* ========================================================================== */
@@ -260,7 +259,7 @@ static decoder_entry_t decoders[MAX_DECODERS] = {
     { "zlib",       decode_zlib,       1 },
     { "zlib-ng",    decode_zlibng,     0 },  /* set at init */
     { "libdeflate", decode_libdeflate, 0 },  /* set at init */
-    { "fast",       decode_fast,       0 },  /* set when implemented */
+    { "fast",       decode_fast,       1 },  /* enabled: fd_inflate_fast */
 };
 
 #define MAX_CORPUS_FILES 100

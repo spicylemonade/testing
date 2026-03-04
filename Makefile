@@ -30,14 +30,17 @@ hello: $(SRC_DIR)/hello.c
 naive: $(SRC_DIR)/naive_inflate.c $(INCLUDE_DIR)/fast_deflate.h
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o test_naive $(SRC_DIR)/naive_inflate.c $(TEST_DIR)/test_correctness.c $(LDFLAGS)
 
-bench_harness: $(BENCH_DIR)/benchmark.c $(SRC_DIR)/naive_inflate.c $(INCLUDE_DIR)/fast_deflate.h
+bench_harness: $(BENCH_DIR)/benchmark.c $(SRC_DIR)/naive_inflate.c $(SRC_DIR)/fast_decode.c $(INCLUDE_DIR)/fast_deflate.h $(INCLUDE_DIR)/bitreader.h
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(LIBDEFLATE_DIR) \
-		-o $@ $< $(SRC_DIR)/naive_inflate.c \
+		-o $@ $< $(SRC_DIR)/naive_inflate.c $(SRC_DIR)/fast_decode.c \
 		$(LIBDEFLATE_DIR)/libdeflate.a \
 		$(LDFLAGS) -lm -ldl
 
 test_correctness: $(TEST_DIR)/test_correctness.c $(SRC_DIR)/naive_inflate.c $(INCLUDE_DIR)/fast_deflate.h
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o $@ $< $(SRC_DIR)/naive_inflate.c $(LDFLAGS)
+
+test_fast: $(TEST_DIR)/test_fast.c $(SRC_DIR)/fast_decode.c $(INCLUDE_DIR)/fast_deflate.h $(INCLUDE_DIR)/bitreader.h
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o $@ $(TEST_DIR)/test_fast.c $(SRC_DIR)/fast_decode.c $(LDFLAGS)
 
 test_correctness_asan: $(TEST_DIR)/test_correctness.c $(SRC_DIR)/naive_inflate.c $(INCLUDE_DIR)/fast_deflate.h
 	$(CC) $(CFLAGS) $(SANITIZE_FLAGS) -I$(INCLUDE_DIR) -o $@ $< $(SRC_DIR)/naive_inflate.c $(LDFLAGS)

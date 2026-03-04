@@ -368,9 +368,4 @@ int fd_inflate(const uint8_t *src, size_t src_len,
     return FD_OK;
 }
 
-/* For now, fast version just calls naive version */
-int fd_inflate_fast(const uint8_t *src, size_t src_len,
-                    uint8_t *dst, size_t dst_len,
-                    size_t *out_len) {
-    return fd_inflate(src, src_len, dst, dst_len, out_len);
-}
+/* fd_inflate_fast is now in src/fast_decode.c */
