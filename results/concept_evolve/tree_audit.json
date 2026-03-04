@@ -1,0 +1,95 @@
+{
+  "audit": "concept_evolve/tree",
+  "date": "2026-03-04",
+  "item": "item_026",
+  "folder_count": 14,
+  "note_on_duplicates": "Concepts 001-012 each have two folder variants: underscore-separated (e.g., 001_parallel_bit_stream_structural_indexing) and hyphen-separated (e.g., 001_parallel-bit-stream-structural-indexing). Both variants contain concept.json and README.md; the underscore variants additionally contain literature.json. Concepts 013 and 014 have only underscore-variant folders. The index.json canonical paths reference hyphen variants for 001-012 and underscore variants for 013-014. Total physical folders: 26 (12 pairs + 2 singletons = 14 unique concepts).",
+  "complete_folders": [
+    "001_parallel-bit-stream-structural-indexing",
+    "001_parallel_bit_stream_structural_indexing",
+    "002_clmul-quote-pairing",
+    "002_clmul_quote_pairing",
+    "003_speculative-row-length-prediction",
+    "003_speculative_row_length_prediction",
+    "004_cache-friendly-columnar-materialization",
+    "004_cache_friendly_columnar_materialization",
+    "005_vectorized-character-classification",
+    "005_vectorized_character_classification",
+    "006_finite-automaton-to-dataflow",
+    "006_finite_automaton_to_dataflow",
+    "007_branchless-state-machine-encoding",
+    "007_branchless_state_machine_encoding",
+    "008_entropy-guided-field-width-prediction",
+    "008_entropy_guided_field_width_prediction",
+    "009_simd-utf8-validation-fusion",
+    "009_simd_utf8_validation_fusion",
+    "010_two-phase-parsing-architecture",
+    "010_two_phase_parsing_architecture",
+    "011_adaptive-chunk-sizing",
+    "011_adaptive_chunk_sizing",
+    "012_zero-copy-field-extraction",
+    "012_zero_copy_field_extraction",
+    "013_speculative_execution_transfer",
+    "014_optimistic_parsing_protocols"
+  ],
+  "incomplete_folders": [],
+  "missing_links": [
+    {
+      "from": "vectorized_character_classification",
+      "to": "clmul_quote_pairing",
+      "rationale": "Concept 005 (vectorized classification) produces per-category bitmasks including the quote bitmask, which is the direct input to concept 002 (CLMUL quote pairing). The classification-to-quote-pairing pipeline is the core Phase 1 dataflow, yet adjacency.json has no edge from 005 to 002."
+    },
+    {
+      "from": "speculative_row_length_prediction",
+      "to": "entropy_guided_field_width_prediction",
+      "rationale": "Concept 003 (row-length prediction) and concept 008 (field-width prediction) are closely coupled — row-length is the sum of field widths. The reverse edge (008 -> 003) exists, but the forward edge (003 -> 008) is missing. Row-length prediction residuals could inform field-width entropy estimation."
+    },
+    {
+      "from": "vectorized_character_classification",
+      "to": "branchless_state_machine_encoding",
+      "rationale": "Concept 005 (classification) outputs character class labels that feed directly into concept 007 (branchless FSM). The FSM's (state, character_class) lookup table consumes classification output. No edge exists between them in adjacency.json."
+    },
+    {
+      "from": "speculative_execution_transfer",
+      "to": "two_phase_parsing_architecture",
+      "rationale": "Concept 013 (speculative execution) checkpoints parser state before speculative Phase 2 work and rolls back on misprediction. This directly depends on the two-phase split (concept 010). Concept 014 has this edge, but 013 does not."
+    },
+    {
+      "from": "optimistic_parsing_protocols",
+      "to": "clmul_quote_pairing",
+      "rationale": "Concept 014 (optimistic parsing) relies on chunk-boundary validation that uses quote-parity resolution (concept 002) to detect mid-quoted-field splits. No edge exists from 014 to 002."
+    },
+    {
+      "from": "simd_utf8_validation_fusion",
+      "to": "vectorized_character_classification",
+      "rationale": "Concept 009 (UTF-8 validation fusion) fuses validation into the same PSHUFB pipeline used by concept 005 (character classification). They share the same SIMD instruction stream. The reverse edge (005 -> 009 via 001) exists indirectly, but no direct edge from 009 to 005."
+    }
+  ],
+  "blind_spot_concepts": [
+    {
+      "id": "proposed_015",
+      "name": "SIMD-aware memory allocator",
+      "symbolic_name": "simd_aware_memory_allocator",
+      "rationale": "Experiments show allocation reduction ranges 6.9x (utf8_heavy) to 200x (wide_table), but per-byte throughput still varies 3.3x across datasets (1127-3682 MB/s). Phase 2 consumes 31.2% of total time and is bottlenecked by pointer-chasing in structural index arrays. A SIMD-width-aligned arena allocator that pre-allocates field output buffers at 32/64-byte boundaries would eliminate per-field allocation overhead, reduce L1d miss rate from cross-buffer writes, and allow Phase 2 field extraction to use aligned SIMD stores (VMOVDQA) instead of unaligned stores.",
+      "suggested_adjacency": [
+        "cache_friendly_columnar_materialization",
+        "zero_copy_field_extraction",
+        "two_phase_parsing_architecture"
+      ],
+      "evidence": "speculation_analysis.json shows alloc_reduction_factor varies 6.9-200x; hardware_counters.json shows Phase 2 at 31.2% of total time with L1d miss rate 1.5% driven by dual-pointer access pattern"
+    },
+    {
+      "id": "proposed_016",
+      "name": "Structural density adaptive dispatch",
+      "symbolic_name": "structural_density_adaptive_dispatch",
+      "rationale": "Throughput correlates r=-0.82 with structural character density: simple_uniform (high delimiter density, ~1 structural char per 7.8 bytes) achieves 1234 MB/s, while embedded_newlines (low density, ~1 per 73 bytes) achieves 3682 MB/s. Dynamically switching between a dense extraction algorithm (bitmask iteration with TZCNT loop for high-density blocks) and a sparse extraction algorithm (memchr-style SIMD seeking for low-density blocks) based on popcount of the structural bitmask per 64-byte block could optimize across all dataset types. The dispatch decision is a single POPCNT instruction per block.",
+      "suggested_adjacency": [
+        "parallel_bit_stream_structural_indexing",
+        "adaptive_chunk_sizing",
+        "vectorized_character_classification",
+        "two_phase_parsing_architecture"
+      ],
+      "evidence": "throughput_matrix.json shows 3x throughput range across datasets; embedded_newlines (sparse structure) is 3x faster than simple_uniform (dense structure) despite similar SIMD Phase 1 costs, indicating Phase 2 extraction strategy should adapt to structural density"
+    }
+  ]
+}
