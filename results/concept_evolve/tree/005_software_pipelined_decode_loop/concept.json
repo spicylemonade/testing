@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "software_pipelined_decode_loop",
+  "description": "Apply software pipelining (modulo scheduling) to the SIMD Base64 decode loop so that the load, lookup, pack, and store phases of consecutive iterations overlap on the CPU's execution units. This hides latency of each phase behind useful work from adjacent iterations.",
+  "domains": ["compiler optimization", "computer architecture", "SIMD vectorization"],
+  "mathematical_formalization": "Let L=load_latency, K=lookup_latency, P=pack_latency, S=store_latency. Without pipelining: cycles/iter = L+K+P+S. With software pipelining: cycles/iter = max(L,K,P,S) + startup_cost/N. For AVX-512: ~8 cycles/64 bytes = 0.125 cycles/byte.",
+  "analogical_connections": [
+    "Factory assembly line: each station works on a different product simultaneously",
+    "CPU instruction pipeline: 5-stage RISC pipeline overlaps stages",
+    "Streaming media: double-buffering overlaps decode with display"
+  ],
+  "implementation_hypothesis": "Unroll the decode loop 4x and interleave instructions: iteration i load, iteration i-1 lookup, iteration i-2 pack, iteration i-3 store. Use register renaming to avoid WAW hazards.",
+  "experiment_seed": "Write straightforward and 4-stage pipelined versions. Benchmark at 64KB input. Use perf to measure IPC and pipeline stalls. Target: >0.8 IPC for pipelined version."
+}

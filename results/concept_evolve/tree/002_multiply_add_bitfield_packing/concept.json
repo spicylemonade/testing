@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "multiply_add_bitfield_packing",
+  "description": "Exploit the PMADDUBSW and PMADDWD multiply-accumulate instructions to pack four 6-bit decoded values into three output bytes using only two instructions, replacing the naive 9-instruction shift/mask/or sequence. This treats the 4-to-3 byte packing as a linear algebra problem over integers.",
+  "domains": ["linear algebra", "digital signal processing", "SIMD vectorization"],
+  "mathematical_formalization": "Input: [00dddddd|00cccccc|00bbbbbb|00aaaaaa]. Step 1: PMADDUBSW(input, [0x01,0x40,0x01,0x40,...]) = [0000ccccccdddddd|0000aaaaaabbbbbb]. Step 2: PMADDWD(result, [0x0001,0x1000,...]) = [00000000aaaaaabbbbbbccccccdddddd]. Total: 2 multiply-add ops.",
+  "analogical_connections": [
+    "DSP: FIR filter where tap coefficients perform bit-position routing",
+    "Linear algebra: matrix-vector multiply where the matrix encodes bit-permutation",
+    "Codec design: quantization step in JPEG where multiply-add reorders DCT coefficients"
+  ],
+  "implementation_hypothesis": "For AVX-512, use VPMADDUBSW (zmm) + VPMADDWD (zmm) to pack 64 decoded 6-bit values into 48 output bytes per iteration. Follow with VPERMB to compact the 48 useful bytes.",
+  "experiment_seed": "Compare cycles/byte of multiply-add packing vs naive shift-or packing on Zen4 and Sapphire Rapids. Verify correctness with all 2^24 possible 4-char inputs."
+}

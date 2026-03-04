@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "pshufb_nibble_lookup",
+  "description": "Use the PSHUFB (packed shuffle bytes) instruction as a 16-entry lookup table indexed by the high nibble of each input byte to simultaneously resolve Base64 character-to-6-bit-value mappings for 16/32/64 bytes in parallel. This technique, pioneered by Muła, reduces the lookup from a 256-entry scalar table to three PSHUFB operations (shift LUT, lower-bound LUT, upper-bound LUT) operating on 4-bit nibble indices, achieving 0.75 instructions per character for the lookup phase alone.",
+  "domains": ["SIMD vectorization", "compiler intrinsics", "signal processing"],
+  "mathematical_formalization": "For input byte b: nibble_hi = b >> 4; shift = PSHUFB(shift_LUT, nibble_hi); lower = PSHUFB(lower_LUT, nibble_hi); upper = PSHUFB(upper_LUT, nibble_hi); valid = (b >= lower) AND (b <= upper); decoded = b + shift. Cost: O(k) instructions for k SIMD lanes, amortized O(1) per byte.",
+  "analogical_connections": [
+    "Signal processing: decimation-in-frequency where high bits select a sub-band",
+    "Database systems: hash partitioning by prefix bits for parallel probe",
+    "Cryptography: S-box substitution in AES using byte-shuffle instructions"
+  ],
+  "implementation_hypothesis": "Extend the bitmask variant to AVX-512 VBMI using VPERMB for full 64-byte lookup in a single instruction, eliminating the nibble-split step entirely. Estimated cost: 5-7 instructions per 64 input bytes for lookup+validate.",
+  "experiment_seed": "Benchmark VPERMB-based lookup vs PSHUFB-bitmask on Ice Lake / Sapphire Rapids. Measure cycles/byte for the lookup phase alone at L1-resident sizes (4KB). Compare instruction count via perf stat."
+}

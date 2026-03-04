@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "sve_vector_length_agnostic_decode",
+  "description": "Design a Base64 decoder using ARM's Scalable Vector Extension (SVE/SVE2) that is Vector-Length Agnostic (VLA), automatically scaling from 128-bit to 2048-bit vector widths without code changes. SVE's predication and first-faulting loads enable clean handling of variable-length tails and error detection without scalar fallback paths.",
+  "domains": [
+    "computer architecture",
+    "portable SIMD",
+    "ARM ecosystem"
+  ],
+  "mathematical_formalization": "Let VL = vector length in bytes (unknown at compile time). Each iteration processes VL input bytes, producing (3/4)*VL output bytes. SVE whilelt/whilelo generates predicate masks for tail handling: p = whilelt(i, n); data = svld1_u8(p, &input[i]). The decode kernel is VL-independent: svtbl for lookup, svmad for packing. Loop: for(i=0; svptest_any(p); i+=VL) { p=whilelt(i,n); decode(p,&in[i],&out[j]); j+=(3*svcount(p))/4; }",
+  "analogical_connections": [
+    "GPU SIMT: warp-level programming where lane count is abstracted away",
+    "MapReduce: partition-agnostic processing where framework handles data distribution",
+    "FPGA HLS: parameterized datapath width that synthesizes to available resources"
+  ],
+  "implementation_hypothesis": "Write SVE intrinsics code using svtbl (table lookup across the full vector) for character-to-value mapping, svmad (multiply-add) for bit packing, and svst1 with predicates for masked stores. The lookup table fits in a single SVE register when VL>=64; for VL=16 (128-bit NEON mode), fall back to dual svtbl. Test on Graviton3 (256-bit SVE) and Fujitsu A64FX (512-bit SVE).",
+  "experiment_seed": "Cross-compile for SVE, test on Graviton3 via AWS. Benchmark at VL=256 bits and compare throughput/byte against hand-tuned NEON code. Also test the same binary on a 512-bit SVE simulator to verify VLA correctness.",
+  "folder_plan": {
+    "concept_json": "tree/006_sve_vector_length_agnostic_decode/concept.json",
+    "readme": "tree/006_sve_vector_length_agnostic_decode/README.md",
+    "literature": "tree/006_sve_vector_length_agnostic_decode/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.204698+00:00",
+  "project_folder": "concept_evolve/tree/006_sve-vector-length-agnostic-decode"
+}

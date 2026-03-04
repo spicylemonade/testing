@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "galois_field_affine_transform",
+  "description": "Use the AVX-512 GFNI instruction VGF2P8AFFINEQB to perform arbitrary 8x8 bit-matrix transformations on each byte, enabling single-instruction Base64 lookup, validation, and bit-rearrangement. Each byte is multiplied by an 8x8 bit matrix over GF(2) then XORed with a constant, which can encode the entire ASCII-to-6-bit mapping as a linear transformation over bit-fields.",
+  "domains": [
+    "abstract algebra",
+    "cryptography",
+    "SIMD vectorization"
+  ],
+  "mathematical_formalization": "VGF2P8AFFINEQB(src, matrix, imm8) computes for each byte b_i: result_i = (matrix * b_i) XOR imm8, where multiplication is over GF(2). If we define M such that M maps ASCII Base64 chars to their 6-bit values, we get a single-instruction lookup. The Base64 alphabet is not a single linear function, but we can decompose into 2-3 affine regions and blend results.",
+  "analogical_connections": [
+    "Cryptography: AES SubBytes uses the same GF(2^8) inverse + affine transform",
+    "Error correction: Reed-Solomon encoding multiplies data by generator matrix over GF(2^8)",
+    "Digital logic: any combinational logic function of 8 inputs can be expressed as affine + nonlinear terms"
+  ],
+  "implementation_hypothesis": "Decompose the Base64 decode table into affine regions: uppercase (A-Z maps to 0-25), lowercase (a-z maps to 26-51), digits (0-9 maps to 52-61), and symbols (+,/ map to 62,63). For each region, compute an affine matrix M_i and blend results using mask comparison. Requires ~4 VGF2P8AFFINEQB + 3 mask blend operations for full lookup+validate. Test on Ice Lake and newer with GFNI support.",
+  "experiment_seed": "Implement GF-affine Base64 lookup and compare instruction count and throughput against PSHUFB-bitmask approach. Verify on all 256 input byte values that the mapping is correct for valid chars and flags invalid chars.",
+  "folder_plan": {
+    "concept_json": "tree/003_galois_field_affine_transform/concept.json",
+    "readme": "tree/003_galois_field_affine_transform/README.md",
+    "literature": "tree/003_galois_field_affine_transform/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.203407+00:00",
+  "project_folder": "concept_evolve/tree/003_galois-field-affine-transform"
+}

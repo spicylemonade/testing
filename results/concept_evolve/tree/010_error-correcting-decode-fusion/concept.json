@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "error_correcting_decode_fusion",
+  "description": "Fuse the Base64 decode with downstream error-detection (CRC/checksum) computation in a single SIMD pass, borrowing from the concept of fused decode+ECC in communication receivers. Since many Base64 payloads are immediately checksummed (e.g., in JWT verification, S/MIME), computing the checksum during decode eliminates a second pass over the data.",
+  "domains": [
+    "error correcting codes",
+    "cryptography",
+    "systems optimization"
+  ],
+  "mathematical_formalization": "Let D(x) = Base64 decode of input x, and C(y) = CRC32 of decoded output y. Normally: cost = T_D + T_C (two passes). Fused: as each 48-byte decoded block is produced in a ZMM register, immediately compute CRC32 on it before storing. Using VPCLMULQDQ (carry-less multiply), CRC32 of 64 bytes costs ~8 instructions. Fused cost: T_D + delta (where delta << T_C because data is already in registers).",
+  "analogical_connections": [
+    "Communication receivers: Viterbi decode + CRC check in single pipeline stage",
+    "Database: predicate pushdown computes WHERE clause during decompression scan",
+    "Image processing: fused debayer + white-balance in a single shader pass"
+  ],
+  "implementation_hypothesis": "After the multiply-add packing step produces 48 decoded bytes in a ZMM register, feed those bytes directly into a CRC32 computation using VPCLMULQDQ (or CRC32 instruction for 8 bytes at a time). Maintain a running CRC state across blocks. At the end, compare against expected CRC. This adds ~2-3 instructions per 48-byte block on top of the decode cost.",
+  "experiment_seed": "Implement fused decode+CRC32 and compare against separate decode then CRC32. Measure total cycles for 1MB input. Expected: fused saves ~40% of the standalone CRC32 cost due to eliminating reload from memory.",
+  "folder_plan": {
+    "concept_json": "tree/010_error_correcting_decode_fusion/concept.json",
+    "readme": "tree/010_error_correcting_decode_fusion/README.md",
+    "literature": "tree/010_error_correcting_decode_fusion/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.206365+00:00",
+  "project_folder": "concept_evolve/tree/010_error-correcting-decode-fusion"
+}

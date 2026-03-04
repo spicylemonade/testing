@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "multiply_add_bitfield_packing",
+  "description": "Exploit the PMADDUBSW and PMADDWD multiply-accumulate instructions to pack four 6-bit decoded values into three output bytes using only two instructions, replacing the naive 9-instruction shift/mask/or sequence. This treats the 4-to-3 byte packing as a linear algebra problem over integers: the 6-bit fields are multiplied by carefully chosen constants and accumulated to produce the correctly-positioned output bits.",
+  "domains": [
+    "linear algebra",
+    "digital signal processing",
+    "SIMD vectorization"
+  ],
+  "mathematical_formalization": "Input: [00dddddd|00cccccc|00bbbbbb|00aaaaaa]. Step 1: PMADDUBSW(input, [0x01,0x40,0x01,0x40,...]) = [0000ccccccdddddd|0000aaaaaabbbbbb]. Step 2: PMADDWD(result, [0x0001,0x1000,...]) = [00000000aaaaaabbbbbbccccccdddddd]. Total: 2 multiply-add ops replacing 3 shifts + 3 ANDs + 3 ORs.",
+  "analogical_connections": [
+    "DSP: FIR filter where tap coefficients perform bit-position routing",
+    "Linear algebra: matrix-vector multiply where the matrix encodes bit-permutation",
+    "Codec design: quantization step in JPEG where multiply-add reorders DCT coefficients"
+  ],
+  "implementation_hypothesis": "For AVX-512, use VPMADDUBSW (zmm) + VPMADDWD (zmm) to pack 64 decoded 6-bit values into 48 output bytes per iteration. Follow with VPERMB to compact the 48 useful bytes from the 64-byte register. The two multiply-add instructions have latency 4 but throughput 0.5 on modern cores, so software-pipeline two decode blocks to hide latency.",
+  "experiment_seed": "Compare cycles/byte of multiply-add packing vs naive shift-or packing on Zen4 (AVX-512) and Sapphire Rapids. Verify correctness with all 2^24 possible 4-char inputs.",
+  "folder_plan": {
+    "concept_json": "tree/002_multiply_add_bitfield_packing/concept.json",
+    "readme": "tree/002_multiply_add_bitfield_packing/README.md",
+    "literature": "tree/002_multiply_add_bitfield_packing/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.201250+00:00",
+  "project_folder": "concept_evolve/tree/002_multiply-add-bitfield-packing"
+}

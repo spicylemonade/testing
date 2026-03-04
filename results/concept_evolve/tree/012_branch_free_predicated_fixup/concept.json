@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "branch_free_predicated_fixup",
+  "description": "Design a fully branchless Base64 decoder where all conditional operations (error handling, padding detection, whitespace skipping) are expressed as predicated/conditional-move operations. Eliminates branch misprediction penalties that dominate small-input performance.",
+  "domains": ["branchless programming", "computer architecture", "real-time systems"],
+  "mathematical_formalization": "Branch misprediction cost: ~15-20 cycles. For 32-byte input (8 iters), 1 mispredict costs 1.875 cycles/byte. Branchless C_cmov ~ 1 cycle. Savings when P(mispredict) > 1/15 ~ 7%.",
+  "analogical_connections": [
+    "GPU shaders: all control flow is predicated for SIMT coherence",
+    "Real-time systems: WCET analysis requires branchless code",
+    "Branchless UTF-8 decoder by Chris Wellons"
+  ],
+  "implementation_hypothesis": "Express '+' vs '/' fixup as conditional add: fix = CMPEQ(input, 0x2f) AND -3; decoded += fix. Detect '=' with CMPEQ and zero, count at end. Zero branches in hot loop.",
+  "experiment_seed": "Benchmark on short inputs (16-128 bytes). Compare branchless vs branching. Measure branch-misses counter. Target: 0 misses in decode loop."
+}

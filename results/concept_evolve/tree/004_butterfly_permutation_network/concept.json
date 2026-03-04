@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "butterfly_permutation_network",
+  "description": "Apply the butterfly permutation network concept from FFT algorithms to design the byte-compaction step where 64 decoded bytes (with 16 holes from the 4:3 ratio) must be compacted into 48 contiguous output bytes. The butterfly network provides O(n log n) wiring with fixed permutation patterns, mappable to SIMD shuffle/permute cascades.",
+  "domains": ["signal processing", "network routing", "SIMD vectorization"],
+  "mathematical_formalization": "Given 64 bytes where every 4th byte is garbage, need permutation P: {0..63} -> {0..47} that extracts bytes at positions {0,1,2, 4,5,6, 8,9,10, ...}. On AVX-512 VBMI: P = VPERMB(indices, data) in 1 instruction (latency 3). On AVX2: P = VPERMD + VPSHUFB cascade (2-3 instructions).",
+  "analogical_connections": [
+    "FFT: Cooley-Tukey butterfly reorders frequency bins between radix stages",
+    "Network switching: Benes network achieves arbitrary permutation with 2*log(n)-1 stages",
+    "Genomics: de Bruijn sequence permutations for k-mer extraction"
+  ],
+  "implementation_hypothesis": "On AVX-512 VBMI, use single VPERMB with precomputed index vector. On AVX2, decompose into VPERMD (dword permute) + VPSHUFB (byte shuffle within lanes). On NEON, use TBL/TBX with 2 register sources.",
+  "experiment_seed": "Measure the compaction phase cost in isolation on AVX-512-VBMI vs AVX2 vs NEON. Count cycles and verify output correctness for edge cases."
+}

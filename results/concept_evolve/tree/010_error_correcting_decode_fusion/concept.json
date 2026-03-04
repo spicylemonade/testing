@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "error_correcting_decode_fusion",
+  "description": "Fuse Base64 decode with downstream error-detection (CRC/checksum) in a single SIMD pass, borrowing from fused decode+ECC in communication receivers. Since many Base64 payloads are immediately checksummed (JWT, S/MIME), computing the checksum during decode eliminates a second pass over the data.",
+  "domains": ["error correcting codes", "cryptography", "systems optimization"],
+  "mathematical_formalization": "Normally: cost = T_decode + T_CRC (two passes). Fused: each 48-byte decoded block feeds directly into CRC32 via VPCLMULQDQ before storing. Fused cost: T_decode + delta where delta << T_CRC because data is already in registers.",
+  "analogical_connections": [
+    "Communication receivers: Viterbi decode + CRC check in single pipeline",
+    "Database: predicate pushdown during decompression scan",
+    "Image processing: fused debayer + white-balance in single shader pass"
+  ],
+  "implementation_hypothesis": "After multiply-add packing produces 48 bytes in ZMM, feed directly into CRC32 using VPCLMULQDQ. Maintain running CRC state across blocks. Adds ~2-3 instructions per 48-byte block.",
+  "experiment_seed": "Implement fused decode+CRC32 vs separate decode then CRC32. Measure total cycles for 1MB input. Expected: fused saves ~40% of standalone CRC cost."
+}

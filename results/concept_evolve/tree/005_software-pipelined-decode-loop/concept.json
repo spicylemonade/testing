@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "software_pipelined_decode_loop",
+  "description": "Apply software pipelining (also called modulo scheduling) to the SIMD Base64 decode loop so that the load, lookup, pack, and store phases of consecutive iterations overlap on the CPU's execution units. This hides the latency of each phase behind useful work from adjacent iterations, approaching the theoretical throughput limit of the narrowest pipeline stage.",
+  "domains": [
+    "compiler optimization",
+    "computer architecture",
+    "SIMD vectorization"
+  ],
+  "mathematical_formalization": "Let L=load_latency, K=lookup_latency, P=pack_latency, S=store_latency. Without pipelining: cycles/iter = L+K+P+S. With software pipelining of depth d: cycles/iter = max(L,K,P,S) + startup_cost/N where N=total_iterations. For base64 with AVX-512: L~5, K~7, P~8, S~5. Pipelined: ~8 cycles/64 bytes = 0.125 cycles/byte vs unpipelined 25 cycles/64 bytes = 0.39 cycles/byte.",
+  "analogical_connections": [
+    "Factory assembly line: each station works on a different product simultaneously",
+    "CPU instruction pipeline: 5-stage RISC pipeline overlaps fetch/decode/execute/memory/writeback",
+    "Streaming media: double-buffering in video decode overlaps decode of frame N with display of frame N-1"
+  ],
+  "implementation_hypothesis": "Unroll the decode loop 4x and interleave instructions: iteration i load, iteration i-1 lookup, iteration i-2 pack, iteration i-3 store. Use register renaming to avoid WAW hazards. On ARM NEON, interleave LD4 (deinterleaving load) with TBL (lookup) from previous iteration. Measure throughput improvement over non-pipelined version.",
+  "experiment_seed": "Write two versions: (A) straightforward loop, (B) 4-stage software-pipelined loop. Benchmark both at 64KB input size (L1 miss, L2 hit). Use perf to measure IPC and pipeline stalls. Target: pipelined version should achieve >0.8 IPC vs <0.5 IPC for naive.",
+  "folder_plan": {
+    "concept_json": "tree/005_software_pipelined_decode_loop/concept.json",
+    "readme": "tree/005_software_pipelined_decode_loop/README.md",
+    "literature": "tree/005_software_pipelined_decode_loop/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.204299+00:00",
+  "project_folder": "concept_evolve/tree/005_software-pipelined-decode-loop"
+}

@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "turbo_parallel_belief_check",
+  "description": "Borrow the iterative belief-propagation concept from LDPC/Turbo code decoders to design a two-pass Base64 validation scheme: a fast first pass decodes optimistically (assuming valid input), while a lightweight second pass propagates 'belief' about character validity backward from padding to catch malformed inputs. This separates the fast path (no errors) from the slow path (error localization).",
+  "domains": [
+    "error correcting codes",
+    "information theory",
+    "SIMD text processing"
+  ],
+  "mathematical_formalization": "Pass 1 (decode): For each 64-byte block, compute decoded = lookup(input). Set error_flag |= has_invalid(decoded). Store decoded output. Pass 2 (validate, only if error_flag): Binary search for error position using vectorized comparison. Cost: Pass 1 = C_decode cycles. Pass 2 = 0 (no errors, common case) or O(log(N)) probes. Expected total: C_decode + epsilon.",
+  "analogical_connections": [
+    "LDPC decoding: separate variable-node and check-node updates in belief propagation",
+    "Speculative execution: CPU executes past branches and rolls back on mispredict",
+    "Optimistic concurrency control: proceed without locks, validate at commit time"
+  ],
+  "implementation_hypothesis": "In the main loop, accumulate error flags into a single 64-bit mask (one bit per iteration). If the mask is zero after processing all input, validation passes with zero overhead. If nonzero, use _tzcnt_u64 to find the first errored block, then scan that block byte-by-byte for the exact error position. This avoids any per-byte branching in the common case.",
+  "experiment_seed": "Benchmark three scenarios: (1) all-valid input, (2) error at byte 0, (3) error at last byte. Measure cycles/byte for each. Target: scenario 1 should be identical to no-validation decode; scenario 2-3 should add <100ns total.",
+  "folder_plan": {
+    "concept_json": "tree/009_turbo_parallel_belief_check/concept.json",
+    "readme": "tree/009_turbo_parallel_belief_check/README.md",
+    "literature": "tree/009_turbo_parallel_belief_check/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.205957+00:00",
+  "project_folder": "concept_evolve/tree/009_turbo-parallel-belief-check"
+}

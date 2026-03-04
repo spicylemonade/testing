@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "wider_vector_amortization",
+  "description": "Analyze the throughput scaling law as SIMD vector width doubles from 128 to 256 to 512 to 1024+ bits. Each doubling doubles the data processed per instruction but introduces new costs: cross-lane operations become more expensive, and AVX-512 may cause frequency throttling on some microarchitectures. Determine the optimal vector width for Base64 decode on current and projected hardware.",
+  "domains": [
+    "computer architecture",
+    "performance modeling",
+    "microarchitecture"
+  ],
+  "mathematical_formalization": "Throughput T(w) = (w/8 * 3/4) / (C_lookup(w) + C_pack(w) + C_compact(w) + C_overhead(w)) bytes/cycle. For SSE (w=128): T = 12 / ~14 = 0.86 B/c. For AVX2 (w=256): T = 24 / ~14 = 1.71 B/c. For AVX-512 (w=512): T = 48 / ~10 = 4.8 B/c. For AVX-512-VBMI: T = 48 / ~7 = 6.86 B/c. Scaling is super-linear from SSE to AVX-512-VBMI because wider vectors unlock new instructions (VPERMB) that eliminate multi-instruction fallbacks.",
+  "analogical_connections": [
+    "GPU compute: warp width (32 vs 64 lanes) affects occupancy and register pressure tradeoffs",
+    "Amdahl's law: serial fraction (tail handling, padding) limits speedup from wider vectors",
+    "DRAM bandwidth: wider vectors approach memory bandwidth limits faster, shifting bottleneck"
+  ],
+  "implementation_hypothesis": "Implement Base64 decode at all four widths (SSE4.2, AVX2, AVX-512BW, AVX-512VBMI) with identical algorithmic structure. Benchmark on a single core at each width. Plot throughput vs vector width. Also measure the impact of AVX-512 frequency throttling by monitoring actual clock speed during the benchmark. On Zen4 (no throttling), expect near-linear scaling; on older Intel, expect sub-linear due to downclocking.",
+  "experiment_seed": "Run benchmarks on: Intel Sapphire Rapids (AVX-512 no throttle), Intel Haswell (AVX2 only), AMD Zen4 (AVX-512 no throttle), and Apple M2 (NEON 128-bit). Plot GB/s vs vector width. Correlate with uarch events (frequency, port utilization).",
+  "folder_plan": {
+    "concept_json": "tree/011_wider_vector_amortization/concept.json",
+    "readme": "tree/011_wider_vector_amortization/README.md",
+    "literature": "tree/011_wider_vector_amortization/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.206861+00:00",
+  "project_folder": "concept_evolve/tree/011_wider-vector-amortization"
+}

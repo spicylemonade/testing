@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "cache_oblivious_block_decode",
+  "description": "Apply cache-oblivious algorithm design principles to the Base64 decoder's memory access pattern, ensuring optimal cache utilization across all levels (L1/L2/L3) without tuning block sizes to specific hardware. Process input in recursively-halved blocks so that when a block fits in cache, the entire decode (load+lookup+pack+store) completes with minimal cache misses.",
+  "domains": [
+    "cache optimization",
+    "algorithm design",
+    "systems programming"
+  ],
+  "mathematical_formalization": "For input of size N bytes and cache of size M with line size B: Standard streaming decode has Q(N) = N/B cache misses (optimal for streaming). But if decode is interleaved with consumer (e.g., JSON parser reading decoded output), working set = input_block + output_block. Cache-oblivious blocking: process chunks of size sqrt(M) so both input and output fit in cache. Q(N) = O(N/B) remains optimal but with better constant factors due to temporal locality.",
+  "analogical_connections": [
+    "Matrix multiplication: cache-oblivious recursive blocking achieves O(N^3/(B*sqrt(M))) misses",
+    "Database query processing: grace hash join partitions to fit in cache before probing",
+    "Video transcoding: tile-based processing keeps reference frames and output in L2"
+  ],
+  "implementation_hypothesis": "Provide a streaming API: base64_decode_chunk(input, input_len, output, state). Internally, process in blocks of 3072 bytes (decodes to 2304 bytes; both fit in 8KB, well within L1). The block size is chosen as a multiple of 64 (AVX-512 width) * 4 (decode ratio) = 256 byte alignment. Between blocks, flush the output pointer and prefetch the next input block with _mm_prefetch(input + 3072, _MM_HINT_T0).",
+  "experiment_seed": "Benchmark decode throughput at sizes 1KB, 4KB, 16KB, 64KB, 256KB, 1MB, 10MB. Compare blocked (3072B chunks with prefetch) vs streaming (process all at once). Measure L1/L2/L3 miss rates with perf. Expected: blocked version wins at 64KB-1MB range.",
+  "folder_plan": {
+    "concept_json": "tree/008_cache_oblivious_block_decode/concept.json",
+    "readme": "tree/008_cache_oblivious_block_decode/README.md",
+    "literature": "tree/008_cache_oblivious_block_decode/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.205539+00:00",
+  "project_folder": "concept_evolve/tree/008_cache-oblivious-block-decode"
+}

@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "wider_vector_amortization",
+  "description": "Analyze the throughput scaling law as SIMD vector width doubles from 128 to 256 to 512 to 1024+ bits. Each doubling doubles data per instruction but may introduce cross-lane costs and frequency throttling. Determine the optimal vector width for Base64 decode on current and projected hardware.",
+  "domains": ["computer architecture", "performance modeling", "microarchitecture"],
+  "mathematical_formalization": "T(w) = (w/8 * 3/4) / (C_lookup(w) + C_pack(w) + C_compact(w) + C_overhead(w)) bytes/cycle. SSE: T~0.86 B/c. AVX2: T~1.71 B/c. AVX-512: T~4.8 B/c. AVX-512-VBMI: T~6.86 B/c. Scaling is super-linear due to unlocking better instructions at wider widths.",
+  "analogical_connections": [
+    "GPU compute: warp width affects occupancy and register pressure",
+    "Amdahl's law: serial fraction limits speedup from wider vectors",
+    "DRAM bandwidth: wider vectors approach bandwidth limits faster"
+  ],
+  "implementation_hypothesis": "Implement decode at SSE4.2, AVX2, AVX-512BW, AVX-512VBMI widths with identical structure. Plot throughput vs width. Measure frequency throttling impact.",
+  "experiment_seed": "Run benchmarks on Sapphire Rapids, Haswell, Zen4, Apple M2. Plot GB/s vs vector width. Correlate with uarch events."
+}

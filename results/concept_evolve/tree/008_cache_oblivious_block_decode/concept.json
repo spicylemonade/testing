@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "cache_oblivious_block_decode",
+  "description": "Apply cache-oblivious algorithm design principles to the Base64 decoder's memory access pattern, ensuring optimal cache utilization across all levels without tuning block sizes to specific hardware. Process input in blocks so that both input and output fit in L1 cache simultaneously.",
+  "domains": ["cache optimization", "algorithm design", "systems programming"],
+  "mathematical_formalization": "For input N bytes, cache M, line size B: streaming decode has Q(N) = N/B misses. With blocking at size sqrt(M): input block + output block both fit in cache. Process 3072-byte blocks (decodes to 2304 bytes; both fit in 8KB within L1). Prefetch next block with _mm_prefetch.",
+  "analogical_connections": [
+    "Matrix multiplication: cache-oblivious recursive blocking achieves O(N^3/(B*sqrt(M)))",
+    "Database query processing: grace hash join partitions to fit in cache",
+    "Video transcoding: tile-based processing keeps frames in L2"
+  ],
+  "implementation_hypothesis": "Provide streaming API: base64_decode_chunk(input, len, output, state). Process 3072-byte blocks (multiple of 64*48). Add prefetch for next block. Measure L1/L2/L3 miss rates.",
+  "experiment_seed": "Benchmark at sizes 1KB-10MB. Compare blocked (3072B) vs unblocked. Measure cache miss rates with perf. Expected: blocked wins at 64KB-1MB."
+}

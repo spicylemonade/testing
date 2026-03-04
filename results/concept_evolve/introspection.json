@@ -1,0 +1,84 @@
+{
+  "associations": [
+    {
+      "trigger": "Base64 as radix conversion",
+      "expansion": "Base64 is fundamentally a radix-256 to radix-64 conversion. Every radix conversion can be viewed as polynomial evaluation at a different base. The Chinese Remainder Theorem allows decomposing large-radix conversions into independent small-radix conversions — this is exactly what SIMD exploits: processing each 4-byte group independently."
+    },
+    {
+      "trigger": "Lookup table as matrix multiplication",
+      "expansion": "A 256-entry lookup table is equivalent to multiplication by a 256x8 binary matrix. The PSHUFB nibble decomposition is equivalent to factoring this matrix as M = M_hi * M_lo where M_hi and M_lo are 16x8 matrices. GFNI's VGF2P8AFFINEQB makes this matrix multiplication explicit. All lookup techniques are matrix factorizations with different rank/sparsity tradeoffs."
+    },
+    {
+      "trigger": "Decode pipeline as dataflow graph",
+      "expansion": "The decode pipeline (load → lookup → validate → pack → compact → store) is a directed acyclic graph. Software pipelining is equivalent to retiming this DAG to minimize the critical path. The optimal schedule is the solution to an integer linear program over instruction latencies and port constraints."
+    },
+    {
+      "trigger": "Base64 as erasure code",
+      "expansion": "Base64 encoding adds 33% redundancy (4 bytes encode 3 bytes of data). An erasure code with rate 3/4 adds exactly this much redundancy. If we view Base64 as a 'code', the valid codeword space is much smaller than the full byte space — this is why validation is cheap (most random bytes are invalid Base64)."
+    },
+    {
+      "trigger": "SIMD registers as cache",
+      "expansion": "A ZMM register (64 bytes) is effectively a programmer-managed L0 cache with 1-cycle access. The key to high-throughput decode is keeping data in registers across pipeline stages (lookup → pack → CRC). Spilling to memory between stages negates the SIMD advantage."
+    },
+    {
+      "trigger": "Vector length agnosticism as parametric polymorphism",
+      "expansion": "SVE's VLA is analogous to generic programming: the algorithm is parameterized by vector width, and the hardware provides the type parameter at runtime. This suggests a type-theoretic framework for reasoning about SIMD portability."
+    }
+  ],
+  "blind_spots": [
+    {
+      "area": "Whitespace handling in real-world Base64",
+      "description": "RFC 2045 (MIME) allows line breaks and whitespace within Base64 data. Most SIMD decoders assume clean (no-whitespace) input. Handling whitespace requires a compaction step (remove whitespace bytes, then decode), which is itself a SIMD problem (VPCOMPRESSB on AVX-512). Ignoring this makes benchmarks unrealistically favorable."
+    },
+    {
+      "area": "Small input performance",
+      "description": "Most benchmarks use large inputs (1MB+) where amortized throughput dominates. For many real-world uses (JWT tokens: ~200 bytes, HTTP Basic Auth: ~50 bytes, data URIs: variable), startup overhead dominates. The SIMD setup cost (loading constants, function call overhead) may exceed the scalar decode time for inputs under ~64 bytes."
+    },
+    {
+      "area": "Non-standard alphabets and URL-safe Base64",
+      "description": "Base64url (RFC 4648 §5) uses '-' and '_' instead of '+' and '/'. The PSHUFB lookup tables must be different, and the GFNI affine matrices change. A truly general solution must handle multiple alphabets efficiently, ideally with runtime-selectable constants (as Muła/Lemire 2019 paper suggests is possible with AVX-512)."
+    },
+    {
+      "area": "Multi-core scaling",
+      "description": "All research focuses on single-core performance. For very large payloads (10MB+), multi-core decode could provide additional speedup, but requires partitioning the input at 4-byte boundaries. This is trivial for clean input but complex with whitespace."
+    },
+    {
+      "area": "Memory allocator interaction",
+      "description": "The decoder must write to an output buffer. If the caller provides a too-small buffer or requires allocation, the allocation cost can dominate the decode cost for small inputs. A robust implementation needs a strategy for output buffer management."
+    },
+    {
+      "area": "Compiler auto-vectorization gaps",
+      "description": "Modern compilers (GCC, Clang, MSVC) cannot auto-vectorize Base64 decode from scalar C code because the lookup table access pattern is not recognized as vectorizable. All high-performance implementations require intrinsics or assembly. This limits portability to architectures with hand-written SIMD support."
+    },
+    {
+      "area": "Power and thermal implications",
+      "description": "AVX-512 use on some Intel processors causes significant frequency downclocking (up to 20% on Skylake-X). A decoder that uses AVX-512 may actually hurt overall application performance if the surrounding code benefits from higher clock speeds. The net benefit depends on the fraction of time spent in Base64 decode."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "What if the input is adversarial (designed to maximize decode time)?",
+      "analysis": "An adversarial input could place invalid characters at positions that maximize validation overhead. With the turbo_parallel_belief_check approach, the first pass is constant-time regardless of error positions, so adversarial inputs cannot cause timing side-channels. However, if the decoder reports exact error positions, an adversary can probe the decoder to determine internal buffer alignment."
+    },
+    {
+      "constraint": "What if vector registers are under pressure from surrounding code?",
+      "analysis": "If the decoder runs inside a hot loop that also uses SIMD registers (e.g., JSON parsing with simdjson), register spilling negates the benefit of keeping data in registers. The decoder should be designed with a small register footprint (e.g., 8 ZMM registers instead of 16) or provide a 'low-register' mode."
+    },
+    {
+      "constraint": "What if the input contains a mix of Base64 and non-Base64 data (e.g., multipart MIME)?",
+      "analysis": "The decoder must handle boundary detection: scanning for Base64 start/end markers while decoding the content. This is a SIMD string search problem (find '--boundary--' within the stream) that could be fused with the decode loop using the same PSHUFB/comparison infrastructure."
+    },
+    {
+      "constraint": "What if we target decode latency instead of throughput?",
+      "analysis": "Throughput-optimized decoders use wide vectors and software pipelining, which increase latency for small inputs. A latency-optimized decoder for 64-byte inputs should use SSE (128-bit) with no pipelining: ~14 instructions at 1 cycle/instruction = 14 cycles total. This is fundamentally different from the throughput-optimized design."
+    },
+    {
+      "constraint": "What if the output must be consumed in-order by a streaming parser?",
+      "analysis": "If decoded output is immediately consumed by a streaming parser (e.g., protobuf deserialization), the decoder and parser can be co-scheduled to share L1 cache. The cache_oblivious_block_decode concept directly addresses this: choose block sizes so both decode output and parser working set fit in L1."
+    },
+    {
+      "constraint": "What if we eliminate the 4:3 expansion ratio entirely?",
+      "analysis": "Base85 (RFC 1924) encodes 4 bytes as 5 characters (80% efficiency vs Base64's 75%). Base128 approaches have been proposed for binary-safe text channels. If we could change the encoding, the SIMD decode problem changes fundamentally: Base85 requires division/modulo which is not SIMD-friendly, while Base128 is trivially parallelizable (just strip high bits)."
+    }
+  ]
+}

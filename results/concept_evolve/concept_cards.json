@@ -1,0 +1,218 @@
+[
+  {
+    "symbolic_name": "pshufb_nibble_lookup",
+    "description": "Use the PSHUFB (packed shuffle bytes) instruction as a 16-entry lookup table indexed by the high nibble of each input byte to simultaneously resolve Base64 character-to-6-bit-value mappings for 16/32/64 bytes in parallel. This technique, pioneered by Muła, reduces the lookup from a 256-entry scalar table to three PSHUFB operations (shift LUT, lower-bound LUT, upper-bound LUT) operating on 4-bit nibble indices, achieving 0.75 instructions per character for the lookup phase alone.",
+    "domains": ["SIMD vectorization", "compiler intrinsics", "signal processing"],
+    "mathematical_formalization": "For input byte b: nibble_hi = b >> 4; shift = PSHUFB(shift_LUT, nibble_hi); lower = PSHUFB(lower_LUT, nibble_hi); upper = PSHUFB(upper_LUT, nibble_hi); valid = (b >= lower) AND (b <= upper); decoded = b + shift. Cost: O(k) instructions for k SIMD lanes, amortized O(1) per byte.",
+    "analogical_connections": [
+      "Signal processing: decimation-in-frequency where high bits select a sub-band",
+      "Database systems: hash partitioning by prefix bits for parallel probe",
+      "Cryptography: S-box substitution in AES using byte-shuffle instructions"
+    ],
+    "implementation_hypothesis": "Extend the bitmask variant (Muła's best SSE approach at 12 ops) to AVX-512 VBMI using VPERMB for full 64-byte lookup in a single instruction. On AVX-512 VBMI, replace the 3-PSHUFB nibble decomposition with a single VPERMB against a 64-entry table (since VPERMB indexes 64 bytes directly). This eliminates the nibble-split step entirely. Estimated cost: 5-7 instructions per 64 input bytes for lookup+validate.",
+    "experiment_seed": "Benchmark VPERMB-based lookup vs PSHUFB-bitmask on Ice Lake / Sapphire Rapids. Measure cycles/byte for the lookup phase alone at L1-resident sizes (4KB). Compare instruction count via perf stat.",
+    "folder_plan": {
+      "concept_json": "tree/001_pshufb_nibble_lookup/concept.json",
+      "readme": "tree/001_pshufb_nibble_lookup/README.md",
+      "literature": "tree/001_pshufb_nibble_lookup/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "multiply_add_bitfield_packing",
+    "description": "Exploit the PMADDUBSW and PMADDWD multiply-accumulate instructions to pack four 6-bit decoded values into three output bytes using only two instructions, replacing the naive 9-instruction shift/mask/or sequence. This treats the 4-to-3 byte packing as a linear algebra problem over integers: the 6-bit fields are multiplied by carefully chosen constants and accumulated to produce the correctly-positioned output bits.",
+    "domains": ["linear algebra", "digital signal processing", "SIMD vectorization"],
+    "mathematical_formalization": "Input: [00dddddd|00cccccc|00bbbbbb|00aaaaaa]. Step 1: PMADDUBSW(input, [0x01,0x40,0x01,0x40,...]) = [0000ccccccdddddd|0000aaaaaabbbbbb]. Step 2: PMADDWD(result, [0x0001,0x1000,...]) = [00000000aaaaaabbbbbbccccccdddddd]. Total: 2 multiply-add ops replacing 3 shifts + 3 ANDs + 3 ORs.",
+    "analogical_connections": [
+      "DSP: FIR filter where tap coefficients perform bit-position routing",
+      "Linear algebra: matrix-vector multiply where the matrix encodes bit-permutation",
+      "Codec design: quantization step in JPEG where multiply-add reorders DCT coefficients"
+    ],
+    "implementation_hypothesis": "For AVX-512, use VPMADDUBSW (zmm) + VPMADDWD (zmm) to pack 64 decoded 6-bit values into 48 output bytes per iteration. Follow with VPERMB to compact the 48 useful bytes from the 64-byte register. The two multiply-add instructions have latency 4 but throughput 0.5 on modern cores, so software-pipeline two decode blocks to hide latency.",
+    "experiment_seed": "Compare cycles/byte of multiply-add packing vs naive shift-or packing on Zen4 (AVX-512) and Sapphire Rapids. Verify correctness with all 2^24 possible 4-char inputs.",
+    "folder_plan": {
+      "concept_json": "tree/002_multiply_add_bitfield_packing/concept.json",
+      "readme": "tree/002_multiply_add_bitfield_packing/README.md",
+      "literature": "tree/002_multiply_add_bitfield_packing/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "galois_field_affine_transform",
+    "description": "Use the AVX-512 GFNI instruction VGF2P8AFFINEQB to perform arbitrary 8x8 bit-matrix transformations on each byte, enabling single-instruction Base64 lookup, validation, and bit-rearrangement. Each byte is multiplied by an 8x8 bit matrix over GF(2) then XORed with a constant, which can encode the entire ASCII-to-6-bit mapping as a linear transformation over bit-fields.",
+    "domains": ["abstract algebra", "cryptography", "SIMD vectorization"],
+    "mathematical_formalization": "VGF2P8AFFINEQB(src, matrix, imm8) computes for each byte b_i: result_i = (matrix * b_i) XOR imm8, where multiplication is over GF(2). If we define M such that M maps ASCII Base64 chars to their 6-bit values, we get a single-instruction lookup. The Base64 alphabet is not a single linear function, but we can decompose into 2-3 affine regions and blend results.",
+    "analogical_connections": [
+      "Cryptography: AES SubBytes uses the same GF(2^8) inverse + affine transform",
+      "Error correction: Reed-Solomon encoding multiplies data by generator matrix over GF(2^8)",
+      "Digital logic: any combinational logic function of 8 inputs can be expressed as affine + nonlinear terms"
+    ],
+    "implementation_hypothesis": "Decompose the Base64 decode table into affine regions: uppercase (A-Z maps to 0-25), lowercase (a-z maps to 26-51), digits (0-9 maps to 52-61), and symbols (+,/ map to 62,63). For each region, compute an affine matrix M_i and blend results using mask comparison. Requires ~4 VGF2P8AFFINEQB + 3 mask blend operations for full lookup+validate. Test on Ice Lake and newer with GFNI support.",
+    "experiment_seed": "Implement GF-affine Base64 lookup and compare instruction count and throughput against PSHUFB-bitmask approach. Verify on all 256 input byte values that the mapping is correct for valid chars and flags invalid chars.",
+    "folder_plan": {
+      "concept_json": "tree/003_galois_field_affine_transform/concept.json",
+      "readme": "tree/003_galois_field_affine_transform/README.md",
+      "literature": "tree/003_galois_field_affine_transform/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "butterfly_permutation_network",
+    "description": "Apply the butterfly permutation network concept from FFT algorithms to design the byte-compaction step where 64 decoded bytes (with 16 'holes' from the 4:3 ratio) must be compacted into 48 contiguous output bytes. The butterfly network provides O(n log n) wiring with fixed permutation patterns, mappable to SIMD shuffle/permute cascades.",
+    "domains": ["signal processing", "network routing", "SIMD vectorization"],
+    "mathematical_formalization": "Given 64 bytes where every 4th byte is garbage (from 4:3 decode ratio), need permutation P: {0..63} -> {0..47} that extracts bytes at positions {0,1,2, 4,5,6, 8,9,10, ...}. P decomposes into a butterfly network of depth log2(64)=6 stages, each using a fixed 2-input crossbar. On AVX-512: P = VPERMB(indices, data) in 1 instruction (latency 3).",
+    "analogical_connections": [
+      "FFT: Cooley-Tukey uses butterfly to reorder frequency bins between radix stages",
+      "Network switching: Beneš network achieves arbitrary permutation with 2*log(n)-1 stages",
+      "Genomics: de Bruijn sequence permutations for k-mer extraction from packed DNA sequences"
+    ],
+    "implementation_hypothesis": "On AVX-512 VBMI, a single VPERMB with a precomputed index vector extracts the 48 valid bytes from 64 decoded bytes. On AVX2 (no VPERMB), decompose into VPERMD (dword permute) + VPSHUFB (byte shuffle within lanes), requiring 2-3 instructions. On NEON, use TBL/TBX with 2 register sources. Compare the 1-instruction VPERMB path vs multi-instruction fallbacks.",
+    "experiment_seed": "Measure the compaction phase cost in isolation: load 64 decoded bytes, apply permutation, store 48 bytes. Count cycles on AVX-512-VBMI vs AVX2 vs NEON. Verify output correctness for edge cases (padding bytes).",
+    "folder_plan": {
+      "concept_json": "tree/004_butterfly_permutation_network/concept.json",
+      "readme": "tree/004_butterfly_permutation_network/README.md",
+      "literature": "tree/004_butterfly_permutation_network/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "software_pipelined_decode_loop",
+    "description": "Apply software pipelining (also called modulo scheduling) to the SIMD Base64 decode loop so that the load, lookup, pack, and store phases of consecutive iterations overlap on the CPU's execution units. This hides the latency of each phase behind useful work from adjacent iterations, approaching the theoretical throughput limit of the narrowest pipeline stage.",
+    "domains": ["compiler optimization", "computer architecture", "SIMD vectorization"],
+    "mathematical_formalization": "Let L=load_latency, K=lookup_latency, P=pack_latency, S=store_latency. Without pipelining: cycles/iter = L+K+P+S. With software pipelining of depth d: cycles/iter = max(L,K,P,S) + startup_cost/N where N=total_iterations. For base64 with AVX-512: L~5, K~7, P~8, S~5. Pipelined: ~8 cycles/64 bytes = 0.125 cycles/byte vs unpipelined 25 cycles/64 bytes = 0.39 cycles/byte.",
+    "analogical_connections": [
+      "Factory assembly line: each station works on a different product simultaneously",
+      "CPU instruction pipeline: 5-stage RISC pipeline overlaps fetch/decode/execute/memory/writeback",
+      "Streaming media: double-buffering in video decode overlaps decode of frame N with display of frame N-1"
+    ],
+    "implementation_hypothesis": "Unroll the decode loop 4x and interleave instructions: iteration i load, iteration i-1 lookup, iteration i-2 pack, iteration i-3 store. Use register renaming to avoid WAW hazards. On ARM NEON, interleave LD4 (deinterleaving load) with TBL (lookup) from previous iteration. Measure throughput improvement over non-pipelined version.",
+    "experiment_seed": "Write two versions: (A) straightforward loop, (B) 4-stage software-pipelined loop. Benchmark both at 64KB input size (L1 miss, L2 hit). Use perf to measure IPC and pipeline stalls. Target: pipelined version should achieve >0.8 IPC vs <0.5 IPC for naive.",
+    "folder_plan": {
+      "concept_json": "tree/005_software_pipelined_decode_loop/concept.json",
+      "readme": "tree/005_software_pipelined_decode_loop/README.md",
+      "literature": "tree/005_software_pipelined_decode_loop/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "sve_vector_length_agnostic_decode",
+    "description": "Design a Base64 decoder using ARM's Scalable Vector Extension (SVE/SVE2) that is Vector-Length Agnostic (VLA), automatically scaling from 128-bit to 2048-bit vector widths without code changes. SVE's predication and first-faulting loads enable clean handling of variable-length tails and error detection without scalar fallback paths.",
+    "domains": ["computer architecture", "portable SIMD", "ARM ecosystem"],
+    "mathematical_formalization": "Let VL = vector length in bytes (unknown at compile time). Each iteration processes VL input bytes, producing (3/4)*VL output bytes. SVE whilelt/whilelo generates predicate masks for tail handling: p = whilelt(i, n); data = svld1_u8(p, &input[i]). The decode kernel is VL-independent: svtbl for lookup, svmad for packing. Loop: for(i=0; svptest_any(p); i+=VL) { p=whilelt(i,n); decode(p,&in[i],&out[j]); j+=(3*svcount(p))/4; }",
+    "analogical_connections": [
+      "GPU SIMT: warp-level programming where lane count is abstracted away",
+      "MapReduce: partition-agnostic processing where framework handles data distribution",
+      "FPGA HLS: parameterized datapath width that synthesizes to available resources"
+    ],
+    "implementation_hypothesis": "Write SVE intrinsics code using svtbl (table lookup across the full vector) for character-to-value mapping, svmad (multiply-add) for bit packing, and svst1 with predicates for masked stores. The lookup table fits in a single SVE register when VL>=64; for VL=16 (128-bit NEON mode), fall back to dual svtbl. Test on Graviton3 (256-bit SVE) and Fujitsu A64FX (512-bit SVE).",
+    "experiment_seed": "Cross-compile for SVE, test on Graviton3 via AWS. Benchmark at VL=256 bits and compare throughput/byte against hand-tuned NEON code. Also test the same binary on a 512-bit SVE simulator to verify VLA correctness.",
+    "folder_plan": {
+      "concept_json": "tree/006_sve_vector_length_agnostic_decode/concept.json",
+      "readme": "tree/006_sve_vector_length_agnostic_decode/README.md",
+      "literature": "tree/006_sve_vector_length_agnostic_decode/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "streaming_validation_automaton",
+    "description": "Borrow the SIMD-accelerated DFA validation technique from simdjson's UTF-8 validator to perform Base64 character validation as a streaming automaton. Instead of checking each character independently, maintain a vectorized state that tracks inter-character dependencies (padding rules: '=' only at end, must have 2 or 3 preceding valid chars). This enables single-pass validation without a separate error-checking branch.",
+    "domains": ["automata theory", "parsing", "SIMD text processing"],
+    "mathematical_formalization": "Define DFA states S = {NORMAL, PAD1, PAD2, DONE, ERROR}. Transition: delta(NORMAL, valid_char) = NORMAL; delta(NORMAL, '=') = PAD1; delta(PAD1, '=') = PAD2; delta(PAD2, any) = ERROR; delta(DONE, any) = ERROR. Vectorize by computing delta for 64 bytes simultaneously: classify each byte (PSHUFB nibble lookup), compute state transitions via saturating arithmetic, and reduce error flags with movemask/OR-reduce.",
+    "analogical_connections": [
+      "simdjson: UTF-8 validation uses PSHUFB to classify bytes and check state transitions in parallel",
+      "Network intrusion detection: Aho-Corasick pattern matching parallelized with SIMD for DPI",
+      "DNA sequencing: base quality validation in FASTQ files using vectorized range checks"
+    ],
+    "implementation_hypothesis": "In the main decode loop, compute an 'error accumulator' register that ORs together all invalid-character flags. Only check this accumulator after the entire input is processed (not per-iteration). For padding validation, use a separate end-of-stream check on the last 4 bytes. This eliminates all branches from the hot loop. Integrate with Muła's bitmask lookup which already produces zero for invalid chars.",
+    "experiment_seed": "Test with crafted inputs containing errors at various positions (start, middle, end, padding violations). Measure overhead of validation vs decode-only (no validation). Target: <5% throughput cost for full validation.",
+    "folder_plan": {
+      "concept_json": "tree/007_streaming_validation_automaton/concept.json",
+      "readme": "tree/007_streaming_validation_automaton/README.md",
+      "literature": "tree/007_streaming_validation_automaton/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "cache_oblivious_block_decode",
+    "description": "Apply cache-oblivious algorithm design principles to the Base64 decoder's memory access pattern, ensuring optimal cache utilization across all levels (L1/L2/L3) without tuning block sizes to specific hardware. Process input in recursively-halved blocks so that when a block fits in cache, the entire decode (load+lookup+pack+store) completes with minimal cache misses.",
+    "domains": ["cache optimization", "algorithm design", "systems programming"],
+    "mathematical_formalization": "For input of size N bytes and cache of size M with line size B: Standard streaming decode has Q(N) = N/B cache misses (optimal for streaming). But if decode is interleaved with consumer (e.g., JSON parser reading decoded output), working set = input_block + output_block. Cache-oblivious blocking: process chunks of size sqrt(M) so both input and output fit in cache. Q(N) = O(N/B) remains optimal but with better constant factors due to temporal locality.",
+    "analogical_connections": [
+      "Matrix multiplication: cache-oblivious recursive blocking achieves O(N^3/(B*sqrt(M))) misses",
+      "Database query processing: grace hash join partitions to fit in cache before probing",
+      "Video transcoding: tile-based processing keeps reference frames and output in L2"
+    ],
+    "implementation_hypothesis": "Provide a streaming API: base64_decode_chunk(input, input_len, output, state). Internally, process in blocks of 3072 bytes (decodes to 2304 bytes; both fit in 8KB, well within L1). The block size is chosen as a multiple of 64 (AVX-512 width) * 4 (decode ratio) = 256 byte alignment. Between blocks, flush the output pointer and prefetch the next input block with _mm_prefetch(input + 3072, _MM_HINT_T0).",
+    "experiment_seed": "Benchmark decode throughput at sizes 1KB, 4KB, 16KB, 64KB, 256KB, 1MB, 10MB. Compare blocked (3072B chunks with prefetch) vs streaming (process all at once). Measure L1/L2/L3 miss rates with perf. Expected: blocked version wins at 64KB-1MB range.",
+    "folder_plan": {
+      "concept_json": "tree/008_cache_oblivious_block_decode/concept.json",
+      "readme": "tree/008_cache_oblivious_block_decode/README.md",
+      "literature": "tree/008_cache_oblivious_block_decode/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "turbo_parallel_belief_check",
+    "description": "Borrow the iterative belief-propagation concept from LDPC/Turbo code decoders to design a two-pass Base64 validation scheme: a fast first pass decodes optimistically (assuming valid input), while a lightweight second pass propagates 'belief' about character validity backward from padding to catch malformed inputs. This separates the fast path (no errors) from the slow path (error localization).",
+    "domains": ["error correcting codes", "information theory", "SIMD text processing"],
+    "mathematical_formalization": "Pass 1 (decode): For each 64-byte block, compute decoded = lookup(input). Set error_flag |= has_invalid(decoded). Store decoded output. Pass 2 (validate, only if error_flag): Binary search for error position using vectorized comparison. Cost: Pass 1 = C_decode cycles. Pass 2 = 0 (no errors, common case) or O(log(N)) probes. Expected total: C_decode + epsilon.",
+    "analogical_connections": [
+      "LDPC decoding: separate variable-node and check-node updates in belief propagation",
+      "Speculative execution: CPU executes past branches and rolls back on mispredict",
+      "Optimistic concurrency control: proceed without locks, validate at commit time"
+    ],
+    "implementation_hypothesis": "In the main loop, accumulate error flags into a single 64-bit mask (one bit per iteration). If the mask is zero after processing all input, validation passes with zero overhead. If nonzero, use _tzcnt_u64 to find the first errored block, then scan that block byte-by-byte for the exact error position. This avoids any per-byte branching in the common case.",
+    "experiment_seed": "Benchmark three scenarios: (1) all-valid input, (2) error at byte 0, (3) error at last byte. Measure cycles/byte for each. Target: scenario 1 should be identical to no-validation decode; scenario 2-3 should add <100ns total.",
+    "folder_plan": {
+      "concept_json": "tree/009_turbo_parallel_belief_check/concept.json",
+      "readme": "tree/009_turbo_parallel_belief_check/README.md",
+      "literature": "tree/009_turbo_parallel_belief_check/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "error_correcting_decode_fusion",
+    "description": "Fuse the Base64 decode with downstream error-detection (CRC/checksum) computation in a single SIMD pass, borrowing from the concept of fused decode+ECC in communication receivers. Since many Base64 payloads are immediately checksummed (e.g., in JWT verification, S/MIME), computing the checksum during decode eliminates a second pass over the data.",
+    "domains": ["error correcting codes", "cryptography", "systems optimization"],
+    "mathematical_formalization": "Let D(x) = Base64 decode of input x, and C(y) = CRC32 of decoded output y. Normally: cost = T_D + T_C (two passes). Fused: as each 48-byte decoded block is produced in a ZMM register, immediately compute CRC32 on it before storing. Using VPCLMULQDQ (carry-less multiply), CRC32 of 64 bytes costs ~8 instructions. Fused cost: T_D + delta (where delta << T_C because data is already in registers).",
+    "analogical_connections": [
+      "Communication receivers: Viterbi decode + CRC check in single pipeline stage",
+      "Database: predicate pushdown computes WHERE clause during decompression scan",
+      "Image processing: fused debayer + white-balance in a single shader pass"
+    ],
+    "implementation_hypothesis": "After the multiply-add packing step produces 48 decoded bytes in a ZMM register, feed those bytes directly into a CRC32 computation using VPCLMULQDQ (or CRC32 instruction for 8 bytes at a time). Maintain a running CRC state across blocks. At the end, compare against expected CRC. This adds ~2-3 instructions per 48-byte block on top of the decode cost.",
+    "experiment_seed": "Implement fused decode+CRC32 and compare against separate decode then CRC32. Measure total cycles for 1MB input. Expected: fused saves ~40% of the standalone CRC32 cost due to eliminating reload from memory.",
+    "folder_plan": {
+      "concept_json": "tree/010_error_correcting_decode_fusion/concept.json",
+      "readme": "tree/010_error_correcting_decode_fusion/README.md",
+      "literature": "tree/010_error_correcting_decode_fusion/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "wider_vector_amortization",
+    "description": "Analyze the throughput scaling law as SIMD vector width doubles from 128 to 256 to 512 to 1024+ bits. Each doubling doubles the data processed per instruction but introduces new costs: cross-lane operations become more expensive, and AVX-512 may cause frequency throttling on some microarchitectures. Determine the optimal vector width for Base64 decode on current and projected hardware.",
+    "domains": ["computer architecture", "performance modeling", "microarchitecture"],
+    "mathematical_formalization": "Throughput T(w) = (w/8 * 3/4) / (C_lookup(w) + C_pack(w) + C_compact(w) + C_overhead(w)) bytes/cycle. For SSE (w=128): T = 12 / ~14 = 0.86 B/c. For AVX2 (w=256): T = 24 / ~14 = 1.71 B/c. For AVX-512 (w=512): T = 48 / ~10 = 4.8 B/c. For AVX-512-VBMI: T = 48 / ~7 = 6.86 B/c. Scaling is super-linear from SSE to AVX-512-VBMI because wider vectors unlock new instructions (VPERMB) that eliminate multi-instruction fallbacks.",
+    "analogical_connections": [
+      "GPU compute: warp width (32 vs 64 lanes) affects occupancy and register pressure tradeoffs",
+      "Amdahl's law: serial fraction (tail handling, padding) limits speedup from wider vectors",
+      "DRAM bandwidth: wider vectors approach memory bandwidth limits faster, shifting bottleneck"
+    ],
+    "implementation_hypothesis": "Implement Base64 decode at all four widths (SSE4.2, AVX2, AVX-512BW, AVX-512VBMI) with identical algorithmic structure. Benchmark on a single core at each width. Plot throughput vs vector width. Also measure the impact of AVX-512 frequency throttling by monitoring actual clock speed during the benchmark. On Zen4 (no throttling), expect near-linear scaling; on older Intel, expect sub-linear due to downclocking.",
+    "experiment_seed": "Run benchmarks on: Intel Sapphire Rapids (AVX-512 no throttle), Intel Haswell (AVX2 only), AMD Zen4 (AVX-512 no throttle), and Apple M2 (NEON 128-bit). Plot GB/s vs vector width. Correlate with uarch events (frequency, port utilization).",
+    "folder_plan": {
+      "concept_json": "tree/011_wider_vector_amortization/concept.json",
+      "readme": "tree/011_wider_vector_amortization/README.md",
+      "literature": "tree/011_wider_vector_amortization/literature.json"
+    }
+  },
+  {
+    "symbolic_name": "branch_free_predicated_fixup",
+    "description": "Design a fully branchless Base64 decoder where all conditional operations (error handling, padding detection, whitespace skipping) are expressed as predicated/conditional-move operations. On ARM SVE, use native predication; on x86, use CMOV and masked operations. This eliminates branch misprediction penalties that dominate small-input performance.",
+    "domains": ["branchless programming", "computer architecture", "real-time systems"],
+    "mathematical_formalization": "Branch misprediction cost: C_mispredict ~ 15-20 cycles on modern x86. For a 32-byte input (8 iterations), even 1 mispredict costs 15/8 = 1.875 cycles/byte overhead. Branchless version: C_branchless = C_base + C_cmov where C_cmov ~ 1 cycle. Net savings when P(mispredict) * C_mispredict > C_cmov, i.e., when P(mispredict) > 1/15 ~ 7%. For mixed valid/invalid inputs or short payloads, this condition is easily met.",
+    "analogical_connections": [
+      "GPU shaders: all control flow is predicated to maintain SIMT coherence",
+      "Real-time systems: WCET analysis requires branchless code for predictable timing",
+      "Branchless UTF-8 decoder: Chris Wellons' approach eliminates all branches via bitmask arithmetic"
+    ],
+    "implementation_hypothesis": "For the '+' vs '/' special case in the PSHUFB lookup (where nibble 0x2 has two valid characters), use a conditional add: fix = (input == 0x2f) ? -3 : 0; decoded += fix. Express as: fix = _mm_and_si128(_mm_cmpeq_epi8(input, 0x2f), _mm_set1_epi8(-3)); decoded = _mm_add_epi8(decoded, fix). For padding: detect '=' bytes and zero them, then count at the end. No branches anywhere in the hot loop.",
+    "experiment_seed": "Benchmark on short inputs (16-128 bytes) where branch prediction has limited history. Compare branchless vs branching versions. Measure with perf branch-misses counter. Target: branchless version should show 0 branch misses in the decode loop.",
+    "folder_plan": {
+      "concept_json": "tree/012_branch_free_predicated_fixup/concept.json",
+      "readme": "tree/012_branch_free_predicated_fixup/README.md",
+      "literature": "tree/012_branch_free_predicated_fixup/literature.json"
+    }
+  }
+]

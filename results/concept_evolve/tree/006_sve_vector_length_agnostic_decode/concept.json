@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "sve_vector_length_agnostic_decode",
+  "description": "Design a Base64 decoder using ARM's Scalable Vector Extension (SVE/SVE2) that is Vector-Length Agnostic (VLA), automatically scaling from 128-bit to 2048-bit vector widths without code changes. SVE's predication and first-faulting loads enable clean tail handling and error detection.",
+  "domains": ["computer architecture", "portable SIMD", "ARM ecosystem"],
+  "mathematical_formalization": "Let VL = vector length in bytes. Each iteration: p = whilelt(i, n); data = svld1_u8(p, &input[i]); decode VL bytes; store (3/4)*VL bytes. Loop terminates when svptest_any(p) is false. The algorithm is VL-independent.",
+  "analogical_connections": [
+    "GPU SIMT: warp-level programming where lane count is abstracted",
+    "MapReduce: partition-agnostic processing",
+    "FPGA HLS: parameterized datapath width"
+  ],
+  "implementation_hypothesis": "Use svtbl for table lookup, svmad for bit packing, svst1 with predicates for masked stores. Test on Graviton3 (256-bit SVE) and A64FX (512-bit SVE).",
+  "experiment_seed": "Cross-compile for SVE, benchmark on Graviton3 via AWS. Compare against hand-tuned NEON. Test same binary on 512-bit SVE simulator."
+}

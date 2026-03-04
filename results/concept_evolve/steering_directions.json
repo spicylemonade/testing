@@ -1,0 +1,26 @@
+[
+  {
+    "direction": "GFNI-native Base64 decoder using VGF2P8AFFINEQB as the core primitive",
+    "rationale": "The GFNI instruction performs an arbitrary 8x8 bit-matrix multiply per byte for free (1 cycle latency, 0.5 throughput on Sapphire Rapids). Current SIMD Base64 decoders use 12-14 instructions for the lookup phase; a GFNI-based approach could reduce this to 4-6 instructions. No published work has explored GFNI for Base64 specifically. The instruction is available on all Intel processors since Ice Lake (2019) and on AMD since Zen4 (2022), so it has broad hardware support.",
+    "first_step": "Write a proof-of-concept that maps the Base64 decode table to 3-4 GF(2) affine transforms covering the ranges A-Z, a-z, 0-9, and +/ respectively. Use a VPTERNLOGD-based blend to select the correct affine result per byte. Test correctness against all 256 input byte values.",
+    "expected_signal": "If the GFNI lookup uses fewer than 8 total instructions (vs 12 for PSHUFB-bitmask), and the instruction mix avoids port contention with the subsequent PMADDUBSW packing, then this direction yields a measurable throughput gain. Benchmark target: >7 GB/s decode on a single Sapphire Rapids core."
+  },
+  {
+    "direction": "Unified SVE2 + NEON Base64 decoder with automatic vector-width scaling",
+    "rationale": "ARM server processors (Graviton3/4, Ampere Altra, Fujitsu A64FX) are gaining market share in cloud computing, yet Base64 SIMD work has focused primarily on x86. Existing ARM NEON implementations are limited to 128-bit vectors. SVE2 (available on Graviton3+) offers 256-bit vectors and predication, potentially doubling throughput. A VLA implementation would automatically benefit from future 512-bit or wider SVE implementations.",
+    "first_step": "Port the PSHUFB-bitmask lookup to SVE using svtbl (table lookup) and svmatch (character classification). Implement the multiply-add packing using svmad or svmla. Write a VLA loop using svwhilelt for predicated tail handling. Benchmark on Graviton3 (AWS c7g instances).",
+    "expected_signal": "SVE2 at 256-bit width should achieve ~1.8x the throughput of NEON at 128-bit width. If the VLA code also runs correctly (with reduced throughput) on a 128-bit SVE system, the portability thesis is validated."
+  },
+  {
+    "direction": "Fused decode+validate+CRC pipeline with zero-branch hot loop",
+    "rationale": "Real-world Base64 consumers (JWT verification, S/MIME, DKIM) immediately compute HMAC or CRC over decoded data. Two separate passes (decode, then hash/CRC) waste memory bandwidth. By fusing decode with CRC-32C (using VPCLMULQDQ) or with HMAC-SHA256 (absorbing decoded blocks into the hash state), we eliminate a full pass over the data. The zero-branch design ensures predictable performance regardless of input content, which is important for security-sensitive applications (constant-time decoding).",
+    "first_step": "Implement an AVX-512 decode loop that (1) decodes 64 Base64 chars to 48 bytes, (2) accumulates CRC-32C of the 48 bytes using VPCLMULQDQ, and (3) accumulates error flags — all without any conditional branches. Measure the marginal cost of CRC fusion vs decode-only.",
+    "expected_signal": "The fused decode+CRC should be no more than 15% slower than decode-only (because CRC computation is cheap when data is already in registers). Compared to decode followed by separate CRC, the fused version should be 30-40% faster end-to-end due to eliminated memory traffic."
+  },
+  {
+    "direction": "Adaptive multi-width decoder with runtime ISA detection",
+    "rationale": "Production libraries (like simdutf, which Muła/Lemire maintain) must run on diverse hardware. An adaptive decoder that detects the best available ISA at startup (scalar → SSE4.2 → AVX2 → AVX-512BW → AVX-512VBMI → GFNI) and dispatches to the optimal implementation provides the best real-world performance without requiring users to rebuild for each target. The key challenge is minimizing code size and maintenance burden across 5+ implementations.",
+    "first_step": "Design a common algorithm skeleton parameterized by vector width and available instructions. Implement the lookup phase as a template parameterized by instruction set (PSHUFB for SSE/AVX2, VPERMB for VBMI, VGF2P8AFFINEQB for GFNI). Use CPUID at startup to select the best path. Benchmark dispatch overhead.",
+    "expected_signal": "The dispatch overhead should be <10ns (a single indirect function call). Each ISA tier should achieve within 5% of a hand-tuned standalone implementation. Total code size across all tiers should be <10KB of machine code."
+  }
+]

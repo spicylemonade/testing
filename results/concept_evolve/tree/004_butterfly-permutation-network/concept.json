@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "butterfly_permutation_network",
+  "description": "Apply the butterfly permutation network concept from FFT algorithms to design the byte-compaction step where 64 decoded bytes (with 16 'holes' from the 4:3 ratio) must be compacted into 48 contiguous output bytes. The butterfly network provides O(n log n) wiring with fixed permutation patterns, mappable to SIMD shuffle/permute cascades.",
+  "domains": [
+    "signal processing",
+    "network routing",
+    "SIMD vectorization"
+  ],
+  "mathematical_formalization": "Given 64 bytes where every 4th byte is garbage (from 4:3 decode ratio), need permutation P: {0..63} -> {0..47} that extracts bytes at positions {0,1,2, 4,5,6, 8,9,10, ...}. P decomposes into a butterfly network of depth log2(64)=6 stages, each using a fixed 2-input crossbar. On AVX-512: P = VPERMB(indices, data) in 1 instruction (latency 3).",
+  "analogical_connections": [
+    "FFT: Cooley-Tukey uses butterfly to reorder frequency bins between radix stages",
+    "Network switching: Bene\u0161 network achieves arbitrary permutation with 2*log(n)-1 stages",
+    "Genomics: de Bruijn sequence permutations for k-mer extraction from packed DNA sequences"
+  ],
+  "implementation_hypothesis": "On AVX-512 VBMI, a single VPERMB with a precomputed index vector extracts the 48 valid bytes from 64 decoded bytes. On AVX2 (no VPERMB), decompose into VPERMD (dword permute) + VPSHUFB (byte shuffle within lanes), requiring 2-3 instructions. On NEON, use TBL/TBX with 2 register sources. Compare the 1-instruction VPERMB path vs multi-instruction fallbacks.",
+  "experiment_seed": "Measure the compaction phase cost in isolation: load 64 decoded bytes, apply permutation, store 48 bytes. Count cycles on AVX-512-VBMI vs AVX2 vs NEON. Verify output correctness for edge cases (padding bytes).",
+  "folder_plan": {
+    "concept_json": "tree/004_butterfly_permutation_network/concept.json",
+    "readme": "tree/004_butterfly_permutation_network/README.md",
+    "literature": "tree/004_butterfly_permutation_network/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.203877+00:00",
+  "project_folder": "concept_evolve/tree/004_butterfly-permutation-network"
+}

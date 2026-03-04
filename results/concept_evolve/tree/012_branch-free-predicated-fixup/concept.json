@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "branch_free_predicated_fixup",
+  "description": "Design a fully branchless Base64 decoder where all conditional operations (error handling, padding detection, whitespace skipping) are expressed as predicated/conditional-move operations. On ARM SVE, use native predication; on x86, use CMOV and masked operations. This eliminates branch misprediction penalties that dominate small-input performance.",
+  "domains": [
+    "branchless programming",
+    "computer architecture",
+    "real-time systems"
+  ],
+  "mathematical_formalization": "Branch misprediction cost: C_mispredict ~ 15-20 cycles on modern x86. For a 32-byte input (8 iterations), even 1 mispredict costs 15/8 = 1.875 cycles/byte overhead. Branchless version: C_branchless = C_base + C_cmov where C_cmov ~ 1 cycle. Net savings when P(mispredict) * C_mispredict > C_cmov, i.e., when P(mispredict) > 1/15 ~ 7%. For mixed valid/invalid inputs or short payloads, this condition is easily met.",
+  "analogical_connections": [
+    "GPU shaders: all control flow is predicated to maintain SIMT coherence",
+    "Real-time systems: WCET analysis requires branchless code for predictable timing",
+    "Branchless UTF-8 decoder: Chris Wellons' approach eliminates all branches via bitmask arithmetic"
+  ],
+  "implementation_hypothesis": "For the '+' vs '/' special case in the PSHUFB lookup (where nibble 0x2 has two valid characters), use a conditional add: fix = (input == 0x2f) ? -3 : 0; decoded += fix. Express as: fix = _mm_and_si128(_mm_cmpeq_epi8(input, 0x2f), _mm_set1_epi8(-3)); decoded = _mm_add_epi8(decoded, fix). For padding: detect '=' bytes and zero them, then count at the end. No branches anywhere in the hot loop.",
+  "experiment_seed": "Benchmark on short inputs (16-128 bytes) where branch prediction has limited history. Compare branchless vs branching versions. Measure with perf branch-misses counter. Target: branchless version should show 0 branch misses in the decode loop.",
+  "folder_plan": {
+    "concept_json": "tree/012_branch_free_predicated_fixup/concept.json",
+    "readme": "tree/012_branch_free_predicated_fixup/README.md",
+    "literature": "tree/012_branch_free_predicated_fixup/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.207274+00:00",
+  "project_folder": "concept_evolve/tree/012_branch-free-predicated-fixup"
+}

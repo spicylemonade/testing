@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "streaming_validation_automaton",
+  "description": "Borrow the SIMD-accelerated DFA validation technique from simdjson's UTF-8 validator to perform Base64 character validation as a streaming automaton. Instead of checking each character independently, maintain a vectorized state that tracks inter-character dependencies (padding rules: '=' only at end, must have 2 or 3 preceding valid chars). This enables single-pass validation without a separate error-checking branch.",
+  "domains": [
+    "automata theory",
+    "parsing",
+    "SIMD text processing"
+  ],
+  "mathematical_formalization": "Define DFA states S = {NORMAL, PAD1, PAD2, DONE, ERROR}. Transition: delta(NORMAL, valid_char) = NORMAL; delta(NORMAL, '=') = PAD1; delta(PAD1, '=') = PAD2; delta(PAD2, any) = ERROR; delta(DONE, any) = ERROR. Vectorize by computing delta for 64 bytes simultaneously: classify each byte (PSHUFB nibble lookup), compute state transitions via saturating arithmetic, and reduce error flags with movemask/OR-reduce.",
+  "analogical_connections": [
+    "simdjson: UTF-8 validation uses PSHUFB to classify bytes and check state transitions in parallel",
+    "Network intrusion detection: Aho-Corasick pattern matching parallelized with SIMD for DPI",
+    "DNA sequencing: base quality validation in FASTQ files using vectorized range checks"
+  ],
+  "implementation_hypothesis": "In the main decode loop, compute an 'error accumulator' register that ORs together all invalid-character flags. Only check this accumulator after the entire input is processed (not per-iteration). For padding validation, use a separate end-of-stream check on the last 4 bytes. This eliminates all branches from the hot loop. Integrate with Mu\u0142a's bitmask lookup which already produces zero for invalid chars.",
+  "experiment_seed": "Test with crafted inputs containing errors at various positions (start, middle, end, padding violations). Measure overhead of validation vs decode-only (no validation). Target: <5% throughput cost for full validation.",
+  "folder_plan": {
+    "concept_json": "tree/007_streaming_validation_automaton/concept.json",
+    "readme": "tree/007_streaming_validation_automaton/README.md",
+    "literature": "tree/007_streaming_validation_automaton/literature.json"
+  },
+  "generated_at": "2026-03-04T08:09:26.205117+00:00",
+  "project_folder": "concept_evolve/tree/007_streaming-validation-automaton"
+}

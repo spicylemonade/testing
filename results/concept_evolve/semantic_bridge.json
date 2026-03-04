@@ -1,0 +1,120 @@
+{
+  "nodes": [
+    {"id": "pshufb_nibble_lookup", "domain": "SIMD vectorization"},
+    {"id": "multiply_add_bitfield_packing", "domain": "linear algebra / DSP"},
+    {"id": "galois_field_affine_transform", "domain": "abstract algebra / cryptography"},
+    {"id": "butterfly_permutation_network", "domain": "signal processing / network routing"},
+    {"id": "software_pipelined_decode_loop", "domain": "compiler optimization / computer architecture"},
+    {"id": "sve_vector_length_agnostic_decode", "domain": "ARM architecture / portable SIMD"},
+    {"id": "streaming_validation_automaton", "domain": "automata theory / parsing"},
+    {"id": "cache_oblivious_block_decode", "domain": "cache optimization / algorithm design"},
+    {"id": "turbo_parallel_belief_check", "domain": "error correcting codes / information theory"},
+    {"id": "error_correcting_decode_fusion", "domain": "ECC / systems optimization"},
+    {"id": "wider_vector_amortization", "domain": "performance modeling / microarchitecture"},
+    {"id": "branch_free_predicated_fixup", "domain": "branchless programming / real-time systems"}
+  ],
+  "edges": [
+    {
+      "source": "pshufb_nibble_lookup",
+      "target": "galois_field_affine_transform",
+      "relation": "Both solve the same problem (byte-to-value lookup) but GFNI uses algebraic structure over GF(2) while PSHUFB uses a mechanical 4-bit index into a 16-entry table. GFNI generalizes PSHUFB by allowing the lookup to be an arbitrary linear function rather than a table."
+    },
+    {
+      "source": "pshufb_nibble_lookup",
+      "target": "streaming_validation_automaton",
+      "relation": "The PSHUFB nibble lookup simultaneously produces decoded values AND validity flags; the streaming validation automaton consumes these validity flags to track DFA state across the stream."
+    },
+    {
+      "source": "pshufb_nibble_lookup",
+      "target": "branch_free_predicated_fixup",
+      "relation": "The special-case handling for '+' and '/' in the PSHUFB lookup uses a branchless conditional-add fixup, which is the prototypical example of predicated fixup."
+    },
+    {
+      "source": "multiply_add_bitfield_packing",
+      "target": "butterfly_permutation_network",
+      "relation": "Multiply-add packs 6-bit values into 24-bit words, then the butterfly permutation network compacts the resulting bytes by removing padding gaps. They are sequential pipeline stages."
+    },
+    {
+      "source": "multiply_add_bitfield_packing",
+      "target": "error_correcting_decode_fusion",
+      "relation": "The packed output from multiply-add is the natural input to fused CRC/checksum computation; keeping data in registers between these two operations is the key to fusion benefit."
+    },
+    {
+      "source": "galois_field_affine_transform",
+      "target": "error_correcting_decode_fusion",
+      "relation": "Both leverage GF(2) arithmetic: GFNI for the lookup, VPCLMULQDQ (carry-less multiply) for CRC computation. Processors with GFNI typically also have VPCLMULQDQ, enabling an all-algebraic decode+CRC pipeline."
+    },
+    {
+      "source": "butterfly_permutation_network",
+      "target": "wider_vector_amortization",
+      "relation": "Wider vectors make the compaction permutation more complex (more bytes to rearrange) but also unlock more powerful permute instructions (VPERMB for 64 bytes vs VPSHUFB for 16 bytes). The tradeoff shifts in favor of wider vectors when VPERMB is available."
+    },
+    {
+      "source": "software_pipelined_decode_loop",
+      "target": "cache_oblivious_block_decode",
+      "relation": "Software pipelining operates at the instruction level (overlapping stages within the loop body), while cache-oblivious blocking operates at the data level (choosing block sizes for cache efficiency). They are orthogonal optimizations that compose multiplicatively."
+    },
+    {
+      "source": "software_pipelined_decode_loop",
+      "target": "wider_vector_amortization",
+      "relation": "Wider vectors increase the latency of individual instructions (more data to process), making software pipelining more important to hide that latency. The pipeline depth should increase proportionally to instruction latency."
+    },
+    {
+      "source": "sve_vector_length_agnostic_decode",
+      "target": "branch_free_predicated_fixup",
+      "relation": "SVE natively supports predicated operations (every instruction can be masked by a predicate register), making branchless predicated fixup the natural programming model rather than an optimization."
+    },
+    {
+      "source": "sve_vector_length_agnostic_decode",
+      "target": "wider_vector_amortization",
+      "relation": "SVE's VLA design means the same code automatically benefits from wider vectors (128 to 2048 bits). It is the architectural answer to the wider_vector_amortization question: you don't need to choose a width, SVE adapts."
+    },
+    {
+      "source": "streaming_validation_automaton",
+      "target": "turbo_parallel_belief_check",
+      "relation": "The streaming automaton provides per-block error flags; the turbo belief check consumes these flags to decide whether a detailed second pass is needed. The automaton is the 'sensor' and belief check is the 'decision engine'."
+    },
+    {
+      "source": "turbo_parallel_belief_check",
+      "target": "error_correcting_decode_fusion",
+      "relation": "Both concepts fuse traditionally-separate passes into fewer passes. Turbo check fuses validation into decode; decode fusion fuses CRC into decode. The common principle is operation fusion to reduce memory traffic."
+    },
+    {
+      "source": "cache_oblivious_block_decode",
+      "target": "error_correcting_decode_fusion",
+      "relation": "Cache-oblivious blocking ensures the decoded data is still in L1 when the fused CRC computation runs, maximizing the benefit of fusion. Without blocking, decoded data may be evicted before CRC can consume it."
+    },
+    {
+      "source": "wider_vector_amortization",
+      "target": "galois_field_affine_transform",
+      "relation": "GFNI instructions operate on 512-bit vectors (AVX-512), so their benefit is only realized with wide vectors. The wider_vector_amortization analysis quantifies whether the GFNI approach is worthwhile at each vector width."
+    }
+  ],
+  "bridge_chains": [
+    {
+      "name": "Algebra-to-Architecture Bridge",
+      "path": ["galois_field_affine_transform", "wider_vector_amortization", "sve_vector_length_agnostic_decode"],
+      "description": "Crosses from abstract algebra (GF(2) affine transforms) through microarchitecture (vector width scaling) to ARM architecture (VLA design). This chain asks: can algebraic lookup techniques be expressed in a width-agnostic way so they automatically scale across hardware generations?"
+    },
+    {
+      "name": "Signal-Processing-to-Compiler Bridge",
+      "path": ["butterfly_permutation_network", "multiply_add_bitfield_packing", "software_pipelined_decode_loop"],
+      "description": "Crosses from signal processing (butterfly networks for data permutation) through DSP (multiply-add for bit packing) to compiler optimization (software pipelining). This chain asks: can the entire decode pipeline be expressed as a signal processing dataflow graph and optimally scheduled?"
+    },
+    {
+      "name": "Information-Theory-to-Systems Bridge",
+      "path": ["turbo_parallel_belief_check", "streaming_validation_automaton", "cache_oblivious_block_decode", "error_correcting_decode_fusion"],
+      "description": "Crosses from information theory (belief propagation for error detection) through automata theory (streaming validation DFA) to systems programming (cache-oblivious design and operation fusion). This chain asks: can we treat Base64 validation as an error-correction problem and fuse it with downstream integrity checks?"
+    },
+    {
+      "name": "Branchless-to-Portable Bridge",
+      "path": ["branch_free_predicated_fixup", "pshufb_nibble_lookup", "sve_vector_length_agnostic_decode"],
+      "description": "Crosses from low-level branchless programming through x86-specific SIMD techniques to portable ARM SVE. This chain asks: can we design a single branchless algorithm that is optimal on both x86 and ARM, using each ISA's native predication mechanisms?"
+    },
+    {
+      "name": "Crypto-to-Codec Bridge",
+      "path": ["galois_field_affine_transform", "error_correcting_decode_fusion", "turbo_parallel_belief_check"],
+      "description": "Crosses from cryptographic primitives (GFNI for lookup) through codec optimization (fused decode+CRC) to ECC-inspired validation (belief propagation). This chain explores using cryptographic hardware accelerators for non-cryptographic data transformation."
+    }
+  ]
+}
