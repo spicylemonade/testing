@@ -1,0 +1,146 @@
+{
+  "id": "impl_analysis",
+  "symbolic_name": "impl_analysis",
+  "description": "Comparative analysis of three high-performance DEFLATE decompression implementations: libdeflate, zlib-ng, and Intel ISA-L.",
+  "generated_at": "2026-03-04T06:30:00Z",
+
+  "implementations": {
+    "libdeflate": {
+      "language": "C with BMI2 target attribute dispatch",
+      "hot_loop_structure": {
+        "design": "Two-loop: fastloop (no bounds checks) + generic loop (safe tail)",
+        "fastloop_entry": "Branchless refill -> preload litlen entry -> test literal bit -> decode up to 3 literals inline -> if match: extract length+distance -> word-at-a-time copy",
+        "latency_hiding": "Next table preload issued before current match copy executes; saved_bitbuf avoids extra bit consumption steps",
+        "multi_symbol": "Up to 3 literals per fastloop iteration on 64-bit platforms"
+      },
+      "table_sizes": {
+        "litlen_primary_bits": 11,
+        "litlen_primary_entries": 2048,
+        "litlen_max_with_subtables": 2342,
+        "offset_primary_bits": 8,
+        "offset_primary_entries": 256,
+        "precode_bits": 7,
+        "entry_size_bytes": 4,
+        "subtable_levels": 1,
+        "dynamic_table_bits": "Yes - litlen table bits reduced when max code length < 11"
+      },
+      "optimizations": [
+        "Branchless 64-bit bit buffer refill (OR-based bitsleft update, no branches)",
+        "BMI2 BZHI instruction for variable-width bit extraction on Haswell+",
+        "Multi-symbol decode: up to 3 literals from single refill",
+        "Packed 32-bit table entries (symbol + length + extra bits in one u32)",
+        "Word-at-a-time match copy with special cases for distance=1 (RLE), distance<8",
+        "Five unconditional word stores for match copies before loop",
+        "saved_bitbuf pattern for extracting extra bits without separate consume step",
+        "Table construction via incremental doubling (cache-friendly)",
+        "Dynamic litlen table_bits to shrink table when codes are short",
+        "Whole-buffer API only (no streaming overhead)"
+      ],
+      "simd_usage": "None in decode loop. Word-at-a-time scalar copies only. SSE/AVX used for CRC32/Adler32 checksums.",
+      "throughput": {
+        "silesia_corpus_MB_per_s": 1100,
+        "vs_zlib": "2.3x faster",
+        "vs_zlib_ng": "1.5x faster",
+        "vs_isal": "~comparable (1.05-1.1x)"
+      }
+    },
+
+    "zlib_ng": {
+      "language": "C with SIMD intrinsics (SSE2, AVX2, NEON, VSX)",
+      "hot_loop_structure": {
+        "design": "Modified zlib inflate_fast() with optimized bit handling",
+        "key_changes": "Unconditional refill (from dougallj contributions), literal fastpath, optimized chunkset copies",
+        "streaming": "Full streaming support (stateful, save/restore context)"
+      },
+      "table_sizes": {
+        "litlen_primary_bits": 9,
+        "offset_primary_bits": 6,
+        "note": "Smaller tables than libdeflate, inherited from zlib's conservative design"
+      },
+      "optimizations": [
+        "SIMD-accelerated chunkset for match copies (SSE2/AVX2 16/32-byte chunks)",
+        "Unconditional bit buffer refill (contributed by dougallj)",
+        "Literal fastpath for runs of literal-only symbols",
+        "SIMD inflate match copy with chunkmemset for short distances",
+        "Compare256 functions using SIMD for string matching (compression)",
+        "Slide hash using SIMD (compression)",
+        "Maintains full zlib API compatibility (streaming, dictionary, etc.)"
+      ],
+      "simd_usage": "SSE2/AVX2 for match copies in inflate. SIMD heavily used in compression path (hash, match, slide).",
+      "throughput": {
+        "silesia_corpus_MB_per_s": 735,
+        "vs_zlib": "1.5x faster decompression",
+        "note": "Decompression is not the primary optimization focus; zlib-ng focuses more on compression speed"
+      }
+    },
+
+    "intel_isal": {
+      "language": "Hand-coded x86-64 NASM assembly with C fallback",
+      "hot_loop_structure": {
+        "design": "Speculative write pattern in assembly: write symbols as literals speculatively, branch back only for common case (literal)",
+        "dispatch": "Multi-binary dispatch: base(C) -> SSE2(_01) -> BMI2(_04) via mbin_dispatch_init5",
+        "multi_symbol": "Decode 1-3 symbols per lookup (sym_count field in table entry). Triple-symbol for blocks >4KB, double for >2KB, single for small blocks.",
+        "pipeline": "Speculative next-lookup preloaded before current symbol is fully processed; read_in reload overlapped with decode"
+      },
+      "table_sizes": {
+        "litlen_primary_bits": 12,
+        "litlen_primary_entries": 4096,
+        "litlen_total_memory": "16 KB",
+        "offset_primary_bits": 10,
+        "offset_primary_entries": 1024,
+        "offset_total_memory": "2 KB",
+        "total_decode_tables": "~20 KB (fits in L1 cache)",
+        "entry_size_bytes_litlen": 4,
+        "entry_size_bytes_dist": 2,
+        "expanded_length_entries": "Yes - length codes include extra bits in table, eliminating separate extra-bits read"
+      },
+      "optimizations": [
+        "Hand-coded x86-64 assembly for hot loop (not compiler-generated)",
+        "Multi-symbol Huffman decode: up to 3 literals per single table lookup (12-bit primary table)",
+        "BMI2: SHRX/SHLX for variable shifts without cl register, BZHI for bit extraction",
+        "SSE2 MOVDQU for 16-byte unaligned match copies",
+        "Doubling strategy for overlapping match copies (distance < 16)",
+        "Speculative literal write before testing if symbol is actually a literal",
+        "Pre-generated static Huffman tables detected and loaded via memcpy (skip parsing)",
+        "Expanded lit/len table: length extra bits folded into table entries",
+        "Input reload (read_in) overlapped with decode computation"
+      ],
+      "simd_usage": "SSE2 MOVDQU for match copies only. BMI2 scalar instructions (SHRX, SHLX, BZHI) for decode. No SIMD for Huffman decoding itself.",
+      "throughput": {
+        "silesia_corpus_MB_per_s": 1040,
+        "vs_zlib": "2-3x faster decompression",
+        "cern_root_MB_per_s": "2000-2500",
+        "note": "Hand-coded assembly extracts maximum IPC from the serial decode chain"
+      }
+    }
+  },
+
+  "comparative_matrix": {
+    "columns": ["Feature", "libdeflate", "zlib-ng", "ISA-L"],
+    "rows": [
+      ["Language", "C + BMI2 dispatch", "C + SIMD intrinsics", "NASM assembly + C fallback"],
+      ["Litlen table bits", "11", "9", "12"],
+      ["Multi-symbol decode", "3 literals (inline)", "No", "3 literals (table entry)"],
+      ["Bit reader", "Branchless 64-bit OR-refill", "Unconditional refill", "Assembly register-based"],
+      ["BMI2 usage", "BZHI for bit extract", "No", "SHRX/SHLX/BZHI"],
+      ["Match copy method", "Word-at-a-time (8B)", "SIMD 16/32B chunks", "SSE2 16B MOVDQU"],
+      ["Streaming API", "No (whole-buffer)", "Yes (full zlib compat)", "Yes (stateful)"],
+      ["Length extra bits in table", "Partially (packed)", "No", "Yes (fully expanded)"],
+      ["Static table skip", "No", "No", "Yes (pre-generated detect)"],
+      ["Decompression MB/s (Silesia)", "~1100", "~735", "~1040"],
+      ["vs. zlib speedup", "2.3x", "1.5x", "2-3x"],
+      ["Primary advantage", "Clean C, portable, fast table build", "Drop-in zlib, streaming", "Raw ASM speed, multi-symbol"]
+    ]
+  },
+
+  "key_takeaways_for_our_design": [
+    "libdeflate's approach is the most practical starting point: pure C with architecture dispatch, ~1100 MB/s, clean codebase.",
+    "ISA-L's 12-bit primary table with 3-symbol entries shows that wider tables with multi-symbol packing is the proven best strategy.",
+    "Neither libdeflate nor ISA-L uses SIMD for the actual Huffman decode step - both are scalar. This confirms the serial dependency is the true bottleneck.",
+    "zlib-ng's lower decompression speed (735 MB/s) vs libdeflate/ISA-L is largely due to smaller tables (9-bit) and no multi-symbol decode.",
+    "The ~1100 MB/s ceiling on Silesia suggests that single-threaded x86-64 DEFLATE decode is memory-bandwidth-limited at ~1 GB/s for typical compressible data.",
+    "Our target of 2x over zlib-ng (1470+ MB/s) requires surpassing libdeflate/ISA-L by ~33%. This is aggressive but possible via: (a) zero-refill bit reader (dougallj), (b) two-pass architecture, (c) AVX2 copy acceleration beyond SSE2."
+  ],
+
+  "citations": ["biggers2017libdeflate", "zlibng2013", "intel2014isal", "johnson2022fasterzlib", "giesen2018readingbits"]
+}
