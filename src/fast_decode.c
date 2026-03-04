@@ -659,12 +659,14 @@ int fd_inflate_fast(const uint8_t *src, size_t src_len,
                     return FD_ERROR_BAD_DATA;
 
                 uint32_t match_len = length_base[len_idx];
-                int extra = length_extra[len_idx];
-                if (extra) {
-                    if (__builtin_expect(br.nbits < extra, 0)) fbr_refill(&br);
-                    match_len += (uint32_t)(br.bits & ((1u << extra) - 1));
-                    br.bits >>= extra;
-                    br.nbits -= extra;
+                {
+                    int extra = length_extra[len_idx];
+                    if (extra) {
+                        if (__builtin_expect(br.nbits < extra, 0)) fbr_refill(&br);
+                        match_len += (uint32_t)(br.bits & ((1u << extra) - 1));
+                        br.bits >>= extra;
+                        br.nbits -= extra;
+                    }
                 }
 
                 /* Decode distance */
@@ -697,7 +699,7 @@ int fd_inflate_fast(const uint8_t *src, size_t src_len,
                     return FD_ERROR_BAD_DATA;
 
                 uint32_t distance = dist_base[dist_sym];
-                extra = dist_extra[dist_sym];
+                int extra = dist_extra[dist_sym];
                 if (extra) {
                     if (__builtin_expect(br.nbits < extra, 0)) fbr_refill(&br);
                     distance += (uint32_t)(br.bits & ((1u << extra) - 1));
@@ -714,6 +716,7 @@ int fd_inflate_fast(const uint8_t *src, size_t src_len,
                 fast_copy(dst, out_pos, distance, match_len);
                 out_pos += match_len;
 
+                /* Refill for next iteration's litlen decode */
                 fbr_refill(&br);
             }
         }
