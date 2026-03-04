@@ -132,13 +132,13 @@ simdutf_avx2_throughput = [
 # ============================================================
 fig, ax = plt.subplots(figsize=(7.5, 5))
 
-ax.semilogx(output_sizes, scalar_throughput, 'ko-', label='Scalar (measured)', zorder=5)
-ax.semilogx(output_sizes, avx2_throughput, 's-', color='#2196F3', label='AVX2 (designed)', zorder=4)
-ax.semilogx(output_sizes, avx512_throughput, 'D-', color='#F44336', label='AVX-512 VBMI (designed)', zorder=4)
-ax.semilogx(output_sizes, neon_throughput, '^-', color='#4CAF50', label='NEON (designed)', zorder=4)
-ax.semilogx(output_sizes, sve_throughput, 'v-', color='#FF9800', label='SVE 256-bit (designed)', zorder=4)
-ax.semilogx(output_sizes, simdutf_avx2_throughput, 'x--', color='#9C27B0',
-            label='simdutf AVX2 (reference)', zorder=3, alpha=0.7)
+ax.semilogx(output_sizes, scalar_throughput, 'ko-', label='Scalar (measured)', zorder=5, linewidth=2)
+ax.semilogx(output_sizes, avx2_throughput, 's--', color='#2196F3', label='AVX2 (projected)', zorder=4)
+ax.semilogx(output_sizes, avx512_throughput, 'D--', color='#F44336', label='AVX-512 VBMI (projected)', zorder=4)
+ax.semilogx(output_sizes, neon_throughput, '^--', color='#4CAF50', label='NEON (projected)', zorder=4)
+ax.semilogx(output_sizes, sve_throughput, 'v--', color='#FF9800', label='SVE 256-bit (projected)', zorder=4)
+ax.semilogx(output_sizes, simdutf_avx2_throughput, 'x:', color='#9C27B0',
+            label='simdutf AVX2 (published)', zorder=3, alpha=0.7)
 
 ax.set_xlabel('Decoded Payload Size')
 ax.set_ylabel('Throughput (GB/s)')
@@ -148,6 +148,12 @@ ax.set_xticklabels(out_labels, rotation=45, ha='right')
 ax.legend(loc='upper left', framealpha=0.9)
 ax.set_ylim(bottom=0)
 ax.set_xlim(output_sizes[0]*0.7, output_sizes[-1]*1.3)
+
+# Add annotation box distinguishing measured vs projected
+ax.text(0.98, 0.02,
+        'Solid = measured; Dashed = projected from\ninstruction analysis and published data',
+        transform=ax.transAxes, fontsize=7.5, va='bottom', ha='right',
+        bbox=dict(boxstyle='round,pad=0.3', facecolor='lightyellow', edgecolor='gray', alpha=0.9))
 
 plt.tight_layout()
 plt.savefig(os.path.join(FIGDIR, 'throughput_vs_size.pdf'), bbox_inches='tight')
@@ -184,12 +190,17 @@ for idx, (name, vals) in enumerate(speedups.items()):
 ax.axhline(y=5, color='red', linestyle='--', linewidth=1.5, alpha=0.6, label='5x target')
 
 ax.set_xlabel('Payload Size')
-ax.set_ylabel('Speedup over Scalar Baseline')
-ax.set_title('Decode Speedup by ISA and Payload Size')
+ax.set_ylabel('Speedup over Scalar Baseline (measured)')
+ax.set_title('Projected Decode Speedup by ISA and Payload Size')
 ax.set_xticks(x)
 ax.set_xticklabels(target_labels)
 ax.legend(loc='upper right', ncol=2, fontsize=8)
 ax.set_ylim(bottom=0)
+
+ax.text(0.02, 0.98,
+        'SIMD throughput projected;\nscalar baseline measured',
+        transform=ax.transAxes, fontsize=7.5, va='top', ha='left',
+        bbox=dict(boxstyle='round,pad=0.3', facecolor='lightyellow', edgecolor='gray', alpha=0.9))
 
 plt.tight_layout()
 plt.savefig(os.path.join(FIGDIR, 'speedup_bars.pdf'), bbox_inches='tight')
@@ -220,8 +231,13 @@ for bar, val in zip(bars, insn_per_byte):
             f'{val:.2f}', ha='center', va='bottom', fontsize=9)
 
 ax.set_ylabel('Instructions per Decoded Byte')
-ax.set_title('Instruction Efficiency by Implementation')
+ax.set_title('Instruction Efficiency by Implementation (Estimated)')
 ax.set_ylim(0, 12.5)
+
+ax.text(0.98, 0.98,
+        'Values estimated from\ninstruction-count analysis',
+        transform=ax.transAxes, fontsize=7.5, va='top', ha='right',
+        bbox=dict(boxstyle='round,pad=0.3', facecolor='lightyellow', edgecolor='gray', alpha=0.9))
 
 plt.tight_layout()
 plt.savefig(os.path.join(FIGDIR, 'ipb_comparison.pdf'), bbox_inches='tight')

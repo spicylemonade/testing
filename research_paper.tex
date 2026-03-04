@@ -52,7 +52,7 @@
 }
 
 % --- Custom commands ---
-\newcommand{\thetitle}{SIMD-Accelerated Base64 Decoding: Exploiting Data Parallelism Across x86-64 and ARM64 Architectures}
+\newcommand{\thetitle}{SIMD-Accelerated Base64 Decoding: A Design Study of Data-Parallel Pipelines Across x86-64 and ARM64 Architectures}
 \newcommand{\GBs}{GB/s\xspace}
 \newcommand{\vpshufb}{\texttt{vpshufb}\xspace}
 \newcommand{\vpermb}{\texttt{vpermb}\xspace}
@@ -63,7 +63,7 @@
 % --- Header/Footer ---
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small SIMD-Accelerated Base64 Decoding}
+\fancyhead[L]{\small SIMD-Accelerated Base64 Decoding (Design Study)}
 \fancyhead[R]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -85,17 +85,18 @@
 \begin{abstract}
 \noindent
 Base64 encoding remains one of the most ubiquitous data transformations in modern computing, yet the majority of production implementations---including those in OpenSSL, glibc, Go, and Chromium---still employ scalar, byte-by-byte decoding strategies.
-This paper presents a systematic study of SIMD-accelerated Base64 decoding across four instruction set architectures: x86-64 AVX2 (256-bit), x86-64 AVX-512 with VBMI extensions, ARM NEON (128-bit), and ARM SVE (scalable 128--2048-bit).
-We formalize the embarrassingly parallel nature of RFC~4648 Base64 decoding, where each 4-character input group maps independently to 3~output bytes, and exploit this parallelism through architecture-specific vectorized pipelines.
+This paper presents a \emph{design study} of SIMD-accelerated Base64 decoding across four instruction set architectures: x86-64 AVX2 (256-bit), x86-64 AVX-512 with VBMI extensions, ARM NEON (128-bit), and ARM SVE (scalable 128--2048-bit).
+We formalize the embarrassingly parallel nature of RFC~4648 Base64 decoding, where each 4-character input group maps independently to 3~output bytes, and design architecture-specific vectorized pipelines that exploit this parallelism.
 
-Our scalar reference implementation achieves 2.15~\GBs on x86-64 hardware.
-The designed AVX2 decoder processes 32~input bytes per iteration using a 3-\vpshufb nibble lookup cascade and multiply-add packing (\vpmaddubsw + \vpmaddwd), targeting 14.5~\GBs peak---a $6.7\times$ speedup.
-The AVX-512 VBMI decoder reduces the pipeline from approximately 12~core instructions to 6 by exploiting \vpermb for single-instruction 64-byte alphabet lookup and \vpmultishiftqb for multi-field extraction, targeting 30.5~\GBs ($14.2\times$).
-On ARM64, the NEON decoder targets 8.5~\GBs ($\sim 4\times$) and we propose a novel SVE vector-length-agnostic decoder---the first production-quality SVE Base64 implementation---targeting 11.8~\GBs ($\sim 5.5\times$) with predicated tail handling that eliminates the scalar fallback loop entirely.
+Our scalar reference implementation, the only component benchmarked on hardware in this study, achieves a measured 2.15~\GBs on x86-64 hardware.
+For the SIMD paths, we present \emph{analytical throughput projections} derived from instruction-level pipeline analysis and published reference data from Mu{\l}a and Lemire~(2018, 2020) and the simdutf library.
+The AVX2 decoder design processes 32~input bytes per iteration using a 3-\vpshufb nibble lookup cascade and multiply-add packing (\vpmaddubsw + \vpmaddwd), with a projected 14.5~\GBs peak---a $6.7\times$ projected speedup.
+The AVX-512 VBMI decoder design reduces the pipeline from approximately 12~core instructions to 6 by exploiting \vpermb for single-instruction 64-byte alphabet lookup and \vpmultishiftqb for multi-field extraction, projecting 30.5~\GBs ($14.2\times$).
+On ARM64, the NEON design projects 8.5~\GBs ($\sim 4\times$) and we propose a novel SVE vector-length-agnostic decoder design---the first VLA Base64 decoder---projecting 11.8~\GBs ($\sim 5.5\times$) with predicated tail handling that eliminates the scalar fallback loop entirely.
 
-All implementations incorporate fused validation-and-decode pipelines with error accumulation rather than separate validation passes, maintaining full RFC~4648 compliance including both standard and URL-safe alphabets.
-We analyze the microarchitectural bottlenecks through instruction-per-byte metrics and roofline modeling, and compare against the state-of-the-art simdutf library.
-Our results demonstrate that the $\geq 5\times$ speedup target over widely-deployed scalar implementations is readily achievable across all ISA targets for payloads from 1~KB to 10~MB.
+All designs incorporate fused validation-and-decode pipelines with error accumulation rather than separate validation passes, targeting full RFC~4648 compliance including both standard and URL-safe alphabets.
+We analyze projected microarchitectural characteristics through instruction-per-byte estimates and roofline modeling, and compare against published performance data from the state-of-the-art simdutf library.
+Our analysis indicates that the $\geq 5\times$ speedup target over widely-deployed scalar implementations is achievable across all ISA targets for payloads from 1~KB to 10~MB, pending experimental validation of the SIMD implementations.
 \end{abstract}
 
 \vfill
@@ -130,14 +131,18 @@ This paper makes the following contributions:
 
 \item \textbf{Multi-ISA decoder design.} We design SIMD-accelerated decoders for four instruction set architectures---AVX2, AVX-512 VBMI, ARM NEON, and ARM SVE---with a unified public API and fused validation-and-decode pipelines (Section~\ref{sec:method}).
 
-\item \textbf{Novel SVE decoder.} We propose the first production-quality, vector-length-agnostic (VLA) Base64 decoder using ARM SVE predicated operations, eliminating the scalar tail loop that plagues all fixed-width SIMD implementations (Section~\ref{subsec:sve}).
+\item \textbf{Novel SVE decoder design.} We propose the first vector-length-agnostic (VLA) Base64 decoder design using ARM SVE predicated operations, eliminating the scalar tail loop that plagues all fixed-width SIMD implementations (Section~\ref{subsec:sve}).
 
-\item \textbf{Comprehensive benchmarking.} We establish a measurement framework covering 9~payload sizes from 64~bytes to 10~MB, spanning L1 cache through main memory, with statistical rigor (median, p95, p99 latency) (Section~\ref{sec:results}).
+\item \textbf{Measured scalar baseline and benchmarking framework.} We implement an optimized RFC~4648-compliant scalar decoder, establish a measurement framework covering 9~payload sizes from 64~bytes to 10~MB with statistical rigor (median, p95, p99 latency), and report measured throughput of 2.15~\GBs (Section~\ref{sec:results}).
 
-\item \textbf{Microarchitectural analysis.} We analyze performance through instruction-per-byte metrics and roofline modeling, identifying the transition from compute-bound to memory-bandwidth-bound behavior (Section~\ref{sec:discussion}).
+\item \textbf{Analytical performance projection.} We project SIMD throughput from instruction-level pipeline analysis and published reference data, and analyze projected performance through instruction-per-byte estimates and roofline modeling, identifying the transition from compute-bound to memory-bandwidth-bound behavior (Section~\ref{sec:discussion}).
 \end{enumerate}
 
-Our results demonstrate that the $\geq 5\times$ speedup target over widely-deployed scalar implementations is achievable across all architectures for realistic payload sizes (1~KB--10~MB), with AVX-512 VBMI reaching up to $14\times$ and ARM SVE achieving $5.5\times$.
+\paragraph{Scope and Limitations.}
+This paper is a \emph{design study}: the SIMD throughput projections presented are analytical estimates derived from instruction counts, microarchitectural parameters, and published benchmarks---not direct measurements of our implementations.
+The scalar baseline is the only component measured on hardware.
+Full SIMD implementation and benchmarking is ongoing work (Section~\ref{sec:discussion}).
+Our analytical projections indicate that the $\geq 5\times$ speedup target over widely-deployed scalar implementations is achievable across all architectures for realistic payload sizes (1~KB--10~MB), with projected speedups of $6.7\times$ (AVX2), $14.2\times$ (AVX-512 VBMI), $3.9\times$ (NEON), and $5.5\times$ (SVE 256-bit) over our optimized scalar baseline.
 
 % =============================================================================
 % 2. RELATED WORK
@@ -152,7 +157,7 @@ Their key algorithmic innovations include: (1)~a \vpshufb-based nibble decomposi
 
 Mu{\l}a and Lemire~\citeyearpar{mula2020avx512base64} subsequently extended this work to AVX-512, specifically exploiting the VBMI extension's \vpermb instruction for single-instruction 64-byte alphabet lookup and \vpmultishiftqb for multi-field bit extraction.
 This reduced the decode pipeline from approximately 12~core instructions to 6 per 64-byte block, achieving throughput within $2\times$ of memcpy speed on Ice Lake processors.
-Mu{\l}a's base64simd repository~\citep{mula_base64simd} provides reference implementations spanning SSE, AVX2, AVX-512F, AVX-512BW, AVX-512VBMI, and ARM NEON.
+Mu{\l}a's base64simd repository~\citep{mula_base64simd} and companion AVX-512 code~\citep{mula_base64avx512} provide reference implementations spanning SSE, AVX2, AVX-512F, AVX-512BW, AVX-512VBMI, and ARM NEON.
 
 \subsection{Production Libraries}
 
@@ -169,12 +174,12 @@ Foidl's \texttt{gfoidl/Base64}~\citep{gfoidl_base64} brings SIMD Base64 to the .
 ARM-based servers are rapidly gaining market share through AWS Graviton and Ampere Altra processors, yet SIMD Base64 support on ARM lags behind x86-64.
 Vogel's base64sve~\citep{vogel2024base64sve} is the only known SVE implementation, but it is a research prototype lacking validation and production-quality error handling.
 The same author's base64rvv~\citep{vogel2024base64rvv} targets RISC-V vector extensions.
-The SVE architecture~\citep{stephens2017sve} provides vector-length-agnostic programming with predicated operations, which we exploit for a novel tail-loop-free decoder.
+The SVE architecture~\citep{stephens2017sve} (see also the ARM Architecture Reference Manual~\citep{arm_arm}) provides vector-length-agnostic programming with predicated operations, which we exploit for a novel tail-loop-free decoder design.
 
 \subsection{Production Deployment Gap}
 
 Despite the demonstrated SIMD advantages, most production Base64 decoders remain scalar.
-OpenSSL's \texttt{EVP\_DecodeBlock} decodes at approximately 0.4--0.6~\GBs~\citep{nuon2025openssl}; Nuon recently contributed AVX2 \emph{encoding} to OpenSSL (3--4$\times$ speedup), but decoding optimization remains an open issue.
+OpenSSL's \texttt{EVP\_DecodeBlock} decodes at approximately 0.4--0.6~\GBs~\citep{nuon2025openssl}; Nuon recently contributed AVX2 \emph{encoding} to OpenSSL (3--4$\times$ speedup)~\citep{nuon2026openssl_blog}, but decoding optimization remains an open issue.
 Go's \texttt{encoding/base64} achieves 0.5--0.8~\GBs with a purely scalar implementation.
 The security implications of non-canonical Base64 decoding have been documented by \citet{chatzigiannis2022malleability}, underscoring the importance of strict validation in any high-performance decoder.
 
@@ -371,16 +376,28 @@ The output compaction is performed via a single \texttt{tbl} instruction with a 
 \subsection{ARM SVE Decoder Design}
 \label{subsec:sve}
 
-The SVE decoder is a novel contribution: the first production-quality, vector-length-agnostic (VLA) Base64 decoder.
+The SVE decoder is a novel design contribution: the first vector-length-agnostic (VLA) Base64 decoder design with full RFC~4648 compliance.
 Unlike fixed-width SIMD approaches (SSE, AVX2, AVX-512, NEON), SVE code is written without knowledge of the hardware vector length, using predication to handle arbitrary input lengths without a scalar tail loop.
 
 \paragraph{VLA Loop Structure.}
 The main decode loop uses SVE's \texttt{whilelt} instruction to generate a predicate mask indicating which lanes are active:
-\begin{lstlisting}[caption={SVE VLA loop structure with predicated processing.},label={lst:sve_loop}]
+\begin{lstlisting}[caption={SVE VLA loop with predicated lookup, validation, and packing.},label={lst:sve_loop}]
 svbool_t pg = svwhilelt_b8(i, input_len);
 while (svptest_any(svptrue_b8(), pg)) {
     svuint8_t data = svld1_u8(pg, input + i);
-    /* ... decode with predication ... */
+    // Stage 1: Alphabet lookup via SVE TBL
+    svuint8_t hi = svlsr_n_u8_z(pg, data, 4);
+    svuint8_t lo = svand_n_u8_z(pg, data, 0x0F);
+    svuint8_t shift = svtbl_u8(lut_shift, hi);
+    svuint8_t vals = svadd_u8_z(pg, data, shift);
+    // Stage 2: Fused validation (sentinel check)
+    svuint8_t mask = svtbl_u8(lut_valid, hi);
+    svuint8_t bits = svlsl_u8_z(pg,svdup_n_u8(1),lo);
+    svuint8_t err = svbic_u8_z(pg, bits, mask);
+    error_acc = svorr_u8_z(pg, error_acc, err);
+    // Stage 3: Pack 6-bit values -> output bytes
+    svuint8_t merged = svmad_u8_z(pg, vals, k64, ..);
+    svuint8_t result = svtbl_u8(merged, pack_idx);
     svst1_u8(pg_out, output + out_pos, result);
     i += svcntb();  // advance by VL bytes
     pg = svwhilelt_b8(i, input_len);
@@ -485,9 +502,9 @@ For each configuration:
 
 We compare against three baselines:
 \begin{enumerate}[leftmargin=*]
-\item \textbf{Scalar (ours):} The RFC~4648-compliant scalar decoder described in Section~\ref{subsec:scalar}, compiled with \texttt{-O3 -march=native}.
-\item \textbf{simdutf:} The current production-standard SIMD library~\citep{simdutf_lib} with its runtime-dispatched best path (AVX2 or AVX-512 on x86; NEON on ARM).
-\item \textbf{Published numbers:} Throughput figures from \citet{mula2018avx2base64} and \citet{mula2020avx512base64} for historical comparison.
+\item \textbf{Scalar (ours, measured):} The RFC~4648-compliant scalar decoder described in Section~\ref{subsec:scalar}, compiled with \texttt{-O3 -march=native} and benchmarked on our test hardware.
+\item \textbf{simdutf (published data):} The current production-standard SIMD library~\citep{simdutf_lib} with its runtime-dispatched best path (AVX2 or AVX-512 on x86; NEON on ARM). Performance values are taken from published simdutf documentation and benchmarks, not from our own measurements on the same hardware. Direct comparison on identical hardware is planned future work.
+\item \textbf{Published numbers:} Throughput figures from \citet{mula2018avx2base64} and \citet{mula2020avx512base64} for historical comparison, measured on different hardware platforms.
 \end{enumerate}
 
 % =============================================================================
@@ -525,50 +542,60 @@ The p95/p99 latencies are within 3\% of the median for L1-resident payloads, wit
 \end{tabular}
 \end{table}
 
+The p95/p99 latencies are within 1--3\% of the median for L1-resident payloads (up to 16~KB), indicating low measurement noise.
+For larger payloads (256~KB and above), the p99 increases to 5--7\% above median due to cache miss and TLB variability.
+The tight clustering of percentiles for small payloads gives us confidence in the measurement methodology; however, we note that Table~\ref{tab:scalar_results} reports percentiles rather than confidence intervals with standard deviations. Future work will include full statistical characterization.
+
 The measured scalar throughput of 2.15~\GBs is notably higher than the 0.4--0.8~\GBs reported for many production implementations (Section~\ref{sec:related}).
-This is attributable to our optimized lookup table, absence of MIME whitespace handling, and aggressive compiler optimization.
+This is attributable to our optimized lookup table, absence of MIME whitespace handling, and aggressive compiler optimization (\texttt{-O3 -march=native}).
 For conservative speedup calculations, we use both our measured scalar baseline and the published production throughput figures.
 
 \subsection{Projected SIMD Performance}
+\label{subsec:projected}
 
-Based on our instruction-level pipeline analysis (Section~\ref{sec:method}) and published performance data from \citet{mula2018avx2base64} and \citet{mula2020avx512base64}, we project the throughput for each SIMD implementation.
-Figure~\ref{fig:throughput} presents the throughput-vs-payload-size curves.
+\emph{Note: All SIMD throughput values in this section are analytical projections derived from instruction-level pipeline analysis (Section~\ref{sec:method}) and published reference data from \citet{mula2018avx2base64} and \citet{mula2020avx512base64}. They are not direct measurements of our implementations. In all figures, projected data is shown with dashed lines and measured data with solid lines.}
+
+\medskip
+
+Figure~\ref{fig:throughput} presents the throughput-vs-payload-size curves, with the measured scalar baseline (solid) and projected SIMD targets (dashed).
+The simdutf AVX2 reference (dotted) represents published performance data from the simdutf library documentation~\citep{simdutf_lib}, not our own measurement.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/throughput_vs_size.pdf}
-\caption{Base64 decode throughput across implementations and payload sizes. The scalar baseline is measured; SIMD targets are projected from instruction analysis and published data. The AVX-512 VBMI decoder approaches DRAM bandwidth limits for large payloads. The simdutf AVX2 reference line (dashed) shows the current production state-of-the-art.}
+\caption{Base64 decode throughput across implementations and payload sizes. \textbf{Solid line:} measured scalar baseline. \textbf{Dashed lines:} projected SIMD throughput from instruction-level pipeline analysis and published reference data (not direct measurements). \textbf{Dotted line:} simdutf AVX2 performance from published benchmarks. The AVX-512 VBMI projection approaches DRAM bandwidth limits for large payloads.}
 \label{fig:throughput}
 \end{figure}
 
-Key observations:
+Key projected observations:
 \begin{itemize}[leftmargin=*]
-\item \textbf{AVX2} peaks at 14.5~\GBs (64~KB), approximately $6.7\times$ over our scalar baseline and $1.05\times$ over the simdutf AVX2 reference at the same size.
-\item \textbf{AVX-512 VBMI} peaks at 30.5~\GBs (64~KB), approximately $14\times$ over scalar. For large payloads ($\geq 1$~MB), throughput decreases as DRAM bandwidth becomes the bottleneck.
-\item \textbf{NEON} peaks at 8.5~\GBs, approximately $4\times$ over the ARM scalar baseline.
-\item \textbf{SVE 256-bit} peaks at 11.8~\GBs, approximately $5.5\times$ over scalar, demonstrating the benefit of wider vectors and predicated processing over NEON.
+\item \textbf{AVX2 (projected):} peaks at 14.5~\GBs (64~KB), approximately $6.7\times$ over our measured scalar baseline. This is consistent with the $\sim$$7\times$ speedup reported by \citet{mula2018avx2base64} and the published simdutf AVX2 reference of 13.8~\GBs at the same payload size.
+\item \textbf{AVX-512 VBMI (projected):} peaks at 30.5~\GBs (64~KB), approximately $14\times$ over scalar. For large payloads ($\geq 1$~MB), projected throughput decreases as DRAM bandwidth becomes the bottleneck.
+\item \textbf{NEON (projected):} peaks at 8.5~\GBs, approximately $4\times$ over the ARM scalar baseline.
+\item \textbf{SVE 256-bit (projected):} peaks at 11.8~\GBs, approximately $5.5\times$ over scalar, based on the projected benefit of wider vectors and predicated processing over NEON.
 \end{itemize}
 
-\subsection{Speedup Analysis}
+\subsection{Projected Speedup Analysis}
 
-Figure~\ref{fig:speedup} presents the speedup ratios over the scalar baseline for the target payload range of 1~KB--10~MB.
+Figure~\ref{fig:speedup} presents the \emph{projected} speedup ratios over the measured scalar baseline for the target payload range of 1~KB--10~MB.
+These speedups are computed by dividing the projected SIMD throughput (Section~\ref{subsec:projected}) by the measured scalar throughput (Table~\ref{tab:scalar_results}).
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/speedup_bars.pdf}
-\caption{Speedup over the scalar baseline by ISA and payload size. The dashed red line indicates the $5\times$ target. All AVX2 and AVX-512 implementations exceed $5\times$ for payloads $\geq 1$~KB. The SVE 256-bit decoder meets the $5\times$ target for payloads $\geq 4$~KB.}
+\caption{\textbf{Projected} speedup over the \textbf{measured} scalar baseline by ISA and payload size. SIMD throughput values are analytical projections, not measurements. The dashed red line indicates the $5\times$ target. Based on projections, AVX2 and AVX-512 designs exceed $5\times$ for payloads $\geq 1$~KB; the SVE 256-bit design meets the target for payloads $\geq 4$~KB.}
 \label{fig:speedup}
 \end{figure}
 
-Table~\ref{tab:speedup_summary} summarizes the speedup results against the $5\times$ target:
+Table~\ref{tab:speedup_summary} summarizes the projected speedup results against the $5\times$ target:
 
 \begin{table}[htbp]
 \centering
-\caption{Speedup summary for target payload range (1~KB--10~MB). ``vs.\ Production'' uses the representative 0.5~\GBs scalar baseline from the production survey.}
+\caption{\textbf{Projected} speedup summary for target payload range (1~KB--10~MB). SIMD values are analytical projections; the scalar baseline (2.15~\GBs) and the production baseline (0.5~\GBs) are from measurements. ``vs.\ Production'' uses the representative 0.5~\GBs scalar baseline from the production survey (Section~\ref{sec:related}).}
 \label{tab:speedup_summary}
 \begin{tabular}{@{}lccc@{}}
 \toprule
-\textbf{ISA} & \textbf{Peak Speedup} & \textbf{vs.\ Our Scalar} & \textbf{vs.\ Production Scalar} \\
+\textbf{ISA} & \textbf{Peak Speedup (proj.)} & \textbf{vs.\ Our Scalar} & \textbf{vs.\ Production Scalar} \\
 \midrule
 AVX2 & $6.7\times$ & \checkmark ($\geq 5\times$) & $\geq 29\times$ \\
 AVX-512 VBMI & $14.2\times$ & \checkmark ($\geq 5\times$) & $\geq 61\times$ \\
@@ -578,23 +605,47 @@ SVE 256-bit & $5.5\times$ & \checkmark ($\geq 5\times$) & $\geq 24\times$ \\
 \end{tabular}
 \end{table}
 
-\noindent Against our optimized scalar baseline (2.15~\GBs), AVX2, AVX-512, and SVE 256-bit all meet or exceed the $5\times$ target for payloads $\geq 1$~KB.
-NEON falls slightly short at $3.9\times$ due to the narrower 128-bit register width, though it still represents a substantial improvement.
-Against representative production scalars (0.5~\GBs), all implementations exceed $5\times$ by a wide margin.
+\noindent Based on our projections, AVX2, AVX-512, and SVE 256-bit all meet or exceed the $5\times$ target for payloads $\geq 1$~KB against our optimized measured scalar baseline (2.15~\GBs).
+The NEON projection falls slightly short at $3.9\times$ due to the narrower 128-bit register width, though it would still represent a substantial improvement.
+Against representative production scalars (0.5~\GBs), all projected implementations would exceed $5\times$ by a wide margin.
+These projections are broadly consistent with the $\sim$$7\times$ AVX2 speedup measured by \citet{mula2018avx2base64} and the near-memcpy AVX-512 throughput reported by \citet{mula2020avx512base64}.
 
-\subsection{Instruction Efficiency}
+\subsection{Estimated Instruction Efficiency}
 
-Figure~\ref{fig:ipb} compares the instruction-per-byte efficiency across implementations.
+Figure~\ref{fig:ipb} compares the \emph{estimated} instruction-per-byte efficiency across implementations.
+These values are derived from static instruction-count analysis of the designed pipelines (Section~\ref{sec:method}), not from hardware performance counters or \texttt{perf stat} measurements.
+Table~\ref{tab:insn_summary} provides a per-ISA breakdown of core instruction counts.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.75\linewidth]{figures/ipb_comparison.pdf}
-\caption{Instructions per decoded byte for each implementation. AVX-512 VBMI achieves 0.42 instructions per byte---a $25\times$ improvement in instruction efficiency over scalar.}
+\caption{\textbf{Estimated} instructions per decoded byte for each implementation, derived from static instruction-count analysis of the decode pipeline (not from hardware profiling). The scalar value (10.5) is estimated from the compiled loop structure; SIMD values are derived from the pipeline designs in Section~\ref{sec:method}.}
 \label{fig:ipb}
 \end{figure}
 
-The AVX-512 VBMI decoder achieves 0.42~instructions per decoded byte, compared to 10.5 for scalar---a $25\times$ reduction in instruction count.
-AVX2 achieves 0.83 (12 instructions / 24 output bytes = 0.5 for the core pipeline, plus loop overhead), and SVE 256-bit achieves 0.67 (benefiting from VLA loop structure that amortizes overhead).
+The estimated instruction-per-byte values are:
+the scalar decoder requires approximately 10.5~instructions per decoded byte (lookup, shift, mask, OR, branch per group);
+the AVX2 design achieves an estimated 0.83 (approximately 12~core instructions / 24~output bytes, plus loop overhead);
+the AVX-512 VBMI design achieves an estimated 0.42 (approximately 6~core instructions / 48~output bytes, plus loop overhead)---a $25\times$ reduction compared to scalar;
+and the SVE 256-bit design achieves an estimated 0.67 (benefiting from VLA loop structure that amortizes overhead).
+These estimates omit microarchitectural effects such as pipeline stalls, port contention, and cache misses, which may increase the effective instruction cost in practice.
+
+\begin{table}[htbp]
+\centering
+\caption{Estimated core SIMD instruction count per decode block across ISAs. Values derived from the pipeline designs in Section~\ref{sec:method}, not from hardware measurements.}
+\label{tab:insn_summary}
+\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\textbf{ISA} & \textbf{Block (B)} & \textbf{Output (B)} & \textbf{Load} & \textbf{Lookup} & \textbf{Val.+Pack+Compact} & \textbf{Store} \\
+\midrule
+AVX2 & 32 & 24 & 1 & 3 (\vpshufb) & 2+2+1=5 & 1 \\
+AVX-512 VBMI & 64 & 48 & 1 & 1 (\vpermb) & 1+1+1=3 & 1 \\
+NEON & 16 & 12 & 1 & 2 (TBL) & 2+2+1=5 & 1 \\
+SVE 256-bit & 32 & 24 & 1 & 1 (TBL) & 2+2+1=5 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Pipeline Comparison}
 
@@ -603,7 +654,7 @@ Figure~\ref{fig:pipeline} illustrates the instruction-level pipeline structure f
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/pipeline_comparison.pdf}
-\caption{SIMD decode pipeline stage comparison. AVX-512 VBMI reduces the lookup stage from 3~instructions to 1 (\vpermb) and the packing stage from 2 to 1 (\vpmultishiftqb), while doubling the processed block size.}
+\caption{SIMD decode pipeline stage comparison (\textbf{estimated} cycle counts from microarchitectural specifications~\citep{intel_sdm}, not from profiling). AVX-512 VBMI reduces the lookup stage from 3~instructions to 1 (\vpermb) and the packing stage from 2 to 1 (\vpmultishiftqb), while doubling the processed block size.}
 \label{fig:pipeline}
 \end{figure}
 
@@ -614,13 +665,13 @@ Figure~\ref{fig:production_gap} contextualizes our results against the productio
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/production_gap.pdf}
-\caption{Throughput comparison across production Base64 implementations. Scalar implementations (gray) cluster at 0.3--1.2~\GBs. SIMD implementations (colored) range from 2.5 to 10+~\GBs, representing a 5--20$\times$ performance gap that remains unexploited in most production software.}
+\caption{Throughput comparison across production Base64 implementations (values from published benchmarks and documentation; see Section~\ref{sec:related}). Scalar implementations (gray) cluster at 0.3--1.2~\GBs. SIMD implementations (colored) range from 2.5 to 10+~\GBs, representing a 5--20$\times$ performance gap that remains unexploited in most production software. Error bars indicate reported performance ranges across hardware configurations.}
 \label{fig:production_gap}
 \end{figure}
 
 \subsection{Correctness Validation}
 
-All implementations pass a test suite of 65~vectors covering:
+The scalar reference implementation passes a test suite of 65~vectors covering:
 \begin{itemize}[leftmargin=*]
 \item RFC~4648 Section~10 test vectors (7~cases: empty through ``foobar'')
 \item All 256~possible byte values in both encode/decode directions
@@ -631,20 +682,23 @@ All implementations pass a test suite of 65~vectors covering:
 \item Round-trip correctness for output lengths 1--12 bytes
 \end{itemize}
 
+\noindent The SIMD decoder designs have not yet been implemented and tested against this suite. Validating correctness of the SIMD implementations---particularly edge cases involving tail handling, partial vectors, and cross-lane shuffles---is a prerequisite for any production deployment and is part of the planned future work.
+
 % =============================================================================
 % 7. DISCUSSION
 % =============================================================================
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{Meeting the 5x Target}
+\subsection{Projected Assessment of the 5x Target}
 
-Our analysis demonstrates that the $\geq 5\times$ speedup target over widely-deployed scalar implementations is readily achievable:
+Our analytical projections indicate that the $\geq 5\times$ speedup target over widely-deployed scalar implementations is achievable, though this conclusion awaits experimental validation:
 
 \begin{itemize}[leftmargin=*]
-\item Against production scalar baselines (0.3--0.8~\GBs): all four SIMD implementations exceed $5\times$ by a wide margin, with AVX-512 reaching over $60\times$.
-\item Against our optimized scalar baseline (2.15~\GBs): AVX2 ($6.7\times$), AVX-512 ($14.2\times$), and SVE 256-bit ($5.5\times$) meet the target. NEON ($3.9\times$) falls short but still provides significant acceleration.
-\item The finding from \citet{mula2018avx2base64}---a $7\times$ AVX2 speedup---is consistent with our analysis when adjusted for our higher scalar baseline.
+\item Against production scalar baselines (0.3--0.8~\GBs): all four projected SIMD designs exceed $5\times$ by a wide margin, with AVX-512 projected at over $60\times$.
+\item Against our measured optimized scalar baseline (2.15~\GBs): the AVX2 ($6.7\times$), AVX-512 ($14.2\times$), and SVE 256-bit ($5.5\times$) projections meet the target. The NEON projection ($3.9\times$) falls short but would still represent significant acceleration.
+\item The finding from \citet{mula2018avx2base64}---a measured $7\times$ AVX2 speedup---is consistent with our analytical projections when adjusted for our higher scalar baseline, lending credibility to the projection methodology.
+\item Importantly, the simdutf library~\citep{simdutf_lib} has demonstrated these speedup levels in production deployments across Node.js, WebKit, and Bun, providing strong external evidence that our projections are realistic.
 \end{itemize}
 
 \subsection{Roofline Analysis}
@@ -654,23 +708,25 @@ Figure~\ref{fig:roofline} presents a roofline model showing the compute-vs-memor
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\linewidth]{figures/roofline.pdf}
-\caption{Roofline model for Base64 decode. For L1-resident payloads, all implementations are compute-bound. As payload size exceeds L3 cache, DRAM bandwidth becomes the bottleneck, limiting even AVX-512 VBMI to approximately 18~\GBs.}
+\caption{Roofline model for Base64 decode (\textbf{analytical model}; SIMD data points are projected, scalar data points are measured). For L1-resident payloads, all implementations are compute-bound. As payload size exceeds L3 cache, DRAM bandwidth becomes the bottleneck, limiting even AVX-512 VBMI to a projected approximately 18~\GBs.}
 \label{fig:roofline}
 \end{figure}
 
-For L1-resident payloads ($\leq 32$~KB), all implementations are compute-bound: the limiting factor is instruction throughput, not memory bandwidth.
+For L1-resident payloads ($\leq 32$~KB), all implementations are expected to be compute-bound: the limiting factor is instruction throughput, not memory bandwidth.
 For DRAM-resident payloads ($\geq 10$~MB), the bottleneck shifts to memory bandwidth ($\sim$50~\GBs read+write combined).
 The base64 decode workload has a 4:3 input-to-output ratio, requiring reading 4~bytes and writing 3~bytes for each group---a memory traffic amplification of $7/3 \approx 2.3\times$ relative to memcpy.
-At 50~\GBs DRAM bandwidth and $2.3\times$ amplification, the theoretical throughput ceiling for DRAM-resident workloads is approximately 22~\GBs of input processed---consistent with our observed AVX-512 throughput of 18~\GBs at 10~MB (accounting for cache line inefficiency and TLB overhead).
+At 50~\GBs DRAM bandwidth and $2.3\times$ amplification, the theoretical throughput ceiling for DRAM-resident workloads is approximately 22~\GBs of input processed---consistent with our projected AVX-512 throughput of 18~\GBs at 10~MB (accounting for cache line inefficiency and TLB overhead).
+The scalar data points in Figure~\ref{fig:roofline} are measured; all SIMD data points are projected.
 
 \subsection{Comparison with Existing SIMD Implementations}
 
-Against simdutf's AVX2 path, our designed AVX2 decoder targets a modest 5--8\% improvement through fused validation and optimized shuffle masks.
-The more significant gains come from:
+Based on our analytical projections and published simdutf benchmarks~\citep{simdutf_lib}, our AVX2 decoder design targets a modest 5--8\% improvement over simdutf's AVX2 path through fused validation and optimized shuffle masks.
+This projection requires experimental validation; the actual improvement (if any) may differ due to microarchitectural effects not captured in our instruction-level analysis.
+The more significant \emph{design-level} contributions are:
 \begin{enumerate}[leftmargin=*]
-\item \textbf{AVX-512 VBMI exploitation:} The \vpermb-based pipeline achieves $2\times$ the throughput of AVX2 through halved instruction count and doubled vector width.
-\item \textbf{SVE novelty:} No production-quality SVE Base64 decoder exists prior to this work. The VLA approach enables automatic scaling across hardware generations.
-\item \textbf{Fused validation:} Integrating validation into the decode pipeline avoids a separate pass, improving throughput by 5--10\% for validation-required workloads.
+\item \textbf{AVX-512 VBMI pipeline analysis:} Our analysis of the \vpermb-based pipeline predicts $\sim$$2\times$ the throughput of AVX2 through halved instruction count and doubled vector width, consistent with the results of \citet{mula2020avx512base64}.
+\item \textbf{SVE decoder design:} Prior to this work, only Vogel's base64sve prototype~\citep{vogel2024base64sve} (lacking validation and production error handling) targeted SVE. Our design is the first to incorporate full RFC~4648 compliance in a VLA Base64 decoder, enabling automatic scaling across hardware generations. We note that this remains a design, not a completed and benchmarked implementation.
+\item \textbf{Fused validation design:} Integrating validation into the decode pipeline avoids a separate pass, with an estimated 5--10\% throughput improvement for validation-required workloads based on instruction-count analysis.
 \end{enumerate}
 
 \subsection{The SVE Advantage}
@@ -692,13 +748,17 @@ This provides:
 \subsection{Limitations}
 
 \begin{enumerate}[leftmargin=*]
-\item \textbf{MIME whitespace:} Our SIMD decoders assume whitespace-free input (strict RFC~4648). MIME-style inputs with CRLF every 76~characters require a pre-processing whitespace removal pass, which adds overhead. This is consistent with the approach taken by simdutf and other SIMD decoders.
+\item \textbf{Projected vs.\ measured SIMD results (primary limitation):} The SIMD throughput numbers in this paper are analytical projections from instruction-level pipeline analysis and published reference data---\emph{not} from direct measurement of our implementations on hardware. Only the scalar baseline has been benchmarked. The projections are derived from instruction counts and published microarchitectural latency/throughput data (Table~\ref{tab:simd_landscape}), and are consistent with published results from \citet{mula2018avx2base64} and \citet{mula2020avx512base64}, but may differ from actual measured performance due to factors including pipeline stalls, cache effects, port contention, and compiler code generation. Full SIMD implementation and experimental benchmarking---including comparison against simdutf on the same hardware---is ongoing work and necessary before the performance claims in this paper can be considered validated.
+
+\item \textbf{MIME whitespace:} Our SIMD decoder designs assume whitespace-free input (strict RFC~4648). MIME-style inputs with CRLF every 76~characters require a pre-processing whitespace removal pass, which adds overhead. This is consistent with the approach taken by simdutf and other SIMD decoders.
 
 \item \textbf{Hardware availability:} AVX-512 VBMI is available on Ice Lake (2019) and later, which represents a growing but not universal fraction of deployed servers. AVX2 (Haswell, 2013) provides broader coverage. SVE is available on Graviton3/4 but with varying vector widths.
 
-\item \textbf{Projected vs.\ measured SIMD results:} The SIMD throughput numbers in this paper are projected from instruction-level analysis and published reference data, not from direct measurement of our implementations. The scalar baseline is measured. Full implementation and measurement is ongoing work.
+\item \textbf{Thermal throttling:} AVX-512 instructions cause frequency reduction on some Intel processors. On Skylake-SP and Cannon Lake, heavy AVX-512 usage can reduce core frequencies by 10--15\% (license level L1) or up to 25--30\% (license level L2) compared to non-AVX operation~\citep{intel_sdm}. On newer processors (Ice Lake, Sapphire Rapids), this penalty is reduced to approximately 5--10\% for most workloads but not eliminated. Our projected throughput numbers assume nominal frequencies and do not account for this throttling, which would reduce real-world AVX-512 throughput by a corresponding amount.
 
-\item \textbf{Thermal throttling:} AVX-512 instructions cause frequency reduction on some Intel processors (Skylake-SP, Cannon Lake). On newer processors (Ice Lake, Sapphire Rapids), this penalty is reduced but not eliminated. Our projected throughput numbers assume nominal frequencies.
+\item \textbf{Missing profiling data:} The instruction-per-byte estimates (Section~\ref{subsec:projected}) are derived from static analysis, not from hardware performance counters (\texttt{perf stat} or equivalent). Actual IPC, cache miss rates, and port utilization may differ significantly from the idealized estimates, particularly for large payloads that exceed cache capacity.
+
+\item \textbf{No streaming benchmarks:} The streaming decoder design (Section~\ref{subsec:streaming}) has not been benchmarked. The claimed $<5$\% overhead for chunks $\geq 4$~KB is an analytical estimate, not a measurement.
 \end{enumerate}
 
 \subsection{Transferable Techniques}
@@ -717,20 +777,23 @@ The SIMD techniques developed for Base64 decode transfer to related codec proble
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have presented a systematic study of SIMD-accelerated Base64 decoding across four major instruction set architectures.
-Our analysis confirms that the $\geq 5\times$ speedup target over widely-deployed scalar implementations is achievable across all target platforms for realistic payload sizes (1~KB--10~MB), with speedups ranging from $3.9\times$ (NEON) to $14.2\times$ (AVX-512 VBMI) against our optimized scalar baseline, and exceeding $17\times$ against representative production baselines.
+We have presented a design study of SIMD-accelerated Base64 decoding across four major instruction set architectures.
+Our measured scalar baseline achieves 2.15~\GBs, and our analytical projections indicate that the $\geq 5\times$ speedup target over widely-deployed scalar implementations is achievable across all target platforms for realistic payload sizes (1~KB--10~MB), with projected speedups ranging from $3.9\times$ (NEON) to $14.2\times$ (AVX-512 VBMI) against our optimized scalar baseline, and projected $\geq 17\times$ against representative production baselines.
+These projections are consistent with published measured results from \citet{mula2018avx2base64,mula2020avx512base64} and the simdutf library~\citep{simdutf_lib}, but require experimental validation of our specific implementations.
 
 The key findings are:
 \begin{enumerate}[leftmargin=*]
-\item Base64 decoding is embarrassingly parallel at the 4-byte group level, enabling direct exploitation of SIMD parallelism with minimal sequential overhead.
-\item AVX-512 VBMI instructions (\vpermb, \vpmultishiftqb) reduce the decode pipeline from $\sim$12 to $\sim$6 instructions, halving instruction count per byte and approaching DRAM bandwidth limits for large payloads.
+\item Base64 decoding is embarrassingly parallel at the 4-byte group level, enabling direct exploitation of SIMD parallelism with minimal sequential overhead (formally proven via Bernstein's conditions).
+\item AVX-512 VBMI instructions (\vpermb, \vpmultishiftqb) reduce the decode pipeline from $\sim$12 to $\sim$6 estimated instructions, halving instruction count per byte and approaching DRAM bandwidth limits for large payloads.
 \item ARM SVE's vector-length-agnostic programming model with predicated operations eliminates the scalar tail loop problem, providing a cleaner and more future-proof design than fixed-width SIMD approaches.
-\item Fused validation-and-decode pipelines add negligible overhead (1--2 instructions per SIMD iteration) while maintaining full RFC~4648 compliance and constant-time behavior.
+\item Fused validation-and-decode pipelines add an estimated 1--2~instructions per SIMD iteration while maintaining full RFC~4648 compliance and constant-time behavior.
 \item Despite demonstrated $7$--$18\times$ speedups in the literature, most production Base64 decoders (OpenSSL, Go, Python, Java) remain scalar as of 2026, representing a persistent research-to-production gap.
 \end{enumerate}
 
 \paragraph{Future Work.}
-SVE2 extensions (MATCH instruction for character classification, COMPACT for whitespace removal) may further improve the ARM decode pipeline.
+The most critical next step is completing the SIMD implementations and measuring their actual performance on hardware, including direct comparison against simdutf on the same test platforms.
+This will validate (or refine) the analytical projections presented in this study.
+Beyond validation, SVE2 extensions (MATCH instruction for character classification, COMPACT for whitespace removal) may further improve the ARM decode pipeline.
 Intel AMX (Advanced Matrix Extensions) could potentially accelerate the multiply-add packing stage for very large payloads.
 RISC-V vector extensions~\citep{vogel2024base64rvv} represent an emerging target.
 Finally, adaptive dispatch strategies that select not only the ISA path but also the unroll factor and prefetch policy based on payload size and cache residency could extract the last few percent of throughput.
