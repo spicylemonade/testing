@@ -454,121 +454,165 @@ int fd_inflate_fast(const uint8_t *src, size_t src_len,
             if (rc != FD_OK) return rc;
         }
 
-        /* Main decode loop */
-        for (;;) {
+        /*
+         * Main decode loop — optimized for minimal branches.
+         *
+         * Structure: refill once, decode symbol, fast-path for literals.
+         * After consuming at most ~30 bits per iteration (litlen + dist + extras),
+         * we refill. With 56+ bits in the buffer after refill, we can decode
+         * at least one full litlen+dist pair before the next refill.
+         */
+        {
+            /* Safety margin: stop copying when we're close to end of output */
+            const size_t safe_end = (dst_len > 274) ? dst_len - 274 : 0;
+
             fbr_refill(&br);
 
-            /* Decode litlen symbol via primary table */
-            uint32_t bits = (uint32_t)fbr_peek(&br, PRIMARY_BITS);
-            uint32_t entry = litlen_table[bits];
-            int type = entry_type(entry);
-            int codelen = entry_len(entry);
+            for (;;) {
+                /* Decode litlen symbol */
+                uint32_t bits = (uint32_t)(br.bits & ((1u << PRIMARY_BITS) - 1));
+                uint32_t entry = litlen_table[bits];
 
-            if (__builtin_expect(type == TYPE_LITERAL, 1)) {
-                /* Single literal */
-                fbr_consume(&br, codelen);
-                if (__builtin_expect(out_pos >= dst_len, 0))
-                    return FD_ERROR_SHORT_BUF;
-                dst[out_pos++] = (uint8_t)entry_sym(entry);
-                continue;
-            }
+                if (__builtin_expect(entry_type(entry) == TYPE_LITERAL, 1)) {
+                    /* FAST PATH: single literal — most common case.
+                     * Consume bits and emit byte without full refill. */
+                    int codelen = entry_len(entry);
+                    br.bits >>= codelen;
+                    br.nbits -= codelen;
+                    dst[out_pos++] = (uint8_t)(entry & 0xFF); /* sym is in low bits */
 
-            if (type == TYPE_DOUBLE_LIT) {
-                /* Two consecutive literals decoded at once */
-                fbr_consume(&br, codelen);
-                if (__builtin_expect(out_pos + 2 > dst_len, 0))
-                    return FD_ERROR_SHORT_BUF;
-                dst[out_pos]     = (uint8_t)(entry & 0xFF);
-                dst[out_pos + 1] = (uint8_t)((entry >> 8) & 0xFF);
-                out_pos += 2;
-                continue;
-            }
+                    /* Try to decode another literal immediately (no refill) */
+                    if (__builtin_expect(br.nbits >= PRIMARY_BITS, 1)) {
+                        bits = (uint32_t)(br.bits & ((1u << PRIMARY_BITS) - 1));
+                        entry = litlen_table[bits];
+                        if (__builtin_expect(entry_type(entry) == TYPE_LITERAL, 1)) {
+                            codelen = entry_len(entry);
+                            br.bits >>= codelen;
+                            br.nbits -= codelen;
+                            dst[out_pos++] = (uint8_t)(entry & 0xFF);
 
-            if (type == TYPE_EOB) {
-                fbr_consume(&br, codelen);
-                break;
-            }
+                            /* Third literal? */
+                            if (__builtin_expect(br.nbits >= PRIMARY_BITS, 1)) {
+                                bits = (uint32_t)(br.bits & ((1u << PRIMARY_BITS) - 1));
+                                entry = litlen_table[bits];
+                                if (entry_type(entry) == TYPE_LITERAL) {
+                                    codelen = entry_len(entry);
+                                    br.bits >>= codelen;
+                                    br.nbits -= codelen;
+                                    dst[out_pos++] = (uint8_t)(entry & 0xFF);
+                                }
+                            }
+                        }
+                    }
 
-            if (type == TYPE_SUBTABLE) {
-                /* Longer code: use subtable */
-                int sub_off = entry_sym(entry);
-                int sub_bits = entry_sub_bits(entry);
-                fbr_consume(&br, PRIMARY_BITS);
-                fbr_ensure(&br, sub_bits);
-                uint32_t sub_idx = (uint32_t)fbr_peek(&br, sub_bits);
-                entry = litlen_table[sub_off + sub_idx];
-                type = entry_type(entry);
-                codelen = entry_len(entry) - PRIMARY_BITS;
-                fbr_consume(&br, codelen);
-
-                if (type == TYPE_LITERAL) {
-                    if (out_pos >= dst_len) return FD_ERROR_SHORT_BUF;
-                    dst[out_pos++] = (uint8_t)entry_sym(entry);
+                    /* Refill and check bounds */
+                    fbr_refill(&br);
+                    if (__builtin_expect(out_pos >= safe_end, 0)) {
+                        if (out_pos >= dst_len) return FD_ERROR_SHORT_BUF;
+                    }
                     continue;
                 }
-                if (type == TYPE_EOB) break;
-                /* Otherwise it's a length code — fall through */
-            } else {
-                /* TYPE_LENGTH in primary table */
-                fbr_consume(&br, codelen);
+
+                /* Slow paths: EOB, subtable, or length code */
+                int type = entry_type(entry);
+                int codelen = entry_len(entry);
+
+                if (type == TYPE_EOB) {
+                    br.bits >>= codelen;
+                    br.nbits -= codelen;
+                    break;
+                }
+
+                if (__builtin_expect(type == TYPE_SUBTABLE, 0)) {
+                    int sub_off = entry_sym(entry);
+                    int sub_bits = entry_sub_bits(entry);
+                    br.bits >>= PRIMARY_BITS;
+                    br.nbits -= PRIMARY_BITS;
+                    if (__builtin_expect(br.nbits < sub_bits, 0)) fbr_refill(&br);
+                    uint32_t sub_idx = (uint32_t)(br.bits & ((1u << sub_bits) - 1));
+                    entry = litlen_table[sub_off + sub_idx];
+                    type = entry_type(entry);
+                    codelen = entry_len(entry) - PRIMARY_BITS;
+                    br.bits >>= codelen;
+                    br.nbits -= codelen;
+
+                    if (type == TYPE_LITERAL) {
+                        dst[out_pos++] = (uint8_t)(entry & 0xFF);
+                        fbr_refill(&br);
+                        continue;
+                    }
+                    if (type == TYPE_EOB) break;
+                    /* Fall through to backref handling */
+                } else {
+                    /* TYPE_LENGTH in primary table */
+                    br.bits >>= codelen;
+                    br.nbits -= codelen;
+                }
+
+                /* Back-reference: decode length + distance */
+                int sym = entry_sym(entry);
+                int len_idx = sym - 257;
+                if (__builtin_expect((unsigned)len_idx >= 29, 0))
+                    return FD_ERROR_BAD_DATA;
+
+                uint32_t match_len = length_base[len_idx];
+                int extra = length_extra[len_idx];
+                if (extra) {
+                    if (__builtin_expect(br.nbits < extra, 0)) fbr_refill(&br);
+                    match_len += (uint32_t)(br.bits & ((1u << extra) - 1));
+                    br.bits >>= extra;
+                    br.nbits -= extra;
+                }
+
+                /* Decode distance */
+                if (__builtin_expect(br.nbits < PRIMARY_BITS, 0)) fbr_refill(&br);
+                bits = (uint32_t)(br.bits & ((1u << PRIMARY_BITS) - 1));
+                entry = dist_table[bits];
+                type = entry_type(entry);
+                codelen = entry_len(entry);
+
+                int dist_sym;
+                if (__builtin_expect(type != TYPE_SUBTABLE, 1)) {
+                    br.bits >>= codelen;
+                    br.nbits -= codelen;
+                    dist_sym = entry_sym(entry);
+                } else {
+                    int sub_off = entry_sym(entry);
+                    int sub_bits = entry_sub_bits(entry);
+                    br.bits >>= PRIMARY_BITS;
+                    br.nbits -= PRIMARY_BITS;
+                    if (br.nbits < sub_bits) fbr_refill(&br);
+                    uint32_t sub_idx = (uint32_t)(br.bits & ((1u << sub_bits) - 1));
+                    entry = dist_table[sub_off + sub_idx];
+                    codelen = entry_len(entry) - PRIMARY_BITS;
+                    br.bits >>= codelen;
+                    br.nbits -= codelen;
+                    dist_sym = entry_sym(entry);
+                }
+
+                if (__builtin_expect((unsigned)dist_sym >= 30, 0))
+                    return FD_ERROR_BAD_DATA;
+
+                uint32_t distance = dist_base[dist_sym];
+                extra = dist_extra[dist_sym];
+                if (extra) {
+                    if (__builtin_expect(br.nbits < extra, 0)) fbr_refill(&br);
+                    distance += (uint32_t)(br.bits & ((1u << extra) - 1));
+                    br.bits >>= extra;
+                    br.nbits -= extra;
+                }
+
+                /* Validate and copy */
+                if (__builtin_expect(distance > out_pos, 0))
+                    return FD_ERROR_BAD_DATA;
+                if (__builtin_expect(out_pos + match_len > dst_len, 0))
+                    return FD_ERROR_SHORT_BUF;
+
+                fast_copy(dst, out_pos, distance, match_len);
+                out_pos += match_len;
+
+                fbr_refill(&br);
             }
-
-            /* Length-distance pair (back-reference) */
-            int sym = entry_sym(entry);
-            int len_idx = sym - 257;
-            if (__builtin_expect(len_idx < 0 || len_idx >= 29, 0))
-                return FD_ERROR_BAD_DATA;
-
-            /* Read extra length bits */
-            uint32_t match_len = length_base[len_idx];
-            int extra = length_extra[len_idx];
-            if (extra > 0) {
-                fbr_ensure(&br, extra);
-                match_len += (uint32_t)fbr_read_fast(&br, extra);
-            }
-
-            /* Decode distance */
-            fbr_refill(&br);
-            bits = (uint32_t)fbr_peek(&br, PRIMARY_BITS);
-            entry = dist_table[bits];
-            type = entry_type(entry);
-            codelen = entry_len(entry);
-
-            int dist_sym;
-            if (__builtin_expect(type != TYPE_SUBTABLE, 1)) {
-                fbr_consume(&br, codelen);
-                dist_sym = entry_sym(entry);
-            } else {
-                int sub_off = entry_sym(entry);
-                int sub_bits = entry_sub_bits(entry);
-                fbr_consume(&br, PRIMARY_BITS);
-                fbr_ensure(&br, sub_bits);
-                uint32_t sub_idx = (uint32_t)fbr_peek(&br, sub_bits);
-                entry = dist_table[sub_off + sub_idx];
-                codelen = entry_len(entry) - PRIMARY_BITS;
-                fbr_consume(&br, codelen);
-                dist_sym = entry_sym(entry);
-            }
-
-            if (__builtin_expect(dist_sym < 0 || dist_sym >= 30, 0))
-                return FD_ERROR_BAD_DATA;
-
-            uint32_t distance = dist_base[dist_sym];
-            extra = dist_extra[dist_sym];
-            if (extra > 0) {
-                fbr_ensure(&br, extra);
-                distance += (uint32_t)fbr_read_fast(&br, extra);
-            }
-
-            /* Validate */
-            if (__builtin_expect(distance > out_pos, 0))
-                return FD_ERROR_BAD_DATA;
-            if (__builtin_expect(out_pos + match_len > dst_len, 0))
-                return FD_ERROR_SHORT_BUF;
-
-            /* Perform the copy */
-            fast_copy(dst, out_pos, distance, match_len);
-            out_pos += match_len;
         }
 
     } while (!bfinal);
