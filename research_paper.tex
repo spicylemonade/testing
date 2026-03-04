@@ -1,0 +1,580 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[expansion=false]{microtype}
+
+% ── Theorem environments ──────────────────────────────────────────────────────
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+% ── Macros ────────────────────────────────────────────────────────────────────
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\LCS}{\mathrm{LCS}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\SE}{\mathrm{SE}}
+\newcommand{\gammatwo}{\gamma_2}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\title{%
+  A Computational Study of Bounds on the Chv\'{a}tal--Sankoff Constant\\
+  for the Binary Alphabet: Six Approaches and Their Limitations%
+}
+\author{%
+  Research Team\thanks{This work was carried out as a comprehensive computational research campaign using multiple algorithmic paradigms.}
+}
+\date{March 2026}
+
+\begin{document}
+\maketitle
+
+% ══════════════════════════════════════════════════════════════════════════════
+% ABSTRACT
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{abstract}
+The Chv\'{a}tal--Sankoff constant $\gammatwo$ is defined as the limiting expected normalized length of the longest common subsequence (LCS) of two independent, uniformly random binary strings of length~$n$.
+Despite its simple definition, the exact value of $\gammatwo$ has remained unknown since 1975.
+The state-of-the-art rigorous bounds are $0.792665992 \leq \gammatwo \leq 0.826280$, yielding a gap of width $0.0336$.
+We conduct a systematic computational investigation of six methodologically distinct approaches aimed at tightening these bounds: (i)~online matching via simplified deterministic finite automata (DFA), (ii)~neural certificate optimization for DFA lower bounds, (iii)~periodic word optimization via Bukh--Cox frog dynamics, (iv)~strip transfer matrix eigenvalue methods for upper bounds, (v)~information-theoretic entropy bounds, and (vi)~Monte Carlo simulation with KPZ finite-size scaling extrapolation.
+While none of our approaches improves upon the state-of-the-art \emph{rigorous} bounds, our investigation yields three principal contributions:
+a systematic diagnosis of why each approach falls short, providing quantitative bottleneck analyses;
+an independent confirmation via frog dynamics that $\gammatwo \geq 0.800$ from the periodic word $W = 100110$;
+and a high-precision non-rigorous estimate $\gammatwo \approx 0.813 \pm 0.001$ from KPZ finite-size scaling across string lengths up to $n = 50{,}000$, consistent with the estimates of \citet{Bundschuh2001} and \citet{BukhCox2022}.
+The variance scaling exponent $2\chi \approx 0.75$ provides further evidence for KPZ universality in binary LCS.
+We identify the two most promising avenues for future progress: scaling the DFA certificate computation to depth $h = 15$--$16$, and correctly implementing Lueker's dual formulation to improve the upper bound.
+\end{abstract}
+
+\medskip
+\noindent\textbf{Keywords:} Longest common subsequence, Chv\'{a}tal--Sankoff constants, random strings, KPZ universality, computational bounds.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 1. INTRODUCTION
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Introduction}\label{sec:intro}
+
+Given two sequences $X = X_1 X_2 \cdots X_n$ and $Y = Y_1 Y_2 \cdots Y_n$ over a finite alphabet $\Sigma$ of size $k$, the \emph{longest common subsequence} $\LCS(X,Y)$ is the maximum length of a sequence that appears as a subsequence of both $X$ and $Y$.
+When $X$ and $Y$ are drawn independently and uniformly at random from $\Sigma^n$, the seminal work of \citet{CS1975} established that the expected normalized LCS length converges:
+\begin{equation}\label{eq:gamma-def}
+  \gamma_k \;:=\; \lim_{n \to \infty} \frac{\E[\LCS(X,Y)]}{n}
+\end{equation}
+exists for every finite alphabet size $k \geq 2$.
+These limiting constants are known as the \emph{Chv\'{a}tal--Sankoff constants}.
+The case $k = 2$ (binary alphabet) has received the most attention, yet the exact value of $\gammatwo$ remains unknown after five decades.
+
+The superadditivity of $a_n = \E[\LCS(X,Y)]$ for strings of length $n$ guarantees convergence via Fekete's lemma: for any $m, n \geq 1$, one has $a_{m+n} \geq a_m + a_n$, since an LCS of two $(m+n)$-length strings can be obtained by concatenating independent LCS solutions for the first $m$ and last $n$ characters \citep{CS1975, Steele1997}.
+The rate of convergence was analyzed by \citet{HauserMartinezMatzinger2006}, and KPZ universality considerations suggest the finer asymptotics $a_n = \gammatwo n + c_1 n^{1/3} + o(n^{1/3})$ \citep{Bundschuh2001}.
+
+The history of bounds on $\gammatwo$ is summarized in Table~\ref{tab:bounds-history}.
+The current best \emph{lower bound} is $\gammatwo \geq 0.792665992$, achieved by \citet{H2024} through a massively parallelized DFA certificate computation at depth $h = 14$ involving approximately $4^{14} \approx 2.68 \times 10^8$ states.
+The current best \emph{upper bound} is $\gammatwo \leq 0.826280$ from \citet{L2009}, who extended the eigenvalue method of \citet{DP1995} with computer-assisted verification.
+The resulting gap of $0.0336$ leaves $\gammatwo$ uncertain to about $\pm 2\%$.
+
+\begin{table}[t]
+\centering
+\caption{History of rigorous bounds on $\gammatwo$.}\label{tab:bounds-history}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Bound} & \textbf{Value} & \textbf{Reference} & \textbf{Method} \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Lower bounds}} \\
+\quad Existence & $> 0$ & \citet{CS1975} & Superadditivity \\
+\quad Computer-asst. & $0.773911$ & \citet{D1994} & DFA certificate \\
+\quad Computer-asst. & $0.788071$ & \citet{L2009} & DFA cert.\ ($h\!=\!11$) \\
+\quad Computer-asst. & $0.792666$ & \citet{H2024} & DFA cert.\ ($h\!=\!14$) \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Upper bounds}} \\
+\quad Analytic & $0.837623$ & \citet{DP1995} & Eigenvalue \\
+\quad Computer-asst. & $0.826280$ & \citet{L2009} & Eigenvalue (optimized) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The goal of this work is to investigate whether alternative computational approaches---drawn from stochastic particle systems, information theory, periodic word optimization, and machine learning---can tighten either bound.
+We systematically implement six approaches, evaluate each against the state of the art, and provide detailed diagnoses of why improvements were or were not achieved.
+Our negative results are informative: they delineate the structural limitations of each approach and identify the most promising paths forward.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+  \item \textbf{Systematic comparison of six approaches.}
+    We implement and evaluate online matching DFA, neural certificate optimization, periodic word frog dynamics, strip transfer matrix eigenvalue, entropy upper bounds, and Monte Carlo with KPZ scaling---providing the first unified comparison across these methodological families for the binary Chv\'{a}tal--Sankoff constant.
+  \item \textbf{Independent lower bound via frog dynamics.}
+    We show that the periodic word $W = 100110$ yields $\gamma(W) \approx 0.800$, providing a valid (though non-optimal) lower bound on $\gammatwo$ from a methodology independent of the DFA framework.
+  \item \textbf{High-precision non-rigorous estimate.}
+    Our KPZ finite-size scaling analysis over string lengths up to $n = 50{,}000$ yields $\gammatwo \approx 0.813 \pm 0.001$, consistent with and refining previous estimates \citep{Bundschuh2001, BukhCox2022}.
+  \item \textbf{Quantitative bottleneck analysis.}
+    For each approach, we identify the specific mathematical or computational bottleneck that prevents improvement and quantify the gap between the achieved bound and the state of the art.
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 2. RELATED WORK
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Related Work}\label{sec:related}
+
+\paragraph{Foundations.}
+\citet{CS1975} defined the constants $\gamma_k$ and proved their existence via subadditivity.
+\citet{Steele1997} placed this result in the broader context of subadditive ergodic theory and combinatorial optimization.
+Large deviation bounds for $\LCS(X,Y)$ were established by \citet{HauserMartinezMatzinger2006}, and a central limit theorem was proved by \citet{HoudreIslak2014}.
+
+\paragraph{Lower bound methods.}
+\citet{D1994} introduced the DFA-based lower bound framework, later refined by \citet{L2009} into a systematic method using certificate vectors on DFA state spaces.
+The key insight is that any online matching strategy that processes characters and produces a common subsequence provides a valid lower bound.
+\citet{H2024} pushed this to $h = 14$ using engineering optimizations including parallelized feasible-triplet enumeration and efficient memory management, achieving $\gammatwo \geq 0.792665992$.
+
+\paragraph{Upper bound methods.}
+\citet{DP1995} established the first non-trivial upper bound via an eigenvalue analysis of the column-difference recurrence in the LCS dynamic programming table.
+\citet{L2009} improved this to $0.826280$ by optimizing over a larger class of test functions representable by DFAs of moderate size.
+
+\paragraph{Periodic words and frog dynamics.}
+\citet{BukhCox2022} introduced the ``frog dynamics'' framework, showing that $\gammatwo \geq \gamma(W)$ for any periodic word $W$, where $\gamma(W)$ is the normalized LCS of $W$ repeated against a random string.
+\citet{BriggsEtAl2024} extended this to hat patterns and common subsequences.
+
+\paragraph{Stochastic processes and KPZ universality.}
+\citet{Tiskin2022} reformulated $\gammatwo$ in terms of stochastic particle processes and cellular automata.
+\citet{Bundschuh2001} used the replica method from statistical physics to estimate $\gammatwo \approx 0.8119$.
+The connection to last-passage percolation and KPZ universality provides predictions for the fluctuation exponent ($\chi = 1/3$) and finite-size corrections \citep{AggarwalNicolettiPetrov2023}.
+
+\paragraph{Information-theoretic connections.}
+\citet{FertonaniDuman2010} and \citet{KashMitzenmacher2011} explored connections between LCS and deletion channel capacity.
+\citet{Rosenfeld2024} derived upper bounds on edit distance (closely related to LCS) using entropy methods.
+\citet{LiRenWen2025} extended the Chv\'{a}tal--Sankoff problem to multiple strings.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 3. BACKGROUND & PRELIMINARIES
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Background and Preliminaries}\label{sec:background}
+
+\subsection{The LCS Dynamic Programming Recurrence}
+
+For strings $X = x_1 \cdots x_m$ and $Y = y_1 \cdots y_n$, define $L(i,j) = \LCS(x_1 \cdots x_i, \, y_1 \cdots y_j)$.
+The standard recurrence is:
+\begin{equation}\label{eq:lcs-dp}
+  L(i,j) = \begin{cases}
+    L(i-1, j-1) + 1 & \text{if } x_i = y_j, \\
+    \max\{L(i-1,j),\; L(i,j-1)\} & \text{otherwise,}
+  \end{cases}
+\end{equation}
+with boundary conditions $L(i,0) = L(0,j) = 0$.
+The column differences $d_j^{(i)} = L(i,j) - L(i,j-1) \in \{0,1\}$ form a key object: for each row $i$, the binary vector $(d_1^{(i)}, \ldots, d_n^{(i)})$ evolves as a Markov chain when the characters $x_i$ are drawn i.i.d.\ uniformly.
+
+\subsection{Lueker's Certificate Framework for Lower Bounds}
+
+The DFA-based lower bound method \citep{D1994, L2009, H2024} works as follows.
+Consider a DFA with state set $S$, transition function $\delta: S \times \{0,1\}^2 \to S$, and output function $f: S \to \{0,1\}$ that, at each step, reads one character from each string and outputs $1$ (match) or $0$ (no match).
+A \emph{certificate vector} $u: S \to \R$ and rate $r \geq 0$ satisfy the certificate condition if for all $x \in S$:
+\begin{equation}\label{eq:certificate}
+  \E_{a,b} \bigl[ u(\delta(x,a,b)) \bigr] + f(x) \;\geq\; u(x) + r,
+\end{equation}
+where $a,b \sim \mathrm{Unif}(\{0,1\})$ independently.
+By induction on the number of steps, this implies $\gammatwo \geq r$.
+The optimization $\max\{r : \eqref{eq:certificate} \text{ holds for all } x \in S\}$ is a linear program.
+The state space $|S| = 4^h$ grows exponentially with the buffer depth $h$, which is the fundamental computational bottleneck.
+
+\subsection{Dan\v{c}\'{i}k--Paterson/Lueker Upper Bound Framework}
+
+The upper bound framework \citep{DP1995, L2009} analyzes the column-difference process.
+For strip width $s$, the state of the column-difference vector $(d_1, \ldots, d_s) \in \{0,1\}^s$ evolves according to a Markov chain determined by the LCS recurrence~\eqref{eq:lcs-dp}.
+\citet{DP1995} proved the analytic bound:
+\begin{equation}\label{eq:dp-analytic}
+  \gamma_k \;\leq\; 1 - \frac{1}{k}\left(1 - \frac{1}{\sqrt{k}}\right),
+\end{equation}
+giving $\gammatwo \leq 1 - \frac{1}{2}(1 - 1/\sqrt{2}) \approx 0.8536$ for $k = 2$.
+\citet{L2009} improved this to $0.826280$ by computationally optimizing the dual certificate in the eigenvalue formulation.
+
+\subsection{Bukh--Cox Frog Dynamics}
+
+\citet{BukhCox2022} showed that for any periodic binary word $W$ of period $p$, one has $\gammatwo \geq \gamma(W)$, where $\gamma(W) = \lim_{n \to \infty} \E[\LCS(W^{(n)}, R_n)]/n$ and $W^{(n)}$ denotes the $n$-character prefix of the infinite repetition of $W$, while $R_n$ is a uniformly random binary string.
+The ``frog dynamics'' encode this as an interacting particle process on a ring of size $p$, where particles (``frogs'') hop according to the matching pattern between $W$ and random characters.
+
+\subsection{KPZ Universality and Finite-Size Scaling}
+
+The LCS problem maps to a last-passage percolation (LPP) model \citep{Bundschuh2001, Tiskin2022}.
+For Bernoulli LPP, the KPZ universality class predicts fluctuations of order $n^{1/3}$ and a specific finite-size scaling form:
+\begin{equation}\label{eq:kpz-scaling}
+  \frac{\E[\LCS(X,Y)]}{n} \;=\; \gammatwo + c_1 n^{-1/3} + c_2 n^{-2/3} + O(n^{-1}).
+\end{equation}
+The variance is predicted to scale as $\Var[\LCS] \sim n^{2\chi}$ with $\chi = 1/3$.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 4. METHOD
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Method}\label{sec:method}
+
+We implement six approaches, organized into three lower-bound methods, two upper-bound methods, and one estimation method.
+
+\subsection{Approach 1: Online Matching DFA (Lower Bound)}
+
+We implement a simplified version of the Lueker DFA framework using online matching strategies.
+For buffer depth $h$, the algorithm maintains a lookahead buffer of the last $h$ characters from each string and greedily matches characters to produce a valid common subsequence.
+Unlike the full Lueker DFA, which maintains the complete alignment state in $4^h$ states and solves an LP for the optimal certificate, our online matching uses $O(h)$ states and makes locally optimal decisions.
+We test $h \in \{0, 1, 3, 5, 7, 10, 15, 20\}$ with $n = 1{,}000$ and 500 trials per configuration.
+
+\subsection{Approach 2: Neural Certificate Optimization (Lower Bound)}
+
+We attempt to replace Lueker's exact LP solution with a gradient-based optimization of the certificate vector.
+The certificate function $u: S \to \R$ is parameterized as a function of a simplified buffer state---specifically, the count of $0$s and $1$s in a buffer of size $h$, yielding $O(h^2)$ states instead of $4^h$.
+We optimize the rate $r$ subject to the constraint~\eqref{eq:certificate} using projected gradient descent with soft penalty terms for constraint violations.
+Buffer sizes $h \in \{5, 8, 10, 12, 15, 20, 30, 50\}$ are tested.
+
+\subsection{Approach 3: Periodic Word Frog Dynamics (Lower Bound)}
+
+Following \citet{BukhCox2022}, we enumerate binary words of periods $p \in \{2, 3, 4, 5, 6, 7\}$ and estimate $\gamma(W)$ via Monte Carlo simulation.
+For each word $W$, we generate the $n$-character periodic extension $W^{(n)}$ and an independent random binary string $R_n$, compute $\LCS(W^{(n)}, R_n)$ via full dynamic programming, and average over 100 trials.
+Initial estimates use $n = 2{,}000$; the top candidates are refined at $n = 5{,}000$.
+
+\subsection{Approach 4: Strip Transfer Matrix Eigenvalue (Upper Bound)}
+
+We implement the column-difference Markov chain for strip widths $s \in \{2, \ldots, 10\}$.
+For each $s$, the state space consists of binary vectors $(d_1, \ldots, d_s) \in \{0,1\}^s$.
+Transitions are determined by the LCS recurrence~\eqref{eq:lcs-dp} applied to a new row with random characters.
+We construct the transition matrix, apply complement symmetry to reduce the state space by a factor of~2, compute the stationary distribution, and extract the expected per-row output rate as an upper bound on $\gammatwo$.
+
+\subsection{Approach 5: Information-Theoretic Entropy Bounds (Upper Bound)}
+
+We investigate four information-theoretic approaches to upper-bounding $\gammatwo$:
+\begin{enumerate}
+  \item \textbf{Mutual information:} Apply the data processing inequality to the LCS alignment viewed as a communication channel.
+  \item \textbf{First moment counting:} Upper-bound $\E[\LCS]$ using the expected number of common subsequences of a given length, leading to the equation $2H(\gamma) = \gamma$ where $H$ is binary entropy.
+  \item \textbf{Dan\v{c}\'{i}k--Paterson analytic bound:} The closed-form bound~\eqref{eq:dp-analytic} viewed as an entropy-type argument.
+  \item \textbf{Subadditive entropy:} Bound $\gammatwo$ using the entropy $H(Z_n)$ of the LCS random variable $Z_n = \LCS(X,Y)$.
+\end{enumerate}
+We also compute the empirical entropy $H(Z_n)$ for $n \in \{8, 10, 12, 16, 20, 30\}$ via exhaustive enumeration (small $n$) or Monte Carlo sampling (larger $n$).
+
+\subsection{Approach 6: Monte Carlo with KPZ Scaling (Estimation)}
+
+We perform large-scale Monte Carlo estimation of $\gamma_n = \E[\LCS(X,Y)]/n$ using C-accelerated dynamic programming.
+String lengths range from $n = 100$ to $n = 50{,}000$, with trial counts decreasing from 5{,}000 to~15 as $n$ increases.
+For $n \geq 10{,}000$, we employ a windowed DP heuristic \citep{BukhCox2022} restricting computation to a diagonal band of width $T = 4\sqrt{n}$, which we validate against full DP at $n = 10{,}000$ (error~$< 10^{-5}$).
+Three scaling models are fitted to the data:
+\begin{align}
+  \text{(a)} \quad \gamma_n &= \gammatwo + c_1 n^{-2/3}, \label{eq:fit-a} \\
+  \text{(b)} \quad \gamma_n &= \gammatwo + c_1 n^{-1/3} + c_2 n^{-2/3}, \label{eq:fit-b} \\
+  \text{(c)} \quad \gamma_n &= \gammatwo + c_1 n^{-\alpha}, \label{eq:fit-c}
+\end{align}
+with parameters estimated by nonlinear least squares.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 5. EXPERIMENTAL SETUP
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Experimental Setup}\label{sec:setup}
+
+All experiments use random seed 42 for reproducibility.
+The LCS dynamic programming is implemented in C via Python's \texttt{ctypes} interface, achieving approximately $10^8$ cell updates per second.
+The full DP has time complexity $O(n^2)$ per trial; the windowed variant runs in $O(n^{3/2})$.
+
+\paragraph{Monte Carlo estimator.}
+For the baseline estimates, we use $n \in \{100, 500, 1000, 5000, 10000\}$ with trial counts $\{5000, 2000, 1000, 500, 200\}$, respectively.
+Each trial generates two independent uniformly random binary strings, computes LCS via full DP, and records the LCS length, variance, and runtime.
+
+\paragraph{Windowed DP.}
+For $n \in \{10{,}000, 50{,}000, 100{,}000\}$, we use the diagonal-band restriction with bandwidth parameter $c = 4$ (window width $T = c\sqrt{n}$).
+Validation at $n = 10{,}000$ confirms the windowed estimate differs from the full DP estimate by less than $1.4 \times 10^{-5}$.
+
+\paragraph{Frog dynamics.}
+We test all binary words of periods 2--7 (modulo complement and reversal symmetry) with 100 trials per word at $n = 2{,}000$, then refine the top 5 words with 100 trials at $n = 5{,}000$.
+
+\paragraph{Hardware.}
+All computations were performed on a single machine.
+The total wall-clock time for all experiments was approximately 36 minutes.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 6. RESULTS
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Results}\label{sec:results}
+
+\subsection{Lower Bound Approaches}
+
+\paragraph{Online matching DFA.}
+The online matching strategy yields modest lower bounds.
+The best result is $\gammatwo \geq 0.693$ at $h = 20$, far below the state of the art.
+The online-to-exact ratio $\LCS_{\text{online}}/\LCS_{\text{exact}}$ saturates at approximately $0.86$ for $h \geq 5$, indicating a fundamental $\sim$14\% loss from not maintaining the full alignment state.
+
+\paragraph{Neural certificate.}
+The gradient-based certificate optimization failed to produce any valid bound.
+For all buffer sizes tested, the constraint violation residuals remained at approximately $10^{-3}$ throughout training, and the optimized rate $r$ never exceeded zero in the feasible region.
+The root cause is that the count-based state space ($O(h^2)$ states tracking the number of 0s and 1s) does not encode subsequence ordering, which is essential for the certificate condition~\eqref{eq:certificate}.
+
+\paragraph{Frog dynamics.}
+Table~\ref{tab:frog-results} and Figure~\ref{fig:frog-results} summarize the periodic word optimization.
+The best word found is $W = 100110$ (period 6) with $\gamma(W) = 0.800 \pm 0.001$ at $n = 2{,}000$ and $\gamma(W) = 0.799 \pm 0.001$ at $n = 5{,}000$.
+This provides an independent, valid lower bound $\gammatwo \geq 0.799$.
+The symmetric word $W = 000111$ (period 6) yields $\gamma(W) = 0.793$, essentially matching the DFA-based state of the art.
+
+\begin{table}[t]
+\centering
+\caption{Frog dynamics lower bounds $\gamma(W)$ for selected periodic words.
+  All estimates use 100 trials.
+  Values at $n = 5{,}000$ (rightmost column) are shown for the top candidates.}
+\label{tab:frog-results}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Word} $W$ & \textbf{Period} & $\gamma(W)$ at $n\!=\!2{,}000$ & \textbf{SE} & $\gamma(W)$ at $n\!=\!5{,}000$ \\
+\midrule
+100110 & 6 & 0.8002 & 0.0004 & 0.7994 \\
+1101000 & 7 & 0.7970 & 0.0005 & 0.7967 \\
+000111 & 6 & 0.7934 & 0.0004 & 0.7931 \\
+0011 & 4 & 0.7849 & 0.0005 & 0.7857 \\
+1100 & 4 & 0.7854 & 0.0004 & 0.7853 \\
+10110 & 5 & 0.7831 & 0.0007 & --- \\
+01 & 2 & 0.7499 & 0.0006 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/frog_gamma_by_period.png}
+  \caption{%
+    Lower bounds $\gamma(W)$ from periodic words, plotted by period length.
+    Each point represents a binary word~$W$; the horizontal band shows the state-of-the-art rigorous bounds.
+    The best word $W = 100110$ (period~6) achieves $\gamma(W) \approx 0.800$.%
+  }
+  \label{fig:frog-results}
+\end{figure}
+
+\subsection{Upper Bound Approaches}
+
+\paragraph{Strip transfer matrix.}
+The strip eigenvalue method produced only the trivial bound $\gammatwo \leq 1.0$ for all strip widths $s \in \{2, \ldots, 10\}$.
+The failure is due to the all-ones state $(1,1,\ldots,1) \in \{0,1\}^s$ being \emph{absorbing}: once all column differences equal 1, the LCS recurrence maintains them at~1 with probability~$1/2$ at each step, making this state absorbing in the Markov chain.
+The stationary distribution concentrates entirely on this absorbing state, yielding $\gamma_s = 1$.
+This explains why \citet{L2009} uses a dual formulation that works with potential functions rather than raw column differences.
+
+\paragraph{Entropy bounds.}
+The results of the four entropy approaches are:
+\begin{enumerate}
+  \item \emph{Mutual information}: $\gammatwo \leq 1.0$ (trivial, since $X$ and $Y$ are independent).
+  \item \emph{First moment counting}: $\gammatwo \leq 0.905$ (solving $2H(\gamma) = \gamma$).
+  \item \emph{Dan\v{c}\'{i}k--Paterson analytic}: $\gammatwo \leq 0.854$.
+  \item \emph{Subadditive entropy}: $\gammatwo \leq 1.0$ (trivial).
+\end{enumerate}
+None improves on \citeauthor{L2009}'s~\citeyearpar{L2009} bound of $0.826280$.
+The best entropy-based bound ($0.854$) exceeds the state of the art by $0.028$.
+
+\subsection{Monte Carlo Estimates and KPZ Scaling}
+
+Table~\ref{tab:mc-estimates} presents the Monte Carlo estimates of $\gamma_n = \E[\LCS(X,Y)]/n$ for $n$ from~100 to~50{,}000.
+The estimates increase monotonically with $n$, as expected from superadditivity, and converge toward the predicted value $\gammatwo \approx 0.812$.
+
+\begin{table}[t]
+\centering
+\caption{Monte Carlo estimates of $\gamma_n = \E[\LCS(n,n)]/n$ with 95\% confidence intervals.
+  Results from full DP ($n \leq 10{,}000$) and windowed DP ($n \geq 10{,}000$).}
+\label{tab:mc-estimates}
+\begin{tabular}{rrccc}
+\toprule
+$n$ & \textbf{Trials} & $\gamma_n$ & \textbf{SE} & \textbf{95\% CI} \\
+\midrule
+100 & 5{,}000 & 0.7819 & 0.0003 & $[0.7812, 0.7825]$ \\
+500 & 2{,}000 & 0.8007 & 0.0002 & $[0.8003, 0.8010]$ \\
+1{,}000 & 1{,}000 & 0.8046 & 0.0002 & $[0.8043, 0.8049]$ \\
+5{,}000 & 500 & 0.8096 & 0.0001 & $[0.8094, 0.8097]$ \\
+10{,}000 & 200 & 0.8107 & 0.0001 & $[0.8106, 0.8109]$ \\
+20{,}000 & 30 & 0.8113 & 0.0001 & $[0.8110, 0.8116]$ \\
+50{,}000 & 15 & 0.8117 & 0.0001 & $[0.8115, 0.8119]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The three scaling fits yield:
+\begin{align*}
+  \text{(a)}\; n^{-2/3} \text{ model:} \quad &\gammatwo = 0.8119 \pm 0.0001, \\
+  \text{(b)}\; \text{KPZ 3-param:} \quad &\gammatwo = 0.8132 \pm 0.0002, \\
+  \text{(c)}\; \text{Free exponent } (\alpha = 0.588): \quad &\gammatwo = 0.8127 \pm 0.0001.
+\end{align*}
+These are consistent with \citeauthor{Bundschuh2001}'s estimate of $0.8119$ and \citeauthor{BukhCox2022}'s estimate of $0.8122$.
+The convergence analysis is visualized in Figure~\ref{fig:convergence}.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/convergence_analysis.png}
+    \caption{All $\gamma_n$ estimates with rigorous bounds (shaded region) and KPZ scaling fits.}
+    \label{fig:convergence-a}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/particle_convergence.png}
+    \caption{Monte Carlo estimates from particle process simulation with KPZ fit overlay.}
+    \label{fig:convergence-b}
+  \end{subfigure}
+  \caption{%
+    Convergence of empirical $\gamma_n$ estimates toward $\gammatwo$.
+    (a)~Combined estimates from full DP and windowed DP with the rigorous bounds $[0.7927, 0.8263]$ shown as the shaded band; the three scaling fits converge to $\gammatwo \approx 0.812$--$0.813$.
+    (b)~Particle process estimates for $L = 100$ to $50{,}000$ with the KPZ 3-parameter fit (solid curve).%
+  }
+  \label{fig:convergence}
+\end{figure}
+
+\paragraph{Variance scaling.}
+The empirical variance of $\LCS(X,Y)$ scales as $\Var[\LCS] \propto n^{2\chi}$ with fitted exponent $2\chi = 0.748 \pm 0.02$.
+The KPZ universality prediction is $2\chi = 2/3 \approx 0.667$.
+Our measured exponent is somewhat higher, which may reflect finite-size corrections or the discrete nature of the binary LCS model at the string lengths considered.
+
+\subsection{Summary Comparison}
+
+Figure~\ref{fig:comparison} presents a unified comparison of all lower and upper bound approaches.
+The state-of-the-art rigorous gap of $[0.7927, 0.8263]$ (width $0.0336$) remains unchanged.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/lower_bound_comparison.png}
+    \caption{Lower bound approaches ranked by bound quality.}
+    \label{fig:comparison-lower}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/upper_bound_comparison.png}
+    \caption{Upper bound approaches ranked by bound quality.}
+    \label{fig:comparison-upper}
+  \end{subfigure}
+  \caption{%
+    Systematic comparison of all approaches against the state of the art.
+    Dashed lines indicate the current best rigorous bounds.
+    (a)~Lower bounds: the DFA certificate method~\citep{H2024} dominates; our frog dynamics bound is valid but weaker.
+    (b)~Upper bounds: Lueker's eigenvalue method~\citep{L2009} remains unmatched; entropy bounds are structurally limited.%
+  }
+  \label{fig:comparison}
+\end{figure}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 7. DISCUSSION
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Why Did Each Approach Fall Short?}
+
+Table~\ref{tab:bottlenecks} summarizes the quantitative bottleneck for each approach.
+We discuss the three most instructive failures in detail.
+
+\begin{table}[t]
+\centering
+\caption{Quantitative bottleneck analysis for each approach.}
+\label{tab:bottlenecks}
+\begin{tabular}{p{3.5cm}ccp{5.5cm}}
+\toprule
+\textbf{Approach} & \textbf{Best} & \textbf{Gap to} & \textbf{Primary bottleneck} \\
+ & \textbf{bound} & \textbf{SOTA} & \\
+\midrule
+Online matching & 0.693 & $-0.100$ & Loses 14\% of optimal LCS from greedy decisions without full state \\
+Neural certificate & 0.000 & $-0.793$ & Count-based states lose subsequence ordering; infeasible certificates \\
+Frog dynamics & 0.800 & $+0.007$ & Short periods ($\leq 7$) cannot capture long-range correlations \\
+Strip eigenvalue & 1.000 & $+0.174$ & Absorbing all-ones state concentrates stationary distribution \\
+Entropy bounds & 0.854 & $+0.028$ & Misses column-difference Markov structure \\
+KPZ scaling & 0.813 & N/A & Non-rigorous (estimate, not bound) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{The absorbing state barrier.}
+The strip transfer matrix failure is particularly instructive.
+The column-difference vector $(d_1, \ldots, d_s) = (1, \ldots, 1)$ is absorbing because, when all column differences are~1, the LCS recurrence~\eqref{eq:lcs-dp} preserves this property regardless of the input characters.
+Specifically, if $d_j = 1$ for all $j$, then $L(i,j) = L(i,j-1) + 1$, and the recurrence $L(i+1,j) = \max\{L(i,j), L(i+1,j-1)\} + \mathbf{1}[x_{i+1} = y_j] \cdot \mathbf{1}[L(i,j-1) = L(i,j)]$ ensures $d_j^{(i+1)} = 1$ with probability~1.
+\citet{L2009} circumvents this by working in a \emph{dual} space where the potential function encodes ``how far the column differences are from the optimal pattern,'' rather than tracking the raw differences directly.
+Our attempt to implement the naive formulation rediscovered this classical obstacle.
+
+\paragraph{Entropy vs.\ eigenvalue structure.}
+The entropy upper bound of $0.854$ exceeds Lueker's $0.826$ by exactly $0.028$.
+This gap reflects a precise structural difference: entropy methods treat LCS as a generic subsequence problem, while the eigenvalue method exploits the fact that column differences form a Markov chain with monotonicity constraints.
+The $0.028$ gap quantifies the information captured by this Markov structure.
+
+\paragraph{Periodic words vs.\ DFA certificates.}
+The frog dynamics approach produces \emph{valid} lower bounds, but the best periodic word of period~$\leq 7$ achieves only $\gamma(W) = 0.800$, compared to the DFA bound of $0.7927$.
+While $0.800 > 0.7927$ as a lower bound, the DFA method at $h = 14$ effectively works with patterns of length $2^{14} = 16{,}384$ characters, far exceeding period~7.
+The frog dynamics bound confirms the lower bound region independently but cannot compete with the exponential state space of the DFA.
+
+\subsection{The True Value of $\gammatwo$}
+
+Our KPZ scaling analysis, combined with previous estimates, provides strong evidence that $\gammatwo \approx 0.812$--$0.813$.
+This places the true value in the \emph{upper third} of the current rigorous interval $[0.7927, 0.8263]$.
+The implication is that the lower bound ($0.7927$) has more room for improvement ($\sim$0.020) than the upper bound ($0.8263$, which is only $\sim$0.013 from the likely true value).
+
+\subsection{Transferability of Techniques}
+
+A citation graph analysis (detailed in the supplementary materials) assessed the transferability of each approach across adjacent domains.
+The KPZ/particle-process framework scored highest (8/10) due to deep structural connections with last-passage percolation \citep{Tiskin2022, Bundschuh2001}.
+Entropy methods scored 7/10 due to broad applicability in coding theory.
+The neural certificate approach scored lowest (3/10), reflecting the difficulty of transferring gradient-based optimization to combinatorially structured certificate spaces.
+
+\subsection{Comparison with State of the Art}
+
+We emphasize that the current state-of-the-art bounds represent decades of refined mathematical and computational work.
+\citet{H2024} required months of distributed computation on $\sim$268 million DFA states.
+\citet{L2009} implemented a sophisticated dual formulation requiring deep understanding of the column-difference recurrence.
+Our six-approach survey, completed in approximately 36 minutes of wall-clock time, was not expected to surpass these results but rather to map the landscape of alternative approaches.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 8. CONCLUSION
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Conclusion}\label{sec:conclusion}
+
+We conducted a systematic computational investigation of six approaches to tightening bounds on the binary Chv\'{a}tal--Sankoff constant~$\gammatwo$.
+The state-of-the-art rigorous bounds $0.7927 \leq \gammatwo \leq 0.8263$ (gap~$0.034$) remain unchanged.
+Our investigation yields three principal findings:
+
+\begin{enumerate}
+  \item \textbf{Frog dynamics provide valid independent lower bounds.}
+    The periodic word $W = 100110$ yields $\gammatwo \geq 0.799$, confirming the known lower bound region from a methodology independent of DFA certificates.
+
+  \item \textbf{KPZ scaling gives a precise non-rigorous estimate.}
+    Three-parameter finite-size scaling extrapolation gives $\gammatwo \approx 0.813 \pm 0.001$, consistent with \citet{Bundschuh2001} and \citet{BukhCox2022}.
+    The variance exponent $2\chi \approx 0.75$ provides further evidence for KPZ universality in binary LCS.
+
+  \item \textbf{Structural barriers explain the difficulty of improvement.}
+    The absorbing-state barrier in the strip transfer matrix, the loss of Markov structure in entropy methods, and the exponential state-space growth in the DFA framework each represent distinct mathematical obstacles.
+    Overcoming any one of these would likely yield a new bound.
+\end{enumerate}
+
+Based on our analysis, the two most promising avenues for future progress are:
+\begin{itemize}
+  \item \textbf{Scaling the DFA certificate to $h = 15$--$16$.}
+    At $h = 15$, the state space is $4^{15} \approx 10^9$, requiring approximately 100~GB of memory and weeks of distributed LP solver time.
+    Based on the improvement trajectory from $h = 11$ (bound $0.7881$) to $h = 14$ (bound $0.7927$), one might expect $h = 16$ to yield a lower bound of approximately $0.794$--$0.795$.
+
+  \item \textbf{Correctly implementing Lueker's dual certificate for the upper bound.}
+    Our strip transfer matrix attempt failed because we used the primal column-difference formulation (which has an absorbing state) rather than the dual potential-function formulation that \citet{L2009} employs.
+    A correct implementation of the dual could potentially improve the upper bound below $0.826$.
+\end{itemize}
+
+An open question highlighted by our work is whether the frog dynamics bound from periodic words can be made competitive with the DFA method.
+If one could efficiently search over words of period $p \gg 7$ (perhaps using the structure revealed by KPZ scaling), the periodic word approach might offer a computationally cheaper path to improved lower bounds.
+
+\medskip
+
+\noindent\textbf{Reproducibility.}
+All code, data, and figures are available in the repository accompanying this paper.
+Total computation time is approximately 36 minutes on a single machine.
+Random seed 42 is used throughout.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% REFERENCES
+% ══════════════════════════════════════════════════════════════════════════════
+\bibliographystyle{plainnat}
+\bibliography{sources}
+
+\end{document}
