@@ -1,0 +1,284 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T12:00:00Z",
+  "updated_at": "2026-03-04T04:32:45.900922+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T12:00:00Z",
+      "completed_at": "2026-03-04T04:32:45.900906+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and research infrastructure",
+          "acceptance_criteria": "Produce a document in results/phase1/repo_analysis.md listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, .opencode/ agents and tools), their purposes, input/output contracts, and how they interconnect. Confirm results/ and figures/ directories exist and are ready for output.",
+          "status": "pending",
+          "notes": "Foundation step; must be completed before any other work begins.",
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Deep-dive mathematical formulation of the univalent Bloch constant problem",
+          "acceptance_criteria": "Write results/phase1/problem_formulation.md containing: (1) precise definitions of F, B_f, B_u, B, B_l, L with full LaTeX; (2) the chain B <= B_l <= L <= B_u with proof sketch of each inequality; (3) summary of Koebe 1/4 theorem link to B_u >= 1/4; (4) description of Goodman's 1945 extremal domain construction; (5) statement of Jenkins's necessary condition for extremal domains. Document must be at least 1500 words.",
+          "status": "pending",
+          "notes": "Requires reading task description + fetching BS2023 and related papers.",
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Conduct comprehensive literature search via web and Semantic Scholar",
+          "acceptance_criteria": "Use web search and Semantic Scholar tools to identify at least 20 relevant papers on the Bloch constant, Landau constant, univalent Bloch constant, extremal domains, and conformal mapping covering theorems. Record each paper's title, authors, year, DOI, and a 2-sentence relevance summary in results/phase1/literature_search_log.json.",
+          "status": "pending",
+          "notes": "Delegate to literature-graph-miner subagent for citation graph expansion from seed papers [BS2023], [Skin2009], [Yan1995], Carroll-Ortega-Cerda 2009, Bonk-Minda-Yanagihara 1996.",
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Create and maintain sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "sources.bib in repo root contains valid BibTeX entries for at least 15 relevant papers. Must include: Bhowmik-Sen 2023, Skinner 2009, Yanagihara 1995, Carroll-Ortega-Cerda 2009, Bonk-Minda-Yanagihara 1996, Baernstein-Vinson 1997, Xiong 1998, Ahlfors-Grunsky 1937, Goodman 1945, Heins 1962, Rademacher 1943, Chen-Gauthier 1996, Jenkins 1963, Banuelos 2005, and at least one paper from 2020+. Each entry has all standard fields (author, title, journal, year, doi where available).",
+          "status": "pending",
+          "notes": "Use semantic_scholar bibtex command where possible; supplement with manual entry from web search results.",
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Synthesize state-of-the-art and identify gap analysis for tighter bounds",
+          "acceptance_criteria": "Write results/phase1/gap_analysis.md documenting: (1) timeline of all known bounds on B_u (lower: 1/4, 1/2+10^{-335}, 0.5708858; upper: 1, Carroll-Ortega-Cerda ~0.6564); (2) the techniques behind each bound (Koebe theorem, Skinner's implicit function method, Polya-Chebotarev-based upper bound, harmonic symmetry); (3) at least 3 specific gaps or opportunities where improvement is feasible, ranked by expected difficulty and potential impact; (4) comparison with bounds for related constants B, B_l, L. Must cite at least 10 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Initialize concept tree exploration for cross-domain idea transfer",
+          "acceptance_criteria": "Use concept_evolve tool (evolve command) with seed concepts: 'univalent Bloch constant', 'extremal conformal mapping', 'hyperbolic metric distortion', 'logarithmic capacity minimization'. Verify results/concept_evolve/tree/index.json exists with at least 4 concept nodes. Each concept folder under results/concept_evolve/tree/ must contain concept.json and README.md.",
+          "status": "pending",
+          "notes": "Delegate to concept-tree-explorer subagent. This establishes the concept tree that will be expanded in later phases.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement numerical computation of B_f for candidate univalent functions",
+          "acceptance_criteria": "Python script results/phase2/compute_Bf.py that: (1) takes a univalent function f (represented as truncated power series or explicit formula) and computes B_f numerically using conformal mapping and disk-in-image detection; (2) handles at least the identity f(z)=z (B_f=1), Koebe function k(z)=z/(1-z)^2 (B_k=1/4 of image radius), and parameterized slit-disk mappings; (3) includes unit tests that verify B_identity=1 and B_koebe=1/4 to 6 decimal places. Script must run without errors.",
+          "status": "pending",
+          "notes": "Use scipy, numpy, mpmath for numerical work. This is the core computational tool for the project.",
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Reproduce Skinner's lower bound B_u > 0.5708858",
+          "acceptance_criteria": "Script results/phase2/reproduce_skinner.py that: (1) implements Skinner's implicit function method from [Skin2009] -- the technique of bounding |f(z)| from below for f in the univalent class S with f'(0)=1, then deriving the univalent Bloch constant bound via covering arguments; (2) numerically reproduces B_u > 0.5708858 to at least 7 significant figures; (3) includes detailed comments explaining each step of the argument. Output a verification log to results/phase2/skinner_verification.log.",
+          "status": "pending",
+          "notes": "This is the baseline we must exceed. Understanding the method deeply is essential for improvement.",
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement upper bound computation via Polya-Chebotarev extremal domains",
+          "acceptance_criteria": "Script results/phase2/upper_bound_domains.py that: (1) numerically constructs Goodman-type slit-disk domains (disk minus symmetric arcs); (2) computes the conformal radius / inradius of these domains to estimate B_u from above; (3) reproduces Carroll-Ortega-Cerda's upper bound B_u <= 0.6564 (or close approximation); (4) outputs domain visualizations as PNG files in figures/upper_bound_domains/. At least 3 different domain configurations tested.",
+          "status": "pending",
+          "notes": "Understanding the upper bound construction is critical for knowing how tight the gap is.",
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Establish baseline metrics dashboard and experiment tracking framework",
+          "acceptance_criteria": "Create results/phase2/metrics.json recording: (1) best known lower bound (0.5708858), best known upper bound (0.6564), trivial upper bound (1); (2) our reproduced lower and upper bounds with timestamps and method identifiers; (3) a Python utility results/utils/tracker.py that appends new bound results to metrics.json with fields: bound_value, bound_type (lower/upper), method_name, timestamp, script_path, notes. The tracker must be importable and tested.",
+          "status": "pending",
+          "notes": "All subsequent experiments must log their results through this tracker for comparison.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Develop refined lower bound via improved distortion estimates for univalent functions",
+          "acceptance_criteria": "Script results/phase3/improved_lower_bound.py implementing at least two novel or refined approaches: (A) Strengthen Skinner's implicit function C(|z|) by incorporating higher-order terms in the de Branges / Bieberbach coefficient constraints (|a_n| <= n for univalent f); (B) Use sharp two-point distortion theorems (Kim-Minda or Blatter-type) to get tighter covering estimates. The script must produce a certified numerical lower bound B_u > X where X > 0.5708858. Log the result via the tracker. Include a mathematical justification document at results/phase3/lower_bound_proof_sketch.md explaining why the bound is rigorous.",
+          "status": "pending",
+          "notes": "This is the primary novel contribution target. Even a small improvement (e.g., 0.5709) would be significant given 15+ years since last improvement.",
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Explore improved upper bound via optimized extremal domain search",
+          "acceptance_criteria": "Script results/phase3/optimized_upper_bound.py that: (1) parameterizes families of slit-disk domains (varying number of slits from 3 to 8, arc lengths, angular positions) and numerically optimizes the conformal mapping to minimize B_f; (2) uses the Polya-Chebotarev connection to reduce to a logarithmic capacity problem; (3) tests whether domains with higher-fold symmetry (5-fold, 7-fold) or asymmetric configurations yield tighter upper bounds than Carroll-Ortega-Cerda's 4-symmetric construction. Report best upper bound found in metrics.json. Include at least 5 domain visualizations in figures/.",
+          "status": "pending",
+          "notes": "Carroll-Ortega-Cerda used 4-fold symmetric domains; exploring other symmetries could yield improvement.",
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Investigate hyperbolic-metric-based approach for lower bounds",
+          "acceptance_criteria": "Script results/phase3/hyperbolic_approach.py implementing the Bonk-Minda technique of using ultrahyperbolic metrics and Schwarz-Pick type inequalities to derive covering theorems for univalent maps. Must: (1) compute sharp constants in the Schwarz-Pick inequality for the univalent class; (2) derive a covering radius estimate that feeds into a B_u lower bound; (3) compare numerically with Skinner's bound. Write results/phase3/hyperbolic_analysis.md (>1000 words) explaining the method and how it relates to prior work by Bonk, Minda, and Yanagihara, citing at least 5 papers from sources.bib.",
+          "status": "pending",
+          "notes": "This is an alternative approach channel. The hyperbolic metric approach was successful for B and B_l; adapting it to B_u may yield new insights.",
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Expand concept tree with cross-domain bridges and identify transferable techniques",
+          "acceptance_criteria": "Use concept_evolve tool (probe and reframe commands) to: (1) add at least 3 new concept nodes to results/concept_evolve/tree/ exploring connections to: eigenvalue problems for Laplacian on simply connected domains, isoperimetric inequalities for conformal maps, and capacity optimization in potential theory; (2) generate a semantic_bridge.json connecting each new concept to the core B_u problem with explicit 'transfer mechanism' descriptions; (3) identify at least 1 concrete computational technique from a neighboring field that could be adapted. Write results/phase3/concept_transfer_report.md summarizing findings.",
+          "status": "pending",
+          "notes": "Delegate to concept-tree-explorer subagent. Cross-pollination from neighboring analysis problems has historically driven progress on Bloch-type constants.",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Develop interval arithmetic verification framework for rigorous bound certification",
+          "acceptance_criteria": "Script results/phase3/interval_verify.py that: (1) uses mpmath interval arithmetic (or equivalent) to provide rigorous enclosures for all numerical computations in the lower bound argument; (2) can certify that a given bound B_u > X holds with mathematical rigor (no floating-point rounding errors can invalidate it); (3) re-certifies Skinner's bound 0.5708858 as a validation test; (4) is designed to certify any improved bound produced by item_011. Document the verification methodology in results/phase3/rigor_methodology.md.",
+          "status": "pending",
+          "notes": "Rigorous certification is essential for any claimed improvement to be publishable.",
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Investigate variational characterization of extremal univalent functions for B_u",
+          "acceptance_criteria": "Write results/phase3/variational_analysis.md (>1500 words) analyzing: (1) Jenkins's necessary conditions for extremal domains and how they constrain the minimizer of B_f over univalent f; (2) Schiffer-type variational methods applied to the B_u problem; (3) what is known about the structure of near-extremal functions (e.g., number of slits, symmetry type); (4) whether numerical optimization of B_f over parameterized families can locate candidate extremals. Include supporting numerical experiments in results/phase3/variational_numerics.py that test at least 3 parameterized families. Cite at least 6 papers from sources.bib.",
+          "status": "pending",
+          "notes": "Understanding the extremal problem structure is key to knowing how close current bounds are to optimal.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_017",
+          "description": "Systematic parameter sweep for lower bound optimization",
+          "acceptance_criteria": "Script results/phase4/parameter_sweep.py that: (1) takes the best lower bound method(s) from Phase 3 and systematically varies all free parameters to find the tightest achievable bound; (2) runs at least 1000 parameter configurations; (3) logs all results to results/phase4/sweep_results.csv with columns: config_id, param_values, bound_value, runtime_seconds; (4) identifies the top-5 configurations and reports the best bound achieved. Best bound must be logged via tracker.",
+          "status": "pending",
+          "notes": "Brute-force optimization to squeeze out every digit of improvement.",
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Comparative evaluation of all lower bound methods against prior work",
+          "acceptance_criteria": "Script results/phase4/comparison.py that: (1) runs all implemented lower bound methods (Skinner reproduction, improved distortion method, hyperbolic method) on a common set of test configurations; (2) produces a comparison table in results/phase4/comparison_table.md showing method, best bound, runtime, and rigorous certification status; (3) generates a convergence plot (figures/lower_bound_convergence.png) showing how bounds improve with increasing computational effort; (4) explicitly compares against prior published bounds from gap_analysis.md with citations to sources.bib.",
+          "status": "pending",
+          "notes": "Delegate computation to researcher agent for parallel execution of different methods.",
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Rigorous certification of best achieved bounds using interval arithmetic",
+          "acceptance_criteria": "Run interval_verify.py from item_015 on the best lower bound from item_017. Output: (1) results/phase4/certified_bound.json containing {bound_value, certification_status: 'PASSED'/'FAILED', computation_log, interval_width}; (2) if certification passes, update metrics.json with the new certified lower bound. If the best numerical bound fails certification, find the largest certifiable bound and report that instead.",
+          "status": "pending",
+          "notes": "Only rigorously certified bounds count as genuine improvements.",
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Upper bound experiments: test novel domain configurations",
+          "acceptance_criteria": "Script results/phase4/upper_bound_experiments.py that: (1) tests at least 10 distinct domain families beyond those in Phase 3 (including non-symmetric domains, domains with mixed slit types, and domains inspired by concept tree exploration); (2) logs all upper bound results to results/phase4/upper_bound_results.csv; (3) reports whether any configuration yields B_u < 0.6564 (improving Carroll-Ortega-Cerda); (4) produces visualizations of the top-3 lowest-B_f domains in figures/best_upper_domains/.",
+          "status": "pending",
+          "notes": "Upper bound improvement would be a complementary contribution.",
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Sensitivity analysis and error budget for all bound computations",
+          "acceptance_criteria": "Write results/phase4/sensitivity_analysis.md documenting: (1) how truncation order in power series affects lower bound accuracy (test orders 10, 50, 100, 500); (2) how numerical integration resolution affects upper bound domain computation; (3) identification of which parameter(s) contribute most to bound tightness; (4) recommended optimal settings for future computation. Include supporting plots in figures/sensitivity/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Compile final results summary with all achieved bounds",
+          "acceptance_criteria": "Write results/final_summary.md containing: (1) best certified lower bound achieved (value, method, certification status); (2) best upper bound achieved (value, method); (3) comparison table against all prior published bounds with citations; (4) the gap B_u in [best_lower, best_upper] and percentage improvement over prior work; (5) a clear statement of whether a non-trivial tighter bound was achieved. Must reference metrics.json data and cite sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Write detailed technical report on novel methods and findings",
+          "acceptance_criteria": "Write results/technical_report.md (>3000 words) containing: (1) Introduction with problem statement and motivation; (2) Literature review section citing at least 12 papers from sources.bib; (3) Methods section describing each approach attempted with mathematical detail; (4) Results section with tables, figures, and bound comparisons; (5) Discussion of what worked, what didn't, and why; (6) Conclusion with statement of main contributions and future directions. All figures must be referenced from figures/ directory.",
+          "status": "pending",
+          "notes": "This is the main deliverable documenting the research contribution.",
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Generate publication-quality figures summarizing all results",
+          "acceptance_criteria": "Script results/phase5/generate_figures.py that produces at least 5 figures in figures/: (1) timeline of B_u bounds (lower and upper) from 1925 to present including our results; (2) visualization of the best extremal domain found (upper bound); (3) convergence plot of lower bound methods; (4) concept tree visualization showing explored concepts and bridges; (5) parameter sensitivity heatmap from Phase 4. All figures must be 300+ DPI PNG with proper axis labels and legends.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Final concept tree walk and retrospective analysis",
+          "acceptance_criteria": "Use concept_evolve tool (walk command) to traverse the full concept tree in results/concept_evolve/tree/. Write results/phase5/concept_retrospective.md summarizing: (1) which concept paths were most productive; (2) which cross-domain transfers yielded actionable insights; (3) which concepts were dead ends and why; (4) recommendations for future concept exploration on this problem. Verify walk_paths.json is updated in results/concept_evolve/tree/.",
+          "status": "pending",
+          "notes": "Delegate to concept-tree-explorer subagent for the tree walk.",
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Prepare contribution notes with precise claim statements",
+          "acceptance_criteria": "Write results/contribution_notes.md containing: (1) exact statement of any improved bound (e.g., 'We prove B_u > X where X > 0.5708858') with the proof method identified; (2) list of all novel techniques or combinations introduced; (3) reproducibility instructions (which scripts to run in what order); (4) caveats and limitations; (5) suggested next steps for further improvement. This document must be self-contained enough that an independent researcher could verify the claims.",
+          "status": "pending",
+          "notes": "The ultimate deliverable for judging research success.",
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 26,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 26
+  }
+}
