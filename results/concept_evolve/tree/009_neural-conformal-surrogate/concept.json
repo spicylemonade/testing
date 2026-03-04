@@ -1,0 +1,25 @@
+{
+  "id": 9,
+  "symbolic_name": "neural_conformal_surrogate",
+  "description": "Train a neural network to approximate the map from Taylor coefficients (a_2,...,a_N) of univalent functions to their Bloch radius B_f. This surrogate model enables rapid exploration of the coefficient space. Combined with adversarial training (finding coefficients that minimize B_f), this could discover near-extremal functions and suggest the value of B_u.",
+  "domains": [
+    "machine_learning",
+    "geometric_function_theory",
+    "numerical_optimization"
+  ],
+  "mathematical_formalization": "Define \u03a6: \\mathbb{C}^{N-1} \u2192 \\mathbb{R} by \u03a6(a_2,...,a_N) = B_{f_N} where f_N(z) = z + a_2 z^2 + ... + a_N z^N. Train NN: \u03a6\u0302(a; \u03b8) \u2248 \u03a6(a). Then B_u \u2248 inf_{a \u2208 U_N} \u03a6\u0302(a; \u03b8) where U_N = {a : f_N univalent}. Use adversarial/min-max training: min_a max_\u03b8 |\u03a6\u0302 - \u03a6| subject to a \u2208 U_N.",
+  "analogical_connections": [
+    "Generative adversarial networks \u2014 min-max optimization",
+    "Neural ODE solvers \u2014 learning dynamics",
+    "AlphaFold \u2014 predicting structure from sequence"
+  ],
+  "implementation_hypothesis": "Sample 100K random univalent functions (via de Branges coefficients satisfying |a_n| \u2264 n). For each, compute B_f numerically. Train a ResNet on (a_2,...,a_20) \u2192 B_f. Use gradient descent on the trained network to find the minimum B_f, giving an approximate B_u.",
+  "experiment_seed": "Generate training data: sample 50000 random univalent polynomials of degree 15 (using rejection sampling on Grunsky condition). Compute B_f for each via numerical conformal mapping. Train a 4-layer MLP and use its gradient to search for the minimizer of B_f.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T04:49:56.996303+00:00",
+  "project_folder": "concept_evolve/tree/009_neural-conformal-surrogate"
+}

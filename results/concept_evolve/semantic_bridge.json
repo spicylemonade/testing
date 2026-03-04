@@ -1,0 +1,70 @@
+{
+  "nodes": [
+    {"id": "harmonic_symmetry_optimization", "domain": "complex_analysis"},
+    {"id": "polya_chebotarev_slit_domains", "domain": "potential_theory"},
+    {"id": "loewner_energy_dissipation", "domain": "stochastic_analysis"},
+    {"id": "sdp_relaxation_covering", "domain": "convex_optimization"},
+    {"id": "hyperbolic_spectral_gap", "domain": "spectral_geometry"},
+    {"id": "optimal_transport_conformal", "domain": "optimal_transport"},
+    {"id": "sle_bloch_coupling", "domain": "probability_theory"},
+    {"id": "interval_arithmetic_certification", "domain": "validated_numerics"},
+    {"id": "neural_conformal_surrogate", "domain": "machine_learning"},
+    {"id": "tropical_geometry_extremal", "domain": "algebraic_geometry"},
+    {"id": "conformal_welding_bootstrap", "domain": "conformal_field_theory"},
+    {"id": "variational_arc_removal", "domain": "calculus_of_variations"},
+    {"id": "bloch_constant_B_u", "domain": "geometric_function_theory"},
+    {"id": "grunsky_inequalities", "domain": "operator_theory"},
+    {"id": "schwarz_christoffel_mapping", "domain": "computational_mathematics"},
+    {"id": "quadratic_differentials", "domain": "riemann_surfaces"}
+  ],
+  "edges": [
+    {"source": "harmonic_symmetry_optimization", "target": "polya_chebotarev_slit_domains", "relation": "Both determine extremal slit configurations; harmonic symmetry constrains which Polya-Chebotarev solutions are realizable as Bloch domains"},
+    {"source": "harmonic_symmetry_optimization", "target": "schwarz_christoffel_mapping", "relation": "Schwarz-Christoffel toolbox is the computational engine for evaluating harmonic symmetry conditions"},
+    {"source": "polya_chebotarev_slit_domains", "target": "quadratic_differentials", "relation": "Extremal Polya-Chebotarev continua are trajectories of rational quadratic differentials"},
+    {"source": "polya_chebotarev_slit_domains", "target": "tropical_geometry_extremal", "relation": "Newton polytopes of discriminants encode the combinatorial structure of slit configurations"},
+    {"source": "loewner_energy_dissipation", "target": "sle_bloch_coupling", "relation": "Loewner energy is the action functional whose stochastic version is SLE; deterministic limit κ→0 connects both"},
+    {"source": "loewner_energy_dissipation", "target": "conformal_welding_bootstrap", "relation": "Loewner energy equals Dirichlet energy dissipation in welding; energy bounds constrain welding data"},
+    {"source": "loewner_energy_dissipation", "target": "variational_arc_removal", "relation": "Arc removal is a discrete version of Loewner chain evolution; energy dissipation rate = rate of radius decrease"},
+    {"source": "sdp_relaxation_covering", "target": "grunsky_inequalities", "relation": "Grunsky inequality ||G||≤1 is the core LMI constraint in the SDP relaxation"},
+    {"source": "sdp_relaxation_covering", "target": "conformal_welding_bootstrap", "relation": "Both use semidefinite positivity constraints to bound geometric quantities; the bootstrap is a dual formulation of the SDP"},
+    {"source": "sdp_relaxation_covering", "target": "bloch_constant_B_u", "relation": "SDP hierarchy provides systematic lower bounds converging to B_u"},
+    {"source": "hyperbolic_spectral_gap", "target": "optimal_transport_conformal", "relation": "Spectral gap controls mixing time, which bounds Wasserstein distance decay; both quantify 'spreading' of conformal image"},
+    {"source": "hyperbolic_spectral_gap", "target": "bloch_constant_B_u", "relation": "Spectral bounds on image domain constrain covering radius, giving indirect bounds on B_u"},
+    {"source": "optimal_transport_conformal", "target": "variational_arc_removal", "relation": "Optimal transport provides a natural metric on the space of domains; arc removal is a path in this space"},
+    {"source": "sle_bloch_coupling", "target": "conformal_welding_bootstrap", "relation": "SLE welding (Sheffield's theory) is the stochastic counterpart; deterministic bootstrap extracts rigorous bounds"},
+    {"source": "interval_arithmetic_certification", "target": "sdp_relaxation_covering", "relation": "Interval arithmetic certifies SDP solutions, converting numerical bounds into rigorous proofs"},
+    {"source": "interval_arithmetic_certification", "target": "bloch_constant_B_u", "relation": "Provides machine-checkable certification of lower bounds"},
+    {"source": "neural_conformal_surrogate", "target": "sdp_relaxation_covering", "relation": "Neural surrogate provides warm-start points for SDP; SDP provides training data and rigorous validation"},
+    {"source": "neural_conformal_surrogate", "target": "harmonic_symmetry_optimization", "relation": "Neural network explores parameter space of arc configurations faster than grid search"},
+    {"source": "tropical_geometry_extremal", "target": "grunsky_inequalities", "relation": "Tropical Grunsky: the leading-order asymptotics of Grunsky coefficients determine tropical discriminant structure"},
+    {"source": "conformal_welding_bootstrap", "target": "bloch_constant_B_u", "relation": "Welding constraints provide both upper and lower bounds on B_u via feasibility/infeasibility of SDP"},
+    {"source": "variational_arc_removal", "target": "harmonic_symmetry_optimization", "relation": "Greedy arc removal converges to harmonically symmetric configurations, providing constructive access to upper bounds"},
+    {"source": "quadratic_differentials", "target": "bloch_constant_B_u", "relation": "Jenkins showed extremal domains are characterized by quadratic differential conditions"}
+  ],
+  "bridge_chains": [
+    {
+      "name": "SDP_to_certification_pipeline",
+      "path": ["neural_conformal_surrogate", "sdp_relaxation_covering", "grunsky_inequalities", "interval_arithmetic_certification", "bloch_constant_B_u"],
+      "crossing_domains": ["machine_learning", "convex_optimization", "operator_theory", "validated_numerics", "geometric_function_theory"],
+      "description": "ML explores → SDP refines → Grunsky encodes → interval arithmetic certifies → rigorous bound on B_u. This chain converts heuristic numerical exploration into machine-checkable mathematical proof."
+    },
+    {
+      "name": "stochastic_to_extremal_domains",
+      "path": ["sle_bloch_coupling", "loewner_energy_dissipation", "conformal_welding_bootstrap", "harmonic_symmetry_optimization", "polya_chebotarev_slit_domains"],
+      "crossing_domains": ["probability_theory", "stochastic_analysis", "conformal_field_theory", "complex_analysis", "potential_theory"],
+      "description": "SLE provides probabilistic intuition → Loewner energy quantifies complexity → welding encodes boundary → harmonic symmetry constrains arc placement → Polya-Chebotarev determines minimal capacity. This chain connects random geometry to classical extremal problems."
+    },
+    {
+      "name": "geometry_to_analysis_bridge",
+      "path": ["hyperbolic_spectral_gap", "optimal_transport_conformal", "variational_arc_removal", "harmonic_symmetry_optimization", "bloch_constant_B_u"],
+      "crossing_domains": ["spectral_geometry", "optimal_transport", "calculus_of_variations", "complex_analysis", "geometric_function_theory"],
+      "description": "Spectral bounds constrain geometry → OT quantifies domain distortion → variational methods optimize arc removal → harmonic symmetry emerges → B_u is bounded. This chain uses modern geometric analysis to attack a classical function theory problem."
+    },
+    {
+      "name": "algebra_to_optimization",
+      "path": ["tropical_geometry_extremal", "polya_chebotarev_slit_domains", "quadratic_differentials", "sdp_relaxation_covering", "bloch_constant_B_u"],
+      "crossing_domains": ["algebraic_geometry", "potential_theory", "riemann_surfaces", "convex_optimization", "geometric_function_theory"],
+      "description": "Tropical geometry reveals combinatorial skeleton → Polya-Chebotarev gives analytic structure → quadratic differentials encode extremality → SDP relaxation computes bounds → B_u is determined. Algebra informs the structure that optimization exploits."
+    }
+  ]
+}

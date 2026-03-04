@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "symbolic_name": "harmonic_symmetry_optimization",
+    "description": "Carroll & Ortega-Cerdà showed the extremal domain for B_u involves arcs that are harmonically symmetric with respect to the origin. By parametrizing families of such arcs via Schwarz-Christoffel parameters and optimizing the resulting conformal modulus, one can search for tighter upper bounds by exploring higher-order arc configurations beyond the 3-fold symmetric case.",
+    "domains": ["complex_analysis", "numerical_optimization", "potential_theory"],
+    "mathematical_formalization": "Let D_N = \\mathbb{D} \\setminus \\bigcup_{k=1}^{N} \\gamma_k where \\gamma_k are arcs harmonically symmetric w.r.t. 0, i.e., \\omega(0, \\gamma_k, D_N) = \\text{const}. Define U_N = \\inf_{\\{\\gamma_k\\}} \\text{cap}(f(D_N)) where f: \\mathbb{D} \\to D_N is the Riemann map. The upper bound is B_u \\leq \\lim_{N \\to \\infty} U_N.",
+    "analogical_connections": [
+      "Minimal surfaces with N-fold symmetry in differential geometry",
+      "N-body Coulomb problem in physics — balancing repulsive arcs",
+      "Facility location problems in operations research"
+    ],
+    "implementation_hypothesis": "Use a parametric family of N arcs at angles 2πk/N, each described by endpoints (r_k, θ_k±δ_k). Compute conformal mapping radius via numerical Schwarz-Christoffel toolbox (SC Toolbox in MATLAB or Python). Minimize over parameters using gradient-free optimization (Nelder-Mead, then CMA-ES) for N = 4, 5, 6, ..., 12. Current best uses N=3; going to N=5 or N=7 could yield tighter upper bound below 0.6564.",
+    "experiment_seed": "Implement SC mapping for disk minus N symmetric arcs. For each N in {3,4,5,6,7}, optimize arc endpoints to minimize the conformal radius of the largest inscribed disk. Compare with Carroll-Ortega-Cerdà's N=3 result of 0.6564.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 2,
+    "symbolic_name": "polya_chebotarev_slit_domains",
+    "description": "The Pólya-Chebotarev problem seeks the continuum of minimal logarithmic capacity connecting prescribed points. Fedorov's explicit solution for 4 symmetric points was key to Carroll-Ortega-Cerdà's upper bound. Extending to more points or asymmetric configurations via inverse polynomial images could yield new extremal domains for B_u.",
+    "domains": ["potential_theory", "approximation_theory", "algebraic_geometry"],
+    "mathematical_formalization": "Given points z_1,...,z_n \\in \\mathbb{C}, find compact connected K \\supset \\{z_1,...,z_n\\} minimizing \\text{cap}(K). The solution K is a union of analytic arcs satisfying Q(z)dz^2 > 0 on K for a rational quadratic differential Q. For B_u, the points are branch points of the extremal covering and K determines the complementary slit structure.",
+    "analogical_connections": [
+      "Steiner tree problem in combinatorial optimization — minimal spanning structure",
+      "Minimal energy configurations in electrostatics",
+      "Shortest network problem on surfaces"
+    ],
+    "implementation_hypothesis": "Use Schiefermayr's inverse polynomial image technique: construct T_n with T_n^{-1}([-1,1]) connected and containing prescribed points. Solve the resulting nonlinear system for zeros of T_n^2 - 1. Use homotopy continuation methods (PHCpack or HomotopyContinuation.jl) to find all solutions for n = 4,5,6.",
+    "experiment_seed": "For 5 and 6 symmetrically placed points on the unit circle, compute the Pólya-Chebotarev continuum and the corresponding slit domain. Evaluate the conformal radius of the resulting simply connected domain to produce candidate upper bounds for B_u.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 3,
+    "symbolic_name": "loewner_energy_dissipation",
+    "description": "Viklund & Wang showed Loewner energy equals Dirichlet energy dissipation under conformal welding. The Loewner energy of the boundary of an extremal Bloch domain quantifies its 'complexity'. Minimizing Loewner energy over domains achieving a given covering radius could yield new lower bounds or structural constraints on extremal functions.",
+    "domains": ["stochastic_analysis", "conformal_field_theory", "geometric_function_theory"],
+    "mathematical_formalization": "For a Jordan curve \\Gamma, the Loewner energy is I_L(\\Gamma) = \\int_0^\\infty |\\dot{\\lambda}(t)|^2 dt where \\lambda is the driving function. For f univalent with f'(0)=1, the boundary \\partial f(\\mathbb{D}) satisfies I_L(\\partial f(\\mathbb{D})) \\geq C(B_f) where C is a monotone function of the Bloch radius B_f. This gives: B_u \\geq \\inf \\{B_f : I_L(\\partial f(\\mathbb{D})) < \\infty\\}.",
+    "analogical_connections": [
+      "Action functionals in classical mechanics — path of least action",
+      "Shannon entropy and rate-distortion theory — minimal description complexity",
+      "Weil-Petersson metric on Teichmüller space"
+    ],
+    "implementation_hypothesis": "Discretize the Loewner equation: for a candidate boundary curve parameterized by N points, compute the driving function λ(t) via zipper algorithm. Evaluate Loewner energy numerically. Search for curves that minimize energy subject to the constraint that the inscribed disk has radius ≥ r, for increasing r.",
+    "experiment_seed": "Implement the zipper algorithm for Loewner driving functions. For star-shaped domains f(D) with varying numbers of boundary cusps/slits, compute Loewner energy vs. maximal inscribed disk radius. Plot the Pareto frontier to identify the energy-radius tradeoff.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 4,
+    "symbolic_name": "sdp_relaxation_covering",
+    "description": "The Bloch constant problem can be reformulated as an infinite-dimensional optimization: maximize the minimum covering radius over all normalized univalent functions. By truncating the Taylor series to degree N and encoding the univalence condition (Grunsky inequalities) as a semidefinite constraint, one obtains a hierarchy of SDP relaxations converging to B_u from below.",
+    "domains": ["convex_optimization", "operator_theory", "geometric_function_theory"],
+    "mathematical_formalization": "For f(z) = z + a_2 z^2 + ... + a_N z^N, univalence on \\mathbb{D} requires the Grunsky matrix G_N = (c_{mn})_{m,n=1}^N to satisfy ||G_N|| \\leq 1. The covering radius is R_f = \\inf_{w \\notin f(\\mathbb{D})} |w|. The SDP is: maximize R subject to ||G_N|| \\leq 1, a_1 = 1, and f(\\mathbb{D}) \\supset D(0,R). As N \\to \\infty, the optimal R_N \\nearrow B_u.",
+    "analogical_connections": [
+      "Lasserre hierarchy in polynomial optimization",
+      "Bootstrap methods in conformal field theory — bounding OPE coefficients",
+      "Sum-of-squares relaxations in algebraic geometry"
+    ],
+    "implementation_hypothesis": "Truncate at degree N. The Grunsky inequality ||G_N|| ≤ 1 is an LMI. The covering condition f(D) ⊃ D(0,R) can be encoded via winding number constraints on |z|=1. Use MOSEK or SCS to solve the SDP for N = 5,10,15,20. The optimal R_N gives rigorous lower bounds for B_u.",
+    "experiment_seed": "Implement the Grunsky matrix for degree-N polynomials. Solve the SDP relaxation for N = 5, 10, 15, 20 and track convergence of the lower bound. Compare with Skinner's 0.5708858 to see if this systematic approach can exceed it.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 5,
+    "symbolic_name": "hyperbolic_spectral_gap",
+    "description": "The hyperbolic metric on the unit disk provides a natural framework for Bloch functions: ||f||_B = sup (1-|z|^2)|f'(z)| ≤ 1 defines the Bloch class. The spectral gap of the Laplacian on the image domain f(D) constrains the geometry of f(D) and hence the covering radius. Spectral bounds from Khan-Tuerkoen's conformally flat manifold results could yield new geometric constraints on extremal domains.",
+    "domains": ["spectral_geometry", "hyperbolic_geometry", "complex_analysis"],
+    "mathematical_formalization": "For Ω = f(\\mathbb{D}), let λ_1(Ω) be the first Dirichlet eigenvalue. By Faber-Krahn, λ_1(Ω) ≥ π j_{0,1}^2 / |Ω| where j_{0,1} ≈ 2.4048. If Ω contains a disk of radius R, then |Ω| ≥ πR^2 and λ_1(Ω) ≤ j_{0,1}^2/R^2. Combined with hyperbolic area bounds: ∫_D |f'(z)|^2 / (1-|z|^2)^2 dA ≤ C(||f||_B), giving R ≤ Φ(||f||_B, λ_1).",
+    "analogical_connections": [
+      "Anderson localization — spectral properties constrain geometry",
+      "Cheeger's inequality — isoperimetric ratio bounds spectral gap",
+      "Heat kernel estimates on Riemannian manifolds"
+    ],
+    "implementation_hypothesis": "For a family of Bloch functions with ||f||_B = 1 (the extremal class), numerically compute the hyperbolic area, Dirichlet eigenvalues, and covering radius of f(D). Use finite element methods on the image domain. Derive a chain of inequalities: spectral gap → area → covering radius → lower bound on B_u.",
+    "experiment_seed": "Compute Dirichlet eigenvalues of f(D) for f(z) = z/(1-z)^t with various t ∈ (0,2) using FreeFEM++. Track the relationship between λ_1(f(D)), the Bloch norm, and the maximal inscribed disk. Look for a tight functional inequality.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 6,
+    "symbolic_name": "optimal_transport_conformal",
+    "description": "Optimal transport between the uniform measure on D and the pullback measure f*(Leb) provides a way to quantify how 'spread out' a conformal image is. The Wasserstein distance between these measures is bounded by the distortion of f, and a transportation inequality could yield new lower bounds on the covering radius.",
+    "domains": ["optimal_transport", "measure_theory", "complex_analysis"],
+    "mathematical_formalization": "Let μ = Leb|_D / π and ν = f_*(μ) = |f'|^2 μ ∘ f^{-1}. The W_2 Wasserstein distance satisfies W_2(μ, ν)^2 = ∫ |x - T(x)|^2 dμ where T is the optimal map. For univalent f with f'(0)=1, W_2(ν, Leb|_{D(0,R)}/πR^2) provides a measure of how much f(D) differs from a disk. The constraint B_f ≥ R implies a lower bound on W_2.",
+    "analogical_connections": [
+      "Brenier's theorem — optimal maps and convex potentials",
+      "Monge-Ampère equation — connection to conformal mapping",
+      "Mass redistribution in fluid dynamics"
+    ],
+    "implementation_hypothesis": "Discretize D into N points. For each candidate univalent f, compute the discrete OT map from uniform on D to the pushforward. Use POT (Python Optimal Transport) library. Characterize the OT cost as a function of the Bloch radius. If cost is monotonically related to B_f, this gives a dual characterization of B_u.",
+    "experiment_seed": "Sample 10000 points uniformly in D. For Koebe-type functions f_θ(z) = z/(1-e^{iθ}z)^2, compute the W_2 distance between the image measure and uniform on D(0,R) for varying R. Plot W_2 vs. R and identify the critical R where transport cost diverges.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 7,
+    "symbolic_name": "sle_bloch_coupling",
+    "description": "Schramm-Loewner Evolution (SLE_κ) curves describe random fractal interfaces. The conformal radius of domains cut by SLE is well-studied. For κ→0, SLE degenerates to deterministic geodesics. The covering properties of deterministic Loewner chains at the κ→0 limit could constrain extremal Bloch domains via the relationship between driving functions and covering radii.",
+    "domains": ["probability_theory", "conformal_field_theory", "geometric_function_theory"],
+    "mathematical_formalization": "The SLE_κ Loewner equation: ∂_t g_t(z) = 2/(g_t(z) - √κ B_t), g_0(z) = z. As κ → 0, B_t → 0 and g_t becomes deterministic. The conformal radius of H \\ K_t (hull complement) satisfies log R(g_t) = 2t. For the Bloch problem, the deterministic Loewner chain f_t with driving function λ(t) achieving maximal covering radius gives: B_u = sup_λ lim_{t→∞} R(f_t(D)).",
+    "analogical_connections": [
+      "Brownian motion as limit of random walks — universality",
+      "Central limit theorem for random conformal maps",
+      "Phase transitions in statistical mechanics — κ=4 as critical value"
+    ],
+    "implementation_hypothesis": "Discretize the Loewner equation with time step dt=0.001. For deterministic driving functions λ(t) = A sin(ωt), compute the resulting conformal map and its image domain. Measure the covering radius. Optimize over (A, ω) and more complex driving functions using evolutionary algorithms.",
+    "experiment_seed": "Solve the Loewner ODE for driving functions λ(t) = A sin(ωt) with A ∈ [0,4], ω ∈ [0,10]. For each, compute the conformal map at time T and the maximal inscribed disk in the image. Create a heatmap of covering radius in (A,ω) space.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 8,
+    "symbolic_name": "interval_arithmetic_certification",
+    "description": "Computer-assisted proofs using interval arithmetic can rigorously certify lower bounds for B_u. By enclosing the Taylor coefficients of extremal-candidate functions in certified intervals and verifying univalence + covering via validated numerics, one can produce machine-checkable proofs that B_u exceeds a given threshold.",
+    "domains": ["validated_numerics", "computer_science", "complex_analysis"],
+    "mathematical_formalization": "Let f_N(z) = z + \\sum_{k=2}^N [a_k^-, a_k^+] z^k be an interval polynomial. Verify: (1) Univalence: ∀|z|<1, Re(zf'/f) > 0 via interval evaluation. (2) Covering: ∃ w_0 with |w_0| = R such that the winding number of f(e^{iθ}) around w_0 is 1, verified by interval enclosure of the argument. If both hold for interval coefficients, then B_u ≥ R rigorously.",
+    "analogical_connections": [
+      "Hales' proof of Kepler conjecture — certified computation",
+      "VNODE for ODE existence proofs",
+      "Rettinger's work on computability of Bloch constant"
+    ],
+    "implementation_hypothesis": "Use Julia's IntervalArithmetic.jl or INTLAB in MATLAB. Represent the candidate extremal function with interval coefficients. Verify the Grunsky inequality with interval matrix norms. Verify covering by computing interval-enclosed winding numbers on a fine grid of |w|=R.",
+    "experiment_seed": "Take Skinner's extremal candidate function (the one achieving B_f ≈ 0.5709). Represent its first 50 Taylor coefficients as narrow intervals. Verify univalence and covering at R=0.5709 using interval arithmetic. If successful, this gives a rigorous machine-certified lower bound.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 9,
+    "symbolic_name": "neural_conformal_surrogate",
+    "description": "Train a neural network to approximate the map from Taylor coefficients (a_2,...,a_N) of univalent functions to their Bloch radius B_f. This surrogate model enables rapid exploration of the coefficient space. Combined with adversarial training (finding coefficients that minimize B_f), this could discover near-extremal functions and suggest the value of B_u.",
+    "domains": ["machine_learning", "geometric_function_theory", "numerical_optimization"],
+    "mathematical_formalization": "Define Φ: \\mathbb{C}^{N-1} → \\mathbb{R} by Φ(a_2,...,a_N) = B_{f_N} where f_N(z) = z + a_2 z^2 + ... + a_N z^N. Train NN: Φ̂(a; θ) ≈ Φ(a). Then B_u ≈ inf_{a ∈ U_N} Φ̂(a; θ) where U_N = {a : f_N univalent}. Use adversarial/min-max training: min_a max_θ |Φ̂ - Φ| subject to a ∈ U_N.",
+    "analogical_connections": [
+      "Generative adversarial networks — min-max optimization",
+      "Neural ODE solvers — learning dynamics",
+      "AlphaFold — predicting structure from sequence"
+    ],
+    "implementation_hypothesis": "Sample 100K random univalent functions (via de Branges coefficients satisfying |a_n| ≤ n). For each, compute B_f numerically. Train a ResNet on (a_2,...,a_20) → B_f. Use gradient descent on the trained network to find the minimum B_f, giving an approximate B_u.",
+    "experiment_seed": "Generate training data: sample 50000 random univalent polynomials of degree 15 (using rejection sampling on Grunsky condition). Compute B_f for each via numerical conformal mapping. Train a 4-layer MLP and use its gradient to search for the minimizer of B_f.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 10,
+    "symbolic_name": "tropical_geometry_extremal",
+    "description": "Tropical geometry replaces algebraic operations with (max,+) semiring operations and has been used to study amoebas of complex varieties. The amoeba of the discriminant locus of univalent polynomials (where univalence fails) has a tropical limit whose geometry constrains the feasible region for extremal functions. This could reveal structural features of near-extremal Bloch functions.",
+    "domains": ["tropical_geometry", "algebraic_geometry", "complex_analysis"],
+    "mathematical_formalization": "For f(z) = z + a_2 z^2 + ... + a_N z^N, define the discriminant Δ_f = Res(f'(z), f(z)-w) as a polynomial in (a_2,...,a_N,w). The amoeba A(Δ_f) = {(log|a_2|,...,log|a_N|,log|w|) : Δ_f = 0}. The tropical limit trop(Δ_f) approximates A(Δ_f) and its complement components correspond to convergent Laurent series. The covering radius R = min_{w ∈ ∂f(D)} |w| relates to the boundary of the amoeba.",
+    "analogical_connections": [
+      "Newton polytope — support of extremal polynomials",
+      "Phase diagrams in statistical mechanics — tropical curves as phase boundaries",
+      "Viro's patchworking — constructing real algebraic curves"
+    ],
+    "implementation_hypothesis": "Compute the Newton polytope of the discriminant of degree-N univalent polynomials. Use polymake or TOPCOM to analyze its face structure. The tropical variety determines which coefficient scaling regimes permit large covering radii. Focus on the 'tentacles' of the amoeba that reach toward maximum |w|.",
+    "experiment_seed": "For N=4, compute the discriminant Δ_f explicitly as a polynomial in (a_2, a_3, a_4, w). Compute its Newton polytope. Use Gfan to compute the tropical variety. Visualize the amoeba numerically and identify regions where the covering radius is maximized.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 11,
+    "symbolic_name": "conformal_welding_bootstrap",
+    "description": "Conformal welding decomposes a Jordan curve into a pair of conformal maps. For the extremal Bloch domain, the welding homeomorphism encodes the boundary geometry. The 'conformal bootstrap' approach from CFT — imposing crossing symmetry constraints — can be adapted: impose consistency conditions on the welding data to narrow the space of possible extremal domains, producing tighter bounds on B_u.",
+    "domains": ["conformal_field_theory", "geometric_function_theory", "convex_optimization"],
+    "mathematical_formalization": "Given Jordan curve Γ = ∂Ω, the welding homeomorphism h: S^1 → S^1 satisfies f_+ = f_- ∘ h where f_± map D, D^* onto the two sides of Γ. For Bloch extremal domains, h must satisfy: (1) f_- is univalent with f_-'(0)=1, (2) f_+(D^*) contains no disk of radius > B_u, (3) consistency: the Beltrami coefficient μ = ∂̄h/∂h satisfies ||μ||_∞ < 1. The bootstrap: impose positivity of certain functionals of h to bound B_u.",
+    "analogical_connections": [
+      "Conformal bootstrap in physics — crossing symmetry constraints bound OPE data",
+      "Moment problems — positivity constraints determine measures",
+      "S-matrix bootstrap — unitarity constraints on scattering amplitudes"
+    ],
+    "implementation_hypothesis": "Represent h as a Fourier series: h(θ) = θ + Σ b_n sin(nθ). The univalence of f_- constrains the b_n (via composition with Schwarz-Christoffel). Impose that the covering radius equals R and derive positivity constraints on functionals of {b_n}. Solve the resulting semidefinite feasibility problem.",
+    "experiment_seed": "For N=10 Fourier modes of h, set up the feasibility SDP: does there exist h such that the welded domain has covering radius R? Binary search on R: the largest infeasible R gives an upper bound on B_u. Compare with 0.6564.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 12,
+    "symbolic_name": "variational_arc_removal",
+    "description": "The upper bound on B_u comes from constructing specific domains (disk minus arcs). A systematic variational approach: start with the full disk (covering radius 1), progressively remove arcs while maintaining univalent realizability, and track how the covering radius decreases. The infimum over all such arc-removal paths gives the tightest possible upper bound from this construction family.",
+    "domains": ["calculus_of_variations", "geometric_function_theory", "control_theory"],
+    "mathematical_formalization": "Define a 1-parameter family D_t = D \\setminus Γ_t where Γ_0 = ∅ and Γ_1 is the extremal slit configuration. The covering radius R(t) = R(D_t) is monotone decreasing. The Hadamard variational formula gives dR/dt = -∫_{∂Γ_t} |∇ G(z,0)|^2 |V_n| ds where G is Green's function and V_n is the normal velocity of the slit. The extremal path minimizes ∫_0^1 |dR/dt| dt subject to R(0)=1, D_1 being univalently realizable.",
+    "analogical_connections": [
+      "Gradient flow in Wasserstein space — steepest descent of energy",
+      "Hamilton-Jacobi equations — optimal control of domain evolution",
+      "Mean curvature flow — geometric evolution equations"
+    ],
+    "implementation_hypothesis": "Discretize the disk boundary into N=1000 points. At each step, remove a small arc segment at the location maximizing -dR/dt (greedy strategy). Recompute the conformal map and covering radius after each removal using the SC toolbox. Track R as arcs accumulate.",
+    "experiment_seed": "Start with the unit disk. At each of 100 steps, test 36 candidate arc positions (at angles 10° apart) and remove the one that decreases R most slowly (to stay as close to 1 as possible while remaining univalently realizable). Plot the R(t) curve and identify the limiting value.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  }
+]

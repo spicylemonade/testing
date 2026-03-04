@@ -1,0 +1,32 @@
+[
+  {
+    "direction": "SDP hierarchy for rigorous lower bounds via Grunsky matrix constraints",
+    "rationale": "Current lower bounds (Skinner 0.5709) use ad hoc distortion arguments. A systematic SDP relaxation using Grunsky inequalities as LMI constraints would provide a principled, convergent hierarchy of lower bounds. The conformal bootstrap analogy (from physics) suggests this could be very effective: in CFT, similar SDP approaches have produced extremely tight bounds on operator dimensions.",
+    "first_step": "Implement the Grunsky matrix G_N for degree-N univalent polynomials in Python/Julia. Verify that ||G_N||_op ≤ 1 is equivalent to univalence for small N. Set up the SDP: maximize R subject to ||G_N|| ≤ 1 and f(D) ⊃ D(0,R). Start with N=5 using MOSEK.",
+    "expected_signal": "For N=5, the SDP should give a lower bound near 0.5 (probably not competitive). For N=10-15, it should approach 0.57. If N=20 exceeds 0.5709, the method is superior to Skinner's. Convergence rate reveals how far B_u is from 0.57. If convergence is very slow (logarithmic in N), B_u may be significantly larger than 0.5709."
+  },
+  {
+    "direction": "Higher-order harmonic symmetry configurations for tighter upper bounds",
+    "rationale": "Carroll & Ortega-Cerdà used 3-fold symmetric arc removal to get B_u ≤ 0.6564. The proof relies on Fedorov's Pólya-Chebotarev solution for 4 symmetric points. For N=5,6,7 symmetric arcs, new Pólya-Chebotarev solutions could yield tighter upper bounds. The Thomson problem analogy suggests specific arc placements.",
+    "first_step": "For N=5 arcs at angles 2πk/5, parameterize each arc by (inner_radius, arc_length) and compute the conformal radius of the resulting simply connected domain using the Schwarz-Christoffel toolbox. Optimize over parameters using CMA-ES.",
+    "expected_signal": "If the optimal 5-arc configuration gives B_u ≤ 0.64 (below 0.6564), the approach works and higher N should give tighter bounds. If not, the 3-fold symmetry might be genuinely special (related to the hexagonal lattice structure in Ahlfors-Grunsky)."
+  },
+  {
+    "direction": "Loewner optimal control formulation with reinforcement learning",
+    "rationale": "The Bloch constant is the value function of an optimal control problem for the Loewner ODE. Modern RL techniques (PPO, SAC) excel at continuous control. The state space is the conformal map (truncated to N modes), the action is the driving function increment, and the reward is the covering radius at terminal time.",
+    "first_step": "Discretize the radial Loewner equation into T=100 time steps. State: first 20 Fourier modes of g_t. Action: driving function λ_t ∈ [-4,4]. Reward: covering radius of final domain. Train a PPO agent using Stable-Baselines3.",
+    "expected_signal": "The RL agent should discover driving functions that produce domains with covering radii near B_u. If the learned driving functions have recognizable structure (periodic, piecewise constant, etc.), this suggests the form of the extremal function. If covering radii consistently cluster near 0.57, this provides numerical evidence for the true value of B_u."
+  },
+  {
+    "direction": "High-precision numerical computation + PSLQ for closed-form conjecture",
+    "rationale": "The conjectured values of B and L involve Gamma functions at rational arguments. If B_u also has a closed form, computing it to 50+ digits and applying integer relation algorithms (PSLQ/LLL) could identify it. This would transform the problem from bounding to proving an exact value.",
+    "first_step": "Use arbitrary-precision arithmetic (mpmath in Python, 100 decimal digits) to compute B_f for the conjectured extremal function (Goodman's domain with Carroll-Ortega-Cerdà modifications). Apply PSLQ to search for relations between B_u and {Γ(1/n) : n=2,...,12, π, √2, √3}.",
+    "expected_signal": "If PSLQ finds a relation with small integer coefficients (e.g., B_u = Γ(1/3)Γ(2/3)/Γ(5/6)·C for simple C), this is strong evidence for a closed form. If no relation is found with coefficient size ≤ 10^6, the constant is likely transcendental in a non-obvious way."
+  },
+  {
+    "direction": "Univalent distortion theorem improvement via Bieberbach-type coefficient analysis",
+    "rationale": "The core mechanism for lower bounds is: distortion theorem → covering theorem. For general Bloch functions, Bonk-Minda-Yanagihara gave optimal distortion. For univalent Bloch functions, the de Branges theorem (|a_n|≤n) gives stronger coefficient bounds. A distortion theorem specifically for univalent Bloch functions with ||f||_B = 1 could sharpen the lower bound directly.",
+    "first_step": "For f ∈ S with ||f||_B = 1 and f'(0)=1, use |a_n| ≤ n and the Bloch condition to derive pointwise bounds on |f'(z)| that are stronger than Bonk-Minda-Yanagihara. Specifically, write f'(z) = 1 + Σ n a_n z^{n-1} and use partial sums with coefficient bounds to get Re f'(z) ≥ φ(|z|) for an explicit φ.",
+    "expected_signal": "If the new distortion function φ(r) exceeds the Bonk-Minda-Yanagihara bound for r ∈ (0, 0.6), then the resulting covering theorem gives B_u > Bonk-Minda's sqrt(3)/4 + ε for a larger ε. Target: exceeding 0.5709."
+  }
+]
