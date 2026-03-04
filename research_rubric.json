@@ -1,0 +1,292 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T12:00:00Z",
+  "updated_at": "2026-03-04T08:08:59.610844+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T12:00:00Z",
+      "completed_at": "2026-03-04T08:08:59.610827+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and framework capabilities",
+          "acceptance_criteria": "Produce results/concept_evolve/repo_analysis.json documenting: (1) all modules in .archivara/ and .opencode/ with their purposes, (2) the concept_evolve pipeline commands (evolve, probe, reframe, walk) and their output schemas, (3) the semantic_scholar API capabilities (search, citations, references, recommend, graph, bibtex), (4) agent roles defined in opencode.json (orchestrator, researcher, writer, reviewer, concept_worker) and their tool permissions. File must be valid JSON with at least 4 top-level sections.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive literature search on Chvatal-Sankoff constant bounds using web and Semantic Scholar",
+          "acceptance_criteria": "Use websearch, webfetch, and semantic_scholar tools to find at least 25 relevant papers. Search queries must cover: 'Chvatal Sankoff constant binary', 'longest common subsequence random strings bounds', 'LCS expected length binary alphabet', 'deletion channel capacity LCS', 'frog dynamics longest common subsequence', 'KPZ universality LCS', 'last passage percolation random strings'. Results stored in results/concept_evolve/literature_search_raw.json with paper titles, authors, years, abstracts, and Semantic Scholar IDs.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Build citation graph from seed papers and identify key technique clusters",
+          "acceptance_criteria": "Using semantic_scholar graph command, build a citation graph rooted at the 5 papers in TASK_orchestrator.md references ([CS1975], [D1994], [DP1995], [L2009], [H2024]) plus Bukh-Cox 2019, Tiskin 2022, and Kiwi-Loebl-Matousek 2005. The graph must have at least 40 nodes and identify at least 4 technique clusters: (1) LP/feasible-triplet framework, (2) Markov chain / DFA methods, (3) particle systems / frog dynamics, (4) statistical mechanics / cavity methods. Store as results/concept_evolve/citation_graph.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Create and maintain sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "sources.bib in repo root contains valid BibTeX entries for at least 15 papers, including all 5 references from TASK_orchestrator.md plus: Bukh-Cox 2019 (frog dynamics), Kiwi-Soto 2008, Kiwi-Loebl-Matousek 2005 (large alphabet asymptotics), Tiskin 2022 (stochastic particle process), Bundschuh 2001 (MC simulations), Baik-Deift-Johansson 1999 (Tracy-Widom), Lember-Matzinger 2009 (fluctuations), Guruswami-He-Li 2021 (deletion channel), Rosenfeld 2024 (edit distance), and Steele 1997 (subadditivity). Each entry must have author, title, year, and venue/journal fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Produce a structured problem decomposition identifying the 3 main attack vectors for tighter bounds",
+          "acceptance_criteria": "Document in results/concept_evolve/problem_decomposition.json: (1) Lower bound improvement via scaled-up Lueker/Heineman computation with specific parameter targets, (2) Upper bound improvement via novel dual LP certificates or information-theoretic arguments (the 0.826280 upper bound has stood since 2009), (3) Novel approaches from cross-domain transfer (particle systems, optimal transport, SDP relaxations). Each attack vector must specify: current best result, theoretical ceiling (if known), key bottleneck, estimated feasibility (high/medium/low), and at least 2 concrete sub-approaches with references to papers in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Run concept_evolve with topic 'tighter bounds on Chvatal-Sankoff constant for binary LCS' and populate the concept tree",
+          "acceptance_criteria": "Execute concept_evolve evolve command. The results/concept_evolve/ directory must contain: concept_cards.json (at least 10 concept cards), semantic_bridge.json (with nodes and edges), introspection.json, steering_directions.json. The tree/ subdirectory must contain index.json listing at least 8 concept folders, adjacency.json, and walk_paths.json. Each concept card must have symbolic_name, domains, mathematical_formalization, and experiment_seed fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement Monte Carlo LCS simulator with multi-spin coding for empirical estimation of gamma_2",
+          "acceptance_criteria": "Python script at results/baseline/mc_lcs_simulator.py that: (1) generates pairs of uniform random binary strings of length n, (2) computes their LCS via dynamic programming, (3) supports multi-spin coding (bitwise parallel DP for 64 pairs simultaneously using numpy uint64 arrays), (4) computes E[L_n]/n with confidence intervals for n in {100, 500, 1000, 5000, 10000}, (5) stores results in results/baseline/mc_estimates.json. Must achieve at least 10000 sample pairs per n value. Script must run in under 30 minutes and produce an estimate of gamma_2 consistent with the known interval [0.7927, 0.8263].",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement exact E[L_n]/n computation for small n to establish rigorous lower bounds via superadditivity",
+          "acceptance_criteria": "Python script at results/baseline/exact_lcs.py that computes the exact expected LCS length E[L_n] by averaging over all 2^n x 2^n binary string pairs for n = 1 through at least n = 14. Results stored in results/baseline/exact_expectations.json as {n: E[L_n]/n} pairs. Values must be verified against known results: E[L_1]/1 = 0.5, E[L_2]/2 = 0.625. The maximum E[L_n]/n over computed n values provides a rigorous lower bound (by superadditivity) that must be reported. Script must complete in under 2 hours.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement the Lueker feasible-triplet lower bound framework for small parameter values",
+          "acceptance_criteria": "Python script at results/baseline/lueker_lower.py implementing the core Lueker (2009) algorithm: (1) represent the state space of all pairs of binary strings of length ell, (2) implement the F operator (the DP recurrence over string-pair states), (3) iterate F from initial vectors to convergence, (4) extract the growth rate r as a rigorous lower bound. Must work correctly for ell = 1, 2, 3, 4, 5 (state space dimensions 4, 16, 64, 256, 1024 respectively). Results stored in results/baseline/lueker_lower_bounds.json with {ell: lower_bound} entries. The bound for ell=5 should exceed 0.75. Include unit tests verifying the F operator against hand-computed examples for ell=1.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement finite-size scaling analysis to extrapolate gamma_2 from MC data",
+          "acceptance_criteria": "Python script at results/baseline/finite_size_scaling.py that: (1) reads MC estimates from results/baseline/mc_estimates.json, (2) fits the scaling form E[L_n]/n = gamma + a*n^(-beta) for beta in {1/3, 1/2, 2/3} (testing KPZ vs diffusive vs intermediate universality), (3) reports the extrapolated gamma for each beta with goodness-of-fit (R^2 or chi-squared), (4) identifies which scaling form gives best fit, (5) saves results and a plot to results/baseline/scaling_analysis.json and figures/scaling_fit.png. The extrapolated gamma must be within [0.79, 0.83].",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Delegate subagent exploration of concept tree to identify high-value research paths",
+          "acceptance_criteria": "Use the concept-tree-explorer subagent to traverse the concept tree built in item_006. The subagent must: (1) read all concept folders in results/concept_evolve/tree/, (2) identify the top 3 concept paths (by walk_paths.json) most relevant to tighter bounds, (3) for each path, explain the chain of reasoning and cite at least 2 papers from sources.bib, (4) propose at least 2 concrete experiments per path. Output stored in results/concept_evolve/tree/exploration_report.json with fields: top_paths (array of 3), each containing path_nodes, reasoning, citations, and proposed_experiments.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Scale up Lueker lower bound computation with symmetry exploitation and parallelization",
+          "acceptance_criteria": "Extend results/baseline/lueker_lower.py (or create results/novel/lueker_optimized.py) with: (1) 0<->1 bit-flip symmetry reducing state space by factor 2, (2) string-swap symmetry reducing by another factor 2, (3) numpy vectorized F operator for cache-friendly memory access, (4) optional multiprocessing for independent coordinate updates. Must achieve ell = 8 (state space 65536 before symmetry, ~16384 after) within 4 hours compute time, and ell = 10 (state space ~262144 after symmetry) within 24 hours. The lower bound at ell=10 must exceed 0.77. Store results in results/novel/optimized_lower_bounds.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Investigate information-theoretic upper bound via entropy method on LCS DP table",
+          "acceptance_criteria": "Develop a novel upper bound approach in results/novel/entropy_upper.py based on: (1) modeling the increments of the LCS DP boundary as a stochastic process, (2) bounding the expected score gain per step using conditional entropy H(X_i | state), (3) formulating a finite LP where variables represent the stationary distribution over boundary states and constraints encode the DP recurrence. Must produce a rigorous (or clearly marked as conjectural) upper bound for at least one finite truncation of the state space. Compare the result against Lueker's 0.826280 upper bound. Document the mathematical argument in results/novel/entropy_upper_proof.md with explicit inequalities and any gaps.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Explore SDP relaxation for the LCS upper bound problem",
+          "acceptance_criteria": "Script at results/novel/sdp_upper.py that: (1) formulates the expected LCS as a combinatorial optimization problem over matching matrices, (2) constructs an SDP (semidefinite programming) relaxation using the matrix method (analogous to Lovasz theta for independent sets), (3) solves the SDP for string lengths n = 4, 6, 8, 10 using a solver (cvxpy + SCS or MOSEK), (4) computes E[LCS]/n from the SDP optimum. If the SDP bound for n=10 is below 0.826280, this represents a potential new technique. Results in results/novel/sdp_results.json. If the SDP approach proves infeasible (state space too large), document why with specific complexity analysis.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement frog dynamics simulation for periodic-vs-random LCS and investigate random-vs-random extension",
+          "acceptance_criteria": "Script at results/novel/frog_dynamics.py implementing: (1) the Bukh-Cox frog dynamics (PushTASEP variant) for computing gamma_W for periodic binary words W, (2) simulation of the particle system for W = '01', '0011', '000111', '00001111' (periods 2, 4, 6, 8), (3) comparison of gamma_W against gamma_2 estimates, (4) a novel attempt to extend to random W by averaging gamma_W over random binary words of period p for p = 2, 4, 8, 16, 32. Store results in results/novel/frog_dynamics_results.json. The gamma_W values for fixed periodic words must be consistent with Bukh-Cox 2019 results. Document whether the random-W average converges and how it compares to gamma_2.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Probe the concept tree for cross-domain bridges between particle systems and LP frameworks",
+          "acceptance_criteria": "Use concept_evolve probe command with problem 'Bridge between Bukh-Cox frog dynamics lower bounds and Lueker LP feasible-triplet framework for Chvatal-Sankoff constant'. The probe must generate results/concept_evolve/probe_result.json containing: forced_bridges (at least 3 cross-domain connections), anomaly_results (at least 2 surprising connections), steering_directions (at least 3 new research directions), and validation_checks. At least one forced bridge must connect interacting particle systems to linear programming duality.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Develop a novel DFA-based lower bound strategy using learned automata",
+          "acceptance_criteria": "Script at results/novel/learned_dfa_lower.py that: (1) parametrizes a family of DFAs with h-symbol lookahead buffers (h = 2, 3, 4, 5, 6), (2) for each h, enumerates all possible DFA transition rules, (3) evaluates each DFA's expected match rate via Markov chain steady-state analysis, (4) selects the DFA maximizing the match rate, (5) reports the resulting lower bound on gamma_2. For h=4, the state space has 2^8 = 256 states; must complete in under 2 hours. The best lower bound across all h must exceed 0.76 (matching or exceeding Dancik 1994's 0.7739). Results in results/novel/dfa_lower_bounds.json with {h: best_bound, best_dfa_description} entries.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Systematic comparison of all computed bounds against known literature values",
+          "acceptance_criteria": "Script at results/experiments/compare_bounds.py that: (1) loads all computed bounds from Phase 2 and Phase 3 results files, (2) compares each against the known bounds from the literature (lower: 0.792665992 [H2024], upper: 0.826280 [L2009]), (3) classifies each result as 'novel improvement', 'matches prior work', or 'weaker than prior work', (4) generates a summary table and stores in results/experiments/bounds_comparison.json. The comparison must include at least 8 distinct computed values (from MC, exact, Lueker baseline, Lueker optimized, entropy, SDP, frog dynamics, DFA approaches). All references must cite papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Convergence analysis of the optimized Lueker iteration to determine theoretical ceiling",
+          "acceptance_criteria": "Script at results/experiments/lueker_convergence.py that: (1) plots the lower bound as a function of ell for all computed ell values, (2) fits an extrapolation model (e.g., bound(ell) = gamma_inf - c * exp(-alpha * ell)) to estimate the limiting bound as ell -> infinity, (3) compares extrapolated limit against gamma_2 estimates from MC simulation, (4) determines whether the Lueker framework can in principle close the gap to the upper bound or has a structural ceiling. Store analysis in results/experiments/lueker_convergence.json and plot in figures/lueker_convergence.png. Must explicitly state whether the extrapolated limit exceeds 0.80.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Run ablation study on DFA lower bound: effect of lookahead depth and transition rule design",
+          "acceptance_criteria": "Using results from item_017, produce results/experiments/dfa_ablation.json containing: (1) lower bound vs. lookahead depth h for h = 2..6, (2) for each h, the number of distinct DFA strategies evaluated, (3) for h=4, breakdown of top-10 DFA strategies by match rate with descriptions of their transition logic, (4) analysis of whether greedy matching is optimal or if non-greedy strategies dominate. Plot in figures/dfa_ablation.png showing bound vs. h with error bars. Must include comparison against Dancik & Paterson 1994's DFA-based bound of 0.7739.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Delegate synthesis subagent to identify the single most promising novel bound from all experiments",
+          "acceptance_criteria": "Use a general subagent to: (1) read all results from results/experiments/ and results/novel/, (2) evaluate each approach on three dimensions: tightness of bound, novelty vs prior work, and potential for further improvement, (3) select the single most promising approach and justify the selection with quantitative evidence, (4) propose a concrete 3-step plan for pushing this approach to produce a publishable result. Output in results/experiments/synthesis_report.json with fields: all_approaches_ranked (array), best_approach (object with name, bound, novelty_score, improvement_potential), and next_steps (array of 3 concrete actions). Each approach must reference at least one paper from sources.bib for context.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Validate all rigorous bounds with independent verification",
+          "acceptance_criteria": "Script at results/experiments/verify_bounds.py that independently verifies every claimed rigorous bound: (1) for exact computation bounds (item_008), re-run with a different DP implementation and compare, (2) for Lueker-framework bounds (items_009, 012), verify the feasible-triplet conditions algebraically for the claimed (u, r, epsilon), (3) for DFA bounds (item_017), verify Markov chain steady-state computation against direct simulation with 10^6 random string pairs. All verifications must pass (< 0.01% relative error for simulation checks). Results in results/experiments/verification_report.json with pass/fail status for each bound.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Generate comprehensive results summary with all bounds, comparisons, and novel contributions",
+          "acceptance_criteria": "File at results/final_summary.json containing: (1) a table of all bounds computed in this research with columns [method, type (upper/lower/estimate), value, rigorous (yes/no), ell_or_n_parameter, compute_time, reference_if_matches_prior], (2) identification of any bounds that improve on prior work (lower bound > 0.792665992 or upper bound < 0.826280), (3) identification of the tightest interval [best_lower, best_upper] achieved, (4) ranking of all novel approaches by promise level. Must contain at least 12 distinct bound entries.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Write research report documenting methodology, results, and novel contributions",
+          "acceptance_criteria": "Markdown file at results/research_report.md with sections: (1) Abstract (200 words), (2) Introduction citing [CS1975], [L2009], [H2024] from sources.bib, (3) Background covering the Lueker framework, frog dynamics, and information-theoretic connections, (4) Methods describing each implemented approach, (5) Results with tables and figure references, (6) Discussion analyzing which approaches are most promising and why, (7) Conclusion with specific claims about new bounds achieved, (8) References citing at least 10 papers from sources.bib. Total length at least 3000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Generate publication-quality figures summarizing key results",
+          "acceptance_criteria": "At least 4 figures in figures/ directory: (1) figures/bounds_timeline.png showing the historical progression of upper and lower bounds from 1975 to present with our new results marked, (2) figures/scaling_fit.png from item_010, (3) figures/lueker_convergence.png from item_019, (4) figures/approach_comparison.png bar chart comparing all methods' bounds. All figures must have axis labels, legends, and titles. Generated by a script at results/generate_figures.py that reads from results/ JSON files.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Perform concept-tree reframing to identify future research directions beyond this study",
+          "acceptance_criteria": "Use concept_evolve reframe command with problem 'How to close the gap between 0.7927 and 0.8263 for the binary Chvatal-Sankoff constant'. Must produce results/concept_evolve/reframings.json with at least 8 domain reframings. Each reframing must include: domain, reframing, key_insight, suggested_technique, mapping_back, and candidate_folder_name. At least 3 reframings must come from domains not already explored (i.e., not LP/DP/particle systems/MC), such as tropical geometry, ergodic theory, additive combinatorics, or algorithmic game theory.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Update README.md with project overview, key findings, and reproduction instructions",
+          "acceptance_criteria": "README.md in repo root updated with: (1) Project title and one-paragraph description of the Chvatal-Sankoff constant problem, (2) Summary of best bounds achieved in this research vs. prior work, (3) Table of all implemented approaches with brief descriptions, (4) Instructions to reproduce results (dependencies, commands, expected runtime), (5) References to at least 5 key papers from sources.bib. Must be at least 500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
