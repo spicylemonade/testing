@@ -1,0 +1,59 @@
+{
+  "id": "avx512bw",
+  "name": "x86-64 AVX-512BW (512-bit byte/word operations)",
+  "description": "512-bit vectors with byte and word granularity. 64 input bytes per iteration but still limited to in-lane shuffles without VBMI.",
+  "key_instructions": [
+    {
+      "instruction": "VPSHUFB (ZMM)",
+      "intrinsic": "_mm512_shuffle_epi8",
+      "purpose": "In-lane byte shuffle on 64 bytes. Same 16-byte lane limitation as AVX2 vpshufb.",
+      "latency_skylake_sp": 1,
+      "throughput_skylake_sp_cpi": 1.0,
+      "latency_icelake": 1,
+      "throughput_icelake_cpi": 1.0,
+      "latency_zen4": 2,
+      "throughput_zen4_cpi": 1.0,
+      "note": "Skylake-SP/X: only port 5 for ZMM shuffles (1 CPI). Zen4 cracks 512b ops into 2x256b."
+    },
+    {
+      "instruction": "VPMADDUBSW (ZMM)",
+      "intrinsic": "_mm512_maddubs_epi16",
+      "purpose": "First packing stage on 64 bytes.",
+      "latency_skylake_sp": 5,
+      "throughput_skylake_sp_cpi": 0.5,
+      "latency_icelake": 5,
+      "throughput_icelake_cpi": 1.0,
+      "latency_zen4": 3,
+      "throughput_zen4_cpi": 1.0,
+      "note": "Skylake-SP: p0/p5 both handle 512b multiply (0.5 CPI). Ice Lake: only p0 (1.0 CPI)."
+    },
+    {
+      "instruction": "VPMADDWD (ZMM)",
+      "intrinsic": "_mm512_madd_epi16",
+      "purpose": "Second packing stage on 64 bytes.",
+      "latency_skylake_sp": 5,
+      "throughput_skylake_sp_cpi": 0.5,
+      "latency_icelake": 5,
+      "throughput_icelake_cpi": 1.0,
+      "latency_zen4": 3,
+      "throughput_zen4_cpi": 1.0
+    },
+    {
+      "instruction": "VPERMD (ZMM)",
+      "intrinsic": "_mm512_permutexvar_epi32",
+      "purpose": "Cross-lane dword permutation for output compaction.",
+      "latency_skylake_sp": 3,
+      "throughput_skylake_sp_cpi": 1.0,
+      "latency_icelake": 3,
+      "throughput_icelake_cpi": 1.0,
+      "latency_zen4": 5,
+      "throughput_zen4_cpi": 1.0
+    }
+  ],
+  "bytes_per_iteration": {
+    "input": 64,
+    "output": 48
+  },
+  "base64_applicability": "Fallback for AVX-512 hardware without VBMI (Skylake-SP/X, Knights Mill). Uses same algorithm as AVX2 but with wider vectors. Benefits from doubled iteration size but shuffle port pressure is the bottleneck. Key limitation: no cross-lane byte permute (vpermb) so output compaction requires multi-step shuffle. On Skylake-SP, the multiply throughput advantage (0.5 CPI) partially compensates.",
+  "representative_microarchitectures": ["Skylake-SP/X", "Cascade Lake", "Ice Lake (fallback)", "Zen4 (fallback)"]
+}

@@ -1,0 +1,72 @@
+{
+  "id": "arm_sve_sve2",
+  "name": "ARM SVE/SVE2 (Scalable Vectors, 128-2048 bit)",
+  "description": "Vector-Length Agnostic (VLA) SIMD with predication. Eliminates scalar tail loops via predicated operations. SVE2 adds cryptographic and permutation instructions. Vector width determined by hardware (128-bit on V2, 256-bit on V1/Graviton3, 512-bit on A64FX).",
+  "key_instructions": [
+    {
+      "instruction": "TBL (SVE)",
+      "intrinsic": "svtbl_u8(svuint8_t data, svuint8_t indices)",
+      "purpose": "Byte permutation from single source vector using index vector. SVE equivalent of NEON TBL. Core of LUT-based decode. Scales with VL.",
+      "latency_v1": 3,
+      "throughput_v1_cpi": 0.5,
+      "latency_v2": 2,
+      "throughput_v2_cpi": 0.5,
+      "note": "V1: 256-bit (2x128 internally). V2: 128-bit native. TBL throughput is excellent on both."
+    },
+    {
+      "instruction": "MAD (SVE)",
+      "intrinsic": "svmad_u8_z(svbool_t pg, svuint8_t op1, svuint8_t op2, svuint8_t op3)",
+      "purpose": "Predicated multiply-add: (op1 * op2) + op3. Computes (val_hi * 64) + val_lo in one instruction for 6-bit merge.",
+      "latency_v1": 4,
+      "throughput_v1_cpi": 0.5,
+      "latency_v2": 4,
+      "throughput_v2_cpi": 0.5,
+      "note": "Predicated: only active lanes compute. Inactive lanes zero or merge."
+    },
+    {
+      "instruction": "WHILELT / WHILELO",
+      "intrinsic": "svwhilelt_b8(int64_t op1, int64_t op2)",
+      "purpose": "Generate predicate mask for loop control. Creates mask where lanes [0..n) are active. THE key VLA instruction: enables processing arbitrary-length inputs without scalar tail loop.",
+      "latency_v1": "2-3",
+      "throughput_v1_cpi": 0.5,
+      "latency_v2": 2,
+      "throughput_v2_cpi": 0.5,
+      "note": "Used at start of each loop iteration: pg = svwhilelt_b8(i, n);"
+    },
+    {
+      "instruction": "COMPACT (SVE2)",
+      "intrinsic": "svcompact_u32(svbool_t pg, svuint32_t op)",
+      "purpose": "Compress active elements to front of vector, removing inactive. Could help with whitespace-skipping compaction.",
+      "latency_v2": "3-5",
+      "throughput_v2_cpi": 1.0,
+      "note": "SVE2 only. Only works on 32/64-bit elements, not bytes. Limited applicability for byte-level base64."
+    },
+    {
+      "instruction": "MATCH (SVE2)",
+      "intrinsic": "svmatch_u8(svbool_t pg, svuint8_t op1, svuint8_t op2)",
+      "purpose": "Compare each element in op1 against all elements in op2 (segment). Useful for character classification: check if each byte is in the valid Base64 alphabet.",
+      "latency_v2": "2-4",
+      "throughput_v2_cpi": 1.0,
+      "note": "SVE2 only. Powerful for validation but limited to 16-element segments."
+    },
+    {
+      "instruction": "LD1B / ST1B (predicated)",
+      "intrinsic": "svld1_u8(svbool_t pg, const uint8_t *base) / svst1_u8(svbool_t pg, uint8_t *base, svuint8_t data)",
+      "purpose": "Predicated load/store. Only active lanes access memory. Enables safe processing of input tails without over-read/over-write.",
+      "latency_v1": "4-5",
+      "throughput_v1_cpi": 0.5,
+      "note": "First-faulting variant (LDFF1) suppresses faults on inactive lanes. Useful for speculative loads."
+    }
+  ],
+  "bytes_per_iteration": {
+    "input": "VL bytes (128-2048 bit / 8 = 16-256 bytes)",
+    "output": "3*VL/4 bytes"
+  },
+  "base64_applicability": "NOVEL CONTRIBUTION AREA. No production SVE base64 decoder exists. SVE advantages for base64: (1) VLA: single binary runs on all SVE widths (128-2048 bit), (2) Predication eliminates scalar tail loop entirely, (3) WHILELT + predicated load/store handles arbitrary lengths cleanly, (4) TBL instruction is efficient for lookup. Challenge: the 4:3 decode ratio (every 4 input -> 3 output) complicates VLA output addressing. Proposed solution: process VL-aligned chunks and use predication for the final partial chunk. SVE2's MATCH instruction could enable efficient validation.",
+  "hardware_availability": {
+    "SVE_256": ["Neoverse V1 (Graviton3)", "A64FX (512-bit)"],
+    "SVE2_128": ["Neoverse N2 (Graviton4)", "Cortex-A710", "Cortex-X2/X3"],
+    "SVE2_256": ["Neoverse V2"]
+  },
+  "representative_microarchitectures": ["Neoverse V1 (256b)", "Neoverse V2 (SVE2 128b)", "A64FX (512b)"]
+}

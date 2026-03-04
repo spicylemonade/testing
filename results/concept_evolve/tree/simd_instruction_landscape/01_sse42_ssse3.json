@@ -1,0 +1,53 @@
+{
+  "id": "sse42_ssse3",
+  "name": "x86-64 SSE4.2 / SSSE3 (128-bit)",
+  "description": "128-bit SIMD foundation for base64 decode. Processes 16 input bytes (12 output) per iteration.",
+  "key_instructions": [
+    {
+      "instruction": "PSHUFB",
+      "intrinsic": "_mm_shuffle_epi8",
+      "purpose": "Byte-level 16-entry LUT lookup. Core of nibble-decomposition decode.",
+      "latency_skylake": 1,
+      "throughput_skylake_cpi": 1.0,
+      "ports_skylake": "p5",
+      "latency_zen4": 2,
+      "throughput_zen4_cpi": 0.5
+    },
+    {
+      "instruction": "PMADDUBSW",
+      "intrinsic": "_mm_maddubs_epi16",
+      "purpose": "Pack pairs of 6-bit values: (hi*64)+lo -> 12-bit in 16-bit lane.",
+      "latency_skylake": 5,
+      "throughput_skylake_cpi": 0.5,
+      "ports_skylake": "p0/p1",
+      "latency_zen4": 3,
+      "throughput_zen4_cpi": 0.5
+    },
+    {
+      "instruction": "PMADDWD",
+      "intrinsic": "_mm_madd_epi16",
+      "purpose": "Pack pairs of 12-bit values: (hi*4096)+lo -> 24-bit in 32-bit lane.",
+      "latency_skylake": 5,
+      "throughput_skylake_cpi": 0.5,
+      "ports_skylake": "p0/p1",
+      "latency_zen4": 3,
+      "throughput_zen4_cpi": 0.5
+    },
+    {
+      "instruction": "PCMPESTRI/PCMPESTRM",
+      "intrinsic": "_mm_cmpestri/_mm_cmpestrm",
+      "purpose": "Range-based character classification (expensive, 8-9 uops). Avoid in hot loop.",
+      "latency_skylake": 13,
+      "throughput_skylake_cpi": 4.0,
+      "ports_skylake": "multiple",
+      "latency_zen4": 11,
+      "throughput_zen4_cpi": 3.0
+    }
+  ],
+  "bytes_per_iteration": {
+    "input": 16,
+    "output": 12
+  },
+  "base64_applicability": "Minimum viable SIMD tier. 4x groups per iteration. PSHUFB+PMADDUBSW+PMADDWD pipeline processes 16 input chars to 12 output bytes. Bottleneck is PSHUFB on p5 (Skylake) limiting shuffle throughput to 1/cycle. Still achieves ~3-4x over scalar.",
+  "representative_microarchitectures": ["Skylake", "Zen2", "Zen3", "Zen4"]
+}

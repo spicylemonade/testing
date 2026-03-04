@@ -1,0 +1,66 @@
+{
+  "id": "arm_neon",
+  "name": "ARM NEON / Advanced SIMD (128-bit)",
+  "description": "128-bit SIMD on all AArch64 processors. TBL instruction provides flexible byte lookup; widening multiplies for packing. Processes 16 input bytes (12 output) per iteration.",
+  "key_instructions": [
+    {
+      "instruction": "TBL (1-register, 16B)",
+      "intrinsic": "vqtbl1q_u8",
+      "purpose": "16-byte table lookup indexed by another vector. Core of base64 ASCII-to-value mapping. Single-register variant sufficient for 16-entry LUT.",
+      "latency_a76": 2,
+      "throughput_a76_cpi": 0.5,
+      "latency_n1": 2,
+      "throughput_n1_cpi": 0.5,
+      "latency_n2": 2,
+      "throughput_n2_cpi": 0.5,
+      "pipes": "V0/V1 (ASIMD permute)"
+    },
+    {
+      "instruction": "TBL (4-register, 16B)",
+      "intrinsic": "vqtbl4q_u8",
+      "purpose": "64-byte table lookup (4 source registers). Can cover full Base64 alphabet (64 entries) in one logical operation.",
+      "latency_a76": 6,
+      "throughput_a76_cpi": 4.0,
+      "latency_n1": 6,
+      "throughput_n1_cpi": 4.0,
+      "latency_n2": "2-4",
+      "throughput_n2_cpi": 2.0,
+      "pipes": "V (sequence of uops)",
+      "note": "Expensive on A76/N1 (4 CPI). Improved on N2. For base64, prefer nibble-decomposition with TBL-1 over TBL-4."
+    },
+    {
+      "instruction": "UMULL / UMULL2",
+      "intrinsic": "vmull_u8 / vmull_high_u8",
+      "purpose": "Unsigned widening multiply: 8B x 8B -> 8H. Used for multiply-based packing of 6-bit values.",
+      "latency_a76": 3,
+      "throughput_a76_cpi": 0.5,
+      "latency_n1": 3,
+      "throughput_n1_cpi": 0.5,
+      "latency_n2": 3,
+      "throughput_n2_cpi": 0.5,
+      "pipes": "V0/V1 (ASIMD integer multiply)"
+    },
+    {
+      "instruction": "USHR (shift right) + SLI (shift left insert)",
+      "intrinsic": "vshrq_n_u8 / vsliq_n_u8",
+      "purpose": "Alternative to multiply-based packing. Shift and insert for bit-field merging.",
+      "latency_a76": 2,
+      "throughput_a76_cpi": 0.5,
+      "pipes": "V0/V1"
+    },
+    {
+      "instruction": "LD4 / ST3",
+      "intrinsic": "vld4q_u8 / vst3q_u8",
+      "purpose": "Structure load/store with deinterleaving. LD4 loads 4 interleaved streams into 4 registers (useful for splitting 4-char groups). ST3 stores 3 registers interleaved.",
+      "latency_a76": "2-4",
+      "throughput_a76_cpi": "2-4",
+      "note": "LD4 can directly deinterleave base64 input into 4 separate register for parallel lookup."
+    }
+  ],
+  "bytes_per_iteration": {
+    "input": 16,
+    "output": 12
+  },
+  "base64_applicability": "Available on ALL AArch64 hardware. NEON base64 approach from Mula's base64simd: (1) TBL-based nibble lookup (2 TBL-1 + comparisons, ~8 instructions), (2) multiply-based or shift-based packing (~4-6 instructions), (3) TBL for output rearrangement (1 instruction). Total ~14-16 instructions per 16 input bytes. Expected 3-4x over scalar. Key advantage: dual ASIMD pipes on A76/N1/N2 give 0.5 CPI for most instructions.",
+  "representative_microarchitectures": ["Cortex-A76", "Cortex-A78", "Cortex-X1/X2/X3", "Neoverse N1", "Neoverse N2", "Apple M1/M2/M3"]
+}

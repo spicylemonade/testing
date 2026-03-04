@@ -1,0 +1,58 @@
+{
+  "id": "avx2",
+  "name": "x86-64 AVX2 (256-bit)",
+  "description": "Doubled throughput over SSE. Processes 32 input bytes (24 output) per iteration. Lane-crossing permutes needed for output compaction.",
+  "key_instructions": [
+    {
+      "instruction": "VPSHUFB (YMM)",
+      "intrinsic": "_mm256_shuffle_epi8",
+      "purpose": "In-lane byte shuffle for LUT lookup and byte rearrangement.",
+      "latency_skylake": 1,
+      "throughput_skylake_cpi": 1.0,
+      "latency_icelake": 1,
+      "throughput_icelake_cpi": 0.5,
+      "latency_zen4": 2,
+      "throughput_zen4_cpi": 0.5,
+      "note": "Ice Lake adds p1 as second shuffle port, doubling throughput"
+    },
+    {
+      "instruction": "VPMADDUBSW (YMM)",
+      "intrinsic": "_mm256_maddubs_epi16",
+      "purpose": "First packing stage: merge 6-bit pairs into 12-bit words.",
+      "latency_skylake": 5,
+      "throughput_skylake_cpi": 0.5,
+      "latency_icelake": 5,
+      "throughput_icelake_cpi": 0.5,
+      "latency_zen4": 3,
+      "throughput_zen4_cpi": 0.5
+    },
+    {
+      "instruction": "VPMADDWD (YMM)",
+      "intrinsic": "_mm256_madd_epi16",
+      "purpose": "Second packing stage: merge 12-bit pairs into 24-bit dwords.",
+      "latency_skylake": 5,
+      "throughput_skylake_cpi": 0.5,
+      "latency_icelake": 5,
+      "throughput_icelake_cpi": 0.5,
+      "latency_zen4": 3,
+      "throughput_zen4_cpi": 0.5
+    },
+    {
+      "instruction": "VPERMQ (YMM)",
+      "intrinsic": "_mm256_permute4x64_epi64",
+      "purpose": "Cross-lane quadword permutation for output byte compaction.",
+      "latency_skylake": 3,
+      "throughput_skylake_cpi": 1.0,
+      "latency_icelake": 3,
+      "throughput_icelake_cpi": 1.0,
+      "latency_zen4": 4,
+      "throughput_zen4_cpi": 0.5
+    }
+  ],
+  "bytes_per_iteration": {
+    "input": 32,
+    "output": 24
+  },
+  "base64_applicability": "The sweet spot for broad hardware compatibility. 8 groups per iteration. Mula/Lemire report ~7x speedup over scalar. Main limitation: VPSHUFB only shuffles within 128-bit lanes, requiring VPERMQ for cross-lane output compaction. The lookup phase needs 3 VPSHUFB + comparisons (~12 instructions). Pipeline: load -> 3x vpshufb (lookup/validate) -> vpmaddubsw -> vpmaddwd -> vpshufb (compact within lanes) -> vpermq (cross-lane fix) -> store.",
+  "representative_microarchitectures": ["Haswell", "Skylake", "Ice Lake", "Zen2", "Zen3", "Zen4"]
+}

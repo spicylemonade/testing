@@ -1,0 +1,49 @@
+{
+  "id": "avx512vbmi",
+  "name": "x86-64 AVX-512 VBMI (vpermi2b, vpermb -- key base64 enablers)",
+  "description": "The game-changing instruction subset for base64. VPERMB enables single-instruction 64-byte cross-lane byte permutation; VPMULTISHIFTQB enables single-instruction multi-field extraction. Together they reduce the decode pipeline from ~12 instructions to ~6.",
+  "key_instructions": [
+    {
+      "instruction": "VPERMB (ZMM)",
+      "intrinsic": "_mm512_permutexvar_epi8",
+      "purpose": "Full 64-byte cross-lane byte permutation in ONE instruction. Replaces vpshufb+vpermq cascade. Used for (1) input->6-bit LUT lookup and (2) output byte compaction.",
+      "latency_icelake": 3,
+      "throughput_icelake_cpi": 1.0,
+      "ports_icelake": "p5",
+      "latency_zen4": 6,
+      "throughput_zen4_cpi": 1.0,
+      "note": "Ice Lake: 3c lat is excellent. Zen4: 6c lat is higher but still 1 CPI throughput."
+    },
+    {
+      "instruction": "VPERMI2B (ZMM)",
+      "intrinsic": "_mm512_permutex2var_epi8",
+      "purpose": "Byte permutation from TWO source registers (128-byte combined table). Could enable full Base64 decode lookup from a single instruction with 128-entry table.",
+      "latency_icelake": "4-5",
+      "throughput_icelake_cpi": 2.0,
+      "ports_icelake": "p05+p5+p5",
+      "uops_icelake": 3,
+      "latency_zen4": "5-6",
+      "throughput_zen4_cpi": 1.0,
+      "uops_zen4": 1,
+      "note": "CRITICAL: 3 uops on Intel (2 CPI) vs 1 uop on Zen4 (1 CPI). Algorithm choice depends on target microarchitecture."
+    },
+    {
+      "instruction": "VPMULTISHIFTQB (ZMM)",
+      "intrinsic": "_mm512_multishift_epi64_epi8",
+      "purpose": "Extracts 8 arbitrary-positioned 8-bit fields from each 64-bit qword. THE key instruction for base64 packing: extracts packed 6-bit fields without shift/mask chains. One instruction replaces ~4 shift+AND+OR operations.",
+      "latency_icelake": 3,
+      "throughput_icelake_cpi": 1.0,
+      "ports_icelake": "p5",
+      "latency_zen4": 3,
+      "throughput_zen4_cpi": 1.0,
+      "note": "Remarkably efficient on both Intel and AMD. Single uop, 3c latency."
+    }
+  ],
+  "bytes_per_iteration": {
+    "input": 64,
+    "output": 48
+  },
+  "base64_applicability": "The optimal decode pipeline with VBMI: (1) vpermb for LUT lookup (1 instr, replaces 3 vpshufb + comparisons), (2) vpmultishiftqb for 6-bit field extraction/packing (1 instr, replaces vpmaddubsw + vpmaddwd), (3) vpermb for output compaction (1 instr, replaces vpshufb + vpermq). Total: ~6 core instructions vs ~12 for AVX2. Mula/Lemire achieve near-memcpy throughput with this pipeline.",
+  "hardware_availability": "Ice Lake (2019), Tiger Lake (2020), Alder Lake (2021 E-cores only), Sapphire Rapids (2023), Emerald Rapids (2024), Zen4 (2022), Zen5 (2024). Increasingly available but not universal.",
+  "representative_microarchitectures": ["Ice Lake", "Sapphire Rapids", "Zen4", "Zen5"]
+}
