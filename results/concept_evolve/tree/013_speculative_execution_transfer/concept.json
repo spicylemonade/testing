@@ -1,0 +1,45 @@
+{
+  "id": "013",
+  "name": "Speculative Execution Transfer",
+  "symbolic_name": "speculative_execution_transfer",
+  "description": "Transfer micro-architectural speculative execution techniques (branch prediction with two-level adaptive predictors, reorder buffer rollback, checkpoint-and-restore) to CSV field detection. The CSV parser's EWMA row-length predictor is analogous to a saturating counter in a branch predictor; this concept deepens the analogy by importing the full recovery pipeline: checkpoint parser state before speculative work, execute optimistically on predicted field boundaries, and restore from checkpoint on misprediction rather than re-scanning from scratch.",
+  "domains": [
+    "CPU microarchitecture (speculative execution, branch prediction, reorder buffers)",
+    "network protocol dissection (speculative protocol identification, heuristic classifiers)",
+    "compiler optimization (speculative inlining, profile-guided optimization)"
+  ],
+  "analogous_domains": [
+    {
+      "domain": "Speculative execution in CPUs",
+      "technique": "Modern out-of-order CPUs use branch predictors (2-bit saturating counters, TAGE, perceptron predictors) to speculate on the direction/target of branches. Work proceeds along the predicted path, buffered in a reorder buffer (ROB). On misprediction, the CPU flushes the ROB back to the checkpoint and re-executes from the correct path. Key insight: speculation cost is amortized over many correct predictions; only mispredictions are expensive.",
+      "csv_mapping": "The EWMA row-length predictor is a 1st-order predictor analogous to a bimodal branch predictor. The ROB maps to a speculative output buffer where parsed fields are staged before being committed to the final columnar output. On misprediction (predicted newline offset does not contain \\n), the parser discards speculative fields and rescans from the last confirmed row boundary. The 'retirement' step corresponds to verifying predicted boundaries and copying speculative results to the committed output.",
+      "hypothesis": "H1: Replacing the single EWMA predictor with a 2-level adaptive predictor (indexed by a hash of the last 4 row-lengths quantized to 8 bins, selecting among 256 saturating counters) will improve byte-offset prediction accuracy from 70% to >85% on variable-width CSV files (coefficient of variation in row length >0.15) without reducing throughput on uniform files."
+    },
+    {
+      "domain": "Speculative parsing in network protocol dissectors",
+      "technique": "Deep packet inspection engines (Wireshark, nDPI, Suricata) face a similar problem: identifying which protocol a flow carries before the full handshake completes. They use speculative protocol identification: run multiple candidate protocol dissectors in parallel on the first N bytes, score each by heuristic confidence, and commit to the highest-scoring dissector. Misidentification triggers fallback to a generic dissector. nDPI uses a cascade of fast hash-based checks before expensive DFA-based dissection.",
+      "csv_mapping": "In CSV parsing, the 'protocol' is the row schema (field count, field widths, quoting pattern). A speculative multi-dissector approach would run 2-3 candidate row templates in parallel (e.g., template A: 10 fields of widths [5,8,3,...]; template B: 10 fields of widths [6,7,4,...]) and commit the one whose predicted delimiters match actual structural characters. This is useful when a CSV has bimodal row lengths (e.g., data rows vs. annotation rows).",
+      "hypothesis": "H2: Maintaining 2-4 row-length templates (cluster centroids from a lightweight online k-means on row lengths) and selecting the best-matching template per row will achieve >90% byte-accuracy on CSV files with bimodal or multimodal row-length distributions, where a single EWMA predictor achieves <75%."
+    },
+    {
+      "domain": "Compiler speculative inlining and PGO",
+      "technique": "Profile-guided optimization (PGO) in compilers like LLVM and GCC uses execution profiles from representative workloads to speculatively inline hot call targets and optimize cold paths. The compiler inserts guards (runtime checks) at speculative inline sites; if the guard fails, execution falls through to a generic slow path. This two-tier approach ensures the common case is maximally optimized while correctness is preserved.",
+      "csv_mapping": "The CSV parser can use a 'profile' phase on the first N rows (e.g., 1024) to build a row template, then generate a 'specialized' fast path (e.g., SIMD gather at fixed offsets) guarded by a verification check. If the guard (checking structural characters at predicted positions) fails, fall back to the general SIMD scan. This is a form of runtime specialization akin to trace compilation in JIT compilers.",
+      "hypothesis": "H3: A profile-then-specialize approach (profile first 1024 rows, emit a fixed-offset SIMD gather kernel for the common row shape, with fallback) will achieve >95% fast-path hit rate on homogeneous CSV files and improve throughput by 15-30% over the baseline adaptive EWMA approach by eliminating per-row prediction overhead."
+    }
+  ],
+  "hypotheses": [
+    "H1: A 2-level adaptive predictor (hash of recent row-length history indexing a table of counters) improves byte-offset accuracy from 70% to >85% on variable-width CSVs (CV > 0.15).",
+    "H2: Multi-template prediction (2-4 cluster centroids via online k-means) achieves >90% byte-accuracy on bimodal/multimodal row-length distributions where single EWMA achieves <75%.",
+    "H3: Profile-then-specialize (1024-row profile phase + fixed-offset SIMD gather) yields 15-30% throughput gain on homogeneous files by eliminating per-row prediction overhead."
+  ],
+  "adjacency": [
+    "speculative_row_length_prediction",
+    "branchless_state_machine_encoding",
+    "parallel_bit_stream_structural_indexing",
+    "entropy_guided_field_width_prediction",
+    "adaptive_chunk_sizing"
+  ],
+  "mathematical_formalization": "Let P(hit) = probability that predicted row boundary is correct. Cost_spec = P(hit) * C_verify + (1 - P(hit)) * (C_verify + C_rollback + C_rescan). For speculation to win: C_spec < C_baseline iff P(hit) > (C_baseline - C_verify) / (C_rollback + C_rescan). With SIMD verify ~ 3 cycles and rescan ~ 50 cycles, break-even P(hit) ~ 0.60.",
+  "experiment_seed": "Implement 2-level adaptive predictor alongside EWMA. Benchmark both on 5 CSV datasets spanning CV(row_length) in {0.01, 0.05, 0.15, 0.30, 0.50}. Measure byte-accuracy, field-count accuracy, and throughput (GB/s). Compare against multi-template approach on synthetic bimodal datasets."
+}

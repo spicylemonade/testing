@@ -1,0 +1,223 @@
+{
+  "bottleneck": "speculative field detection in SIMD CSV parsing",
+  "research_summary": "SIMD CSV parsing faces a fundamental tension: CSV's quoted-field grammar creates state-dependent ambiguity that resists data-level parallelism. The core problem is that a comma inside quotes is not a field delimiter, but determining 'inside quotes' requires sequential state tracking. Key approaches include: (1) Langdale's PCLMULQDQ/carryless-multiply trick from simdjson, which transforms a quote bitmask into a quoted-region mask via prefix-XOR in O(1) SIMD operations; (2) Microsoft Research's speculative distributed parsing (Ge et al., SIGMOD 2019), which speculatively parses CSV chunks in parallel by guessing the initial FSM state, then reconciling; (3) the 'cisv' branchless approach that eliminates all if/switch branches using arithmetic encoding of state transitions; (4) medialab/simd-csv's hybrid approach mixing memchr-style SIMD seeking with traditional state machines; (5) FSM parallelization via principled speculation (Zhao & Shen, ASPLOS 2015). The bottleneck persists because CSV's quote-escaping rules create an inherently sequential dependency chain: whether character N is inside a quoted field depends on the parity of all preceding quotes, and escaped quotes ('\"\"') add a second layer of state dependency.",
+  "associations": [
+    {
+      "term": "speculative field detection",
+      "expansions": [
+        "prefix-XOR parity computation via carryless multiply (PCLMULQDQ)",
+        "speculative FSM state enumeration \u2014 run all possible start states in parallel, prune after synchronization",
+        "quoted-region bitmask generation as a carry-propagation problem analogous to binary addition",
+        "branch prediction at the hardware level as a metaphor for speculative CSV state guessing",
+        "forward error correction in telecommunications \u2014 speculatively decode, correct later",
+        "optimistic concurrency control in databases \u2014 assume no conflict, rollback if wrong",
+        "speculative execution in CPUs \u2014 proceed past unknown branch, squash if mispredicted",
+        "Bloom filter style probabilistic field boundary detection \u2014 accept false positives, verify later",
+        "wavefront computation in dynamic programming \u2014 diagonal parallelism despite sequential dependency",
+        "two-phase parsing: structural index pass (SIMD-parallel) then semantic interpretation pass (sequential)",
+        "run-length encoding of quote parity states as a compression of the sequential dependency",
+        "the 'canonicalization barrier' \u2014 CSV's multiple valid representations of the same cell value block SIMD uniformity",
+        "escape sequence detection as a carry-chain problem in binary arithmetic"
+      ]
+    },
+    {
+      "term": "SIMD CSV parsing",
+      "expansions": [
+        "vectorized classification \u2014 use VPSHUFB/VTBL to classify 16-64 bytes into {comma, quote, newline, other} in one instruction",
+        "structural character bitmask extraction \u2014 parallel comparison producing 64-bit masks of delimiter positions",
+        "bit-manipulation field indexing \u2014 TZCNT/BLSI to iterate set bits in delimiter masks",
+        "the PCLMULQDQ trick \u2014 carryless multiply of quote mask by all-ones to compute prefix-XOR (quoted regions)",
+        "memchr-style SIMD seeking \u2014 jump to next delimiter rather than scanning byte-by-byte",
+        "branchless state machine \u2014 encode FSM transitions as lookup tables indexed by (state, character_class) pairs",
+        "scatter/gather field extraction \u2014 once boundaries are known, use VPGATHERDD to collect field starts",
+        "AVX-512 masked operations \u2014 process variable-width fields without scalar cleanup loops",
+        "Sep's 21 GB/s approach \u2014 interleave SIMD structural detection with immediate field consumption to stay cache-hot"
+      ]
+    },
+    {
+      "term": "bottleneck root cause",
+      "expansions": [
+        "sequential quote-parity dependency \u2014 the state 'inside_quote' at position N depends on all positions < N",
+        "RFC 4180 escape ambiguity \u2014 '\"\"' inside a quoted field means escaped quote, requiring lookahead",
+        "non-regular CSV dialects \u2014 Excel accepts malformed CSV like AA\"A which breaks SIMD assumptions",
+        "multi-byte encodings \u2014 UTF-8 continuation bytes can alias delimiter bytes in non-ASCII-safe encodings",
+        "variable-width fields \u2014 SIMD processes fixed-width chunks but fields span arbitrary byte ranges",
+        "the 'misalignment tax' \u2014 fields rarely align to SIMD register boundaries, causing cross-lane overhead",
+        "inter-chunk state carry \u2014 processing 64-byte blocks requires carrying quote-parity state between blocks"
+      ]
+    }
+  ],
+  "forced_bridges": [
+    {
+      "from": "speculative field detection in SIMD CSV parsing",
+      "to": "speculative execution in out-of-order CPUs",
+      "mechanism": "Both face the same fundamental problem: a sequential dependency chain (branch outcomes / quote parity) blocks parallel progress. CPUs solve this with branch prediction + rollback on mispredict. CSV parsers can adopt the same strategy: speculatively assume an initial quote-parity state for each SIMD chunk, parse in parallel, then verify and rollback incorrect chunks. The Ge et al. SIGMOD 2019 paper does exactly this at the distributed level; the insight transfers to SIMD-register-level speculation where each 64-byte block speculatively assumes 'not in quote' and a single PCLMULQDQ operation verifies the assumption post-hoc."
+    },
+    {
+      "from": "speculative field detection in SIMD CSV parsing",
+      "to": "forward error correction in digital communications (Viterbi/turbo codes)",
+      "mechanism": "In noisy channels, the receiver doesn't know the true transmitted signal but speculatively decodes all possible state sequences through a trellis, then selects the most likely path. CSV's quote-parity ambiguity is structurally identical: at a chunk boundary, the parser doesn't know the true FSM state but can enumerate all possible states (there are only 2 for quote parity: IN_QUOTE or NOT_IN_QUOTE). Like the Viterbi algorithm, the parser can maintain both paths through the 'trellis' of the CSV FSM, producing two candidate outputs per chunk, then select the correct one when the preceding chunk's true end-state is resolved. This is O(2) overhead per chunk \u2014 negligible with SIMD parallelism."
+    },
+    {
+      "from": "speculative field detection in SIMD CSV parsing",
+      "to": "GPU wavefront scheduling in sequence alignment (Block Aligner)",
+      "mechanism": "Block Aligner for sequence alignment uses adaptive blocks that greedily shift, grow, and shrink through a dynamic programming matrix, computing only the relevant diagonal wavefront. Similarly, speculative CSV field detection can use an adaptive wavefront: start by scanning for the 'easy' structural characters (unquoted commas, newlines) via SIMD in one fast pass, then adaptively engage the slower quote-resolution logic only for blocks that contain quotes. Most real-world CSV data has few quoted fields \u2014 the wavefront of quote-complexity is sparse, allowing the common case to proceed at full SIMD throughput."
+    },
+    {
+      "from": "speculative field detection in SIMD CSV parsing",
+      "to": "network packet header parsing with DPI (Hyperflex)",
+      "mechanism": "Hyperflex uses SIMD-accelerated DFA state transitions for deep packet inspection, identifying 'regions' of a DFA graph that can be SIMD-accelerated vs. regions requiring scalar fallback. The same region-detection concept maps to CSV: identify contiguous byte ranges that are 'simple' (no quotes, no escapes) and parse them with full SIMD throughput, while isolating 'complex' regions (quoted fields, escaped characters) for specialized SIMD or scalar handling. This is essentially a heterogeneous parsing pipeline with SIMD fast-path and scalar slow-path, connected by a speculative region classifier."
+    },
+    {
+      "from": "speculative field detection in SIMD CSV parsing",
+      "to": "optimistic concurrency control in MVCC databases",
+      "mechanism": "MVCC databases speculatively execute transactions assuming no conflicts, only checking at commit time. CSV chunk parsing can use the same optimistic approach: parse each chunk independently assuming 'no cross-boundary quoted fields,' producing a tentative field index. At reconciliation time, check if the assumption held by comparing the ending quote-parity of each chunk. If correct (the common case for well-structured data), the tentative index becomes final with zero rollback cost. The expected cost is O(n_chunks * P(quoted_field_spans_boundary)), which is typically very low."
+    },
+    {
+      "from": "speculative field detection in SIMD CSV parsing",
+      "to": "just-in-time packet state prefetching in network stacks",
+      "mechanism": "Ghasemirahni et al. showed that 'hints' about future packet arrivals allow prefetching relevant state into cache, improving throughput by 50%+. For CSV parsing, a first-pass SIMD scan that detects quote positions acts as a 'hint generator' for the second-pass field extractor: by knowing where quotes are, the extractor can prefetch the memory regions around quoted fields, hide memory latency, and avoid cache misses during the complex escaped-field handling. This decouples the I/O-bound scanning from the compute-bound extraction."
+    },
+    {
+      "from": "speculative field detection in SIMD CSV parsing",
+      "to": "speculative decoding in large language models",
+      "mechanism": "LLM speculative decoding uses a cheap draft model to propose tokens that are verified in parallel by the expensive target model. In CSV parsing, a 'cheap draft' could be a simplified SIMD pass that treats every comma and newline as a field/record boundary (ignoring quoting), producing a draft field index at near-memory-bandwidth speed. A second, more expensive verification pass only examines the subset of boundaries that fall near quote characters, accepting most draft boundaries and correcting the few that were inside quoted regions. This mirrors the draft-verify paradigm and can achieve similar speedups when the 'accept rate' (fraction of unquoted delimiters) is high."
+    },
+    {
+      "from": "speculative field detection in SIMD CSV parsing",
+      "to": "sparse matrix computation (CSR format)",
+      "mechanism": "In sparse matrix formats like CSR, the data is stored with explicit index arrays pointing to non-zero values. CSV field positions are analogously sparse structural metadata embedded in a dense byte stream. By extracting field boundary positions into a compact index (similar to CSR's row_ptr and col_ind arrays), the actual field data can be accessed with indirect indexing rather than sequential scanning. The SIMD structural detection phase produces exactly this sparse index, and subsequent field access can use VPGATHERDD-style operations for random access into the original buffer."
+    },
+    {
+      "from": "speculative field detection in SIMD CSV parsing",
+      "to": "DNA sequence motif scanning with position weight matrices",
+      "mechanism": "PWM-based motif scanning slides a fixed-width scoring window across a genome sequence, classifying each position by a score threshold. SIMD CSV field detection similarly slides a classification window across the byte stream, but instead of a PWM score, it computes a multi-class label (delimiter type) per position. The 'speculative' aspect in motif scanning \u2014 computing scores for all positions and filtering \u2014 maps to computing delimiter masks for all byte positions simultaneously. Both benefit from the same vectorized-classification-then-filter pattern."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "All fields are quoted (100% quote density)",
+      "behavior": "The PCLMULQDQ prefix-XOR trick degenerates: the quote bitmask is maximally dense, producing a quoted-region mask that alternates every few bytes. The carryless multiply still works correctly in O(1) per 64-byte block, but the resulting field boundary mask is empty (all commas are inside quotes), forcing a secondary pass to identify field boundaries by the pattern 'quote-comma-quote'. Paradoxically, uniformly-quoted CSV is easier for SIMD because the field boundary pattern is completely regular: every delimiter is preceded by '\"' and followed by '\"'. A specialized fast-path for 'all-quoted' CSV could skip the general speculative machinery entirely and use a simpler SIMD pattern (find all '\",' and ',\"' bigrams)."
+    },
+    {
+      "constraint": "Adversarial CSV with maximally nested escapes ('\"\"\"\"\"\"...')",
+      "behavior": "A field consisting entirely of escaped quotes creates the worst case for speculative parsing: every pair of quotes toggles the in-quote state, and the parity resolution cannot be simplified. However, PCLMULQDQ handles this correctly because it computes the exact prefix-XOR regardless of pattern density. The real anomaly is that the field extraction phase (after structural detection) becomes the bottleneck, since each '\"\"' pair must be collapsed to a single '\"' in the output \u2014 a fundamentally sequential copy-and-skip operation that cannot be fully vectorized without scatter/compress instructions (AVX-512 VPCOMPRESSD)."
+    },
+    {
+      "constraint": "Extremely wide rows (single row spans multiple SIMD blocks, e.g., 100KB per row)",
+      "behavior": "Speculative chunk-parallel parsing becomes ineffective because very few chunk boundaries fall between rows. The Ge et al. speculation accuracy drops because the probability of a chunk boundary falling inside a quoted field increases proportionally with field width. The system degrades toward sequential parsing for the wide-row portion. Mitigation: use a two-level approach where the first SIMD pass identifies newline-free zones (indicating potential wide rows) and routes those zones to a specialized wide-row parser that processes them sequentially but uses SIMD for within-field operations (e.g., UTF-8 validation, numeric conversion)."
+    },
+    {
+      "constraint": "CSV with no quotes at all (tab-separated, simple numeric data)",
+      "behavior": "The speculative machinery has zero cost because the quote bitmask is all-zeros, and the PCLMULQDQ of zero is zero. Field detection reduces to a simple SIMD comparison for commas and newlines, extractable at memory bandwidth speed. Sep achieves 21 GB/s in this regime. The anomaly is that the speculative/quote-handling code path is entirely dead weight \u2014 the parser's throughput is bounded only by memory bandwidth and the speed of iterating set bits in the delimiter mask (TZCNT loop). This suggests that for quote-free CSV, the 'field detection' problem is entirely solved by current SIMD techniques and the bottleneck shifts to field-value parsing (string-to-number conversion)."
+    },
+    {
+      "constraint": "Streaming parsing with unknown total size (e.g., pipe input, network socket)",
+      "behavior": "Speculative chunk-parallel approaches require knowing chunk boundaries in advance, which streaming breaks. The parser must fall back to sequential block processing with inter-block state carry. However, the PCLMULQDQ trick still works per-block \u2014 only the parallelism across blocks is lost. The anomaly is that streaming mode is only ~2x slower than bulk mode (not proportional to the number of blocks), because the per-block SIMD computation is already dominant and the inter-block state carry is a single 1-bit value (quote parity)."
+    },
+    {
+      "constraint": "Mixed-encoding CSV with non-ASCII delimiters (e.g., Unicode comma U+FF0C in Chinese CSV)",
+      "behavior": "Standard SIMD byte-comparison only detects ASCII delimiters. Multi-byte delimiter characters require either: (a) pre-scanning for the multi-byte delimiter sequence (slower, but SIMD-friendly via PCMPESTRI/VPMOVMSKB after sequence matching), or (b) transcoding to ASCII delimiters first. The speculative field detection is completely broken if the parser doesn't know which delimiter to expect \u2014 this is a higher-order speculation problem: speculate on the delimiter itself. Some heuristic approaches scan the first N bytes to detect the delimiter, then proceed with standard SIMD. This transforms the problem from 'speculative field detection' to 'speculative schema detection.'"
+    },
+    {
+      "constraint": "Malformed CSV where quotes don't pair (odd number of quotes in file)",
+      "behavior": "The PCLMULQDQ prefix-XOR correctly identifies the quoted region up to the unpaired quote, then marks everything after it as 'inside quote' for the rest of the file. Speculative chunk-parallel parsing will have systematic mispredictions: every chunk after the malformed quote will require rollback. The Ge et al. approach handles this via error detection patterns \u2014 certain FSM state sequences at chunk boundaries are recognized as 'impossible,' triggering re-parse with error recovery. The anomaly is that error detection and speculative parsing are deeply intertwined: speculation accuracy is simultaneously a parsing correctness signal."
+    }
+  ],
+  "steering_directions": [
+    {
+      "direction": "Draft-and-verify SIMD CSV parsing (inspired by LLM speculative decoding)",
+      "rationale": "Most real-world CSV has >90% unquoted fields. A 'draft pass' that simply marks all commas and newlines as boundaries (ignoring quotes entirely) will be correct for >90% of boundaries. A focused verification pass only needs to check boundaries near quote characters. This separates the common-case fast path from the rare-case slow path, maximizing SIMD utilization.",
+      "first_step": "Implement a two-pass prototype: Pass 1 uses SIMD to find all comma/newline positions (the 'draft index'). Pass 2 uses PCLMULQDQ to compute the quote mask and identifies which draft boundaries fall inside quoted regions. Only those boundaries are removed from the index. Benchmark against a single-pass PCLMULQDQ approach on datasets with varying quote density (0%, 10%, 50%, 100%).",
+      "expected_signal": "On low-quote-density data (<10% quoted fields), the draft-and-verify approach should be faster because Pass 1 runs at memory bandwidth and Pass 2 only touches a small fraction of the data. On high-quote-density data, it should be equivalent or slightly slower due to the overhead of two passes. Crossover point expected around 30-40% quote density."
+    },
+    {
+      "direction": "Adaptive wavefront speculation with per-block state enumeration",
+      "rationale": "For each 64-byte SIMD block, there are only 2 possible initial states (in_quote or not_in_quote). Instead of speculatively picking one and rolling back, compute BOTH parse results for each block in parallel. At reconciliation, select the correct result based on the actual state from the preceding block. This eliminates rollback entirely at the cost of 2x computation \u2014 but the computation is embarrassingly parallel and can be spread across SIMD lanes or cores.",
+      "first_step": "For each 64-byte block, compute two structural bitmasks: one assuming not_in_quote, one assuming in_quote. Store both in a parallel array. After all blocks are processed, do a single sequential pass through the 1-bit state chain to select the correct bitmask for each block. Measure whether the 2x SIMD computation + 1-bit sequential resolution is faster than fully sequential state-dependent parsing.",
+      "expected_signal": "On multi-core systems, the embarrassingly parallel 2x-work phase should scale linearly with cores, while the 1-bit sequential resolution is negligible (one comparison per 64 bytes). Expected speedup: (number_of_cores * SIMD_throughput) / (2 * single_core_throughput). On a 16-core machine with AVX-512, expect ~6-8x speedup over single-core sequential parsing."
+    },
+    {
+      "direction": "Region-classified heterogeneous parsing (inspired by Hyperflex DPI)",
+      "rationale": "Like Hyperflex's identification of SIMD-friendly vs. scalar-required DFA regions, classify CSV byte ranges into 'simple regions' (no quotes within \u00b164 bytes) and 'complex regions' (quotes present). Route simple regions to a minimal SIMD parser (just comma/newline detection) and complex regions to the full PCLMULQDQ pipeline. This avoids paying the quote-resolution cost for quote-free regions of the file.",
+      "first_step": "Add a pre-scan phase that creates a 1-bit-per-64-byte 'complexity map' by checking if any byte in each 64-byte block is a quote character (single VPCMPEQB + VPMOVMSKB, very cheap). Use this map to dispatch blocks to either the fast path (no quotes) or slow path (quotes present). Benchmark on real-world CSV files to measure the fraction of blocks requiring the slow path.",
+      "expected_signal": "On typical CSV (e.g., numeric data with a few string columns), expect 70-95% of 64-byte blocks to be quote-free, meaning 70-95% of blocks can skip the PCLMULQDQ overhead entirely. Net throughput improvement expected: 15-40% over uniform PCLMULQDQ processing, scaling with the fraction of quote-free blocks."
+    },
+    {
+      "direction": "Probabilistic speculation with Bayesian state priors from column statistics",
+      "rationale": "The Ge et al. speculative approach assumes uniform state priors when guessing chunk-initial states. But CSV files have strong statistical regularity: most rows have the same number of fields, field types repeat in columns, and quote patterns are column-dependent. By learning a lightweight statistical model from the first few rows (which columns are quoted, typical field widths), the speculation accuracy can be dramatically improved.",
+      "first_step": "Parse the first 100 rows sequentially to build per-column statistics: quote probability, mean field width, field width variance. Use these to compute a Bayesian prior for the FSM state at each chunk boundary (based on expected column position within the chunk). Feed this prior into the speculative parser as the 'predicted' initial state. Measure speculation accuracy vs. the baseline uniform-prior approach on files with 1M+ rows.",
+      "expected_signal": "Speculation accuracy should improve from ~85% (uniform prior, per Ge et al.) to >98% for regular CSV files. For irregular files (varying column counts, mixed quoting), improvement should be smaller but still measurable. The key metric is rollback rate: each percentage point of accuracy improvement eliminates one rollback per hundred chunks."
+    },
+    {
+      "direction": "Hardware-prefetch-driven two-phase parsing (inspired by JIT packet prefetching)",
+      "rationale": "Ghasemirahni et al. showed that prefetching packet state based on 'hints' about incoming packets improves throughput by 50%+. In CSV parsing, the first SIMD pass (structural detection) generates 'hints' about where the complex fields are. These hints can drive software prefetch instructions to bring relevant memory lines into L1 cache before the second pass (field extraction) needs them. This hides the memory latency of the extraction phase.",
+      "first_step": "After the SIMD structural detection pass produces the field boundary index, insert PREFETCHNTA instructions for the memory addresses of field starts that correspond to quoted/complex fields (identified by proximity to quote characters in the structural mask). Measure the cache miss rate and throughput of the extraction phase with and without prefetching.",
+      "expected_signal": "For files larger than L3 cache (typical for big data workloads), expect 20-40% throughput improvement from prefetching. For files that fit in cache, expect minimal benefit. The signal is clearest on NUMA systems where memory latency is highest."
+    },
+    {
+      "direction": "VPCOMPRESSD-based branchless quoted-field extraction",
+      "rationale": "The current bottleneck in fully-quoted CSV is not field detection (PCLMULQDQ handles this) but field extraction: collapsing '\"\"' escape sequences to '\"' requires conditional byte copying. AVX-512's VPCOMPRESSD/VPCOMPRESSB can conditionally compress bytes based on a mask, enabling branchless escape-sequence removal in a single instruction per register width.",
+      "first_step": "Prototype a VPCOMPRESSB-based escape collapser: given a 64-byte register of quoted-field content and a mask of 'bytes to keep' (all except the first byte of each '\"\"' pair), use VPCOMPRESSB to produce the de-escaped output in one instruction. Benchmark against the scalar loop approach for fields with varying escape density.",
+      "expected_signal": "For fields with high escape density (>10% of bytes are '\"\"' pairs), expect 4-8x speedup over scalar. For fields with low escape density, expect similar performance (the mask is almost all 1s, so VPCOMPRESSB degenerates to a copy). The win is in eliminating branch mispredictions in the escape-handling loop."
+    }
+  ],
+  "validation_checks": [
+    {
+      "direction": "Draft-and-verify SIMD CSV parsing",
+      "checks": [
+        "Correctness: Parse identical CSV with both draft-and-verify and reference parser; diff all field boundary positions. Zero differences = correct.",
+        "Performance regression boundary: Sweep quote density from 0% to 100% in 5% increments; plot throughput. Identify the crossover point where draft-and-verify becomes slower than single-pass.",
+        "Real-world validation: Run on 10+ public CSV datasets (Kaggle, data.gov) and measure throughput + accuracy. Expect 0% accuracy loss (it's exact, not approximate).",
+        "Memory overhead: Measure peak memory usage of the draft index (one position per delimiter); should be O(n_delimiters), not O(n_bytes)."
+      ]
+    },
+    {
+      "direction": "Adaptive wavefront speculation with per-block state enumeration",
+      "checks": [
+        "Correctness: Both speculative paths (in_quote, not_in_quote) must produce valid structural indices for their respective assumptions. Verify by running the sequential parser and confirming the selected path matches exactly.",
+        "Scaling test: Run on 1, 2, 4, 8, 16 cores; measure throughput. Expect near-linear scaling up to the memory bandwidth limit.",
+        "Overhead measurement: Compare the total SIMD instruction count of the 2x-work approach vs. sequential. The 2x-work approach should have exactly 2x the SIMD instructions but near-0 branch mispredictions.",
+        "State-chain resolution latency: Measure the time for the sequential 1-bit-per-block resolution pass. Should be <1% of total parse time."
+      ]
+    },
+    {
+      "direction": "Region-classified heterogeneous parsing",
+      "checks": [
+        "Complexity map accuracy: On synthetic CSV with known quote positions, verify that the complexity map marks exactly the blocks containing quotes (zero false negatives).",
+        "False positive rate: Measure how many blocks are marked 'complex' but contain only quotes in adjacent fields (the block itself needs no special handling). High false positive rate indicates the classification granularity is too coarse.",
+        "Dispatch overhead: Measure the time to compute the complexity map and dispatch blocks. Should be <5% of total parse time.",
+        "End-to-end benchmark: Compare total throughput against uniform PCLMULQDQ on files with varying quote fractions. Expect improvement when <50% of blocks contain quotes."
+      ]
+    },
+    {
+      "direction": "Probabilistic speculation with Bayesian state priors",
+      "checks": [
+        "Prior accuracy: After learning from 100 rows, predict the FSM state at 1000 random file positions. Compare against ground truth from sequential parse. Measure accuracy percentage.",
+        "Robustness test: Run on adversarial CSV where column structure changes mid-file (e.g., schema evolution). The prior will be wrong \u2014 measure how gracefully the parser degrades (should fall back to rollback-based speculation, not crash).",
+        "Learning overhead: Measure the time to parse 100 rows and build statistics. Should be negligible compared to total file parse time for files >10MB.",
+        "Accuracy vs. sample size curve: Vary the number of training rows (10, 50, 100, 500, 1000) and plot speculation accuracy. Expect diminishing returns after ~100 rows for regular CSV."
+      ]
+    },
+    {
+      "direction": "Hardware-prefetch-driven two-phase parsing",
+      "checks": [
+        "Cache miss measurement: Use hardware performance counters (perf stat) to measure L1/L2/L3 cache miss rates with and without prefetching during the extraction phase.",
+        "Timing isolation: Measure extraction phase time separately from structural detection phase. Prefetching should only improve the extraction phase.",
+        "NUMA sensitivity: Test on dual-socket systems with data allocated on remote NUMA node. Expect larger benefit from prefetching due to higher remote memory latency.",
+        "Prefetch distance tuning: Vary the number of field boundaries prefetched ahead (1, 4, 16, 64). Find the sweet spot where prefetches arrive in time but don't evict useful cache lines."
+      ]
+    },
+    {
+      "direction": "VPCOMPRESSD-based branchless quoted-field extraction",
+      "checks": [
+        "Hardware requirement: Verify target CPU supports AVX-512BW + VBMI2 (required for VPCOMPRESSB). Fall back to scalar on unsupported hardware.",
+        "Correctness: For every possible 2-byte sequence containing '\"', verify the compress mask and output are correct. Exhaustive test of all 256*256 byte pairs.",
+        "Throughput measurement: Compare bytes/second of escape removal vs. scalar for fields of length 16, 64, 256, 1024, 4096 bytes with escape densities of 0%, 1%, 10%, 50%.",
+        "Integration test: Plug the VPCOMPRESSB escape remover into a full CSV parser pipeline. Measure end-to-end throughput improvement on files with >50% quoted fields."
+      ]
+    }
+  ],
+  "sub_problem": "speculative field detection in SIMD CSV parsing",
+  "timestamp": "2026-03-04T08:46:39.704631+00:00"
+}

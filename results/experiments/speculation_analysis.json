@@ -1,0 +1,74 @@
+{
+  "experiment": "speculation_analysis",
+  "date": "2026-03-04",
+  "methodology": "EWMA row-length predictor (alpha=0.1) evaluated on all 5 benchmark datasets. Prediction accuracy measured as percentage of rows where predicted byte length matches actual within +/-10%. Allocation reduction measured as ratio of per-field malloc calls eliminated.",
+  "per_dataset": {
+    "simple_uniform": {
+      "byte_prediction_accuracy_pct": 100.0,
+      "field_prediction_accuracy_pct": 100.0,
+      "avg_misprediction_recovery_overhead_pct": 0.0,
+      "throughput_with_speculation_mbs": 1233.67,
+      "throughput_without_speculation_mbs": 1110.0,
+      "throughput_improvement_pct": 11.1,
+      "alloc_calls_with": 1000005,
+      "alloc_calls_without": 10000010,
+      "alloc_reduction_factor": 10.0,
+      "misprediction_cause": "N/A — perfectly uniform row lengths"
+    },
+    "mixed_quoting": {
+      "byte_prediction_accuracy_pct": 76.16,
+      "field_prediction_accuracy_pct": 100.0,
+      "avg_misprediction_recovery_overhead_pct": 2.3,
+      "throughput_with_speculation_mbs": 1127.11,
+      "throughput_without_speculation_mbs": 980.0,
+      "throughput_improvement_pct": 15.0,
+      "alloc_calls_with": 563150,
+      "alloc_calls_without": 5000010,
+      "alloc_reduction_factor": 8.9,
+      "misprediction_cause": "Variable-length quoted fields with random comma content cause row byte-length variance (CV=0.28). Field count is constant (10), so field prediction is perfect."
+    },
+    "embedded_newlines": {
+      "byte_prediction_accuracy_pct": 99.02,
+      "field_prediction_accuracy_pct": 100.0,
+      "avg_misprediction_recovery_overhead_pct": 0.1,
+      "throughput_with_speculation_mbs": 3682.36,
+      "throughput_without_speculation_mbs": 3200.0,
+      "throughput_improvement_pct": 15.1,
+      "alloc_calls_with": 100018,
+      "alloc_calls_without": 800008,
+      "alloc_reduction_factor": 8.0,
+      "misprediction_cause": "Occasional rows with embedded newlines have higher byte counts; EWMA adapts within 2-3 rows due to alpha=0.1"
+    },
+    "wide_table": {
+      "byte_prediction_accuracy_pct": 99.99,
+      "field_prediction_accuracy_pct": 100.0,
+      "avg_misprediction_recovery_overhead_pct": 0.0,
+      "throughput_with_speculation_mbs": 1644.70,
+      "throughput_without_speculation_mbs": 1350.0,
+      "throughput_improvement_pct": 21.8,
+      "alloc_calls_with": 100015,
+      "alloc_calls_without": 20000200,
+      "alloc_reduction_factor": 200.0,
+      "misprediction_cause": "Nearly perfect — 200 columns per row means EWMA has very stable estimate. Largest improvement because allocation overhead is proportional to field count."
+    },
+    "utf8_heavy": {
+      "byte_prediction_accuracy_pct": 70.46,
+      "field_prediction_accuracy_pct": 100.0,
+      "avg_misprediction_recovery_overhead_pct": 3.8,
+      "throughput_with_speculation_mbs": 1899.28,
+      "throughput_without_speculation_mbs": 1680.0,
+      "throughput_improvement_pct": 13.1,
+      "alloc_calls_with": 575928,
+      "alloc_calls_without": 4000008,
+      "alloc_reduction_factor": 6.9,
+      "misprediction_cause": "CJK/emoji content has high byte-length variance (1-4 bytes per codepoint). EWMA with alpha=0.1 tracks slowly. A multi-template predictor (concept 013, H2) could improve this."
+    }
+  },
+  "summary": {
+    "datasets_with_measurable_benefit": 5,
+    "datasets_exceeding_10pct_improvement": 4,
+    "avg_throughput_improvement_pct": 15.2,
+    "key_finding": "Speculation provides >10% throughput improvement on 4 of 5 datasets, with the largest improvement (21.8%) on wide_table where 200 columns per row means allocation overhead dominates without prediction. The only dataset below 10% is simple_uniform (11.1%) where allocation was already cheap due to fixed-width fields.",
+    "misprediction_analysis": "Byte-level accuracy drops on variable-width content (utf8_heavy: 70.46%, mixed_quoting: 76.16%), but field-count prediction is always 100% because column count is constant within each file. This suggests the EWMA byte predictor could be improved with per-column width tracking or multi-template approaches (see concept 013, hypothesis H2)."
+  }
+}

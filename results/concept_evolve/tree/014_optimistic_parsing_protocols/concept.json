@@ -1,0 +1,47 @@
+{
+  "id": "014",
+  "name": "Optimistic Parsing Protocols",
+  "symbolic_name": "optimistic_parsing_protocols",
+  "description": "Apply optimistic concurrency control (OCC) principles from database transaction processing to parallel CSV chunk parsing. Each worker thread parses its assigned chunk optimistically, assuming its chunk boundary falls between rows. A lightweight validation phase detects conflicts (mid-row splits) and a resolution phase corrects them. This mirrors OCC's read-compute-validate-commit cycle and enables lock-free parallel parsing with minimal coordination overhead.",
+  "domains": [
+    "database systems (optimistic concurrency control, MVCC, validation-based protocols)",
+    "distributed systems (optimistic replication, eventual consistency, conflict resolution)",
+    "network protocol parsing (speculative protocol identification, rollback on misparse)"
+  ],
+  "analogous_domains": [
+    {
+      "domain": "Optimistic concurrency control in databases",
+      "technique": "OCC (Kung-Robinson protocol) allows transactions to execute without acquiring locks, recording read/write sets. At commit time, a validation phase checks for conflicts (write-write or read-write overlaps with concurrent transactions). If validation passes, results are committed; if it fails, the transaction aborts and retries. MVCC extends this by maintaining multiple versions, allowing readers to see consistent snapshots without blocking writers. The key insight: conflict is rare in practice, so optimistic execution dominates pessimistic locking.",
+      "csv_mapping": "When splitting a CSV file into N chunks for parallel parsing, each chunk boundary may fall mid-row or mid-quoted-field. The 'optimistic' approach lets each worker parse its chunk assuming it starts at a row boundary (optimistic read phase). Validation checks the first/last partial rows of each chunk against neighbors. Conflict resolution merges the split row from the tail of chunk K and the head of chunk K+1. This is far cheaper than the pessimistic alternative (pre-scanning the entire file for newlines to find safe split points).",
+      "hypothesis": "H4: Optimistic chunk-boundary parsing with post-hoc validation achieves equivalent correctness to pessimistic pre-scan splitting while reducing end-to-end latency by 20-40% on files >1GB, because the pre-scan phase (which is sequential and memory-bandwidth-bound) is eliminated."
+    },
+    {
+      "domain": "Distributed systems optimistic replication",
+      "technique": "Optimistic replication (lazy replication) in distributed databases allows replicas to diverge temporarily, processing updates locally without coordination. Conflicts are detected and resolved asynchronously using vector clocks, version vectors, or application-level merge functions. Systems like Dynamo and CRDTs use 'read-repair' and 'anti-entropy' protocols to converge replicas. The fundamental assumption: most operations commute, so conflicts are rare.",
+      "csv_mapping": "Parallel CSV chunk parsers are like replicas: each has a local view (its chunk) and produces a local result (row/field arrays). The 'conflict' is a row that spans two chunks. An anti-entropy protocol maps to a merge phase where adjacent chunks exchange their boundary rows and reconcile. This can be implemented as a lightweight barrier: each worker publishes its first/last partial row bytes, and a coordinator merges split rows. The commutativity assumption holds because most rows are entirely within one chunk.",
+      "csv_mapping_detail": "Using CRDT-inspired merge: each chunk produces an ordered sequence of (complete_rows, maybe_prefix, maybe_suffix). The merge function concatenates suffix_of_chunk_K with prefix_of_chunk_{K+1} to form a complete row. This is associative and commutative over chunk ordering, enabling out-of-order chunk completion.",
+      "hypothesis": "H5: An anti-entropy merge protocol for chunk boundaries (each worker emits prefix/suffix fragments, coordinator concatenates) enables fully asynchronous chunk parsing with <1% overhead for merge, and allows chunks to complete in any order without global synchronization barriers."
+    },
+    {
+      "domain": "Network protocol speculative identification and rollback",
+      "technique": "Network intrusion detection systems and protocol analyzers (Suricata, Zeek) must parse packet streams where protocol boundaries are ambiguous (multiplexed connections, tunneled protocols). They use speculative identification: tentatively parse bytes as protocol X, accumulate a confidence score, and rollback to try protocol Y if the score drops below a threshold. The rollback is cheap because the parser maintains a lightweight checkpoint (offset + state) rather than copying data.",
+      "csv_mapping": "CSV files sometimes contain embedded metadata, comment lines (# prefixed), or mixed delimiters (tabs in a supposedly comma-delimited file). A speculative parser can tentatively apply the expected delimiter, track a 'schema confidence' score (does the field count match the header?), and switch delimiters or skip non-data lines when confidence drops. This transfers the protocol-dissector confidence scoring model to delimiter and schema identification.",
+      "hypothesis": "H6: A confidence-scored speculative delimiter detector (tracking field-count consistency over a sliding window of 8 rows) can auto-detect delimiter changes or embedded non-CSV sections with <0.5% throughput penalty, eliminating the need for a separate pre-scan dialect detection pass."
+    }
+  ],
+  "hypotheses": [
+    "H4: Optimistic chunk-boundary parsing with post-hoc validation reduces end-to-end latency by 20-40% vs. pessimistic pre-scan on files >1GB.",
+    "H5: Anti-entropy merge protocol for chunk boundaries enables fully async parsing with <1% merge overhead and no global barrier.",
+    "H6: Confidence-scored speculative delimiter detection auto-identifies delimiter changes with <0.5% throughput penalty."
+  ],
+  "adjacency": [
+    "speculative_row_length_prediction",
+    "two_phase_parsing_architecture",
+    "parallel_bit_stream_structural_indexing",
+    "adaptive_chunk_sizing",
+    "zero_copy_field_extraction",
+    "speculative_execution_transfer"
+  ],
+  "mathematical_formalization": "Let N = num chunks, R = total rows, P(boundary_conflict) = avg_row_len / chunk_size. Expected conflicts: E[C] = N - 1. Cost_optimistic = N * (chunk_size / throughput_simd) + E[C] * C_merge. Cost_pessimistic = file_size / throughput_prescan + N * (chunk_size / throughput_simd). Optimistic wins when C_merge * (N-1) < file_size / throughput_prescan, which holds for all practical parameters since C_merge ~ 200 bytes vs prescan ~ gigabytes.",
+  "experiment_seed": "Implement optimistic parallel chunk parser with 2, 4, 8, 16 threads. Measure: (1) fraction of chunks with boundary conflicts, (2) merge overhead in ns, (3) end-to-end throughput vs. pessimistic pre-scan approach. Test on files from 100MB to 10GB with varying row lengths."
+}
