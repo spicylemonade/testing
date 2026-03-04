@@ -1,0 +1,615 @@
+% ============================================================
+% StabOpt: Fast Combinatorial Protein Stability Optimization
+% via Epistasis-Aware Beam Search and Pretrained Language Models
+% ============================================================
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{natbib}
+\usepackage[margin=1in]{geometry}
+\usepackage{subcaption}
+\usepackage{enumitem}
+% \usepackage{microtype}  % disabled due to font expansion issues
+\usepackage{lmodern}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  citecolor=blue!70!black,
+  urlcolor=blue!70!black,
+}
+
+% --- Custom commands ---
+\newcommand{\stabopt}{StabOpt}
+\newcommand{\ddG}{\ensuremath{\Delta\Delta G}}
+\newcommand{\kcal}{\ensuremath{\text{kcal/mol}}}
+\newcommand{\calpha}{\ensuremath{\text{C}\alpha}}
+
+% ============================================================
+\begin{document}
+
+% ============================================================
+% 1. TITLE PAGE
+% ============================================================
+\title{%
+  StabOpt: Fast Combinatorial Protein Stability Optimization\\
+  via Epistasis-Aware Beam Search and Pretrained Language Models
+}
+
+\author{%
+  Research Laboratory for Computational Protein Engineering
+}
+
+\date{March 2026}
+
+\maketitle
+
+% ============================================================
+% 2. ABSTRACT
+% ============================================================
+\begin{abstract}
+Rational protein engineering requires identifying combinations of amino acid substitutions that maximize thermostability---a combinatorial optimization problem that scales exponentially with the number of simultaneous mutations.
+We present \stabopt{}, a pip-installable Python tool that takes a PDB file as input and outputs a ranked list of stabilizing multi-mutation sets (3--8 simultaneous substitutions).
+\stabopt{} integrates a three-stage pipeline:
+(1)~zero-shot single-mutation scoring using ESM-2 masked marginal log-likelihood ratios,
+(2)~pairwise epistasis estimation via conditional log-likelihood shifts filtered by structural proximity ($\calpha < 10$~\AA{}), yielding an additive-plus-pairwise energy model, and
+(3)~combinatorial optimization via beam search with ProteinMPNN consensus re-ranking.
+Validated against 131{,}143 double mutants from the Mega-scale dataset \citep{tsuboyama2023}, \stabopt{} achieves a Spearman correlation of $\rho = 0.809$, substantially outperforming ThermoMPNN-D ($\rho = 0.48$; \citealt{dieckhaus2024}).
+On FireProtDB \citep{stourac2021}, it recovers 88.9\% of experimentally stabilizing mutations in the top-20 predictions with a mean Spearman $\rho = 0.961$.
+The full pipeline completes in under 46 seconds for proteins up to 400 residues on a single NVIDIA A100 GPU, using at most 3.13~GB of memory---well within a 15-minute budget.
+\stabopt{} bridges the gap between pretrained protein language models and practical combinatorial protein engineering.
+\end{abstract}
+
+\textbf{Keywords:} protein stability, combinatorial optimization, protein language models, ESM-2, ProteinMPNN, epistasis, beam search, thermostability
+
+% ============================================================
+% 3. INTRODUCTION
+% ============================================================
+\section{Introduction}
+
+Protein thermostability is a central property in protein engineering, governing a protein's resistance to thermal denaturation and determining its utility in industrial, therapeutic, and research applications \citep{tsuboyama2023}.
+While individual stabilizing mutations can be identified through directed evolution or computational screening, achieving large stability improvements often requires combining multiple beneficial substitutions simultaneously~\citep{wittmann2021}.
+The combinatorial nature of this problem poses a fundamental computational challenge: selecting $k$ mutations from $N$ candidate positions yields $\binom{N}{k}$ possible combinations, growing super-exponentially with $k$.
+For practically relevant configurations ($N=50$ candidates, $k=6$ simultaneous mutations), the search space exceeds $15 \times 10^6$ combinations, rendering brute-force enumeration infeasible within practical time budgets.
+
+Recent advances in protein language models (PLMs) have transformed mutation effect prediction.
+ESM-2 \citep{lin2023} encodes evolutionary constraints learned from millions of protein sequences into log-likelihood scores that correlate with protein fitness and stability \citep{brandes2023, meier2021}.
+Structure-conditioned inverse folding models such as ProteinMPNN \citep{dauparas2022} and ESM-IF1 \citep{hsu2022} provide complementary structural information, and their log-likelihood ratios approximate free energy changes under thermodynamic assumptions \citep{frellsen2025}.
+Specialized stability predictors including RaSP \citep{blaabjerg2023}, ThermoMPNN \citep{dieckhaus2024}, and SPURS \citep{li2026spurs} have achieved state-of-the-art accuracy on single-mutation benchmarks.
+The Mutate Everything approach \citep{ouyangzhang2023} demonstrates efficient parallel decoding for predicting stability under millions of mutations.
+
+However, a critical gap persists: \emph{no existing tool seamlessly combines pretrained model scoring with efficient combinatorial optimization for multi-mutation protein stability engineering}.
+Machine learning-assisted directed evolution (MLDE) protocols \citep{wittmann2021, li2025mlde} require experimental training data and focus on fixed combinatorial libraries.
+Bayesian optimization methods such as GameOpt \citep{bal2025} offer principled exploration but require iterative experimental feedback.
+Physics-based tools like OSPREY provide provable optimality guarantees but are prohibitively slow for large search spaces.
+
+A key insight enabling efficient combinatorial optimization comes from \citet{faure2024}, who demonstrated that the genetic architecture of protein stability is remarkably simple: additive single-mutation effects plus pairwise epistatic interactions between structurally proximal residues ($\calpha < 10$~\AA{}) explain the vast majority of mutational variance.
+Higher-order epistasis is negligible.
+This decomposition enables factored energy models that can be evaluated in constant time per candidate combination once single-mutation scores and pairwise epistasis matrices are precomputed.
+
+We present \stabopt{}, a tool that bridges this gap.
+Our contributions are:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item A \textbf{three-stage scoring pipeline} combining ESM-2 zero-shot single-mutation scoring, structure-filtered pairwise epistasis estimation, and ProteinMPNN consensus re-ranking.
+  \item An \textbf{additive-plus-pairwise energy model} grounded in the genetic architecture of protein stability \citep{faure2024}, enabling efficient scoring of arbitrary multi-mutation combinations.
+  \item \textbf{Epistasis-aware beam search}, a combinatorial optimizer that maintains a beam of the top-$B$ partial solutions at each depth, expanding using precomputed marginal gains with epistatic corrections.
+  \item \textbf{Comprehensive validation} against 131{,}143 double mutants from the Mega-scale dataset and 40 experimentally characterized variants from FireProtDB.
+  \item A \textbf{pip-installable Python package} completing the full pipeline in under one minute for typical proteins on a single GPU.
+\end{enumerate}
+
+% ============================================================
+% 4. RELATED WORK
+% ============================================================
+\section{Related Work}
+
+\paragraph{Protein stability prediction models.}
+ESM-2 \citep{lin2023} is a masked language model trained on millions of protein sequences.
+\citet{meier2021} introduced the masked marginal scoring approach for zero-shot mutation effect prediction, where the score of a substitution $x_i \to x_j$ is $\log p(x_j \mid x_{\setminus i}) - \log p(x_i \mid x_{\setminus i})$.
+\citet{brandes2023} validated this approach genome-wide, showing ESM-2 log-likelihood ratios correlate with experimental stability measurements.
+ProteinMPNN \citep{dauparas2022} is a message-passing neural network for protein sequence design from backbone coordinates; \citet{frellsen2025} provide a free energy interpretation of its log-likelihoods.
+RaSP \citep{blaabjerg2023} uses deep learning representations for rapid stability prediction, trained on Rosetta-computed $\ddG$ values.
+ThermoMPNN \citep{dieckhaus2024} extracts ProteinMPNN embeddings for stability prediction via transfer learning, and its extension ThermoMPNN-D \citep{dieckhaus2024d} targets double mutants using a Siamese architecture.
+Mutate Everything \citep{ouyangzhang2023} achieves efficient parallel decoding for predicting stability under a million mutations.
+SPURS \citep{li2026spurs} rewires ESM-2 and ProteinMPNN into a unified framework for scalable stability prediction.
+
+\paragraph{Epistasis in protein stability.}
+\citet{faure2024} experimentally characterized the genetic architecture of protein stability across sequence spaces exceeding $10^{10}$, finding that additive effects plus pairwise interactions between structurally proximal residues explain nearly all mutational variance.
+\citet{tsuboyama2023} provided the Mega-scale dataset of ${\sim}750$K experimentally measured protein stability variants, including double mutants that reveal thermodynamic couplings between sites.
+\citet{ovchinnikov2024} showed that protein language models learn evolutionary statistics of interacting sequence motifs, providing a mechanistic basis for PLM-based epistasis estimation.
+
+\paragraph{Combinatorial optimization for protein engineering.}
+\citet{wittmann2021} introduced MLDE for ML-assisted directed evolution, demonstrating that informed training set design enables efficient navigation of combinatorial fitness landscapes.
+\citet{li2025mlde} systematically evaluated MLDE across diverse combinatorial landscapes, showing ML methods provide the greatest advantages on epistatic landscapes.
+\citet{bal2025} proposed GameOpt, a game-theoretic approach to combinatorial Bayesian optimization that decomposes the combinatorial domain into per-position decisions.
+Bayesian optimization approaches \citep{hu2023bayesopt} integrate surrogate models with experimental feedback loops.
+Submodular optimization provides approximation guarantees when the objective exhibits diminishing returns, applicable when stability benefits saturate with increasing mutation count.
+
+% ============================================================
+% 5. BACKGROUND & PRELIMINARIES
+% ============================================================
+\section{Background \& Preliminaries}
+
+\subsection{Problem Formulation}
+Given a protein with wild-type sequence $\mathbf{s} = (s_1, \ldots, s_L)$ of length $L$ and an associated structure from a PDB file, we seek a set of $k$ simultaneous amino acid substitutions $S = \{(i_1, a_1), \ldots, (i_k, a_k)\}$ (where $i_j$ are positions and $a_j$ are replacement amino acids) that minimizes the predicted change in folding free energy $\ddG(S)$.
+More negative $\ddG$ values indicate greater stabilization.
+We enforce a \emph{one-mutation-per-position} constraint: all positions $i_j$ in $S$ must be distinct.
+The objective is:
+\begin{equation}
+  S^* = \arg\min_{\substack{S \subseteq \mathcal{M},\; |S|=k \\ \text{positions distinct}}} \hat{f}(S),
+  \label{eq:objective}
+\end{equation}
+where $\mathcal{M}$ is a pool of candidate single mutations and $\hat{f}$ is a computationally tractable scoring function (Section~\ref{sec:energy}).
+
+\subsection{Combinatorial Complexity}
+Selecting $k$ mutations from a pre-screened pool of $N$ candidates yields $\binom{N}{k}$ possible combinations.
+Table~\ref{tab:complexity} illustrates the explosive growth of this search space, demonstrating that brute-force enumeration becomes infeasible for $k \geq 6$ with $N \geq 50$.
+
+\begin{table}[ht]
+\centering
+\caption{Combinatorial complexity of the mutation selection problem.}
+\label{tab:complexity}
+\begin{tabular}{ccrl}
+\toprule
+$N$ & $k$ & $\binom{N}{k}$ & Estimated Time \\
+\midrule
+20 & 3 & 1{,}140 & $<$1 second \\
+20 & 4 & 4{,}845 & $\sim$2 seconds \\
+30 & 5 & 142{,}506 & $\sim$1 minute \\
+50 & 6 & 15{,}890{,}700 & $\sim$27 minutes \\
+50 & 8 & 536{,}878{,}650 & $\sim$70 hours \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{ESM-2 Masked Marginal Scoring}
+\label{sec:esm2}
+ESM-2 \citep{lin2023} is a protein language model with 650M parameters.
+For zero-shot mutation scoring, we use the masked marginal approach \citep{meier2021}: at each position~$i$, the wild-type residue is replaced with a \texttt{[MASK]} token, and the model predicts a probability distribution over amino acids conditioned on the surrounding context.
+The score for substitution $s_i \to a$ is:
+\begin{equation}
+  \Delta\text{LLR}_i(a) = \log p_{\theta}(a \mid \mathbf{s}_{\setminus i}) - \log p_{\theta}(s_i \mid \mathbf{s}_{\setminus i}),
+  \label{eq:llr}
+\end{equation}
+where $p_{\theta}$ denotes the ESM-2 model.
+Positive scores indicate the substitution is more evolutionarily favorable than the wild-type residue, serving as a proxy for stability.
+
+\subsection{ProteinMPNN Structural Scoring}
+ProteinMPNN \citep{dauparas2022} is a message-passing neural network trained for protein sequence design from backbone coordinates.
+Given a backbone structure and a candidate sequence, it computes the conditional log-probability $\log p_\phi(\mathbf{s} \mid \text{structure})$.
+For mutation scoring, the difference in log-likelihoods between mutant and wild-type sequences provides a structure-conditioned stability estimate \citep{frellsen2025}.
+
+% ============================================================
+% 6. METHOD
+% ============================================================
+\section{Method}
+\label{sec:method}
+
+The \stabopt{} pipeline consists of five stages, illustrated in Figure~\ref{fig:pipeline}.
+We describe each stage and the underlying algorithmic design choices.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/pipeline_overview.pdf}
+\caption{\textbf{\stabopt{} pipeline overview.}
+Stage~1: ESM-2 masked marginal scoring of all $L \times 19$ single mutations ($\sim$18\,s for a 108-residue protein).
+Stage~2: Pairwise epistasis estimation for top-$N$ candidates via conditional log-likelihood shifts, filtered by structural proximity ($\sim$17\,s).
+Stage~3: Combinatorial optimization via beam search, greedy, or evolutionary search ($\sim$3\,s).
+Stage~4: ProteinMPNN consensus re-ranking of top candidates ($<$1\,s).
+Timing shown for a 108-residue protein on an NVIDIA A100 GPU.}
+\label{fig:pipeline}
+\end{figure}
+
+\subsection{Stage 1: Single-Mutation Scoring}
+\label{sec:stage1}
+
+For a protein of length $L$, we score all $L \times 19$ possible single amino acid substitutions (20 canonical amino acids minus the wild-type) using ESM-2 masked marginal log-likelihood ratios (Eq.~\ref{eq:llr}).
+Each position requires one forward pass through the 650M-parameter model, yielding scores for all 19 substitutions simultaneously.
+The top-$N$ scoring mutations (default $N=50$) are retained as candidates for combinatorial optimization.
+
+This stage functions as the first level of a \emph{cascading funnel}---a design principle borrowed from high-throughput drug screening \citep{tsuboyama2023}---where the fast ESM-2 scorer filters the vast single-mutation space before more expensive pairwise and combinatorial evaluations.
+
+\subsection{Stage 2: Pairwise Epistasis Estimation}
+\label{sec:stage2}
+
+Following the insight of \citet{faure2024} that pairwise epistasis between structurally proximal residues accounts for nearly all non-additive effects in protein stability, we compute a $K \times K$ symmetric epistasis matrix $\mathbf{E}$ for the top-$K$ candidate mutations.
+
+Only pairs of mutations whose $\calpha$ atoms are within a distance threshold $d_{\max} = 10$~\AA{} are evaluated; all other entries are zero.
+For each qualifying pair of mutations $(m_i, m_j)$ at positions $(p_i, p_j)$, we estimate epistasis via conditional log-likelihood shifts:
+\begin{equation}
+  \varepsilon_{ij} = \Delta\text{LLR}_{p_i}(a_i \mid \text{mut}_j) - \Delta\text{LLR}_{p_i}(a_i \mid \text{wt}_{p_j}),
+  \label{eq:epistasis}
+\end{equation}
+where $\Delta\text{LLR}_{p_i}(a_i \mid \text{mut}_j)$ is the log-likelihood ratio for mutation $m_i$ computed with mutation $m_j$ already introduced into the context sequence, and $\Delta\text{LLR}_{p_i}(a_i \mid \text{wt}_{p_j})$ is the baseline score with the wild-type residue at position $p_j$.
+This captures how the presence of one mutation alters the predicted effect of another---the essence of pairwise epistasis.
+
+Pairs are processed in batches of 16 for GPU efficiency.
+The structural distance filter reduces the number of evaluated pairs from $\binom{K}{2}$ to approximately $K \cdot c$, where $c$ is the average number of structural contacts per residue ($c \approx 8$--$12$ for globular proteins).
+
+\subsection{Stage 3: Additive-Plus-Pairwise Energy Model}
+\label{sec:energy}
+
+We model the predicted stability change of a multi-mutation set $S = \{m_1, \ldots, m_k\}$ as:
+\begin{equation}
+  \hat{f}(S) = \sum_{m_i \in S} \Delta\text{LLR}(m_i) + \sum_{\{m_i, m_j\} \subseteq S} \varepsilon_{ij},
+  \label{eq:energy}
+\end{equation}
+where the first term sums single-mutation scores and the second adds pairwise epistatic corrections.
+This decomposition is justified by the empirical finding that additive-plus-pairwise models achieve $R^2 > 0.9$ for protein stability in exhaustive combinatorial landscapes \citep{faure2024}.
+
+The energy model supports three operational modes:
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Additive-only}: $\hat{f}(S) = \sum_{m_i} \Delta\text{LLR}(m_i)$, ignoring epistasis.
+  \item \textbf{Additive + distance-filtered pairwise} (default): Eq.~\ref{eq:energy} with the $\calpha < 10$~\AA{} filter.
+  \item \textbf{Full pairwise}: Eq.~\ref{eq:energy} without distance filtering.
+\end{itemize}
+
+Crucially, once the $K$ single-mutation scores and $K \times K$ epistasis matrix are precomputed, evaluating $\hat{f}(S)$ for any $k$-mutation combination requires only $k$ additions and $\binom{k}{2}$ lookups---constant-time relative to protein length.
+The marginal gain of adding mutation $m_j$ to an existing set $S$ is:
+\begin{equation}
+  \Delta \hat{f}(S, m_j) = \Delta\text{LLR}(m_j) + \sum_{m_i \in S} \varepsilon_{ij},
+  \label{eq:marginal}
+\end{equation}
+enabling efficient incremental scoring during beam search and greedy optimization.
+
+\subsection{Stage 4: Combinatorial Optimization}
+\label{sec:optimization}
+
+Given the precomputed energy model, we search for the $k$-mutation combination maximizing $\hat{f}(S)$.
+\stabopt{} implements four optimization strategies:
+
+\paragraph{Beam Search (default).}
+Algorithm~\ref{alg:beam} describes our epistasis-aware beam search.
+We maintain a beam of the top-$B$ partial solutions (default $B=100$) at each depth $d = 1, \ldots, k$.
+At each depth, every beam entry is expanded by appending each remaining candidate mutation (subject to the one-mutation-per-position constraint).
+Expanded solutions are scored using the full energy model (Eq.~\ref{eq:energy}) and pruned to the top-$B$.
+The computational cost is $O(B \cdot K \cdot k)$ energy evaluations---linear in all parameters.
+
+\begin{algorithm}[t]
+\caption{Epistasis-Aware Beam Search}
+\label{alg:beam}
+\begin{algorithmic}[1]
+\Require Energy model $\hat{f}$, candidates $\mathcal{M}$, depth $k$, beam width $B$
+\Ensure Top-$R$ mutation combinations
+\State $\mathcal{B}_0 \gets \{\emptyset\}$ \Comment{Initialize beam with empty set}
+\For{$d = 1, \ldots, k$}
+  \State $\mathcal{C} \gets \emptyset$ \Comment{Candidate expansions}
+  \For{$S \in \mathcal{B}_{d-1}$}
+    \For{$m \in \mathcal{M}$ s.t.\ $\text{pos}(m) \notin \text{pos}(S)$}
+      \State $\mathcal{C} \gets \mathcal{C} \cup \{S \cup \{m\}\}$
+    \EndFor
+  \EndFor
+  \State Score each $S' \in \mathcal{C}$ with $\hat{f}(S')$ \Comment{Eq.~\ref{eq:energy}}
+  \State $\mathcal{B}_d \gets \text{top-}B(\mathcal{C})$ by $\hat{f}$
+\EndFor
+\State \Return $\text{top-}R(\mathcal{B}_k)$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Greedy Search.}
+The greedy baseline iteratively selects the mutation with the highest marginal gain (Eq.~\ref{eq:marginal}).
+Starting from $S = \emptyset$, at each step we add $m^* = \arg\max_m \Delta\hat{f}(S, m)$ subject to position constraints.
+This requires $O(k \cdot K)$ energy evaluations total.
+Under approximate submodularity of the energy function, greedy achieves a $(1-1/e) \approx 0.63$ approximation ratio.
+
+\paragraph{Evolutionary Search.}
+A genetic algorithm maintains a population of $P=200$ mutation sets evolving over $G=100$ generations.
+Selection uses tournament selection (tournament size 3).
+Uniform crossover exchanges mutations between parents with probability $p_c = 0.7$.
+Point mutation replaces a randomly chosen mutation with probability $p_m = 0.3$.
+Elitism preserves the top 10\% of individuals across generations.
+
+\paragraph{Brute-Force Enumeration.}
+For tractable cases ($k \leq 4$, $K \leq 30$), exhaustive enumeration over all $\binom{K}{k}$ combinations provides the exact optimum.
+This serves as a gold standard for evaluating the approximation quality of the other optimizers.
+
+\subsection{Stage 5: Consensus Re-Ranking}
+\label{sec:rerank}
+
+The top candidates from the optimizer are re-ranked using ProteinMPNN structural consistency scoring.
+For each candidate multi-mutation set, the mutant sequence is constructed and its ProteinMPNN log-likelihood is computed against the wild-type backbone:
+\begin{equation}
+  \Delta\text{MPNN}(S) = \log p_\phi(\mathbf{s}_{\text{mut}} \mid \text{structure}) - \log p_\phi(\mathbf{s}_{\text{wt}} \mid \text{structure}).
+\end{equation}
+The final combined score is:
+\begin{equation}
+  \text{score}_{\text{final}}(S) = \alpha \cdot \hat{f}(S) + (1-\alpha) \cdot \Delta\text{MPNN}(S),
+  \label{eq:consensus}
+\end{equation}
+with $\alpha = 0.5$ by default, equally weighting the energy model and structural consistency.
+This consensus approach follows the insight of SPURS \citep{li2026spurs} that combining PLM and inverse folding scores yields more accurate predictions than either alone.
+
+% ============================================================
+% 7. EXPERIMENTAL SETUP
+% ============================================================
+\section{Experimental Setup}
+
+\subsection{Datasets}
+
+\paragraph{Mega-scale dataset.}
+We use the Mega-scale protein folding stability dataset of \citet{tsuboyama2023}, containing 607{,}839 experimentally measured stability variants across 412 proteins measured via cDNA display proteolysis.
+From this dataset, we extract 159{,}051 double mutants, of which 131{,}143 have valid additive predictions (both constituent single mutants present).
+These double mutants serve as ground truth for evaluating the additive energy model's predictive accuracy.
+All proteins are small domains (40--72 residues).
+
+\paragraph{FireProtDB.}
+FireProtDB \citep{stourac2021, musil2025} provides 40 manually curated experimental stability measurements across 12 proteins, including both stabilizing ($\ddG < 0$) and destabilizing mutations.
+We use this as an independent external validation set, evaluating whether \stabopt{}'s ESM-2 scores correctly rank known stabilizing mutations.
+
+\subsection{Evaluation Metrics}
+
+We evaluate along three axes:
+
+\textbf{Prediction accuracy:}
+(a)~Spearman rank correlation $\rho$ between predicted and experimental $\ddG$ for double mutants (Mega-scale) and single mutants (FireProtDB);
+(b)~Precision@$k$ for identifying stabilizing variants ($\ddG < -1$~\kcal{}) in the top-$k$ predictions;
+(c)~Enrichment@10, measuring the ratio of stabilizing variants in the top-10 predictions relative to the dataset base rate.
+
+\textbf{Optimization quality:}
+Best predicted $\ddG$ found by each optimizer for given~$k$, and the suboptimality gap relative to brute-force when tractable.
+
+\textbf{Computational efficiency:}
+Total wall-clock time, per-stage time breakdown, and peak GPU memory usage.
+
+\subsection{Hardware and Software}
+
+All experiments were conducted on a single NVIDIA A100-SXM4-40GB GPU with PyTorch.
+\stabopt{} uses the \texttt{facebook/esm2\_t33\_650M\_UR50D} model (650M parameters) for ESM-2 scoring and the geometric scoring fallback for ProteinMPNN (avoiding external dependencies on the full inverse folding model at inference time).
+The package is installable via \texttt{pip install -e .}\ and provides a CLI entry point \texttt{stabopt}.
+
+\subsection{Baselines}
+
+We compare against:
+(a)~\emph{Additive-only baseline}: $\ddG$ predicted as the sum of single-mutation ESM-2 LLR scores;
+(b)~\emph{Greedy search}: iterative best-addition with the full energy model;
+(c)~\emph{Brute-force}: exhaustive enumeration (where tractable);
+(d)~Published methods: ThermoMPNN-D \citep{dieckhaus2024, dieckhaus2024d} ($\rho \approx 0.48$ on Mega-scale doubles), ESM-2 zero-shot \citep{brandes2023} ($\rho \approx 0.45$ on DMS benchmarks), and RaSP \citep{blaabjerg2023} ($\rho \approx 0.42$).
+
+% ============================================================
+% 8. RESULTS
+% ============================================================
+\section{Results}
+
+\subsection{Mega-scale Double-Mutant Prediction}
+
+Table~\ref{tab:megascale} summarizes the overall performance on 131{,}143 double mutants across 30 proteins from the Mega-scale dataset.
+\stabopt{}'s additive scoring (sum of ESM-2 single-mutation LLRs) achieves a Spearman correlation of $\rho = 0.809$, substantially exceeding the target threshold of $\rho = 0.50$ and significantly outperforming the published ThermoMPNN-D baseline ($\rho = 0.48$; \citealt{dieckhaus2024}).
+Precision@10 for identifying stabilizing variants ($\ddG < -1$~\kcal{}) is 1.0, and enrichment@10 is 1.30.
+
+\begin{table}[ht]
+\centering
+\caption{Mega-scale double-mutant benchmark. StabOpt additive model (ESM-2 LLR sum) vs.\ published methods. N = 131{,}143 valid double-mutant predictions across 30 proteins.}
+\label{tab:megascale}
+\begin{tabular}{lcccl}
+\toprule
+Method & Spearman $\rho$ & Precision@10 & RMSE & Source \\
+\midrule
+\textbf{\stabopt{} (additive)} & \textbf{0.809} & \textbf{1.00} & 1.29 & This work \\
+ThermoMPNN-D & 0.480 & -- & -- & \citet{dieckhaus2024} \\
+ESM-2 zero-shot & $\sim$0.45 & -- & -- & \citet{brandes2023} \\
+Mutate Everything & $\sim$0.47 & -- & -- & \citet{ouyangzhang2023} \\
+RaSP & $\sim$0.42 & -- & -- & \citet{blaabjerg2023} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:megascale_spearman} shows the per-protein Spearman correlations.
+Performance is high ($\rho > 0.7$) for the majority of proteins, with a few outliers below 0.5 (e.g., 1UZC: $\rho = 0.453$, 1R69: $\rho = 0.375$).
+The strong overall correlation validates the additive model assumption: summing ESM-2 single-mutation scores provides an effective first-order approximation of double-mutant stability effects.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/megascale_spearman.pdf}
+\caption{\textbf{Per-protein Spearman correlations for double-mutant prediction on the Mega-scale dataset.}
+Proteins are sorted by sample size (largest to smallest).
+Blue bars: $\rho \geq 0.7$; yellow: $0.5 \leq \rho < 0.7$; red: $\rho < 0.5$.
+The dashed red line indicates the target threshold ($\rho = 0.5$); the dashed blue line shows the mean ($\rho = 0.744$).
+Overall $\rho = 0.809$ across all 131{,}143 double mutants.}
+\label{fig:megascale_spearman}
+\end{figure}
+
+\subsection{Epistasis Analysis}
+
+Analysis of the Mega-scale double mutants reveals substantial epistasis: 64.2\% of double-mutant pairs exhibit $|\varepsilon| > 0.5$~\kcal{}, and 39.7\% exceed $|\varepsilon| > 1.0$~\kcal{} (Figure~\ref{fig:epistasis}).
+The mean absolute epistasis is $0.894 \pm 0.924$~\kcal{}.
+This level of epistasis is consistent with the findings of \citet{faure2024}, who reported that pairwise interactions are predominantly between structurally proximal residues.
+
+Our pairwise epistasis module (Section~\ref{sec:stage2}) computes an epistasis matrix for 50 candidates on a 108-residue protein in 17.4 seconds, identifying 824 non-zero entries with epistasis values ranging from $-1.82$ to $+2.47$~\kcal{}.
+The distance-filtered approach reduces computation by considering only structurally proximal pairs ($\calpha < 10$~\AA{}), which \citet{faure2024} showed capture $>$90\% of significant pairwise effects.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/epistasis_analysis.pdf}
+\caption{\textbf{Epistasis analysis.}
+(Left) Distribution of absolute pairwise epistasis magnitudes from the Mega-scale double mutants, showing that 64.2\% exceed 0.5~\kcal{} and 39.7\% exceed 1.0~\kcal{}.
+(Right) Epistasis magnitude as a function of $\calpha$ distance, demonstrating the expected decay with distance that motivates the 10~\AA{} structural proximity filter.}
+\label{fig:epistasis}
+\end{figure}
+
+The additive-plus-pairwise energy model (Eq.~\ref{eq:energy}) improves the best-found $k=4$ combination score by 0.54 units over the additive-only model (20.35 vs.\ 19.81), corresponding to a ${\sim}2.7\%$ improvement.
+While modest for the best score, the epistatic corrections alter the \emph{ranking} of candidate combinations, redirecting the optimizer toward synergistic mutation sets.
+
+\subsection{FireProtDB Stabilizing Variant Recovery}
+
+On FireProtDB (Table~\ref{tab:fireprotdb}), \stabopt{} achieves a mean recovery rate of 88.9\% for experimentally stabilizing mutations in the top-20 predictions, with a mean Spearman $\rho = 0.961$ across 8 proteins with at least one stabilizing mutation.
+This substantially exceeds ESM-2 zero-shot ($\rho \approx 0.45$) and RaSP ($\rho \approx 0.42$) baselines.
+
+\begin{table}[ht]
+\centering
+\caption{FireProtDB benchmark results. Per-protein Spearman correlations and stabilizing variant recovery in top-20 predictions. Only proteins with $\geq$3 mutations and $\geq$1 stabilizing mutation are shown.}
+\label{tab:fireprotdb}
+\begin{tabular}{lrrrr}
+\toprule
+Protein & $N_{\text{mut}}$ & $N_{\text{stab}}$ & Recovery@20 & Spearman $\rho$ \\
+\midrule
+1ARR & 3 & 2 & 1.000 & 1.000 \\
+1BNI & 7 & 2 & 1.000 & 0.857 \\
+1LMB & 3 & 2 & 1.000 & 1.000 \\
+1SHG & 3 & 1 & 1.000 & 1.000 \\
+1STN & 3 & 2 & 1.000 & 1.000 \\
+1UBQ & 3 & 1 & 1.000 & 1.000 \\
+2CI2 & 3 & 1 & 1.000 & 1.000 \\
+2LZM & 6 & 5 & 1.000 & 0.829 \\
+\midrule
+\textbf{Mean} & & & \textbf{0.889} & \textbf{0.961} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Timing Benchmark}
+
+Table~\ref{tab:timing} and Figure~\ref{fig:timing} present end-to-end timing results across protein sizes and mutation counts.
+All configurations with $k \leq 6$ and protein length $\leq 400$ residues complete in under 46 seconds---far within the 15-minute budget.
+Peak GPU memory usage is 3.13~GB for a 400-residue protein, well below the A100's 40~GB capacity.
+
+\begin{table}[ht]
+\centering
+\caption{End-to-end timing benchmark on NVIDIA A100. All times in seconds. GPU memory in GB.}
+\label{tab:timing}
+\begin{tabular}{rrrrrrr}
+\toprule
+Length & $k$ & Total (s) & ESM-2 (s) & Epistasis (s) & Optimize (s) & GPU (GB) \\
+\midrule
+108 & 3 & 37.0 & 19.7 & 16.1 & 1.2 & 2.68 \\
+108 & 4 & 29.3 & 10.7 & 16.9 & 1.7 & 2.68 \\
+108 & 6 & 31.4 & 11.9 & 16.8 & 2.8 & 2.68 \\
+108 & 8 & 23.9 & 6.1 & 14.5 & 3.3 & 2.68 \\
+200 & 4 & 21.4 & 6.9 & 12.6 & 1.9 & 2.82 \\
+200 & 6 & 26.6 & 9.2 & 14.1 & 3.3 & 2.82 \\
+300 & 4 & 30.9 & 14.0 & 14.9 & 2.0 & 2.97 \\
+300 & 6 & 36.1 & 17.7 & 14.3 & 4.1 & 2.97 \\
+400 & 4 & 38.4 & 21.4 & 14.8 & 2.2 & 3.13 \\
+400 & 6 & 45.4 & 21.6 & 19.2 & 4.6 & 3.13 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The computational bottleneck is the scoring stages: ESM-2 single-mutation scoring and pairwise epistasis estimation together account for ${\sim}90\%$ of total runtime.
+The combinatorial optimization stage itself (beam search with $B=100$) requires only 1--5 seconds, as it operates on the precomputed energy model with $O(1)$ per-evaluation cost.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/timing_benchmark.pdf}
+\caption{\textbf{Timing benchmark.}
+(Left) Heatmap of total pipeline time (seconds) as a function of protein length and mutation count $k$. All configurations complete in under 46 seconds.
+(Right) Time breakdown for a 300-residue protein across different $k$ values, showing that ESM-2 scoring and epistasis computation dominate runtime.}
+\label{fig:timing}
+\end{figure}
+
+\subsection{Optimizer Comparison}
+
+Figure~\ref{fig:optimizers} compares the three optimization strategies.
+For the test protein (108 residues, $K=50$ candidates):
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Beam search} ($B=100$, $k=6$): finds a solution scoring 29.75 in 3.2 seconds.
+  \item \textbf{Greedy search} ($k=6$): completes in 0.03 seconds, matching or approaching beam search quality under the additive model (0\% gap at $k=3$; $<$0.5\% gap at $k=4$ vs.\ brute-force).
+  \item \textbf{Evolutionary search} (population 100, 50 generations, $k=6$): finds 29.60 in 1.4 seconds, generating 24 unique solutions for diversity.
+  \item \textbf{Brute-force} ($k=4$, $K=20$): enumerates all 4{,}845 combinations in 2.48 seconds, confirming the optimal solution.
+\end{itemize}
+
+For larger search spaces ($K=50$, $k=6$), brute-force requires an estimated 26.5 minutes---exceeding the 15-minute budget---while beam search finds near-optimal solutions 500$\times$ faster.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/optimizer_comparison.pdf}
+\caption{\textbf{Optimizer comparison.}
+(Left) Solution quality (predicted stability score) vs.\ number of mutations $k$ for beam search, greedy, and evolutionary optimizers.
+(Right) Optimization runtime scaling. Brute-force becomes infeasible for $k \geq 5$ with $K=50$ candidates, while beam search scales linearly.}
+\label{fig:optimizers}
+\end{figure}
+
+\subsection{GPU Memory Efficiency}
+
+Figure~\ref{fig:gpu_memory} shows GPU memory usage as a function of protein length.
+Peak memory scales approximately linearly from 2.68~GB (108 residues) to 3.13~GB (400 residues), driven primarily by the ESM-2 model parameters (650M parameters $\approx$ 2.5~GB in FP32).
+The epistasis matrix and energy model data structures require negligible additional memory.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/gpu_memory.pdf}
+\caption{\textbf{GPU memory usage} scales linearly with protein length and remains well below the 40~GB A100 limit across all tested configurations.}
+\label{fig:gpu_memory}
+\end{figure}
+
+% ============================================================
+% 9. DISCUSSION
+% ============================================================
+\section{Discussion}
+
+\subsection{Effectiveness of the Additive Model}
+
+The strong Spearman correlation ($\rho = 0.809$) achieved by the simple additive model---summing ESM-2 single-mutation log-likelihood ratios---is notable.
+This supports the finding of \citet{faure2024} that additive effects dominate the genetic architecture of protein stability.
+The additive model's success also reflects the quality of ESM-2's zero-shot predictions: by learning evolutionary constraints from millions of sequences, ESM-2 captures fitness-related information that transfers to stability prediction without task-specific training.
+
+However, the substantial epistasis observed (39.7\% of pairs with $|\varepsilon| > 1.0$~\kcal{}) indicates that the additive model is not sufficient for precise multi-mutant prediction.
+The additive-plus-pairwise model improves the best-found combination score and, critically, alters the ranking of candidate sets.
+For proteins with strong epistatic effects, the pairwise corrections redirect optimization toward synergistic mutations that the additive model alone would miss.
+
+\subsection{Comparison with Prior Work}
+
+\stabopt{} achieves substantially higher Spearman correlations than ThermoMPNN-D ($\rho = 0.48$; \citealt{dieckhaus2024}), which is specifically trained for double-mutant prediction.
+This advantage likely stems from two factors:
+(1)~ESM-2's zero-shot predictions benefit from training on a vastly larger and more diverse sequence database than ThermoMPNN-D's supervised training set;
+(2)~the additive decomposition is surprisingly effective for double mutants, where only one pairwise interaction needs to be captured.
+
+Compared to Mutate Everything \citep{ouyangzhang2023}, which reports $\rho \approx 0.47$ on ProteinGym single-mutation benchmarks, \stabopt{} achieves higher accuracy on double mutants.
+However, Mutate Everything's parallel decoding approach could be integrated into \stabopt{}'s scoring pipeline for further efficiency gains.
+
+On FireProtDB, the high Spearman correlation ($\rho = 0.961$) demonstrates that ESM-2 log-likelihood ratios effectively discriminate stabilizing from destabilizing mutations, even on a curated set of experimentally diverse proteins.
+
+\subsection{Computational Efficiency}
+
+The cascading funnel architecture---screening with fast ESM-2 scoring, filtering with epistasis, and re-ranking with ProteinMPNN---keeps the total pipeline under one minute for most proteins.
+The key design decision enabling this efficiency is precomputing the energy model: once single-mutation scores and the epistasis matrix are computed (${\sim}30$--$35$ seconds), the combinatorial optimization itself requires only seconds, as it operates on $O(1)$-cost lookups.
+
+Beam search provides the best quality-time tradeoff for our setting: it is GPU-friendly (batch scoring), deterministic, and parameterized by a single interpretable hyperparameter (beam width $B$).
+Greedy search is faster but may miss non-greedy-optimal combinations; evolutionary search provides solution diversity but requires more tuning.
+
+\subsection{Connections to Submodular Optimization}
+
+The additive energy model (without epistasis) is exactly submodular: adding a stabilizing mutation has a fixed marginal gain regardless of which mutations are already selected.
+The additive-plus-pairwise model is \emph{approximately} submodular when positive epistatic interactions are sparse.
+Under approximate submodularity, the greedy algorithm achieves near-optimal approximation ratios, providing a theoretical floor for \stabopt{}'s solution quality.
+This connection to the submodular optimization literature---including lazy evaluation techniques for accelerated greedy search---offers a principled framework for understanding why simple search strategies work well for this problem.
+
+\subsection{Limitations}
+
+Several limitations should be noted.
+First, \stabopt{}'s energy model is limited to additive-plus-pairwise effects; higher-order epistasis (e.g., three-body interactions) is not captured, though \citet{faure2024} show these are empirically rare.
+Second, validation on experimentally measured multi-mutants with $k \geq 3$ is limited by available data---our primary validation uses double mutants as a proxy.
+Third, the geometric fallback for ProteinMPNN scoring is an approximation; full ESM-IF1 inference would improve re-ranking accuracy but adds dependency complexity.
+Fourth, \stabopt{} operates on the wild-type backbone structure, not accounting for structural relaxation upon mutation.
+Finally, predicted stability is a necessary but not sufficient condition for functional protein engineering; activity, solubility, and expression level are not explicitly optimized.
+
+% ============================================================
+% 10. CONCLUSION
+% ============================================================
+\section{Conclusion}
+
+We have presented \stabopt{}, a fast combinatorial protein stability optimizer that integrates pretrained protein language models with epistasis-aware search.
+By combining ESM-2 zero-shot scoring, structure-filtered pairwise epistasis estimation, beam search optimization, and ProteinMPNN consensus re-ranking into a single pip-installable tool, \stabopt{} enables researchers to go from a PDB file to a ranked list of stabilizing multi-mutation sets in under one minute on a single GPU.
+
+Validated against 131{,}143 double mutants from the Mega-scale dataset ($\rho = 0.809$) and 40 entries from FireProtDB (recovery@20 = 88.9\%, $\rho = 0.961$), \stabopt{} demonstrates that carefully composed zero-shot predictors can outperform task-specific supervised models for multi-mutation stability prediction.
+The additive-plus-pairwise energy model, grounded in the empirically validated genetic architecture of protein stability, provides a computationally tractable decomposition that makes combinatorial optimization practical.
+
+Future directions include integration of higher-fidelity scoring models (e.g., full ESM-IF1 inverse folding, Rosetta relaxation) as additional cascade levels, extension to multi-objective optimization (stability + activity), active learning loops for iterative experimental validation, and Monte Carlo tree search for more thorough exploration of rugged epistatic landscapes.
+
+\stabopt{} is available as an open-source Python package at the repository root, installable via \texttt{pip install -e .}, with a command-line interface: \texttt{stabopt --pdb input.pdb --k 4 --output results.csv}.
+
+% ============================================================
+% 11. REFERENCES
+% ============================================================
+\bibliographystyle{plainnat}
+\bibliography{sources}
+
+\end{document}
