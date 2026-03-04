@@ -1,0 +1,161 @@
+{
+  "id": "cross_domain_bridges",
+  "symbolic_name": "cross_domain_bridges",
+  "description": "Cross-domain techniques for breaking serial dependencies in variable-length decoding, with relevance ratings for DEFLATE decompression optimization.",
+  "generated_at": "2026-03-04T06:45:00Z",
+
+  "concept_cards_with_relevance": [
+    {
+      "name": "multi_stream_ilp_decode",
+      "source": "evolve",
+      "domains": ["computer_architecture", "compression", "pipeline_scheduling"],
+      "key_idea": "Interleave N independent Huffman bitstreams on a single core to exploit ILP. 3-6 streams fill idle execution slots during the 7-cycle decode latency.",
+      "relevance_to_deflate": 5,
+      "rationale": "Directly applicable. Giesen demonstrated this in Oodle at ~2.8 cycles/byte. The challenge for standard DEFLATE is creating virtual streams from a single bitstream."
+    },
+    {
+      "name": "speculative_sync_point",
+      "source": "evolve",
+      "domains": ["information_theory", "parallel_computing", "formal_languages"],
+      "key_idea": "Find sync points by probing N=max_code_length consecutive bit offsets simultaneously. Convergence guaranteed by Huffman prefix-free property.",
+      "relevance_to_deflate": 5,
+      "rationale": "Directly applicable. dougallj demonstrated this for DEFLATE. Enables multi-threaded or ILP-based parallel decode of a single DEFLATE stream."
+    },
+    {
+      "name": "convergence_set_fsm",
+      "source": "evolve",
+      "domains": ["automata_theory", "parallel_computing", "compression"],
+      "key_idea": "Model Huffman decoding as FSM; group states into convergence sets to reduce redundant computation in parallel execution.",
+      "relevance_to_deflate": 4,
+      "rationale": "Theoretically elegant and reduces overhead of parallel sync-point finding. Implementation complexity is high. rapidgzip and Weissenberger use simpler approaches."
+    },
+    {
+      "name": "simd_literal_scatter",
+      "source": "evolve",
+      "domains": ["SIMD_computing", "memory_subsystem", "compression"],
+      "key_idea": "Use AVX2 gather/scatter for parallel table lookups or SIMD-width literal copies.",
+      "relevance_to_deflate": 4,
+      "rationale": "SIMD copy for literals/matches is low-hanging fruit. VPGATHERDD for parallel table lookups is interesting but has high latency. Practical for copy operations."
+    },
+    {
+      "name": "precomputed_mega_table",
+      "source": "evolve",
+      "domains": ["data_structures", "caching", "compression"],
+      "key_idea": "Precompute wide lookup tables (12-16 bits) that decode 2-3 symbols per access, folding extra bits into entries.",
+      "relevance_to_deflate": 5,
+      "rationale": "Core optimization. libdeflate uses 11-bit, ISA-L uses 12-bit tables. This is the single most impactful known technique."
+    },
+    {
+      "name": "latency_hiding_overlap",
+      "source": "evolve",
+      "domains": ["computer_architecture", "pipeline_design"],
+      "key_idea": "Overlap refill, table lookup, and match copy operations to hide latency in the decode pipeline.",
+      "relevance_to_deflate": 5,
+      "rationale": "Proven by dougallj (zero-refill-latency) and libdeflate (preload next entry during match copy). Essential technique."
+    },
+    {
+      "name": "predictive_coding_residual",
+      "source": "evolve",
+      "domains": ["signal_processing", "machine_learning", "neuroscience"],
+      "key_idea": "Predict likely symbol lengths from code statistics; process prediction errors separately.",
+      "relevance_to_deflate": 3,
+      "rationale": "Interesting for speculative decode but adds complexity. The 'draft-and-verify' variant from LLM speculative decoding is more practical."
+    },
+    {
+      "name": "optimistic_concurrency_decode",
+      "source": "evolve",
+      "domains": ["database_systems", "parallel_computing"],
+      "key_idea": "Speculatively decode multiple segments, verify at end, rollback on conflict.",
+      "relevance_to_deflate": 4,
+      "rationale": "Directly applicable for multi-threaded decode. rapidgzip uses this pattern. The key question is: is the overhead of verification worth the parallelism?"
+    },
+    {
+      "name": "interleaved_entropy_streams",
+      "source": "evolve",
+      "domains": ["information_theory", "compression", "SIMD_computing"],
+      "key_idea": "Interleave multiple entropy-coded streams at the encoder level for decoder-side ILP.",
+      "relevance_to_deflate": 2,
+      "rationale": "Not compatible with standard DEFLATE format. Requires compressor cooperation. Only useful for new formats like GDeflate."
+    },
+    {
+      "name": "chunked_pipeline_decompress",
+      "source": "evolve",
+      "domains": ["streaming_systems", "pipeline_architecture"],
+      "key_idea": "Process decompression as a pipeline: bit-read stage -> decode stage -> output stage, with buffering between stages.",
+      "relevance_to_deflate": 3,
+      "rationale": "The two-pass architecture (Huffman-then-LZ77) is a variant of this. Worth exploring but adds memory overhead."
+    },
+    {
+      "name": "vlsi_carry_prefix_tree",
+      "source": "reframe",
+      "domains": ["VLSI_arithmetic", "parallel_prefix_computation"],
+      "key_idea": "Model cumulative bit positions as a parallel prefix sum using Kogge-Stone/Brent-Kung tree over FSM state transitions.",
+      "relevance_to_deflate": 4,
+      "rationale": "Theoretically sound (O(log n) depth). Practical for GPU (Weissenberger 2018). On CPU, the FSM state space is small enough (15 states) but the overhead of tree construction may exceed the serial decode time for small blocks."
+    },
+    {
+      "name": "speculative_execution_pipeline",
+      "source": "reframe",
+      "domains": ["CPU_microarchitecture", "speculative_execution"],
+      "key_idea": "Predict code lengths, decode speculatively, rollback on misprediction. Analogous to branch prediction in CPUs.",
+      "relevance_to_deflate": 4,
+      "rationale": "The most promising novel approach for CPU implementation. For DEFLATE where 7-9 bit codes dominate, prediction accuracy of 70-90% yields 2-3x effective speedup on the serial chain."
+    },
+    {
+      "name": "lattice_word_segmentation",
+      "source": "reframe",
+      "domains": ["computational_linguistics", "NLP"],
+      "key_idea": "Build a DAG of all possible symbol boundaries; find the correct path via parallel Viterbi.",
+      "relevance_to_deflate": 2,
+      "rationale": "Conceptually interesting but the DAG construction overhead is too high for streaming decompression. Better suited to offline analysis."
+    },
+    {
+      "name": "self_sync_cipher_convergence",
+      "source": "reframe",
+      "domains": ["cryptography", "self-synchronizing_codes"],
+      "key_idea": "Analyze convergence distance of Huffman codes to bound overlap needed for parallel decode segments.",
+      "relevance_to_deflate": 4,
+      "rationale": "Provides the theoretical foundation for bounding the cost of sync-point finding. Empirical analysis shows 20-40 bit convergence for typical DEFLATE tables."
+    },
+    {
+      "name": "fsm_prefix_scan",
+      "source": "reframe",
+      "domains": ["parallel_computing", "GPU", "automata_theory"],
+      "key_idea": "Pre-compute per-byte FSM transition tables; compose via parallel prefix scan. O(n/p + log n) decode.",
+      "relevance_to_deflate": 3,
+      "rationale": "Optimal for GPU implementation. On CPU, the per-byte transition table (15 entries * 256 bytes = 3840 entries) may cause cache pressure. Better for batch processing than streaming."
+    },
+    {
+      "name": "llm_speculative_draft_verify",
+      "source": "reframe",
+      "domains": ["LLM_inference", "speculative_decoding"],
+      "key_idea": "Fast draft decoder predicts K symbol boundaries; parallel verifier checks all K simultaneously.",
+      "relevance_to_deflate": 5,
+      "rationale": "Highly actionable for DEFLATE. The 'draft decoder' uses only the 2-3 most common code lengths (covering ~80-90% of symbols). Verification is a simple table lookup. Expected speedup 2-4x for literal-heavy data."
+    },
+    {
+      "name": "hft_wide_word_speculative_parse",
+      "source": "reframe",
+      "domains": ["HFT", "FPGA", "hardware_design"],
+      "key_idea": "Load wide chunks, try all possible symbol starts in parallel using SIMD, select correct result.",
+      "relevance_to_deflate": 3,
+      "rationale": "Feasible on FPGA/ASIC but on CPU the 15-way parallel lookup per symbol has diminishing returns. Could be useful for AVX-512 with 8+ lanes."
+    }
+  ],
+
+  "domain_coverage": {
+    "branch_prediction_speculative_execution": ["speculative_sync_point", "speculative_execution_pipeline", "llm_speculative_draft_verify"],
+    "parallel_prefix_sum": ["vlsi_carry_prefix_tree", "fsm_prefix_scan", "convergence_set_fsm"],
+    "error_correcting_codes_known_boundaries": ["self_sync_cipher_convergence", "genomic_seed_and_extend"],
+    "database_query_pipelining": ["optimistic_concurrency_decode", "chunked_pipeline_decompress"],
+    "signal_processing": ["predictive_coding_residual", "polyphonic_onset_detection"]
+  },
+
+  "top_5_by_relevance": [
+    {"name": "precomputed_mega_table", "score": 5},
+    {"name": "multi_stream_ilp_decode", "score": 5},
+    {"name": "speculative_sync_point", "score": 5},
+    {"name": "latency_hiding_overlap", "score": 5},
+    {"name": "llm_speculative_draft_verify", "score": 5}
+  ]
+}

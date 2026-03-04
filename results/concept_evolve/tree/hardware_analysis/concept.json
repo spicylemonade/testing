@@ -1,0 +1,142 @@
+{
+  "id": "hardware_analysis",
+  "symbolic_name": "hardware_analysis",
+  "description": "Analysis of modern x86-64 hardware capabilities and microarchitectural opportunities for DEFLATE decompression optimization.",
+  "generated_at": "2026-03-04T07:00:00Z",
+
+  "isa_extensions": {
+    "BMI1": {
+      "instructions": ["TZCNT", "LZCNT", "ANDN", "BEXTR", "BLSI", "BLSMSK", "BLSR"],
+      "availability": "Haswell (Intel 2013), Piledriver (AMD 2012)",
+      "relevance": "TZCNT and LZCNT useful for counting bits in decode operations. ANDN eliminates NOT+AND sequences."
+    },
+    "BMI2": {
+      "instructions": ["BZHI", "PDEP", "PEXT", "SHRX", "SHLX", "SARX", "MULX", "RORX"],
+      "availability": "Haswell (Intel 2013), Excavator (AMD 2015, slow until Zen 3)",
+      "relevance": "Critical for Huffman decode. BZHI extracts variable-width bitfields in 1 cycle. SHRX/SHLX avoid register pressure from cl-dependent shifts. PDEP/PEXT for bit manipulation.",
+      "caveat": "PDEP/PEXT are SLOW on AMD pre-Zen 3 (>15 cycles microcode-emulated vs 1 cycle on Intel). Must have fallback paths."
+    },
+    "AVX2": {
+      "instructions": ["VPGATHERDD", "VPERMD", "VPSHUFB", "256-bit integer ops"],
+      "availability": "Haswell (Intel 2013), Excavator/Zen (AMD 2017)",
+      "relevance": "256-bit copies for match/literal operations. VPGATHERDD can do 8 parallel table lookups but has high latency (~12 cycles on Skylake, ~21 on Zen 2). VPSHUFB for byte shuffling in overlapping match copies."
+    },
+    "AVX-512": {
+      "instructions": ["VPCOMPRESSD", "VPEXPANDD", "VPGATHERDD (512-bit)", "VPSCATTERDD", "VPOPCNTD"],
+      "availability": "Skylake-X (Intel 2017), Zen 4 (AMD 2022). Disabled on Alder Lake E-cores.",
+      "relevance": "512-bit copies, VPCOMPRESSD for conditional stores. Downclocking risk on some Intel SKUs reduces attractiveness. Zen 4 implements via 256-bit double-pump.",
+      "recommendation": "Use only for copy operations; avoid in hot decode loop due to frequency throttling risk."
+    },
+    "VPCLMULQDQ": {
+      "instructions": ["VPCLMULQDQ (256-bit carry-less multiply)"],
+      "availability": "Ice Lake (Intel 2019), Zen 3 (AMD 2020)",
+      "relevance": "Primarily for CRC32/Adler32 checksums, not Huffman decode. Can accelerate hash functions."
+    }
+  },
+
+  "instruction_latency_throughput": {
+    "description": "Key instruction timings for Huffman decode hot loop on modern microarchitectures",
+    "zen4_raphael": {
+      "mov_reg_mem_load": {"latency": 4, "throughput_per_cycle": 3, "note": "L1 hit"},
+      "table_lookup_32bit": {"latency": 5, "throughput_per_cycle": 2, "note": "load + dependent shift"},
+      "shr_reg_cl": {"latency": 1, "throughput_per_cycle": 2},
+      "shrx_reg_reg": {"latency": 1, "throughput_per_cycle": 2, "note": "BMI2, avoids cl"},
+      "bzhi_reg_reg": {"latency": 1, "throughput_per_cycle": 2, "note": "BMI2"},
+      "pdep_reg_reg": {"latency": 1, "throughput_per_cycle": 1, "note": "Fast on Zen 3+ (was >15c on Zen 1-2)"},
+      "pext_reg_reg": {"latency": 1, "throughput_per_cycle": 1, "note": "Fast on Zen 3+"},
+      "tzcnt_reg": {"latency": 2, "throughput_per_cycle": 1},
+      "or_reg_reg": {"latency": 1, "throughput_per_cycle": 4},
+      "branch_predicted": {"latency": 0, "throughput_per_cycle": 2, "note": "Correctly predicted"},
+      "branch_mispredicted": {"penalty_cycles": 13, "note": "Zen 4 pipeline depth"},
+      "vpgatherdd_ymm": {"latency": 21, "throughput_per_cycle": 0.2, "note": "8 parallel lookups but high latency"},
+      "movdqu_store_128": {"latency": 5, "throughput_per_cycle": 2},
+      "vmovdqu_store_256": {"latency": 5, "throughput_per_cycle": 1}
+    },
+    "alderlake_raptorlake_p_core": {
+      "mov_reg_mem_load": {"latency": 5, "throughput_per_cycle": 2, "note": "L1 hit"},
+      "table_lookup_32bit": {"latency": 6, "throughput_per_cycle": 2, "note": "load + dependent shift"},
+      "shr_reg_cl": {"latency": 1, "throughput_per_cycle": 2},
+      "shrx_reg_reg": {"latency": 1, "throughput_per_cycle": 2},
+      "bzhi_reg_reg": {"latency": 1, "throughput_per_cycle": 1},
+      "pdep_reg_reg": {"latency": 3, "throughput_per_cycle": 1},
+      "pext_reg_reg": {"latency": 3, "throughput_per_cycle": 1},
+      "tzcnt_reg": {"latency": 3, "throughput_per_cycle": 1},
+      "or_reg_reg": {"latency": 1, "throughput_per_cycle": 4},
+      "branch_predicted": {"latency": 0, "throughput_per_cycle": 2},
+      "branch_mispredicted": {"penalty_cycles": "14-20", "note": "Golden Cove has deeper pipeline"},
+      "vpgatherdd_ymm": {"latency": 12, "throughput_per_cycle": 0.3, "note": "Faster than Zen 4 for gather"},
+      "movdqu_store_128": {"latency": 5, "throughput_per_cycle": 2},
+      "vmovdqu_store_256": {"latency": 5, "throughput_per_cycle": 1}
+    }
+  },
+
+  "branch_misprediction_analysis": {
+    "cost_zen4": "13 cycles penalty per misprediction",
+    "cost_golden_cove": "14-20 cycles penalty per misprediction",
+    "huffman_decode_branches": [
+      {"name": "literal_vs_match_dispatch", "typical_misprediction_rate": "5-20%", "impact": "Major: occurs every symbol"},
+      {"name": "bit_buffer_refill_check", "typical_misprediction_rate": "0-5% with branchless refill", "impact": "Eliminated by libdeflate/dougallj approach"},
+      {"name": "end_of_block_check", "typical_misprediction_rate": "<1%", "impact": "Minor: rare event, well-predicted"},
+      {"name": "subtable_redirect", "typical_misprediction_rate": "1-5%", "impact": "Minor: longer codes are rare with 11+ bit primary table"},
+      {"name": "match_copy_overlap_check", "typical_misprediction_rate": "10-30%", "impact": "Moderate: distance < length is common for repetitive data"}
+    ],
+    "strategy": "Eliminate branches in the hot loop. Use branchless refill, conditional moves (CMOV) for dispatch where possible, and separate fast paths for literals (which are predictable). The literal/match dispatch is the hardest branch to eliminate because the two paths have very different behavior."
+  },
+
+  "cache_and_prefetch_considerations": {
+    "l1_data_cache": {
+      "zen4": "32 KB, 8-way, 64-byte lines, 4-cycle latency",
+      "golden_cove": "48 KB, 12-way, 64-byte lines, 5-cycle latency"
+    },
+    "decode_table_footprint": {
+      "libdeflate_litlen": "~9.4 KB (2342 * 4 bytes)",
+      "isal_litlen": "16 KB (4096 * 4 bytes)",
+      "isal_dist": "2 KB (1024 * 2 bytes)",
+      "total_typical": "12-20 KB",
+      "fits_in_l1": "Yes, comfortably. Even with 32KB output window, total working set is ~50 KB."
+    },
+    "output_window": {
+      "size": "32 KB sliding window (LZ77 constraint)",
+      "fits_in_l1": "Barely (32KB L1 on Zen, 48KB on Golden Cove). Recent match copies hit L1; distant copies may miss.",
+      "prefetch_strategy": "Not needed for typical access patterns. Sequential output writes are hardware-prefetched. Match copies within recent history (distance < 4KB) are reliably in L1."
+    },
+    "input_stream": {
+      "access_pattern": "Sequential reads, highly predictable. Hardware prefetcher handles this well.",
+      "prefetch_strategy": "No explicit prefetch needed. The branchless refill loads 8 bytes per refill, overlapping naturally with decode."
+    },
+    "cache_line_alignment": "Decode tables should be 64-byte aligned for optimal cache line utilization. Match copies should use aligned stores when possible (but unaligned is fast on modern x86)."
+  },
+
+  "specific_instruction_use_cases": {
+    "BZHI_for_bit_extraction": {
+      "instruction": "BZHI r64, r64, r64",
+      "use_case": "Extract variable-width bitfield from the bit buffer. After a table lookup returns the code length (N bits), BZHI extracts the low N bits of the next codeword in a single cycle.",
+      "example": "// Extract extra bits for length code\nextra_bits = _bzhi_u64(saved_bitbuf >> code_len, extra_bit_count);",
+      "benefit": "Replaces a shift + mask sequence (2 instructions, 2 cycles) with 1 instruction (1 cycle). In the hot loop executing billions of times, this saves ~10% of decode cycles.",
+      "fallback": "On non-BMI2: ((saved_bitbuf >> code_len) & ((1ULL << extra_bit_count) - 1))"
+    },
+    "PDEP_for_bit_scatter": {
+      "instruction": "PDEP r64, r64, r64",
+      "use_case": "Deposit bits from a compact source into scattered positions defined by a mask. Could be used to construct multi-symbol table entries during table build phase.",
+      "example": "// Pack (symbol, code_len, extra_bits) into a 32-bit table entry\nentry = _pdep_u64(symbol, 0xFF0000) | _pdep_u64(code_len, 0xF) | _pdep_u64(extra_count, 0xF00);",
+      "benefit": "Simplifies table entry construction. Not useful in the decode hot loop.",
+      "caveat": "SLOW on AMD pre-Zen3 (>15 cycles). Use only in table build phase where it's called once per block."
+    },
+    "TZCNT_for_zero_detection": {
+      "instruction": "TZCNT r64, r64",
+      "use_case": "Count trailing zeros to find the next set bit. Useful for detecting stored block boundaries (which are byte-aligned) or finding sync points in the bitstream.",
+      "example": "// Find next potential block header (byte-aligned position with BTYPE bits)\nzeros = _tzcnt_u64(candidate_mask);",
+      "benefit": "Single-cycle bit scanning replaces a loop. Useful for block-boundary detection in parallel decode strategies.",
+      "performance": "1 cycle latency on both Intel and AMD modern cores."
+    },
+    "SHRX_SHLX_for_shift_without_cl": {
+      "instruction": "SHRX r64, r64, r64 / SHLX r64, r64, r64",
+      "use_case": "Variable shift where the shift amount is in any register (not just cl). Critical in the decode hot loop where the shift amount comes from a table lookup, freeing cl for other uses.",
+      "example": "// Consume bits: shift bit buffer right by code_length\nbitbuf = _shrx_u64(bitbuf, code_length_reg);",
+      "benefit": "Eliminates MOV to cl + SHR sequence (saves 1 instruction, 1 cycle, and reduces register pressure). ISA-L's assembly uses this extensively.",
+      "fallback": "On non-BMI2: mov cl, code_length; shr rax, cl"
+    }
+  },
+
+  "citations": ["giesen2018readingbits", "giesen2022oodlehuffman", "intel2014isal"]
+}
