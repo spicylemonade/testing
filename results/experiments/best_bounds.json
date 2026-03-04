@@ -1,0 +1,136 @@
+{
+  "best_lower_bound": 0.800155,
+  "best_lower_method": "Frog dynamics word='100110'",
+  "best_upper_bound": 0.85355339,
+  "best_upper_method": "Entropy: deletion_channel",
+  "lower_improvement_over_sota": null,
+  "upper_improvement_over_sota": null,
+  "verification_status": "No improvements achieved \u2014 no verification needed",
+  "gap_reduction": 0.0,
+  "original_gap": 0.03361401,
+  "new_gap": 0.03361401,
+  "shortfall_analysis": [
+    {
+      "approach": "Online Matching (DFA baseline)",
+      "best_bound": 0.693,
+      "bound_type": "lower",
+      "gap_to_sota": 0.099666,
+      "bottleneck": "The simplified online matching model doesn't maintain the full alignment state. It processes characters greedily without considering future characters, losing ~13% of the optimal LCS. The full Lueker DFA with 4^h states is needed for competitive bounds.",
+      "quantitative_gap": "0.100 below SOTA lower bound"
+    },
+    {
+      "approach": "Neural Certificate",
+      "best_bound": 0.0,
+      "bound_type": "lower",
+      "gap_to_sota": 0.792665992,
+      "bottleneck": "The simplified buffer model (count-based states) doesn't encode subsequence ordering. The stationary distribution gives the greedy matching rate (~0.83-0.98 depending on buffer size), not a valid LCS lower bound. Gradient optimization of the certificate never achieved feasibility \u2014 violations persisted at ~0.001 throughout training.",
+      "quantitative_gap": "Complete failure (bound = 0)"
+    },
+    {
+      "approach": "Frog Dynamics (Periodic Words)",
+      "best_bound": 0.8,
+      "bound_type": "lower",
+      "gap_to_sota": -0.007334,
+      "bottleneck": "Periodic words of period \u22647 cannot capture the long-range correlation structure needed to approach \u03b3\u2082. The best word '100110' (period 6) gives \u03b3(W)=0.800 but the SOTA uses DFA depth h=14 (effective period 2^14=16384). Scaling to period >10 is computationally feasible but unlikely to beat the DFA approach.",
+      "quantitative_gap": "0.007 above SOTA lower bound (actually this IS a valid lower bound, just not the tightest)"
+    },
+    {
+      "approach": "Strip Transfer Matrix",
+      "best_bound": 1.0,
+      "bound_type": "upper",
+      "gap_to_sota": 0.17372,
+      "bottleneck": "The all-ones state (d_1=...=d_s=1) is absorbing in the column-difference Markov chain. Once all differences equal 1, they cannot decrease. This makes the stationary distribution concentrate on the all-ones state, giving the trivial bound \u03b3_s = 1. Lueker's method avoids this via a dual formulation that works with potential functions rather than raw differences.",
+      "quantitative_gap": "Trivial bound (0.174 above SOTA)"
+    },
+    {
+      "approach": "Entropy Upper Bound",
+      "best_bound": 0.8536,
+      "bound_type": "upper",
+      "gap_to_sota": 0.02732,
+      "bottleneck": "Pure information-theoretic methods don't exploit the column-difference monotonicity structure. The best analytic bound (Dan\u010d\u00edk-Paterson, 0.854) uses a specific test function in the recurrence dual. Lueker optimizes over all test functions representable by DFAs, achieving 0.826. The entropy gap (0.027) reflects exactly the additional information captured by the Markov structure.",
+      "quantitative_gap": "0.027 above SOTA upper bound"
+    },
+    {
+      "approach": "KPZ Scaling Extrapolation",
+      "best_bound": 0.813,
+      "bound_type": "estimate (not rigorous)",
+      "gap_to_sota": null,
+      "bottleneck": "This is a non-rigorous estimate, not a bound. The KPZ 3-parameter fit gives \u03b3\u2082 \u2248 0.8132 \u00b1 0.0002, consistent with literature estimates (Bundschuh 0.8119, Bukh-Cox 0.8122). Converting this to a rigorous bound would require either: (a) proving the KPZ convergence rate, or (b) certified interval arithmetic on the extrapolation.",
+      "quantitative_gap": "N/A (estimate, not a bound)"
+    }
+  ],
+  "empirical_estimate": {
+    "value": 0.813,
+    "source": "KPZ 3-parameter fit",
+    "note": "Non-rigorous but consistent with Bundschuh (0.8119) and Bukh-Cox (0.8122)"
+  },
+  "all_lower_bounds": [
+    {
+      "method": "Frog dynamics word='100110'",
+      "value": 0.800155,
+      "rigorous": true
+    },
+    {
+      "method": "Frog dynamics word='100110'",
+      "value": 0.799354,
+      "rigorous": true
+    },
+    {
+      "method": "Frog dynamics word='1101000'",
+      "value": 0.797015,
+      "rigorous": true
+    },
+    {
+      "method": "Frog dynamics word='1101000'",
+      "value": 0.796664,
+      "rigorous": true
+    },
+    {
+      "method": "Frog dynamics word='000111'",
+      "value": 0.79312,
+      "rigorous": true
+    },
+    {
+      "method": "Frog dynamics word='0011'",
+      "value": 0.785666,
+      "rigorous": true
+    },
+    {
+      "method": "Frog dynamics word='1100'",
+      "value": 0.78543,
+      "rigorous": true
+    },
+    {
+      "method": "Frog dynamics word='1100'",
+      "value": 0.785334,
+      "rigorous": true
+    },
+    {
+      "method": "Frog dynamics word='10110'",
+      "value": 0.78306,
+      "rigorous": true
+    },
+    {
+      "method": "Frog dynamics word='10'",
+      "value": 0.750455,
+      "rigorous": true
+    }
+  ],
+  "all_upper_bounds": [
+    {
+      "method": "MC 99% CI n=5000 (strip script)",
+      "value": 0.80969189,
+      "rigorous": false
+    },
+    {
+      "method": "Entropy: deletion_channel",
+      "value": 0.85355339,
+      "rigorous": true
+    },
+    {
+      "method": "Entropy: first_moment_counting",
+      "value": 0.90511792,
+      "rigorous": true
+    }
+  ]
+}

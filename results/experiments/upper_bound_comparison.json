@@ -1,0 +1,121 @@
+{
+  "description": "Systematic comparison of all upper bound approaches for \u03b3\u2082",
+  "sota_comparison": "Lueker 2009: \u03b3\u2082 \u2264 0.82628",
+  "approaches": [
+    {
+      "name": "Monte Carlo 95% CI Upper",
+      "method": "E[LCS(n,n)]/n + 1.96\u00b7SE from MC trials",
+      "best_bound": 0.0,
+      "parameters": "n=?, trials=5000",
+      "rigorous": false,
+      "computational_cost": "O(n\u00b2 \u00b7 trials)",
+      "notes": "Non-rigorous: CI bounds E[LCS(n,n)]/n, not \u03b3\u2082. Since \u03b3_n > \u03b3\u2082 for finite n, this is actually a non-rigorous LOWER bound on the upper bound.",
+      "references": [
+        "B2001"
+      ],
+      "rank": 1,
+      "gap_to_sota": -0.82628
+    },
+    {
+      "name": "MC 99% CI Upper (n=5000)",
+      "method": "E[LCS(5000,5000)]/5000 + 2.576\u00b7SE",
+      "best_bound": 0.809692,
+      "parameters": "n=5000, trials=1000",
+      "rigorous": false,
+      "computational_cost": "O(n\u00b2 \u00b7 trials)",
+      "notes": "Non-rigorous MC upper bound from strip computation script",
+      "references": [
+        "B2001"
+      ],
+      "rank": 2,
+      "gap_to_sota": -0.016588
+    },
+    {
+      "name": "Lueker 2009 (Literature SOTA)",
+      "method": "Eigenvalue of column-difference recurrence with DFA certificate",
+      "best_bound": 0.82628,
+      "parameters": "Optimized dual system",
+      "rigorous": true,
+      "computational_cost": "~days of computation",
+      "notes": "Current best known rigorous upper bound",
+      "references": [
+        "L2009"
+      ],
+      "rank": 3,
+      "gap_to_sota": 0.0
+    },
+    {
+      "name": "Dan\u010d\u00edk-Paterson 1995 Analytic",
+      "method": "Analytic bound from recurrence structure",
+      "best_bound": 0.838,
+      "parameters": "Closed-form",
+      "rigorous": true,
+      "computational_cost": "None (analytic)",
+      "notes": "First non-trivial computational upper bound",
+      "references": [
+        "DP1995"
+      ],
+      "rank": 4,
+      "gap_to_sota": 0.01172
+    },
+    {
+      "name": "Entropy: deletion_channel",
+      "method": "Dan\u010d\u00edk-Paterson analytic bound: \u03b3\u2082 \u2264 0.853553",
+      "best_bound": 0.853553,
+      "parameters": "deletion_channel",
+      "rigorous": true,
+      "computational_cost": "Analytic",
+      "notes": "Dan\u010d\u00edk-Paterson analytic bound: \u03b3\u2082 \u2264 0.853553",
+      "references": [
+        "DP1995",
+        "L2009"
+      ],
+      "rank": 5,
+      "gap_to_sota": 0.027273
+    },
+    {
+      "name": "Entropy: first_moment_counting",
+      "method": "First moment counting: 2H(\u03b3)-\u03b3=0 gives \u03b3* = 0.905118",
+      "best_bound": 0.905118,
+      "parameters": "first_moment_counting",
+      "rigorous": true,
+      "computational_cost": "Analytic",
+      "notes": "First moment counting: 2H(\u03b3)-\u03b3=0 gives \u03b3* = 0.905118",
+      "references": [
+        "DP1995",
+        "L2009"
+      ],
+      "rank": 6,
+      "gap_to_sota": 0.078838
+    }
+  ],
+  "failed_approaches": [
+    {
+      "name": "Strip Transfer Matrix",
+      "method": "Column-difference Markov chain stationary throughput",
+      "best_bound": 1.0,
+      "parameters": "s=2..10",
+      "rigorous": false,
+      "computational_cost": "O(2^s \u00d7 2^(s+1)) per s",
+      "notes": "FAILED: absorbing all-ones state makes \u03b3_s = 1.0 for all s. The column-difference formulation has an absorbing state that concentrates the stationary distribution.",
+      "references": [
+        "DP1995",
+        "L2009"
+      ]
+    }
+  ],
+  "analysis": {
+    "our_best_upper_bound": 0.853553,
+    "our_best_method": "Entropy: deletion_channel",
+    "sota_upper_bound": 0.82628,
+    "improvement_achieved": false,
+    "most_promising_for_scaling": "Strip Transfer Matrix (with corrected formulation)",
+    "reasoning": "None of our approaches improved on Lueker's 0.826280. The strip transfer matrix failed due to the absorbing all-ones state. The entropy bounds are structurally limited to ~0.854 without exploiting the column-difference monotonicity. The correct approach would implement Lueker's dual certificate system, which avoids the absorbing state by working in a different state space that tracks the 'potential function' rather than the raw column differences."
+  },
+  "references_used": [
+    "DP1995",
+    "L2009",
+    "H2024",
+    "B2001"
+  ]
+}

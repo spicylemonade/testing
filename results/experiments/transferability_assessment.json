@@ -1,0 +1,85 @@
+{
+  "description": "Transferability assessment of six computational approaches for bounding the Chvátal-Sankoff constant γ₂ (expected normalized LCS length for random binary strings). Each approach is scored on its potential to transfer techniques to/from adjacent domains (first/last passage percolation, coding theory, statistical mechanics, combinatorial optimization), based on citation evidence and structural similarities between problem formulations.",
+
+  "approach_assessments": [
+    {
+      "approach": "Neural Certificate (gradient-optimized DFA certificate)",
+      "transferability_score": 3,
+      "supporting_papers": ["DP1995", "L2009", "BukhCox2022"],
+      "evidence_summary": "DFA-based certificates for upper-bounding γ₂ originate from the Dančík-Paterson framework (DP1995), later refined by Lueker (L2009). The idea of using finite automata to track alignment state and optimize transition weights is specific to the LCS/edit-distance setting; it does not naturally transfer to percolation or polymer models. The gradient-optimization layer (neural parameterization of the certificate) is a modern ML technique, but the failure here reflects the fundamental difficulty: the state space of feasible DFA certificates grows super-exponentially with automaton size, and gradient methods get trapped in poor local optima."
+    },
+    {
+      "approach": "Strip Transfer Matrix (eigenvalue of column-difference process)",
+      "transferability_score": 5,
+      "supporting_papers": ["Bundschuh2001", "Tiskin2022", "Alexander1994"],
+      "evidence_summary": "Transfer matrix methods are a workhorse in statistical mechanics and have been applied to sequence alignment via the mapping to directed polymers / last passage percolation (Bundschuh2001, Tiskin2022). Alexander (Alexander1994) established the subadditive framework connecting LCS to first-passage percolation shape functions. The absorbing-state failure is a known technical obstacle: for binary alphabets the column-difference Markov chain on strip widths develops absorbing states that prevent extraction of the leading eigenvalue. Transfer matrix methods have been highly successful in statistical mechanics (Ising model, polymer models), so the technique has strong incoming transferability, but outgoing transfer from LCS is limited by the absorbing-state issue."
+    },
+    {
+      "approach": "Entropy Upper Bound (information-theoretic)",
+      "transferability_score": 7,
+      "supporting_papers": ["KanoriaMontanari2013", "DP1995", "BukhCox2022"],
+      "evidence_summary": "Information-theoretic bounds have strong cross-domain transferability. Kanoria-Montanari (KanoriaMontanari2013) used entropy and mutual information arguments for the deletion channel capacity, dual to the LCS problem. The entropy upper bound of 0.854 is weaker than the SOTA 0.826, but the technique itself is highly portable: similar entropy arguments have been used in coding theory, random constraint satisfaction, and communication complexity. For larger alphabets or multi-string generalizations, entropy methods often give tighter relative bounds, demonstrating broad transferability."
+    },
+    {
+      "approach": "Frog Dynamics (periodic word optimization)",
+      "transferability_score": 6,
+      "supporting_papers": ["D1994", "H2024", "BukhCox2022", "LiRenWen2025"],
+      "evidence_summary": "The periodic-word approach constructs explicit periodic strings and computes the normalized LCS via a Markov chain on alignment offsets. This traces back to Dančík (D1994) and has been progressively refined by Heineman et al. (H2024). Bukh-Cox (BukhCox2022) used periodic words for upper bounds as well. Li-Ren-Wen (LiRenWen2025) extended to the multi-string setting. Transferability is moderate: the technique applies wherever one can reduce a stochastic optimization to a finite Markov chain over offsets, but does not generalize to higher-dimensional percolation."
+    },
+    {
+      "approach": "Particle Process / KPZ Scaling (MC + finite-size extrapolation)",
+      "transferability_score": 8,
+      "supporting_papers": ["Tiskin2022", "Alexander1994", "Bundschuh2001", "BaezaYates1999"],
+      "evidence_summary": "This approach leverages the connection between LCS and last-passage percolation / directed polymers (Alexander1994), where KPZ universality governs fluctuations. Tiskin (Tiskin2022) explicitly linked γ₂ to a stochastic particle process. The same finite-size extrapolation techniques are used throughout the KPZ universality class (TASEP, PNG model, directed polymers), random matrix theory, and spin glass theory. Transferability is high both inbound and outbound. The caveat is that estimates are not rigorous bounds."
+    },
+    {
+      "approach": "Online Matching (simplified DFA)",
+      "transferability_score": 4,
+      "supporting_papers": ["BaezaYates1999", "DP1995", "L2009"],
+      "evidence_summary": "The online matching approach uses a simplified DFA that processes characters one at a time. Baeza-Yates et al. (BaezaYates1999) studied online/approximate pattern matching with connections to LCS. The lower bound of 0.693 is substantially weaker than SOTA. Transferability is limited: while online algorithms are broadly applicable in streaming computation, the specific simplified-DFA construction has not transferred effectively to other combinatorial optimization problems."
+    }
+  ],
+
+  "successful_transfers": [
+    {
+      "transfer": "Last-passage percolation subadditivity → LCS constant existence and bounds",
+      "source_domain": "First/last-passage percolation (probability theory)",
+      "target_domain": "Longest common subsequence of random strings",
+      "description": "Alexander (1994) and Kingman's subadditive ergodic theorem established that LCS maps to a last-passage percolation problem. The subadditive structure guarantees γ_k exists and provides convergence rate bounds. This was fundamental to the entire field.",
+      "key_citations": ["Alexander1994", "CS1975"]
+    },
+    {
+      "transfer": "Deletion channel capacity analysis → LCS upper bounds",
+      "source_domain": "Information theory / coding theory",
+      "target_domain": "Upper bounds on γ₂",
+      "description": "Kanoria-Montanari (2013) showed deletion channel capacity relates intimately to LCS. Techniques from channel coding, including mutual information bounds and typicality arguments, were transferred to produce upper bounds on γ_k.",
+      "key_citations": ["KanoriaMontanari2013", "DP1995"]
+    },
+    {
+      "transfer": "Statistical mechanics (replica method, Bethe ansatz) → LCS estimates",
+      "source_domain": "Statistical physics (disordered systems, spin glasses)",
+      "target_domain": "Numerical estimation of Chvátal-Sankoff constants",
+      "description": "Bundschuh and Hwa (2001) applied the replica method from spin glass theory to LCS, mapping it to a directed polymer in a random medium. Bethe ansatz techniques gave exact results for the Bernoulli matching approximation.",
+      "key_citations": ["Bundschuh2001", "Tiskin2022"]
+    }
+  ],
+
+  "failed_transfers": [
+    {
+      "transfer": "Neural network / gradient optimization → DFA certificate optimization",
+      "source_domain": "Machine learning (differentiable programming)",
+      "target_domain": "Rigorous bounds via DFA certificates for γ₂",
+      "description": "Attempts to parameterize DFA certificates with neural networks and optimize via gradient descent have not improved upon classical combinatorial constructions. The loss landscape is highly non-convex with combinatorial plateaus, and the discrete nature of automaton transitions resists smooth optimization.",
+      "key_citations": ["L2009", "BukhCox2022"]
+    },
+    {
+      "transfer": "Exact KPZ integrability (Tracy-Widom) → Exact determination of γ₂",
+      "source_domain": "Integrable probability (exactly solvable KPZ models)",
+      "target_domain": "Exact computation of the Chvátal-Sankoff constant",
+      "description": "While LCS maps to last-passage percolation and belongs heuristically to the KPZ universality class, exact integrability tools (Tracy-Widom distributions, determinantal point processes) that give explicit formulas for geometric/exponential LPP do not apply to Bernoulli LPP. KPZ universality governs fluctuations (order n^{1/3}) but the leading-order constant (γ₂ · n) depends on non-universal model-specific details.",
+      "key_citations": ["Alexander1994", "Bundschuh2001", "Tiskin2022"]
+    }
+  ],
+
+  "overall_conclusion": "Among the six approaches, Particle Process / KPZ Scaling (8/10) demonstrates the highest transferability, benefiting from deep structural connections between LCS and last-passage percolation. Entropy Upper Bound (7/10) also transfers well due to the generality of information-theoretic tools. Frog Dynamics (6/10) has moderate transferability via finite Markov chain reductions. Strip Transfer Matrix (5/10) imports well from statistical mechanics but encounters problem-specific obstacles. Online Matching (4/10) and Neural Certificate (3/10) have limited transferability. The most productive research direction would combine KPZ/particle-process framework (for estimates) with refined periodic-word constructions (for rigorous bounds)."
+}

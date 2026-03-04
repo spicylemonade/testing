@@ -1,0 +1,45 @@
+{
+  "missing_links": [
+    {
+      "link_id": 1,
+      "source_concept": "012_subadditive-ergodic-convergence",
+      "target_concept": "004_kpz-universality-fluctuations",
+      "mechanism": "The convergence rate in Kingman's subadditive ergodic theorem, |E[LCS(n,n)]/n - gamma_2| = O(n^{-1/3+eps}) (Alexander 1994), is directly governed by the KPZ fluctuation exponent chi=1/3. The variance scaling Var[LCS] = Theta(n^{2chi}) predicted by KPZ universality determines the sharpness of concentration inequalities from the subadditive framework. Proving chi=1/3 for binary LCS would upgrade the subadditive convergence rate from a conjecture to a theorem, yielding provably optimal finite-sample error bars on gamma_2.",
+      "bound_improvement_potential": "high",
+      "rationale": "This link closes the gap between the abstract existence guarantee (Kingman) and the concrete scaling prediction (KPZ). Currently, simulation-based estimates of gamma_2 use heuristic error bars. A rigorous connection would: (1) determine the optimal rate at which E[LCS(n,n)]/n approaches gamma_2, (2) provide mathematically certified confidence intervals from Monte Carlo, and (3) resolve whether the n^{-1/3} convergence rate is tight, directly impacting the precision of all simulation-based bounds on gamma_2."
+    },
+    {
+      "link_id": 2,
+      "source_concept": "010_cellular-automata-symbolic-dynamics",
+      "target_concept": "004_kpz-universality-fluctuations",
+      "mechanism": "The LCS cellular automaton has gamma_2 as its Lyapunov exponent, and its height function h(x,t) should satisfy the KPZ equation in the hydrodynamic limit: dh/dt = v(nabla h) + (lambda/2)(nabla h)^2 + eta. The topological entropy h_top(Sigma_F) of the CA subshift constrains the KPZ free energy, while the transfer matrix spectrum of the CA for finite widths gives exact access to the KPZ scaling function in a strip geometry.",
+      "bound_improvement_potential": "high",
+      "rationale": "This missing link bridges the exact algebraic structure of the CA (transfer matrices, topological entropy) with the universal predictions of KPZ theory. The CA transfer matrix eigenvalues for finite strip widths L encode the finite-size KPZ free energy F(L), from which gamma_2 = lim F(L)/L. Matching the L-dependence to the predicted KPZ scaling form would simultaneously validate KPZ universality for binary LCS and provide a systematic extrapolation scheme for gamma_2 with controlled error bounds."
+    },
+    {
+      "link_id": 3,
+      "source_concept": "007_optimal-transport-alignment",
+      "target_concept": "003_last-passage-percolation-bridge",
+      "mechanism": "LCS as last-passage percolation on a lattice with Bernoulli(1/2) weights is equivalent to a maximum-weight monotone partial coupling -- precisely an optimal transport problem with order constraints. The Kantorovich dual of this OT problem yields a variational formula: gamma_2 = inf_{phi} E[sum_j max_i {1_{a_i=b_j} - phi(i,j)}]. The Busemann functions from LPP theory are exactly the optimal dual potentials in the OT formulation, connecting the Cator-Pimentel competition interface to Kantorovich duality.",
+      "bound_improvement_potential": "high",
+      "rationale": "This link unifies two currently separate bounding strategies. The LPP shape function approach and the OT relaxation approach both yield upper bounds on gamma_2, but through different relaxations. Recognizing their shared dual structure (Busemann functions = Kantorovich potentials) means: (1) LPP geodesic techniques can construct better OT dual solutions, potentially tightening the upper bound below Lueker's 0.826280; (2) the Sinkhorn algorithm with monotonicity constraints provides a computational path to approximate Busemann functions; (3) the competition interface from LPP gives geometric insight into which monotonicity constraints are tight in the OT relaxation."
+    },
+    {
+      "link_id": 4,
+      "source_concept": "006_mean-field-cavity-method",
+      "target_concept": "002_frog-dynamics-pushtasep",
+      "mechanism": "The Bernoulli matching model (mean-field, gamma_BM(2) ~ 0.7321) replaces correlated character matches with independent Bernoulli(1/2) variables. Frog dynamics for periodic words of period k captures exact k-range correlations, giving gamma(W) values that systematically exceed gamma_BM. The hierarchy gamma_BM < gamma(W_1) < gamma(W_2) < ... < gamma_2 constitutes a systematic cavity expansion where each periodic word captures correlations at a specific range, and the mean-field value is the k=1 (i.i.d.) limit.",
+      "bound_improvement_potential": "medium",
+      "rationale": "This link provides a principled interpolation between the exactly solvable mean-field model (underestimates gamma_2 by ~10%) and the intractable full random-vs-random problem. Frog dynamics for period-k words can be interpreted as k-th order cavity corrections to mean-field: each period increase incorporates longer-range correlations. This yields: (1) a monotone sequence of lower bounds gamma(W_k) converging to gamma_2, (2) a quantitative measure of the correlation gap as a function of correlation range, and (3) a prediction for the rate at which periodic-word bounds approach gamma_2, informing how large k must be to beat the current best lower bound of 0.792666."
+    },
+    {
+      "link_id": 5,
+      "source_concept": "010_cellular-automata-symbolic-dynamics",
+      "target_concept": "012_subadditive-ergodic-convergence",
+      "mechanism": "The CA height function H(t) is a subadditive process with H(t)/t -> gamma_2 by Kingman's theorem. The CA's transfer matrix for finite width L gives exact gamma_2(L), and the sequence {gamma_2(L)} is itself subadditive in L, so Kingman's theorem applies along a second axis. This double subadditive structure (in time/string-length n and in spatial width L) enables a two-dimensional extrapolation scheme with independent error control on each axis.",
+      "bound_improvement_potential": "medium",
+      "rationale": "This link is crucial because it provides a second axis of subadditive convergence (in system width L, not string length n) that is currently unexploited. For each L, the CA transfer matrix gives the exact gamma_2(L), and subadditive bounds on the L -> infinity convergence rate provide rigorous error bars on gamma_2 that are independent of Monte Carlo sampling noise. Combining both axes optimally could yield tighter rigorous bounds than either approach alone."
+    }
+  ],
+  "analysis_summary": "The concept tree has 12 nodes and 17 directed edges. Analysis reveals structural imbalance: the statistical-mechanics chain (001->003->004->009->011) and the optimization chain (005->008->011) are well-connected internally but poorly cross-linked to each other and to theoretical foundations (010, 012). Five high-value missing links were identified: (1) subadditive_ergodic -> kpz_universality bridges convergence rate theory with scaling exponents; (2) cellular_automata -> kpz_universality connects transfer matrices with KPZ scaling functions; (3) optimal_transport -> last_passage_percolation unifies Kantorovich duality with Busemann functions for tighter upper bounds; (4) mean_field_cavity -> frog_dynamics reveals periodic-word bounds as systematic cavity corrections to mean-field; (5) cellular_automata -> subadditive_ergodic provides a second subadditive axis (width L) independent of string length n. Links 1-3 have high bound-improvement potential because they create new computational or theoretical pathways to tighten the current best bounds [0.792666, 0.826280] on gamma_2."
+}

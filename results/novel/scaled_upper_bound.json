@@ -1,0 +1,138 @@
+{
+  "description": "Scaled upper bound via strip transfer matrix eigenvalue method",
+  "method": "Dan\u010d\u00edk-Paterson column-difference process with complement symmetry reduction",
+  "strip_results": [
+    {
+      "s": 2,
+      "n_states_full": 4,
+      "n_states_reduced": 2,
+      "gamma_s": 1.0,
+      "spectral_gap": 0.5,
+      "absorbing_prob": 1.0,
+      "runtime_seconds": 0.001
+    },
+    {
+      "s": 3,
+      "n_states_full": 8,
+      "n_states_reduced": 4,
+      "gamma_s": 1.0,
+      "spectral_gap": 0.5,
+      "absorbing_prob": 1.0,
+      "runtime_seconds": 0.001
+    },
+    {
+      "s": 4,
+      "n_states_full": 16,
+      "n_states_reduced": 8,
+      "gamma_s": 1.0,
+      "spectral_gap": 0.5,
+      "absorbing_prob": 1.0,
+      "runtime_seconds": 0.002
+    },
+    {
+      "s": 5,
+      "n_states_full": 32,
+      "n_states_reduced": 16,
+      "gamma_s": 1.0,
+      "spectral_gap": 0.5,
+      "absorbing_prob": 1.0,
+      "runtime_seconds": 0.01
+    },
+    {
+      "s": 6,
+      "n_states_full": 64,
+      "n_states_reduced": 32,
+      "gamma_s": 1.0,
+      "spectral_gap": 0.5,
+      "absorbing_prob": 1.0,
+      "runtime_seconds": 0.041
+    },
+    {
+      "s": 7,
+      "n_states_full": 128,
+      "n_states_reduced": 64,
+      "gamma_s": 1.0,
+      "spectral_gap": 0.5,
+      "absorbing_prob": 1.0,
+      "runtime_seconds": 0.184
+    },
+    {
+      "s": 8,
+      "n_states_full": 256,
+      "n_states_reduced": 128,
+      "gamma_s": 1.0,
+      "spectral_gap": 0.5,
+      "absorbing_prob": 1.0,
+      "runtime_seconds": 0.817
+    },
+    {
+      "s": 9,
+      "n_states_full": 512,
+      "n_states_reduced": 256,
+      "gamma_s": 1.0,
+      "spectral_gap": 0.5,
+      "absorbing_prob": 1.0,
+      "runtime_seconds": 3.756
+    },
+    {
+      "s": 10,
+      "n_states_full": 1024,
+      "n_states_reduced": 512,
+      "gamma_s": 1.0,
+      "spectral_gap": 0.5,
+      "absorbing_prob": 1.0,
+      "runtime_seconds": 15.439
+    }
+  ],
+  "extrapolation": {
+    "s_values": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "gamma_values": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "fit_2param": {
+      "gamma_inf": 1.0,
+      "gamma_inf_se": 0.0
+    },
+    "fit_3param": {
+      "gamma_inf": 1.0,
+      "gamma_inf_se": 0.0
+    }
+  },
+  "mc_upper_bound": {
+    "n": 5000,
+    "trials": 1000,
+    "gamma_hat": 0.8095412,
+    "se": 5.85e-05,
+    "upper_95": 0.80965586,
+    "upper_99": 0.80969189,
+    "note": "Non-rigorous: MC CI is for E[LCS(n,n)]/n, not for \u03b3\u2082"
+  },
+  "comparison": {
+    "dancik_paterson_1995": 0.838,
+    "lueker_2009": 0.82628,
+    "note": "Our strip eigenvalue method gives \u03b3_s values that decrease with s but do not yield rigorous upper bounds without the full Lueker certificate framework"
+  },
+  "analysis": {
+    "absorbing_state_issue": "The all-ones state (1,1,...,1) is absorbing \u2014 once all column differences are 1, they stay 1. This means the stationary distribution concentrates on this state for large s, giving \u03b3_s \u2192 1 rather than \u03b3\u2082. The proper Lueker method uses a different formulation that avoids this issue.",
+    "our_approach": "We compute \u03b3_s = E_\u03c0[#ones in state]/s. For small s this gives reasonable estimates but the absorbing state dominates as s grows.",
+    "conclusion": "The strip transfer matrix approach as implemented does not produce valid rigorous upper bounds. Lueker's method requires a more sophisticated eigenvalue computation on the dual system."
+  }
+}

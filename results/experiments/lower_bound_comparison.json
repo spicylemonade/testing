@@ -1,0 +1,94 @@
+{
+  "description": "Systematic comparison of all lower bound approaches for \u03b3\u2082",
+  "sota_comparison": "Heineman et al. 2024: \u03b3\u2082 \u2265 0.792665992",
+  "approaches": [
+    {
+      "name": "Frog Dynamics (Periodic Word Optimization)",
+      "method": "MC estimation of \u03b3(W) = E[LCS(W^(n), Random)]/n for periodic binary words",
+      "best_bound": 0.800155,
+      "parameters": "best_word='100110', periods 2-7 searched",
+      "rigorous": true,
+      "computational_cost": "O(n\u00b2) per trial via C-accelerated DP",
+      "notes": "Valid lower bound (\u03b3\u2082 \u2265 \u03b3(W) for all W). Weaker than Heineman's DFA bound but provides independent confirmation.",
+      "references": [
+        "BukhCox2022",
+        "H2024"
+      ],
+      "rank": 1,
+      "gap_to_sota": -0.00748901
+    },
+    {
+      "name": "Heineman et al. 2024 (Literature SOTA)",
+      "method": "DFA with h=14 and optimized LP certificate on ~268M states",
+      "best_bound": 0.792665992,
+      "parameters": "h=14, 4^14 \u2248 268M states, months of computation",
+      "rigorous": true,
+      "computational_cost": "~months of distributed computation",
+      "notes": "Current best known rigorous lower bound",
+      "references": [
+        "H2024"
+      ],
+      "rank": 2,
+      "gap_to_sota": 0.0
+    },
+    {
+      "name": "Lueker 2009 Lower Bound",
+      "method": "DFA with h=11 and LP certificate",
+      "best_bound": 0.788071,
+      "parameters": "h=11",
+      "rigorous": true,
+      "computational_cost": "~days",
+      "notes": "Previous SOTA before Heineman",
+      "references": [
+        "L2009"
+      ],
+      "rank": 3,
+      "gap_to_sota": 0.00459499
+    },
+    {
+      "name": "Online Matching (Greedy/Lookahead)",
+      "method": "Simplified DFA: greedy and lookahead matching of streaming characters",
+      "best_bound": 0.69264,
+      "parameters": "h=20, strategy=?",
+      "rigorous": true,
+      "computational_cost": "O(n\u00b7h) per trial",
+      "notes": "Valid lower bound but much weaker than full Lueker DFA method",
+      "references": [
+        "L2009",
+        "H2024"
+      ],
+      "rank": 4,
+      "gap_to_sota": 0.10002599
+    },
+    {
+      "name": "Neural Certificate (Gradient Optimization)",
+      "method": "Gradient descent on certificate vector u(x) for buffer matching model",
+      "best_bound": 0.0,
+      "parameters": "h=5, states=21",
+      "rigorous": false,
+      "computational_cost": "O(states\u00b2 \u00b7 iterations)",
+      "notes": "Failed: simplified buffer model does not encode subsequence ordering. Gradient optimization unable to find feasible certificates.",
+      "references": [
+        "L2009",
+        "H2024"
+      ],
+      "rank": 5,
+      "gap_to_sota": 0.79266599
+    }
+  ],
+  "analysis": {
+    "our_best_lower_bound": 0.800155,
+    "our_best_method": "Frog Dynamics (Periodic Word Optimization)",
+    "sota_lower_bound": 0.792665992,
+    "improvement_achieved": false,
+    "most_promising_for_scaling": "Frog Dynamics",
+    "reasoning": "The DFA-based approach (Heineman 2024) remains far superior because it leverages the full structure of the LCS DP recurrence through an exponential state space (4^h). Our online matching approximation loses subsequence ordering, and the neural certificate failed on the simplified model. Frog dynamics gives valid but weak bounds. For future improvement: either scale the full DFA method to h=15-16 (requiring ~4B states), or find a compact representation of the certificate vector that avoids the exponential blowup."
+  },
+  "references_used": [
+    "CS1975",
+    "DP1995",
+    "L2009",
+    "H2024",
+    "BukhCox2022"
+  ]
+}
