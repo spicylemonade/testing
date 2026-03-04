@@ -1,0 +1,28 @@
+{
+  "id": 11,
+  "symbolic_name": "gpu_parallel_sieve",
+  "description": "Modern GPUs can verify 5 * 10^11 numbers per second for Collatz convergence (Honda et al., 2014). By combining the modular sieve with GPU parallelism, we can search for delay records orders of magnitude faster than current distributed projects. The key insight is that the sieve computation is embarrassingly parallel and maps perfectly onto GPU SIMT architecture.",
+  "domains": [
+    "computer_science",
+    "parallel_computing",
+    "number_theory"
+  ],
+  "mathematical_formalization": "Throughput T = N_threads * IPC * clock / steps_per_number. With sieve width 2^32, each surviving number requires ~500 Collatz iterations on average. On RTX 4090: T ~ 10240 cores * ~2 GHz / 500 ~ 4 * 10^10 numbers/sec effective search rate (accounting for 99.2% sieve elimination).",
+  "analogical_connections": [
+    "Like massively parallel DNA sequencing - each 'read' is an independent Collatz trajectory",
+    "Analogous to lattice QCD computations in physics - embarrassingly parallel local operations on a structured grid",
+    "Similar to how SETI@home distributed alien signal search across millions of computers"
+  ],
+  "implementation_hypothesis": "Port the Collatz sieve to CUDA/OpenCL. Each GPU thread handles one surviving residue class in a block. Use shared memory for the sieve lookup table. Reduce results via atomicMax for delay records.",
+  "experiment_seed": "Benchmark throughput on NVIDIA RTX 3090/4090 vs Intel i9-13900K for delay record search in [10^15, 10^16]. Target: 10x speedup over best known CPU implementation.",
+  "folder_plan": {
+    "directory": "011_gpu_parallel_sieve",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:50:39.787896+00:00",
+  "project_folder": "concept_evolve/tree/011_gpu-parallel-sieve"
+}

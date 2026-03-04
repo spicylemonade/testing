@@ -1,0 +1,28 @@
+{
+  "id": 6,
+  "symbolic_name": "binary_representation_sieve",
+  "description": "A number's binary representation directly encodes its first steps under the Collatz map. Numbers ending in many 1-bits (like 2^k - 1) are forced into long ascending chains because each odd step multiplies by ~3/2. This concept develops a 'binary template' sieve: precompute which low-order bit patterns produce the longest initial ascents, then search only numbers matching those patterns.",
+  "domains": [
+    "computer_science",
+    "number_theory",
+    "coding_theory"
+  ],
+  "mathematical_formalization": "Let n = sum_{i=0}^{m} b_i * 2^i. The first m steps of the shortcut Collatz map T are fully determined by (b_0, b_1, ..., b_{m-1}). If the first k bits are all 1 (n = ...111 in binary), then T^k(n) ~ n * (3/2)^k, forcing an ascent of factor (3/2)^k before any descent. Optimal templates maximize the ratio of odd steps to total steps in the first m iterations.",
+  "analogical_connections": [
+    "Like convolutional codes in communication - the low-order bits act as a 'code' that determines the trajectory's initial behavior",
+    "Analogous to how protein folding is determined by the amino acid sequence's local secondary structure motifs",
+    "Similar to how the first few moves in chess determine the opening and constrain the middlegame"
+  ],
+  "implementation_hypothesis": "Build a trie (prefix tree) of binary suffixes, annotated with (odd_steps, even_steps, max_ascent_factor) for each suffix of length k. Prune branches where the completeness C < 0.58. Use surviving branches to generate candidate high-delay numbers.",
+  "experiment_seed": "For k = 16, 20, 24: enumerate all 2^k bit suffixes, compute their Collatz trajectories, and rank by completeness. Verify that known delay records all have suffixes in the top 1% of this ranking.",
+  "folder_plan": {
+    "directory": "006_binary_representation_sieve",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:50:39.785671+00:00",
+  "project_folder": "concept_evolve/tree/006_binary-representation-sieve"
+}

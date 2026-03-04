@@ -1,0 +1,28 @@
+{
+  "id": 1,
+  "symbolic_name": "collatz_sieve_acceleration",
+  "description": "A novel sieve eliminates >99% of candidate numbers from Collatz delay searches using modular arithmetic. By precomputing which residue classes mod 2^k must produce shorter trajectories, we skip directly to numbers whose binary structure forces long odd-step chains. This is the computational backbone of the delay record hunter.",
+  "domains": [
+    "number_theory",
+    "computer_science",
+    "combinatorics"
+  ],
+  "mathematical_formalization": "For sieve width w = 2^k, partition Z into residue classes r mod w. For each r, simulate k steps of the shortcut Collatz map T(n) = (3n+1)/2 if odd, n/2 if even. Discard r if the trajectory drops below r within k steps. Surviving fraction ~ (3/4)^k * correction. With k=32, survival rate < 0.008.",
+  "analogical_connections": [
+    "Like the Sieve of Eratosthenes eliminates composites, this eliminates 'short-trajectory' residue classes",
+    "Analogous to branch prediction in CPU pipelines - predicting which numbers will 'branch' into long trajectories",
+    "Similar to how restriction enzymes in molecular biology cut DNA at specific recognition sites, the sieve cuts the search space at predictable modular sites"
+  ],
+  "implementation_hypothesis": "Precompute a lookup table of size 2^k mapping each residue class to (steps_taken, resulting_residue, odd_count, even_count). Only iterate numbers where odd_count/even_count > 0.60 (high completeness candidates).",
+  "experiment_seed": "Compare wall-clock time to find all delay records below 10^12 with sieve widths k=16, 20, 24, 28, 32. Measure fraction of numbers surviving vs theoretical (3/4)^k.",
+  "folder_plan": {
+    "directory": "001_collatz_sieve_acceleration",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T09:50:39.783386+00:00",
+  "project_folder": "concept_evolve/tree/001_collatz-sieve-acceleration"
+}

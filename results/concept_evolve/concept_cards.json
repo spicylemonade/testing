@@ -1,0 +1,218 @@
+[
+  {
+    "id": 1,
+    "symbolic_name": "collatz_sieve_acceleration",
+    "description": "A novel sieve eliminates >99% of candidate numbers from Collatz delay searches using modular arithmetic. By precomputing which residue classes mod 2^k must produce shorter trajectories, we skip directly to numbers whose binary structure forces long odd-step chains. This is the computational backbone of the delay record hunter.",
+    "domains": ["number_theory", "computer_science", "combinatorics"],
+    "mathematical_formalization": "For sieve width w = 2^k, partition Z into residue classes r mod w. For each r, simulate k steps of the shortcut Collatz map T(n) = (3n+1)/2 if odd, n/2 if even. Discard r if the trajectory drops below r within k steps. Surviving fraction ~ (3/4)^k * correction. With k=32, survival rate < 0.008.",
+    "analogical_connections": [
+      "Like the Sieve of Eratosthenes eliminates composites, this eliminates 'short-trajectory' residue classes",
+      "Analogous to branch prediction in CPU pipelines - predicting which numbers will 'branch' into long trajectories",
+      "Similar to how restriction enzymes in molecular biology cut DNA at specific recognition sites, the sieve cuts the search space at predictable modular sites"
+    ],
+    "implementation_hypothesis": "Precompute a lookup table of size 2^k mapping each residue class to (steps_taken, resulting_residue, odd_count, even_count). Only iterate numbers where odd_count/even_count > 0.60 (high completeness candidates).",
+    "experiment_seed": "Compare wall-clock time to find all delay records below 10^12 with sieve widths k=16, 20, 24, 28, 32. Measure fraction of numbers surviving vs theoretical (3/4)^k.",
+    "folder_plan": {
+      "directory": "001_collatz_sieve_acceleration",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 2,
+    "symbolic_name": "ergodic_mixing_predictor",
+    "description": "The Collatz map's trajectory statistics can be modeled as a random walk on Z/3^n Z via Tao's framework. Numbers with high delay exhibit non-ergodic 'trapping' in their bit patterns - the leading and trailing bits fail to mix. This concept uses ergodic mixing diagnostics to predict which number ranges harbor delay records.",
+    "domains": ["dynamical_systems", "ergodic_theory", "number_theory", "probability"],
+    "mathematical_formalization": "Model the Syracuse map Syr(n) = (3n+1)/2^{v_2(3n+1)} as a random walk. The 'velocity gap' between leading bit growth (rate ~log2(3)/2) and trailing bit consumption determines convergence. Delay records occur when the velocity gap epsilon(n) approaches 0, i.e., when C(n) = O(n)/E(n) approaches ln(2)/ln(3).",
+    "analogical_connections": [
+      "Like a gas approaching thermal equilibrium - delay records are states far from equilibrium where mixing hasn't occurred yet",
+      "Analogous to laminar-to-turbulent transition in fluid dynamics: most numbers 'turbulently' converge fast, but rare laminar-flow numbers persist",
+      "Similar to prethermalization in quantum many-body systems where slow relaxation timescales emerge"
+    ],
+    "implementation_hypothesis": "For candidate number n, compute the binary entropy H(bits(n)) and predict delay via D_pred(n) ~ -log(n) / (log(2) - C_max * log(3)) where C_max is drawn from the known completeness record distribution.",
+    "experiment_seed": "For all known delay records, compute the ergodic mixing diagnostic and check if they cluster in a specific region of (completeness, gamma, entropy) space. Use this to narrow future searches.",
+    "folder_plan": {
+      "directory": "002_ergodic_mixing_predictor",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 3,
+    "symbolic_name": "information_entropy_trajectory",
+    "description": "The Shannon entropy of a Collatz trajectory's odd/even step sequence encodes structural information about the starting number. Numbers with high delay have step sequences with entropy approaching the theoretical maximum of H = -p*log(p) - (1-p)*log(1-p) where p = ln(2)/ln(3). This information-theoretic lens reveals why some numbers resist convergence.",
+    "domains": ["information_theory", "number_theory", "statistical_mechanics"],
+    "mathematical_formalization": "Let sigma(n) = (s_1, s_2, ..., s_{D(n)}) be the parity sequence where s_i = 1 if T^i(n) is odd, 0 if even. Define H(n) = -sum_{i=1}^{D(n)} [s_i * log(s_i/O(n)) + (1-s_i) * log((1-s_i)/E(n))]. High-delay numbers maximize H(n) while maintaining C(n) = O(n)/E(n) near ln(2)/ln(3) ~ 0.6309.",
+    "analogical_connections": [
+      "Like maximum entropy distributions in statistical mechanics - delay records are 'maximum entropy' trajectories",
+      "Analogous to channel capacity in communication theory - the Collatz channel has a capacity determined by log2(3)",
+      "Similar to how DNA sequences with high Shannon entropy encode more functional information"
+    ],
+    "implementation_hypothesis": "For each candidate, compute the running Shannon entropy of the parity sequence during iteration. If entropy drops below threshold early, abort the computation (the trajectory will converge quickly).",
+    "experiment_seed": "Compute Shannon entropy of parity sequences for the known 147 delay records. Plot H(n) vs D(n) and fit a regression. Use the fit to predict the entropy of the next undiscovered delay record.",
+    "folder_plan": {
+      "directory": "003_information_entropy_trajectory",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 4,
+    "symbolic_name": "fitness_landscape_delay",
+    "description": "The space of positive integers under the Collatz map can be viewed as a fitness landscape where 'fitness' = delay D(n). Delay records are peaks in this landscape. The landscape has fractal structure with self-similar ridges corresponding to numbers sharing residue families. Evolution on this landscape via mutation (incrementing n) and selection (keeping high-delay numbers) mirrors biological adaptive walks.",
+    "domains": ["evolutionary_biology", "number_theory", "complex_systems", "optimization"],
+    "mathematical_formalization": "Define fitness f(n) = D(n). The 'mutational neighborhood' of n is {n-1, n+1, 2n, n/2 if even}. A 'ridge' is a maximal connected set of numbers with D(n) > D(m) for all m not on the ridge with m < max(ridge). Known ridges correspond to residue families sharing the same Res(n) value.",
+    "analogical_connections": [
+      "Wright's adaptive landscape: delay records are 'fitness peaks' separated by 'valleys' of low-delay numbers",
+      "Kauffman's NK model: the ruggedness of the Collatz fitness landscape depends on the coupling between binary digits",
+      "Spin glass models in physics: the Collatz landscape has quenched disorder from the interplay of 3x+1 and x/2"
+    ],
+    "implementation_hypothesis": "Implement a genetic algorithm that evolves populations of integers, using delay as fitness, with mutations being bit-flips in binary representation. Compare GA convergence to the known delay record list.",
+    "experiment_seed": "Map the local fitness landscape around each known delay record by computing D(n) for n in [record-1000, record+1000]. Characterize the typical 'peak shape' and 'valley depth'.",
+    "folder_plan": {
+      "directory": "004_fitness_landscape_delay",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 5,
+    "symbolic_name": "tao_logarithmic_density",
+    "description": "Tao (2019) proved that almost all Collatz orbits attain almost bounded values in the sense of logarithmic density. His proof uses a renewal process on 3-adic cyclic groups. This concept extends his framework to predict the density of delay records: if high-delay numbers thin out logarithmically, the gap between successive records should grow as exp(alpha * record_index).",
+    "domains": ["analytic_number_theory", "probability", "p_adic_analysis"],
+    "mathematical_formalization": "Tao's key result: For any f: N+1 -> R with lim f(N) = infinity, Col_min(N) <= f(N) for almost all N (logarithmic density). The Syracuse iteration Syr(n) = (3n+1)/2^{v_2(3n+1)} defines a Markov chain whose characteristic function on Z/3^n Z controls the mixing time. Delay records correspond to the extreme tail of this distribution.",
+    "analogical_connections": [
+      "Like extreme value theory in statistics - delay records follow a Gumbel or Frechet distribution",
+      "Analogous to record-breaking temperatures in climate science - each new record is exponentially harder to break",
+      "Similar to how the distribution of earthquakes follows a power law (Gutenberg-Richter)"
+    ],
+    "implementation_hypothesis": "Fit an extreme value distribution to the known 147 delay records. Use the fitted distribution to predict when/where the 148th delay record should appear. Verify by computation.",
+    "experiment_seed": "Plot the delay record index vs log(record_number). If linear, the growth rate alpha gives the expected position of the next record. Compute the 95% confidence interval.",
+    "folder_plan": {
+      "directory": "005_tao_logarithmic_density",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 6,
+    "symbolic_name": "binary_representation_sieve",
+    "description": "A number's binary representation directly encodes its first steps under the Collatz map. Numbers ending in many 1-bits (like 2^k - 1) are forced into long ascending chains because each odd step multiplies by ~3/2. This concept develops a 'binary template' sieve: precompute which low-order bit patterns produce the longest initial ascents, then search only numbers matching those patterns.",
+    "domains": ["computer_science", "number_theory", "coding_theory"],
+    "mathematical_formalization": "Let n = sum_{i=0}^{m} b_i * 2^i. The first m steps of the shortcut Collatz map T are fully determined by (b_0, b_1, ..., b_{m-1}). If the first k bits are all 1 (n = ...111 in binary), then T^k(n) ~ n * (3/2)^k, forcing an ascent of factor (3/2)^k before any descent. Optimal templates maximize the ratio of odd steps to total steps in the first m iterations.",
+    "analogical_connections": [
+      "Like convolutional codes in communication - the low-order bits act as a 'code' that determines the trajectory's initial behavior",
+      "Analogous to how protein folding is determined by the amino acid sequence's local secondary structure motifs",
+      "Similar to how the first few moves in chess determine the opening and constrain the middlegame"
+    ],
+    "implementation_hypothesis": "Build a trie (prefix tree) of binary suffixes, annotated with (odd_steps, even_steps, max_ascent_factor) for each suffix of length k. Prune branches where the completeness C < 0.58. Use surviving branches to generate candidate high-delay numbers.",
+    "experiment_seed": "For k = 16, 20, 24: enumerate all 2^k bit suffixes, compute their Collatz trajectories, and rank by completeness. Verify that known delay records all have suffixes in the top 1% of this ranking.",
+    "folder_plan": {
+      "directory": "006_binary_representation_sieve",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 7,
+    "symbolic_name": "renewal_process_bridge",
+    "description": "Tao's proof connects Collatz dynamics to a two-dimensional renewal process. The renewal times correspond to moments when the trajectory 'resets' by passing through powers of 2. This concept bridges renewal theory (probability) with the Collatz problem (number theory) through the mechanism of 3-adic analysis (p-adic numbers). The bridge enables probabilistic predictions about trajectory lengths.",
+    "domains": ["probability", "p_adic_analysis", "number_theory", "renewal_theory"],
+    "mathematical_formalization": "The Syracuse map induces a sequence of 'descent times' tau_1, tau_2, ... where tau_i is the number of odd steps between consecutive passages below a threshold. By Tao's analysis, these tau_i behave like i.i.d. random variables with a specific distribution on Z/3^n Z. The total delay is D(n) ~ sum_{i=1}^{R(n)} tau_i where R(n) is a renewal count.",
+    "analogical_connections": [
+      "Like Poisson process in queuing theory - the Collatz trajectory is a queue of 'descents' waiting to be processed",
+      "Analogous to the renewal theory of molecular motors in biology - each '3x+1 step' is a molecular motor stroke",
+      "Similar to how seismic renewal models predict earthquake recurrence intervals"
+    ],
+    "implementation_hypothesis": "Decompose each Collatz trajectory into 'renewal segments' at local minima. Fit the segment length distribution to a geometric or negative binomial distribution. Use the fitted distribution to predict total trajectory length from the first few segments.",
+    "experiment_seed": "Compute renewal decompositions for 10,000 random numbers of various sizes. Test if segment lengths are approximately i.i.d. Compute the autocorrelation function of consecutive segment lengths.",
+    "folder_plan": {
+      "directory": "007_renewal_process_bridge",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 8,
+    "symbolic_name": "completeness_gamma_anomaly",
+    "description": "The completeness C(n) = O(n)/E(n) and gamma = E(n)/ln(n) parameters reveal anomalous numbers that defy the typical statistical behavior of Collatz trajectories. Known completeness records cluster near C = 0.6054, suspiciously close to but bounded away from the theoretical limit ln(2)/ln(3) = 0.6309. This gap is the 'anomaly' - understanding it could unlock new delay records.",
+    "domains": ["number_theory", "statistical_mechanics", "anomaly_detection"],
+    "mathematical_formalization": "By Roosendaal's Theorem 1: C(n) < ln(2)/ln(3) for all n > 1. Conjecture 3 asserts C_max < ln(2)/ln(3) strictly. The gap delta = ln(2)/ln(3) - C_max encodes information about the 'hardness' of the Collatz problem. If delta -> 0, then delay records could grow super-exponentially. Current data: C_max ~ 0.6054, delta ~ 0.0255.",
+    "analogical_connections": [
+      "Like the mass gap in quantum chromodynamics - a nonzero gap has deep structural implications",
+      "Analogous to the spectral gap in Markov chains - determines mixing time",
+      "Similar to how the BCS gap in superconductivity determines the critical temperature"
+    ],
+    "implementation_hypothesis": "For each known delay record, compute (C, gamma, delta). Plot the trajectory in (C, gamma) space. Identify clusters and outliers. Search specifically for numbers with C > 0.605 (which would be new completeness records).",
+    "experiment_seed": "Systematically search for numbers with high completeness in the range [10^17, 10^18]. Use the binary sieve to pre-filter candidates whose low-order bits force high odd/even ratios.",
+    "folder_plan": {
+      "directory": "008_completeness_gamma_anomaly",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 9,
+    "symbolic_name": "path_record_expansion",
+    "description": "Path records are numbers whose Collatz trajectory reaches a higher maximum than any smaller number. The expansion X_2(n) = Mx(n)/n^2 is a key invariant. The current record is X_2 ~ 16.3. Open Question 1 asks whether X_2 is bounded. Finding a new expansion record would be huge news. This concept links trajectory height to the physics of diffusion and first-passage times.",
+    "domains": ["number_theory", "stochastic_processes", "physics"],
+    "mathematical_formalization": "Mx(n) >= n * (3/2)^{v(n)} where v(n) is the longest initial run of consecutive odd steps. By Theorem 4 (Roosendaal): Mx(n) = 16 mod 36 for all odd path records n > 2. The expansion X_Q(n) = Mx(n)/n^Q is unbounded for Q < log(3)/log(2) ~ 1.585 but may be bounded for Q >= 2.",
+    "analogical_connections": [
+      "Like the maximum displacement of a biased random walk - the path record is the furthest excursion before return",
+      "Analogous to the maximum flood height in hydrology - a first-passage time problem",
+      "Similar to how stock prices have 'all-time highs' with fat-tailed distributions"
+    ],
+    "implementation_hypothesis": "Implement a fast path record finder using 128-bit arithmetic. For each candidate, compute Mx(n) and X_2(n). Abort early if the current maximum can be bounded below the existing path record using the sieve structure.",
+    "experiment_seed": "Search for numbers with X_2(n) > 16.4 in the range [10^18, 10^20]. Use the binary template sieve to pre-filter numbers with long initial odd runs.",
+    "folder_plan": {
+      "directory": "009_path_record_expansion",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 10,
+    "symbolic_name": "strength_level_topology",
+    "description": "Roosendaal's 'strength' S(n) = 5*O(n) - 3*E(n) and 'level' L(n) = -floor(S(n)/8) create a topological partition of integers into layers. Only 5 strength records are known, and the lowest known level is -10. Numbers at extreme negative levels are extraordinarily rare and always delay records. This concept formalizes the topology of this partition and uses it to predict where the next strength record lies.",
+    "domains": ["number_theory", "topology", "combinatorics", "optimization"],
+    "mathematical_formalization": "The level function L: N -> Z partitions N into layers. Level 0 corresponds to C(n) >= 0.60. For level l < 0, the density of numbers at level l decreases super-exponentially: density(l) ~ exp(-alpha * l^2) for some alpha > 0. The next strength record (level -5 or below) should appear near 10^21 based on extrapolation.",
+    "analogical_connections": [
+      "Like electron shell levels in quantum mechanics - each 'level' has a discrete number of occupants",
+      "Analogous to the topological classification of surfaces - the level is a topological invariant of the trajectory",
+      "Similar to how cosmic microwave background anomalies reveal rare large-scale structure"
+    ],
+    "implementation_hypothesis": "Build a database of all numbers at level -1 or below up to 10^16. Extrapolate the density function to predict the smallest number at level -5. Cross-reference with the binary sieve to narrow the search.",
+    "experiment_seed": "Count numbers at each level l in [-4, 0] for ranges [10^k, 10^{k+1}] for k = 12..16. Fit the density function and predict the level distribution for k = 17..20.",
+    "folder_plan": {
+      "directory": "010_strength_level_topology",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 11,
+    "symbolic_name": "gpu_parallel_sieve",
+    "description": "Modern GPUs can verify 5 * 10^11 numbers per second for Collatz convergence (Honda et al., 2014). By combining the modular sieve with GPU parallelism, we can search for delay records orders of magnitude faster than current distributed projects. The key insight is that the sieve computation is embarrassingly parallel and maps perfectly onto GPU SIMT architecture.",
+    "domains": ["computer_science", "parallel_computing", "number_theory"],
+    "mathematical_formalization": "Throughput T = N_threads * IPC * clock / steps_per_number. With sieve width 2^32, each surviving number requires ~500 Collatz iterations on average. On RTX 4090: T ~ 10240 cores * ~2 GHz / 500 ~ 4 * 10^10 numbers/sec effective search rate (accounting for 99.2% sieve elimination).",
+    "analogical_connections": [
+      "Like massively parallel DNA sequencing - each 'read' is an independent Collatz trajectory",
+      "Analogous to lattice QCD computations in physics - embarrassingly parallel local operations on a structured grid",
+      "Similar to how SETI@home distributed alien signal search across millions of computers"
+    ],
+    "implementation_hypothesis": "Port the Collatz sieve to CUDA/OpenCL. Each GPU thread handles one surviving residue class in a block. Use shared memory for the sieve lookup table. Reduce results via atomicMax for delay records.",
+    "experiment_seed": "Benchmark throughput on NVIDIA RTX 3090/4090 vs Intel i9-13900K for delay record search in [10^15, 10^16]. Target: 10x speedup over best known CPU implementation.",
+    "folder_plan": {
+      "directory": "011_gpu_parallel_sieve",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 12,
+    "symbolic_name": "biological_attractor_analogy",
+    "description": "In developmental biology, cell fate is determined by attractor basins in gene regulatory networks (Kauffman, Waddington). The Collatz map has exactly one known attractor (the 4-2-1 cycle). Numbers with high delay are those in the 'periphery' of the attractor basin, analogous to pluripotent stem cells that take many developmental steps before committing to a cell fate. This analogy suggests that delay records live on the boundary of a topological basin.",
+    "domains": ["systems_biology", "dynamical_systems", "number_theory", "topology"],
+    "mathematical_formalization": "Define the attractor basin B = {n : Col^k(n) = 1 for some k}. The Collatz conjecture says B = N+1. The 'basin depth' at n is D(n). The basin boundary (if the conjecture is false) would contain divergent trajectories. Even assuming the conjecture, numbers near the 'effective boundary' (high delay) share properties with biological cells near bifurcation points.",
+    "analogical_connections": [
+      "Waddington's epigenetic landscape: the Collatz map is the 'marble rolling down hills' where delay records are marbles perched on ridges",
+      "Stem cell pluripotency: high-delay numbers are 'pluripotent' in that they visit many states before committing to convergence",
+      "Neural attractor networks: each Collatz trajectory is like a neural computation settling into a fixed point"
+    ],
+    "implementation_hypothesis": "Visualize the Collatz attractor basin using a 2D embedding (e.g., (log(n), D(n))). Identify the 'effective boundary' as the locus of delay records. Test whether the boundary has fractal dimension > 1.",
+    "experiment_seed": "Compute D(n) for all n in [1, 10^7]. Create a heatmap of D(n) vs n in binary. Look for fractal structure in the high-delay regions.",
+    "folder_plan": {
+      "directory": "012_biological_attractor_analogy",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "direction": "Build a Python verifier that computes new terms of OEIS A284668 (highest Collatz stopping time below 10^n)",
+    "rationale": "OEIS A284668 has only 18 known terms. Computing a(19) = the number below 10^19 with the highest total Collatz stopping time would be a genuine new result. The sequence is easily verified: just run the Collatz iteration on the candidate and count steps. This would be a concrete, verifiable, tweetable result: 'We computed the 19th term of a 6-year-old unsolved OEIS sequence.'",
+    "first_step": "Implement the shortcut Collatz map with 2^16 sieve lookup table in Python. Verify against known terms a(1) through a(10). Then optimize with 128-bit arithmetic and multiprocessing to push toward a(19).",
+    "expected_signal": "For a(10) = 9780657630 with delay 1132, our implementation should reproduce this in under 1 minute on a modern CPU. Scaling analysis will reveal whether a(19) is reachable in hours (optimistic) or weeks (realistic) of computation."
+  },
+  {
+    "direction": "Characterize the statistical mechanics of Collatz delay records using extreme value theory",
+    "rationale": "The 147 known delay records form a natural dataset for extreme value analysis. If the delay record gaps follow a Generalized Extreme Value (GEV) distribution, we can predict where the next record should appear with confidence intervals. This has never been done rigorously and would be a novel contribution to the Collatz literature.",
+    "first_step": "Scrape all 147 delay records from Roosendaal's table. Compute the gap ratios R_k = N_{k+1}/N_k and delay increments Delta_k = D_{k+1} - D_k. Fit GEV and Generalized Pareto distributions to both sequences. Test goodness-of-fit with Kolmogorov-Smirnov.",
+    "expected_signal": "If the gap ratios are approximately log-normal with mean ~1.36 (as Roosendaal observes), the GEV fit should have shape parameter xi near 0 (Gumbel type). This would predict the 148th delay record should appear near N_147 * 1.36 ~ 3.8 * 10^19."
+  },
+  {
+    "direction": "Create an entropy-guided binary template sieve for targeted delay record discovery",
+    "rationale": "Most Collatz search programs use brute-force enumeration with modular sieves. No existing work combines information-theoretic trajectory analysis with the sieve. By computing the Shannon entropy of parity sequences for the first k steps (determined by low-order bits), we can create a hybrid sieve that not only eliminates short trajectories but actively targets high-entropy (= high-delay) candidates.",
+    "first_step": "For sieve width 2^20, compute the parity sequence of the first 20 Collatz steps for all 2^20 residue classes. Compute the running Shannon entropy H_20(r) for each class r. Rank classes by H_20 and take the top 0.1%. Verify that known delay records fall within this set.",
+    "expected_signal": "If >90% of known delay records have low-order bits in the top 0.1% of the entropy ranking, the sieve is highly discriminative. This would enable a 1000x speedup over brute-force search by eliminating 99.9% of candidates while retaining nearly all records."
+  },
+  {
+    "direction": "Build an interactive Collatz delay landscape visualization that maps to a fitness landscape",
+    "rationale": "No existing visualization shows the Collatz delay landscape at scale with the fitness landscape analogy. An interactive heatmap where x-axis = log(n), y-axis = D(n), colored by completeness C(n), would make the problem tangible to non-mathematicians. Adding known delay records as labeled peaks and the theoretical C_max line would create a compelling visual narrative for social media.",
+    "first_step": "Compute D(n) for all n in [1, 10^7] using the optimized sieve. Create a 2D heatmap with matplotlib showing delay as a function of n. Overlay the 59 delay records in this range as red dots. Add Roosendaal's completeness bound as a dashed line.",
+    "expected_signal": "The visualization should show clear fractal banding structure, with delay records sitting atop isolated 'mountain peaks' separated by wide 'valleys'. The peaks should cluster along the completeness bound line, confirming the theory."
+  }
+]
