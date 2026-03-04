@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "entropy_guided_field_width_prediction",
+  "description": "Use Shannon entropy of observed field-width distributions to adaptively choose between fixed-width fast paths and variable-width slow paths for each column. Low-entropy columns get optimized fixed-offset extraction; high-entropy columns use general SIMD-scanned approach.",
+  "domains": ["information theory", "adaptive algorithms", "database query optimization (adaptive execution)"],
+  "mathematical_formalization": "H(W_j) = -sum p(w) log2 p(w). If H(W_j) < 0.5 bits, classify as fixed-width. Cost: C(j) = (1 - P_fixed) * C_scan + P_fixed * C_direct, C_direct << C_scan. Speedup: sum_j C_scan / C(j).",
+  "analogical_connections": [
+    "Adaptive compression (LZ77): switching modes based on local entropy",
+    "JIT tiering (V8/HotSpot): promoting hot paths based on runtime profiles",
+    "Radar CFAR: adapting thresholds to local signal statistics"
+  ],
+  "implementation_hypothesis": "Profile first 1024 rows per column. Compute entropy. Low-H columns use direct offset extraction. Re-evaluate every M rows for regime changes.",
+  "experiment_seed": "Test on fixed-width, mixed, and all-variable CSV. Measure correlation between column entropy and parsing speedup."
+}

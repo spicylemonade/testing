@@ -1,0 +1,181 @@
+{
+  "search_date": "2026-03-04",
+  "queries": [
+    {
+      "query": "simdjson structural character classification SIMD parsing technique",
+      "engine": "websearch",
+      "results": [
+        {
+          "source_url": "https://r.jordan.im/download/technology/langdale2019.pdf",
+          "title": "Parsing Gigabytes of JSON per Second (Langdale & Lemire, 2019)",
+          "key_takeaway": "First standard-compliant JSON parser to process GB/s on single core. Uses SIMD structural character classification in 64-byte blocks, producing bitmasks. Two-stage architecture: Stage 1 indexes structural characters, Stage 2 materializes values. Uses carry-less multiplication (CLMUL) for string region detection."
+        },
+        {
+          "source_url": "https://simdzone.docs.nlnetlabs.nl/en/latest/design_notes.html",
+          "title": "simdzone - SIMD DNS zone file parser inspired by simdjson",
+          "key_takeaway": "Applies simdjson's SIMD structural indexing to DNS zone file parsing. Demonstrates the technique transfers well to non-JSON delimited formats. Uses vectorized classification and binary logic for string/sequence identification."
+        },
+        {
+          "source_url": "https://arxiv.org/html/2312.17149v3",
+          "title": "On-Demand JSON: A Better Way to Parse Documents? (Keiser & Lemire)",
+          "key_takeaway": "Novel lazy/on-demand JSON parsing interface that materializes results only when accessed. Builds on simdjson's structural indexing but avoids full DOM construction. Relevant to our two-phase approach where Phase 1 indexes and Phase 2 materializes selectively."
+        },
+        {
+          "source_url": "https://github.com/simdjson/simdjson/blob/master/src/generic/stage1/json_structural_indexer.h",
+          "title": "simdjson Stage 1 structural indexer source code",
+          "key_takeaway": "Reference implementation of SIMD structural indexing. Uses buf_block_reader for 64-byte block processing, json_string_scanner for quote state, json_scanner for structural character classification. Key pattern: classify -> string_scan -> structural_index."
+        },
+        {
+          "source_url": "https://arxiv.org/html/2411.12035v1",
+          "title": "Parsing Millions of DNS Records per Second (Koekkoek & Lemire, 2024)",
+          "key_takeaway": "simdzone uses SIMD data parallelism for DNS zone file parsing. Achieves millions of records/sec. Shows that SIMD structural character detection generalizes beyond JSON to other text formats with quote/escape semantics."
+        }
+      ]
+    },
+    {
+      "query": "SIMD CSV parsing high performance vectorized delimiter detection",
+      "engine": "websearch",
+      "results": [
+        {
+          "source_url": "https://nullprogram.com/blog/2021/12/04/",
+          "title": "Fast CSV processing with SIMD (Chris Wellons, 2021)",
+          "key_takeaway": "Implements csvquote using SIMD. Uses CLMUL-based quote pairing to transform quote bitmask into quoted-region mask. Order-of-magnitude speedup over naive approach. Key technique: multiply quote bitmask by -1 using carry-less multiply to get prefix-XOR."
+        },
+        {
+          "source_url": "https://github.com/geofflangdale/simdcsv",
+          "title": "geofflangdale/simdcsv - SIMD CSV parser (C++)",
+          "key_takeaway": "By simdjson co-author Geoff Langdale. Applies simdjson's exact approach to CSV: vectorized classification for comma/quote/newline, CLMUL for quote-state tracking, bitmask extraction for field boundaries. Reference implementation for our approach."
+        },
+        {
+          "source_url": "https://github.com/friendlymatthew/simdcsv",
+          "title": "friendlymatthew/simdcsv - Rust SIMD CSV parser",
+          "key_takeaway": "Rust implementation using PCLMULQDQ for quote pairing and vqtbl1q_u8 (NEON) for vectorized classification. Processes 64 bytes at a time. Adheres to RFC 4180. Demonstrates cross-platform SIMD approach (x86 + ARM)."
+        },
+        {
+          "source_url": "https://github.com/medialab/simd-csv",
+          "title": "medialab/simd-csv - Specialized Rust CSV readers/writers leveraging SIMD",
+          "key_takeaway": "Active Rust crate (4000+ downloads) using SIMD for CSV parsing. Recent (2025-2026). Uses memchr for SIMD-accelerated character search as foundation."
+        },
+        {
+          "source_url": "https://sanixdk.xyz/blogs/how-i-accidentally-created-the-fastest-csv-parser-ever-made",
+          "title": "cisv - 'Fastest CSV Parser Ever Made' (2025)",
+          "key_takeaway": "C implementation using branchless programming and SIMD. Eliminates branch mispredictions through lookup tables and conditional moves. Achieves high throughput by avoiding if/switch in hot path."
+        },
+        {
+          "source_url": "https://crates.io/crates/fastcsv",
+          "title": "fastcsv - Rust SIMD CSV parser based on simdcsv",
+          "key_takeaway": "RFC 4180 compliant. Uses AVX2 on x86-64, NEON on ARM. Migrated from C++ to Rust. Demonstrates viability of SIMD CSV parsing in safe language."
+        }
+      ]
+    },
+    {
+      "query": "vectorized text parsing branchless finite automaton bitmask",
+      "engine": "websearch",
+      "results": [
+        {
+          "source_url": "https://branchfree.org/2018/05/30/smh-the-swiss-army-chainsaw-of-shuffle-based-matching-sequences/",
+          "title": "SMH: Shuffle-based Matching Sequences (Geoff Langdale, 2018)",
+          "key_takeaway": "PSHUFB-based matching technique from Hyperscan. Uses shuffle instruction as lookup table for character classification. Core pattern: PSHUFB + PAND + comparison chain. Applies to any character class detection in SIMD."
+        },
+        {
+          "source_url": "https://ohyoukillkenny.github.io/source/BVA.pdf",
+          "title": "Regular Expression Matching using Bit Vector Automata (Le Glaunec et al.)",
+          "key_takeaway": "Uses bit-vector representations for NFA state sets. SIMD-friendly approach to regex matching. Relevant technique: representing automaton states as bitmasks and advancing via bitwise operations."
+        },
+        {
+          "source_url": "https://lemire.me/blog/2023/07/14/recognizing-string-prefixes-with-simd-instructions/",
+          "title": "Recognizing string prefixes with SIMD (Lemire, 2023)",
+          "key_takeaway": "Demonstrates SIMD techniques for string classification tasks. Shows how to use SIMD comparison instructions for multi-pattern matching."
+        }
+      ]
+    },
+    {
+      "query": "RFC 4180 CSV parser benchmark comparison arrow-csv xsv pandas throughput",
+      "engine": "websearch",
+      "results": [
+        {
+          "source_url": "https://discourse.julialang.org/t/csv-reader-benchmarks-julia-reads-csvs-10-20x-faster-than-python-and-r/41974",
+          "title": "Julia CSV Reader Benchmarks: 10-20x faster than Python",
+          "key_takeaway": "Julia's CSV.jl achieves 10-20x speedup over Python/R through multi-threaded parsing and type inference. Establishes that large speedups over pandas are achievable with better algorithms."
+        },
+        {
+          "source_url": "https://medium.com/@tilo-sloboda/smartercsv-1-15-2-faster-than-raw-csv-arrays-benchmarks-zsv-and-the-full-pipeline-2c12a798032e",
+          "title": "SmarterCSV 1.15.2 benchmarks (2026)",
+          "key_takeaway": "Ruby CSV parser using C backend. Benchmarks against zsv (SIMD C CSV parser). Shows that end-to-end pipeline optimization matters as much as raw parsing speed."
+        },
+        {
+          "source_url": "https://github.com/datapythonista/bench_csv",
+          "title": "bench_csv - CSV processing benchmarks for different technologies",
+          "key_takeaway": "Benchmark suite comparing CSV parsers across languages/frameworks. Useful reference for our benchmarking methodology."
+        }
+      ]
+    },
+    {
+      "query": "speculative execution in parsers parallel parsing quote state prediction",
+      "engine": "websearch",
+      "results": [
+        {
+          "source_url": "https://badrish.net/papers/dp-sigmod19.pdf",
+          "title": "Speculative Distributed CSV Data Parsing for Big Data Analytics (Ge et al., SIGMOD 2019)",
+          "key_takeaway": "KEY PAPER. Proposes speculation-based approach for parallel CSV parsing. Each chunk speculatively assumes quote-state context. Validates on 11,000+ real-world datasets. Shows speculation rarely fails due to statistical properties of CSV. Directly relevant to our item_016 parallel design."
+        },
+        {
+          "source_url": "https://ieeexplore.ieee.org/document/6332156",
+          "title": "Parallel Speculative DOM-based XML Parser (IEEE)",
+          "key_takeaway": "Applies speculative parallelism to XML parsing. Chunks are parsed independently with speculative context; misspeculations trigger re-parsing. Analogous approach to our CSV parallel parsing design."
+        },
+        {
+          "source_url": "https://www.sciencedirect.com/science/article/pii/S0167642315002610",
+          "title": "Parallel parsing made practical (ScienceDirect, 2015)",
+          "key_takeaway": "Theoretical framework for parallel parsing of operator-precedence grammars. PAPAGENO toolchain. Shows that text can be split into chunks with speculative state resolution at boundaries."
+        },
+        {
+          "source_url": "https://www.postgresql.org/message-id/CA%2BK2RumH-b%3D3-v0rfQ-oAbuQFxY8JLSSpVhmaJn%2BgRnX3t1_vg%40mail.gmail.com",
+          "title": "PostgreSQL: Speed up COPY FROM text/CSV parsing using SIMD (pgsql-hackers, 2025)",
+          "key_takeaway": "Active PostgreSQL development effort to add SIMD-accelerated CSV parsing to COPY FROM. Shows industry adoption of SIMD CSV parsing techniques. Uses similar approach to our structural character detection."
+        }
+      ]
+    },
+    {
+      "query": "PCLMULQDQ carry-less multiplication prefix XOR quote parity CSV parser",
+      "engine": "websearch",
+      "results": [
+        {
+          "source_url": "https://lists.sr.ht/~skeeto/public-inbox/%3CCABwTFSrDpNkmJs6TpkAfofcZq6e8YWaJUur20xZBz7mDBnvQ2w%40mail.gmail.com%3E",
+          "title": "Geoff Langdale email on PCLMULQDQ for quote pairing",
+          "key_takeaway": "Langdale describes inventing the CLMUL quote-pairing trick for simdjson. Multiplying quote bitmask by -1 via carry-less multiply transforms quote positions into quoted-region mask. ARM equivalent: PMULL. Key insight: this is prefix-XOR computed in hardware."
+        },
+        {
+          "source_url": "https://www.intel.com/content/www/us/en/content-details/724272/intel-carry-less-multiplication-instruction-and-its-usage-for-computing-the-gcm-mode.html",
+          "title": "Intel PCLMULQDQ specification and GCM mode usage",
+          "key_takeaway": "Intel's official documentation on carry-less multiplication. Originally designed for AES-GCM crypto. Repurposed for parsing by simdjson team. Available on all modern x86-64 processors since Westmere (2010)."
+        },
+        {
+          "source_url": "https://github.com/friendlymatthew/simdcsv",
+          "title": "friendlymatthew/simdcsv - uses PCLMULQDQ for CSV quote pairing",
+          "key_takeaway": "Practical Rust implementation demonstrating PCLMULQDQ for CSV quote-state computation. Includes both x86 and ARM paths. Shows the technique works correctly for RFC 4180 quoted fields with embedded delimiters."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_queries": 6,
+    "total_results": 23,
+    "key_papers_identified": [
+      "Langdale & Lemire 2019 (simdjson)",
+      "Ge et al. SIGMOD 2019 (speculative CSV parsing)",
+      "Koekkoek & Lemire 2024 (simdzone)",
+      "Keiser & Lemire (on-demand JSON)",
+      "Le Glaunec et al. (bit vector automata)",
+      "Barenghi et al. 2015 (parallel parsing made practical)"
+    ],
+    "key_implementations_identified": [
+      "geofflangdale/simdcsv (C++, reference SIMD CSV)",
+      "friendlymatthew/simdcsv (Rust, PCLMULQDQ)",
+      "medialab/simd-csv (Rust, active crate)",
+      "fastcsv (Rust, RFC 4180 SIMD)",
+      "cisv (C, branchless)",
+      "nullprogram csvquote (C, SIMD+CLMUL)"
+    ]
+  }
+}

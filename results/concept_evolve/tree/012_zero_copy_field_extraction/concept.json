@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "zero_copy_field_extraction",
+  "description": "For string-type columns, avoid copying field data by producing offset-length pairs pointing into the memory-mapped input buffer. Only fields requiring unescape (embedded double-quotes) get copied. Leverages the observation that most CSV fields are simple unquoted values.",
+  "domains": ["operating systems (zero-copy I/O, mmap)", "database systems (late materialization)", "network protocol parsing (zero-copy buffers)"],
+  "mathematical_formalization": "C_full = F_total * avg_len * C_memcpy. C_zero = F_escape * avg_escaped_len * C_memcpy + F_total * sizeof(offset). When F_escape/F_total < 10%, speedup ~ avg_len / sizeof(offset) ~ 10-50x for extraction.",
+  "analogical_connections": [
+    "Linux sendfile/splice: zero-copy network I/O",
+    "Database late materialization: only materialize when needed",
+    "Cap'n Proto / FlatBuffers: zero-copy serialization formats"
+  ],
+  "implementation_hypothesis": "mmap input file. Phase 1 produces (offset, length, needs_unescape) tuples. For needs_unescape=false, return &input[offset..offset+length]. For escaped fields, copy to escape buffer removing doubled quotes.",
+  "experiment_seed": "Profile throughput on 5GB CSV with 5%, 20%, 50% fields requiring unescape. Measure memory copy bytes saved and RSS usage."
+}

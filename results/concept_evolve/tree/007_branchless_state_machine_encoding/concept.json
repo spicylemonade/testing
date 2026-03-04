@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "branchless_state_machine_encoding",
+  "description": "Encode the CSV parser's state machine transitions as arithmetic/bitwise operations instead of conditional branches, ensuring the CPU pipeline never stalls on mispredictions. CSV has only ~4 states, and transitions can be computed as lookup-table indexed operations.",
+  "domains": ["CPU microarchitecture (branch prediction)", "cryptography (constant-time programming)", "game development (branchless optimization)"],
+  "mathematical_formalization": "State encoding: NORMAL=0, IN_QUOTE=1, ESCAPE=2. Transition: next_state = T[current_state][char_class]. Branchless: next_state = (state & quote_mask) ^ (char_class & transition_bits). All computed with AND/OR/XOR, zero branches.",
+  "analogical_connections": [
+    "Constant-time cryptography: CMOV and bitwise select to prevent timing leaks",
+    "GPU predicated execution: both branches evaluated, result selected by predicate",
+    "Digital circuit combinational logic: state machines without conditional branching"
+  ],
+  "implementation_hypothesis": "Encode state as integer 0-2, char class as 0-4. Compute next_state = LOOKUP[state * 5 + char_class] via 15-entry u8 array. Use CMOV for field/row emit signals.",
+  "experiment_seed": "Measure branch misprediction rates on CSV with varying quote patterns. Compare branchy vs. branchless. Expect <0.1% misprediction for branchless."
+}

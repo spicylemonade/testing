@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "two_phase_parsing_architecture",
+  "description": "Split CSV parsing into two distinct phases: Phase 1 (structural indexing) scans the entire input to build a complete structural index, and Phase 2 (field extraction) reads the index to extract and convert individual field values. This decouples I/O-bound scanning from compute-bound extraction.",
+  "domains": ["database systems (query execution models)", "compiler design (multi-pass compilation)", "operating systems (two-phase commit)"],
+  "mathematical_formalization": "Phase 1: T_1 = N / BW_mem (memory bandwidth bound). Phase 2: T_2(c) = F_c * C_extract per column, parallelizable. Total: T = T_1 + T_2. Amdahl: speedup = (T_1 + T_2_serial) / (T_1 + T_2_serial / C_threads).",
+  "analogical_connections": [
+    "simdjson Stage 1 + Stage 2: structural index then DOM construction",
+    "Compiler front-end/back-end split: lexing -> AST, code gen from AST",
+    "MapReduce: Map (scan/classify) then Reduce (aggregate into columns)"
+  ],
+  "implementation_hypothesis": "Phase 1: SIMD-scan in 64-byte chunks, produce Vec<u32> of field offsets and row offsets. Phase 2: for each column, iterate offsets with stride=column_count. Spawn one thread per column-group for parallel extraction.",
+  "experiment_seed": "Measure Phase 1 vs. Phase 2 time on 10GB CSV with 20 columns. Test Phase 2 parallelism scaling 1-16 threads."
+}

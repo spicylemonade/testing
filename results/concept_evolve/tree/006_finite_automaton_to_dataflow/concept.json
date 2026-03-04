@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "finite_automaton_to_dataflow",
+  "description": "Replace the traditional finite-state-machine (FSM) approach to CSV parsing with a data-flow graph where structural indices (bitmasks) flow through transformation stages. This decouples the parsing pipeline into independent stages that can be software-pipelined and parallelized, eliminating branch-heavy control flow.",
+  "domains": ["compiler design (dataflow analysis)", "hardware design (pipeline architecture)", "streaming systems"],
+  "mathematical_formalization": "Traditional FSM: state_{i+1} = delta(state_i, input_i), sequential chain of N. Dataflow: Stage1 -> Stage2 -> Stage3 -> Stage4, each processing W bytes independently. Pipeline throughput: T = min(T_stage_k). Improvement: W / C_fsm_per_byte.",
+  "analogical_connections": [
+    "CPU 5-stage RISC pipeline: bitmasks are data flowing between stages",
+    "Stream processing (Kafka/Flink): each stage is a stream operator",
+    "Signal processing filter chains: cascaded processing of data blocks"
+  ],
+  "implementation_hypothesis": "4 pipeline stages: (1) classify_block -> bitmasks, (2) resolve_quotes -> in_string mask, (3) apply_mask -> effective delimiters, (4) extract_fields -> column data. Software-pipeline blocks through these stages.",
+  "experiment_seed": "Compare FSM parser vs. pipelined dataflow parser. Measure ILP via perf counters. Profile stage balance. Target: IPC > 3.0."
+}

@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "simd_utf8_validation_fusion",
+  "description": "Fuse UTF-8 validation into the SIMD structural character detection pass, validating multi-byte sequences while simultaneously scanning for delimiters. Exploits the fact that CSV structural characters are all single-byte ASCII, so any byte >= 0x80 is non-structural.",
+  "domains": ["character encoding (Unicode)", "SIMD/vectorized computing", "compiler optimization (pass fusion)"],
+  "mathematical_formalization": "For valid UTF-8: structural_mask & utf8_continuation_mask == 0. Fused cost: C_fused = max(C_structural, C_utf8) vs. C_separate = C_structural + C_utf8. Saving: ~2 additional SIMD instructions per 32-byte block.",
+  "analogical_connections": [
+    "Lemire's simdutf library: validates and transcodes UTF-8 at GB/s",
+    "Compiler loop fusion: merging two passes over the same data",
+    "Video codec optimization: fusing entropy decode with inverse transform"
+  ],
+  "implementation_hypothesis": "After computing delimiter bitmasks, add UTF-8 checks: identify bytes >= 0x80, verify continuation byte patterns, validate leading byte length indicators. Reuse same SIMD register loads.",
+  "experiment_seed": "Benchmark fused vs. separate UTF-8 validation on pure ASCII, 10% non-ASCII, and 80% non-ASCII CSV. Verify malformed UTF-8 detection parity."
+}
