@@ -1,0 +1,284 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T12:00:00Z",
+  "updated_at": "2026-03-04T02:42:33.373968+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T12:00:00Z",
+      "completed_at": "2026-03-04T02:42:33.373953+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and tooling infrastructure",
+          "acceptance_criteria": "Produce a document (results/phase1/repo_analysis.md) listing all modules (.archivara/concept_evolve.py, .archivara/semantic_scholar.py, agent configs), their purposes, data flow between them, and how they will be used in later phases.",
+          "status": "pending",
+          "notes": "Must cover concept_evolve commands (evolve, probe, reframe, walk), semantic_scholar commands, and the multi-agent orchestration system.",
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive literature search on univalent Bloch constant using web and Semantic Scholar",
+          "acceptance_criteria": "Use websearch, Semantic Scholar search, and citation-graph mining (literature-graph-miner subagent) to find all papers on B_u and related constants. Produce results/phase1/literature_survey.md covering: (a) at least 15 distinct papers, (b) full citation chains from Ahlfors-Grunsky 1937 through Skinner 2009 and Carroll-Ortega-Cerda 2009, (c) any post-2009 work. Must include Bonk (1990), Bonk-Minda-Yanagihara (1996), Chen-Gauthier (1996), Chen-Shiba (2004), Beller-Hummel (1985), Skinner (2009), Carroll-Ortega-Cerda (2009), Bhowmik-Sen (2023), Baernstein-Vinson (1998), Rettinger (2008), Faulhuber (2019).",
+          "status": "pending",
+          "notes": "Delegate citation-graph mining to the literature-graph-miner subagent. Start from seed papers: Skinner 2009 (DOI:10.1080/17476930903197199), Carroll-Ortega-Cerda 2009 (DOI:10.1016/j.matpur.2009.05.008), Bhowmik-Sen 2023 (DOI:10.4153/S0008439523000346).",
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted papers",
+          "acceptance_criteria": "File sources.bib exists at repo root containing valid BibTeX entries for at least 15 distinct papers. Must include entries for: Skinner2009, CarrollOrtegaCerda2009, BhowmikSen2023, Yanagihara1995, BonkMindaYanagihara1996, Bonk1990, ChenGauthier1996, ChenShiba2004, BellerHummel1985, BaernsteinVinson1998, AhlforsGrunsky1937, Rettinger2008, GoodmanR1945, Faulhuber2019, OrtegaCerdaPridhnani2008. Each entry must have author, title, journal, year, DOI where available.",
+          "status": "pending",
+          "notes": "Use semantic_scholar bibtex command to generate entries. Manually verify and supplement as needed.",
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Deep-dive analysis of Skinner (2009) lower-bound technique",
+          "acceptance_criteria": "Produce results/phase1/skinner_analysis.md containing: (a) full mathematical derivation of B_u > 0.5708858, (b) identification of which coefficient/growth estimates for univalent functions are used, (c) explicit statement of where the argument is non-sharp and could be tightened, (d) list of at least 3 specific technical bottlenecks limiting the bound.",
+          "status": "pending",
+          "notes": "Fetch and analyze the Skinner 2009 paper. Key: understand the subordination argument and how the implicit function C(|z|) is constructed from Koebe-type bounds.",
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Deep-dive analysis of Carroll-Ortega-Cerda (2009) upper-bound technique",
+          "acceptance_criteria": "Produce results/phase1/carroll_oc_analysis.md containing: (a) description of the extremal domain construction (modified Goodman domain with threefold symmetry), (b) role of Fedorov's solution to the Polya-Chebotarev problem, (c) the conformal welding / harmonic symmetry argument, (d) the numerical value 0.6563937 and how it was computed, (e) at least 3 specific directions where the upper bound might be improved (e.g., domains with higher-order symmetry, numerical optimization of arc positions).",
+          "status": "pending",
+          "notes": "This paper establishes the only non-trivial upper bound. The task description mentions only the trivial bound B_u <= 1, but Carroll-Ortega-Cerda gives B_u <= 0.6563937. Understanding this is critical.",
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Concept-tree exploration: cross-domain reframing of the univalent Bloch constant problem",
+          "acceptance_criteria": "Run concept_evolve 'evolve' and 'reframe' commands on the topic 'univalent Bloch constant tight bounds extremal problem'. Results stored in results/concept_evolve/tree/ with at least 10 concept cards and 8 domain reframings. Produce results/phase1/concept_map.md summarizing the most promising cross-domain connections (e.g., spectral theory, Brownian motion, hyperbolic geometry, optimization, algebraic geometry).",
+          "status": "pending",
+          "notes": "Delegate concept exploration to concept-tree-explorer subagent after initial evolve/reframe runs. This is the Phase 1 subagent delegation item.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement numerical computation framework for B_f of specific univalent functions",
+          "acceptance_criteria": "Create src/bloch_numerics.py (or .jl) with functions to: (a) numerically compute B_f for a given univalent function f (via conformal mapping and disk-packing), (b) verify known results (e.g., B_f = 1 for the identity, B_f for Koebe function), (c) handle parametric families of univalent functions. Include unit tests in tests/ that pass. Must reproduce B_{identity} = 1 and B_{Koebe} to at least 6 decimal places.",
+          "status": "pending",
+          "notes": "B_f = sup{r : f(D) contains an univalent disk of radius r}. For the Koebe function k(z) = z/(1-z)^2, the image is C\\(-inf, -1/4] and B_f = 1/4 for the largest disk centered at the origin, but B_f in the Bloch sense needs careful definition.",
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Reproduce Skinner's lower bound B_u > 0.5708858 computationally",
+          "acceptance_criteria": "Implement Skinner's iterative subordination method in src/skinner_baseline.py. Running the script must produce a verified lower bound of at least 0.5708858 with full numerical details logged to results/phase2/skinner_reproduction.json. Include error analysis showing the computation is rigorous to the claimed precision.",
+          "status": "pending",
+          "notes": "This is the critical baseline. If we cannot reproduce the existing bound, we cannot improve it. Use interval arithmetic (mpmath or similar) for rigor.",
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement numerical upper-bound estimation via extremal domain search",
+          "acceptance_criteria": "Create src/upper_bound_numerics.py that: (a) parameterizes simply-connected domains with specified symmetry (threefold, fourfold, etc.), (b) computes the inner radius (inradius) of the largest disk contained in the domain, (c) computes conformal mapping from the disk to the domain and extracts f'(0), (d) optimizes over domain parameters to minimize B_f. Must reproduce a value consistent with Carroll-Ortega-Cerda's B_u <= 0.6563937 or better. Results logged to results/phase2/upper_bound_baseline.json.",
+          "status": "pending",
+          "notes": "Delegate exploration of domain parameterization strategies to a subagent. Use scipy or nlopt for optimization. Consider domains formed by removing arcs from a disk (Goodman-type domains).",
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Establish metrics framework and comparison table against prior work",
+          "acceptance_criteria": "Create results/phase2/metrics_summary.md with a table comparing: (a) our reproduced lower bound vs. Skinner 0.5708858, (b) our reproduced upper bound vs. Carroll-Ortega-Cerda 0.6563937, (c) computational time and precision for each method, (d) identification of the gap (upper - lower) and percentage improvement targets. Table must reference specific papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Attempt to improve the lower bound via refined coefficient estimates for univalent functions",
+          "acceptance_criteria": "In src/improved_lower_bound.py, implement at least 3 distinct refinement strategies beyond Skinner's method: (a) use de Branges theorem (formerly Bieberbach conjecture) coefficient bounds |a_n| <= n more effectively in the covering argument, (b) incorporate Fekete-Szego-type inequalities for sharper early-coefficient control, (c) use the Koebe distortion theorem with optimized parameters. Each strategy must produce a certified lower bound. If any bound exceeds 0.5708858, flag it prominently. Results in results/phase3/lower_bound_improvements.json with per-strategy bounds.",
+          "status": "pending",
+          "notes": "The de Branges theorem gives |a_n| <= n for f in S. Skinner may not have fully exploited higher-order coefficient information. Fekete-Szego: |a_3 - lambda * a_2^2| <= 1 + 2*exp(-2*lambda/(1-lambda)) for 0 < lambda < 1.",
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Attempt to improve the upper bound via optimized extremal domain construction",
+          "acceptance_criteria": "In src/improved_upper_bound.py, implement: (a) systematic search over Goodman-type domains (disk minus arcs) with n-fold symmetry for n = 2, 3, 4, 5, 6, (b) gradient-based optimization of arc positions, lengths, and curvatures, (c) exploration of non-Goodman domain families (e.g., domains with cusps, fractal-like boundaries). Each candidate must produce a valid upper bound via conformal mapping computation. If any bound is below 0.6563937, flag it. Results in results/phase3/upper_bound_improvements.json.",
+          "status": "pending",
+          "notes": "Carroll-Ortega-Cerda used threefold symmetry. Perhaps fourfold or higher symmetry yields a tighter bound. The key quantity to minimize is the conformal radius at the origin divided by the inradius of the domain.",
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Explore Brownian-motion / spectral-theory approach to B_u bounds",
+          "acceptance_criteria": "Produce results/phase3/probabilistic_approach.md documenting: (a) the connection between B_u and expected exit time of Brownian motion from simply connected domains, (b) relationship to principal eigenvalue of the Laplacian on the domain, (c) at least one concrete bound derived from this perspective. Implement any numerical estimates in src/brownian_bound.py. If the approach yields a new bound, include it in the improvements JSON. Must cite Baernstein-Vinson (1998) and any relevant probabilistic literature.",
+          "status": "pending",
+          "notes": "B_u is related to the maximal expected lifetime of Brownian motion started at the image of the origin, over all normalized univalent maps. This connects to Faber-Krahn type inequalities.",
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Concept-tree probe on the most promising bottleneck identified in Phase 1",
+          "acceptance_criteria": "Run concept_evolve 'probe' on the top bottleneck from item_006's concept map. Generate at least 5 forced bridges and 3 anomaly results in results/concept_evolve/tree/. Produce results/phase3/bottleneck_probe.md synthesizing the probe results into at least 2 actionable research directions not yet explored in items 011-013. Delegate synthesis to concept-tree-explorer subagent.",
+          "status": "pending",
+          "notes": "This is the Phase 3 subagent delegation item. The bottleneck should be the most constraining technical limitation identified in the Skinner or Carroll-Ortega-Cerda analysis.",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Investigate analytical improvement via hyperbolic metric comparison",
+          "acceptance_criteria": "Produce results/phase3/hyperbolic_approach.md exploring: (a) Ahlfors-type ultrahyperbolic metric arguments adapted to univalent functions, (b) comparison of hyperbolic metric on f(D) with the metric on D via the Schwarz-Pick lemma, (c) whether a refined Schwarz lemma (e.g., boundary Schwarz lemma, Beardon-Minda refinements) yields improved covering results. If a new bound is obtained, implement verification in src/hyperbolic_bound.py and include in improvements JSON.",
+          "status": "pending",
+          "notes": "The Schwarz-Pick lemma is central to classical Bloch constant theory. For univalent f, f(D) is a Jordan domain and the hyperbolic metric has special properties (no branch points). This should give stronger results than the general case.",
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Attempt combined lower-bound improvement using multiple techniques simultaneously",
+          "acceptance_criteria": "In src/combined_lower_bound.py, implement a combined approach that: (a) uses the best coefficient estimates from item_011, (b) incorporates hyperbolic metric refinements from item_015, (c) applies numerical optimization to find the tightest certified bound achievable by combining these tools. Must use interval arithmetic for rigor. The combined bound must be at least as good as Skinner's 0.5708858 (and ideally strictly better). Results in results/phase3/combined_bound.json.",
+          "status": "pending",
+          "notes": "The key insight is that different techniques may be sharp in different regions of the unit disk, and combining them could yield an overall improvement.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_017",
+          "description": "Systematic numerical experiment: scan over parameterized families of univalent functions",
+          "acceptance_criteria": "In src/experiments/function_scan.py, implement a systematic scan over: (a) polynomial univalent functions of degree 2-10, (b) rational univalent functions, (c) slit-domain mappings with varying slit geometry. For each family, compute B_f numerically and find the minimum. Results in results/phase4/function_scan.json with at least 1000 function evaluations. The minimum B_f found must be compared against our best lower bound.",
+          "status": "pending",
+          "notes": "This is a computational experiment to gain intuition about which functions minimize B_f. The near-extremal functions may suggest the shape of the true extremal domain.",
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Systematic numerical experiment: domain optimization for upper bound",
+          "acceptance_criteria": "In src/experiments/domain_optimization.py, run a large-scale optimization: (a) for each n-fold symmetry (n=2,3,4,5,6,8), optimize arc removal parameters to minimize B_f, (b) use multiple random restarts (at least 50 per symmetry class), (c) compare all results. Report the best upper bound found and its domain parameterization. Results in results/phase4/domain_optimization.json. Must include visualization of the best domains in figures/best_domains.png.",
+          "status": "pending",
+          "notes": "Delegate the visualization task to a subagent if needed. This is the Phase 4 subagent delegation item.",
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Rigorous verification of any improved bounds using interval arithmetic",
+          "acceptance_criteria": "For every bound that improves on the state of the art (lower > 0.5708858 or upper < 0.6563937), create a rigorous computer-assisted proof in src/verification/rigorous_check.py using interval arithmetic (mpmath.iv or similar). The verification script must: (a) certify each bound with explicit error bars, (b) print a clear PASS/FAIL for each bound, (c) log all intermediate computations. If no improved bound was found, document why and which approach came closest. Results in results/phase4/rigorous_verification.json.",
+          "status": "pending",
+          "notes": "Rigor is essential. A non-rigorous numerical estimate is interesting but does not constitute a mathematical bound.",
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Comparison of all results against prior work from literature review",
+          "acceptance_criteria": "Produce results/phase4/comparison_table.md with: (a) a comprehensive table of all bounds obtained in this project vs. all bounds from the literature (citing sources.bib), (b) percentage improvement (or shortfall) for each approach, (c) identification of which technique yielded the best result, (d) analysis of why certain approaches succeeded or failed. Must reference at least 10 papers from sources.bib.",
+          "status": "pending",
+          "notes": "This is the key evaluation deliverable. It must honestly report whether we achieved any improvement.",
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Sensitivity analysis of lower-bound methods to parameter choices",
+          "acceptance_criteria": "In results/phase4/sensitivity_analysis.md, document how the lower bound varies as a function of: (a) the number of coefficient terms used, (b) the choice of subordination function, (c) numerical precision settings. Include at least one plot (figures/sensitivity_plot.png) showing the convergence behavior. Identify the optimal parameter settings.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Write comprehensive research report",
+          "acceptance_criteria": "Produce results/paper/main.tex (or results/paper/report.md) containing: (a) Introduction with problem statement and motivation, (b) Literature review summarizing at least 15 papers from sources.bib, (c) Methods section describing all approaches attempted, (d) Results section with all bounds obtained (tables and figures), (e) Discussion analyzing what worked, what didn't, and why, (f) Conclusion with best bounds achieved and open questions. At least 10 pages (or 5000 words).",
+          "status": "pending",
+          "notes": "Delegate paper writing to the writer agent. Delegate peer review to the reviewer agent.",
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Create executive summary of findings",
+          "acceptance_criteria": "Produce results/executive_summary.md (max 2 pages) containing: (a) the best lower and upper bounds achieved, (b) whether any improvement over the state of the art was obtained, (c) the most promising avenue for future work, (d) a clear statement of the form 'Our best result: X < B_u < Y' with citations.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Final concept-tree walk and synthesis of all explored paths",
+          "acceptance_criteria": "Run concept_evolve 'walk' on all concept paths generated in Phases 1 and 3. Produce results/phase5/concept_synthesis.md summarizing: (a) which cross-domain ideas were most fruitful, (b) which dead-ended and why, (c) at least 3 concrete suggestions for future research based on unexplored concept paths. Delegate to concept-tree-explorer subagent.",
+          "status": "pending",
+          "notes": "This is the Phase 5 subagent delegation item. Must reference the concept_evolve tree structure.",
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Peer review of all results and claims",
+          "acceptance_criteria": "The reviewer agent must: (a) verify all mathematical claims and numerical results, (b) check that all bounds are correctly stated with proper citations, (c) identify any gaps in the argument or potential errors, (d) produce results/phase5/peer_review.md with a detailed review including verdict (accept/revise/reject) and specific revision requests if needed.",
+          "status": "pending",
+          "notes": "Delegate to reviewer agent. The review must be critical and honest.",
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Address peer-review feedback and finalize all deliverables",
+          "acceptance_criteria": "All revision requests from item_025 are addressed. Final versions of all key files are complete: sources.bib (15+ entries), results/paper/main.tex or report.md, results/executive_summary.md, all JSON result files. The README.md is updated to describe the project and its findings. All code in src/ runs without errors.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 26,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 26
+  }
+}
