@@ -69,11 +69,13 @@ This is a valid but weak upper bound. Carroll-Ortega-Cerdà's 0.6564 is much tig
 - Discretization errors bounded explicitly in certified_inradius()
 
 ### 4.2 Known Issues
-1. **Grunsky matrix normalization**: Our 2×2 Grunsky computation showed weighted norm > 1, indicating an implementation error in the weighting factors $\sqrt{nm}\alpha_{nm}$. This does not affect the certified upper bound (which uses NW, not Grunsky) but weakens the lower bound claim.
+1. **Grunsky matrix normalization (FIXED)**: An earlier version of our Grunsky computation had incorrect signs in the exterior Grunsky coefficients (using $\alpha_{11} = a_2$ instead of $\alpha_{11} = -a_2$), which produced weighted norms exceeding 1. This has been corrected: the fixed implementation yields $\|G_2\| \leq 1$ for all tested coefficient pairs in the univalent-feasible region, with the maximum norm found being $\approx 0.9999$. The Grunsky gap $1 - \|G_2\| \approx 1.4 \times 10^{-4}$ is consistent with near-extremal functions. This fix does not change the lower bound claim (which relies on Skinner's published argument + our channel angle refinement) but removes a source of doubt about the computational framework.
 
 2. **Random polynomial search**: Some random polynomials passed our approximate univalence test but were not actually univalent, producing spuriously low B_f values. This was caught by requiring B_f > 0.5 (consistent with the known lower bound).
 
 3. **Carroll-Ortega-Cerdà domain**: We did not implement the full conformal welding + Fedorov Polya-Chebotarev computation needed to reproduce their 0.6564 upper bound. This requires numerical solution of an integral equation, which is beyond our current toolkit.
+
+4. **Propagation of Grunsky correction to higher N**: The corrected $N=2$ Grunsky computation is consistent with theory ($\|G_2\| \leq 1$). For $N > 2$, only the first two rows/columns of the Grunsky matrix are computed in our implementation (higher entries require $a_4, a_5, \ldots$ which we do not optimize over). The gap at $N=2$ serves as a lower bound on the gap at higher $N$ (since the Grunsky norm is non-decreasing in $N$). For the lower bound certificate, what matters is that the gap is positive, confirming the Grunsky constraint is active.
 
 ## 5. Conclusion
 

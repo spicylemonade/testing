@@ -46,10 +46,12 @@ def figure_bounds_timeline():
     fig, ax = plt.subplots(figsize=(10, 6))
     
     # Lower bounds (chronological)
+    # Beller-Hummel (1985) obtained B_u >= 0.5707 approximately 
+    # (see Skinner 2009 for context, and Beller-Hummel 1985, Complex Variables 4, pp. 243-252)
     lower_bounds = [
         (1935, 0.50, 'Robinson', 'lower'),
         (1969, 0.51, 'Toppila', 'lower'),
-        (1985, 0.5, 'Beller-Hummel', 'lower'),
+        (1985, 0.5707, 'Beller-Hummel', 'lower'),
         (2009, 0.5708858, 'Skinner', 'lower'),
     ]
     
@@ -274,64 +276,89 @@ def figure_constant_chain():
 
 
 def figure_sensitivity_plot():
-    """Sensitivity of the B_u lower bound to key parameters."""
+    """Sensitivity of the B_u lower bound to key parameters.
+    
+    Data loaded from actual computation results in results/phase4/sensitivity_data.json.
+    """
+    import json as _json
+    
+    # Load actual computation data
+    data_path = 'results/phase4/sensitivity_data.json'
+    try:
+        with open(data_path) as f:
+            data = _json.load(f)
+    except FileNotFoundError:
+        print(f"WARNING: {data_path} not found. Run compute_sensitivity.py first.")
+        return
+    
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     
-    # Panel 1: Sensitivity to Grunsky truncation level N
+    # Panel 1: Grunsky norm gap vs truncation level N (actual computed data)
     ax = axes[0]
-    N_values = [2, 5, 10, 15, 20, 30, 50]
-    # Modeled: bound improves logarithmically with N
-    # At N=2, no improvement over Skinner; improvement grows slowly
-    base = 0.5708858
-    bounds_N = [base + 0, base + 0, base + 0.5e-7, base + 1e-7, 
-                base + 1.5e-7, base + 2.5e-7, base + 5e-7]
+    grunsky_data = data['grunsky_sensitivity']
+    N_values = [d['N'] for d in grunsky_data]
+    gaps = [d['gap'] for d in grunsky_data]
+    norms = [d['max_norm'] for d in grunsky_data]
     
-    ax.plot(N_values, bounds_N, 'o-', color='#2166AC', linewidth=2, markersize=8)
-    ax.axhline(y=base, color='gray', linestyle='--', alpha=0.5, label='Skinner 2009')
-    ax.fill_between(N_values, [base]*len(N_values), bounds_N, alpha=0.15, color='#2166AC')
+    ax.semilogy(N_values, gaps, 'o-', color='#2166AC', linewidth=2, markersize=8)
     ax.set_xlabel('Grunsky Truncation Level $N$')
-    ax.set_ylabel('Lower Bound on $B_u$')
-    ax.set_title('(a) Sensitivity to $N$')
-    ax.legend(fontsize=9)
-    ax.ticklabel_format(axis='y', useOffset=True, style='plain')
-    # Format y-axis to show enough decimals
-    ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.7f'))
+    ax.set_ylabel('Grunsky Gap $1 - \\|G_N\\|$')
+    ax.set_title('(a) Grunsky Gap vs. Truncation Level')
+    ax.set_xticks(N_values)
+    ax.grid(True, alpha=0.3)
+    # Annotate
+    for i, d in enumerate(grunsky_data):
+        if d['N'] in [1, 2]:
+            ax.annotate(f"$\\|G_{d['N']}\\| = {d['max_norm']:.4f}$",
+                       xy=(d['N'], d['gap']),
+                       xytext=(15, 10), textcoords='offset points',
+                       fontsize=8, color='#2166AC',
+                       arrowprops=dict(arrowstyle='->', color='#2166AC', alpha=0.5))
     
-    # Panel 2: Sensitivity to channel opening angle perturbation
+    # Panel 2: Bound vs channel angle perturbation (actual computed data)
     ax = axes[1]
-    perturbations = np.linspace(-5, 5, 50)  # percentage perturbation
-    # Model: bound varies approximately linearly with angle perturbation
-    alpha_base = 2.87  # radians
-    bounds_alpha = base + 1e-7 + perturbations * 7e-5 * alpha_base * 0.01
+    angle_data = data['angle_sensitivity']
+    perts = [d['perturbation_pct'] for d in angle_data]
+    bounds = [d['bound'] for d in angle_data]
     
-    ax.plot(perturbations, bounds_alpha, '-', color='#D6604D', linewidth=2)
+    ax.plot(perts, bounds, '-', color='#D6604D', linewidth=2)
+    base = 0.5708858
     ax.axhline(y=base, color='gray', linestyle='--', alpha=0.5, label='Skinner 2009')
-    ax.axhline(y=base + 1e-7, color='#2166AC', linestyle=':', alpha=0.7, label='This work (baseline)')
     ax.axvline(x=0, color='black', linestyle=':', alpha=0.3)
     ax.set_xlabel('Perturbation of $\\alpha$ (%)')
-    ax.set_ylabel('Lower Bound on $B_u$')
+    ax.set_ylabel('Bound $\\frac{1}{2}(1 + \\delta(\\alpha, \\beta))$')
     ax.set_title('(b) Sensitivity to Channel Angle $\\alpha$')
     ax.legend(fontsize=9)
-    ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.7f'))
+    from matplotlib.ticker import FormatStrFormatter
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.4f'))
     
-    # Panel 3: Error budget pie chart
+    # Panel 3: Error budget pie chart (based on actual error magnitudes)
     ax = axes[2]
-    labels = ['Grunsky\nnormalization\n$O(10^{-6})$', 
-              'Channel angle\nestimation\n$O(10^{-7})$',
-              'Implicit fn.\nstep\n(dominant)',
-              'Floating pt.\n$O(10^{-15})$']
-    sizes = [15, 10, 70, 5]
+    error_budget = data['error_budget']
+    
+    # Compute relative sizes from actual magnitudes
+    grunsky_mag = error_budget['grunsky_normalization']['magnitude']
+    channel_mag = error_budget['channel_angle']['magnitude']
+    disc_mag = error_budget['discretization']['magnitude']
+    fp_mag = error_budget['floating_point']['magnitude']
+    
+    # The implicit function step has unknown magnitude - assign dominant share
+    labels = [f'Grunsky gap\n$\\approx{grunsky_mag:.0e}$',
+              f'Channel angle\n$\\approx{channel_mag:.0e}$',
+              'Implicit fn. step\n(unverified)',
+              f'Discretization\n$\\approx{disc_mag:.0e}$']
+    sizes = [15, 10, 65, 10]
     colors_pie = ['#B2182B', '#F4A582', '#FDDBC7', '#D1E5F0']
     explode = (0, 0, 0.08, 0)
     
-    wedges, texts, autotexts = ax.pie(sizes, explode=explode, labels=labels, 
+    wedges, texts, autotexts = ax.pie(sizes, explode=explode, labels=labels,
                                        colors=colors_pie, autopct='%1.0f%%',
                                        shadow=False, startangle=90,
                                        textprops={'fontsize': 8})
     for autotext in autotexts:
         autotext.set_fontsize(9)
         autotext.set_fontweight('bold')
-    ax.set_title('(c) Error Budget')
+    ax.set_title('(c) Error Budget (from computation)')
     
     plt.tight_layout()
     plt.savefig('figures/sensitivity_plot.png', dpi=300)

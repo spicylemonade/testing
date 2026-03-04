@@ -68,19 +68,23 @@ $$w_i(\delta) \geq c_1 \sqrt{\delta}$$
 
 for a universal constant $c_1 > 0$ determined by the quadratic differential. This is because the boundary is locally like the critical trajectory of $Q(w) dw^2 \sim (w - p_i)^{-1} dw^2$.
 
-### 3.2 New Inequality
+### 3.2 Conjectured Inequality (formerly Proposition 3.3)
 
-**Proposition**: For the extremal function $f_*$ with inradius $R$:
+**Conjecture (Excess Bloch semi-norm inequality)**: For the extremal function $f_*$ with inradius $R$:
 
 $$R \geq \frac{1}{2} + \frac{1}{4\pi} \int_0^{2\pi} \left(|f'_*(re^{i\theta})|(1-r^2) - 1\right)^+ d\theta$$
 
-evaluated at $r = r_*$ where $r_*$ is the preimage radius of the maximal inscribed disk boundary.
+evaluated at $r = r_*$ where $r_*$ is the preimage radius of the maximal inscribed disk boundary, and where $(x)^+ = \max(x, 0)$.
 
-This inequality is NOT present in Skinner 2009 or Carroll 2008. It combines the Schwarz-Pick identity with the Jenkins contact point structure to extract additional positivity from the variational conditions.
+This inequality is not present in Skinner 2009 or Carroll 2008, though it may be implicit in existing Schwarz-Pick analysis (see Remark below). It combines the Schwarz-Pick identity with the Jenkins contact point structure to extract additional positivity from the variational conditions.
 
-### 3.3 Proof Sketch
+**Status**: We state this as a conjecture rather than a proposition, because the full proof requires a rigorous justification of the passage from the pointwise Schwarz-Pick bound to the integrated inequality. The key gap is showing that the supremum of the integrand over $r$ can be exchanged with the integral; this appears to require a refined estimate on the angular distribution of $|f'(re^{i\theta})|$ for near-extremal functions. We provide numerical evidence below.
+
+### 3.3 Heuristic Argument
 
 The integral term captures the excess of the Bloch semi-norm $|f'(z)|(1-|z|^2)$ over its minimum value 1 (at $z=0$ for the normalized function). By the Jenkins criterion, the extremal function cannot have this semi-norm equal to 1 everywhere (that would make it a Möbius transform with infinite image, contradicting finite inradius). The integral quantifies this excess.
+
+**Remark**: The idea of bounding the inradius via the integrated excess of the Bloch semi-norm is related to classical Schwarz-Pick analysis (cf. Minda 1986 \cite{minda1986}, Beardon-Pommerenke). However, the specific inequality stated here, combining the integral over the $(x)^+$ truncation with the Jenkins contact structure, does not appear explicitly in the prior literature to the best of our knowledge.
 
 ## 4. Numerical Verification
 

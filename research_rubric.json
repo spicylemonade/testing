@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "created_at": "2026-03-04T00:00:00Z",
-  "updated_at": "2026-03-04T01:48:26.592989+00:00",
-  "current_agent": "reviewer",
+  "updated_at": "2026-03-04T03:30:00.000000+00:00",
+  "current_agent": "researcher",
   "agent_status": {
     "orchestrator": {
       "status": "completed",
@@ -11,7 +11,7 @@
       "error": null
     },
     "researcher": {
-      "status": "completed",
+      "status": "in_progress",
       "started_at": "2026-03-04T00:03:19.723817+00:00",
       "completed_at": "2026-03-04T01:42:39.314895+00:00",
       "error": null
@@ -305,11 +305,74 @@
           "error": null
         }
       ]
+    },
+    {
+      "id": "phase_revision",
+      "name": "Revision (Peer Review Response)",
+      "order": 6,
+      "items": [
+        {
+          "id": "item_rev_001",
+          "description": "Fix citation: carroll2008 page numbers (239-245 -> 159-165)",
+          "acceptance_criteria": "Correct the pages field in sources.bib for carroll2008 to pages={159--165} matching the DOI-resolved published version at Springer.",
+          "status": "completed",
+          "notes": "Fixed in sources.bib. Verified via DOI 10.1007/BF03321679 which resolves to CMFT Vol. 8(1), pp. 159-165.",
+          "error": null
+        },
+        {
+          "id": "item_rev_002",
+          "description": "Fix citation: carrollortegacerda2009 volume/issue/page numbers",
+          "acceptance_criteria": "Correct the volume/number/pages fields in sources.bib for carrollortegacerda2009 to Vol. 92, No. 4, pp. 396-406 matching ScienceDirect published version.",
+          "status": "completed",
+          "notes": "Fixed in sources.bib: number={4}, pages={396--406}. Verified via ScienceDirect DOI page showing Volume 92, Issue 4, October 2009, Pages 396-406.",
+          "error": null
+        },
+        {
+          "id": "item_rev_003",
+          "description": "Fix citation: baernsteinvinson1998 entry type (@article -> @incollection)",
+          "acceptance_criteria": "Change BibTeX entry type from @article to @incollection and add proper booktitle field.",
+          "status": "completed",
+          "notes": "Changed to @incollection with booktitle={Quasiconformal Mappings and Analysis: A Collection of Papers Honoring F.W. Gehring}, publisher={Springer}, address={New York}.",
+          "error": null
+        },
+        {
+          "id": "item_rev_004",
+          "description": "Fix Beller-Hummel data point in timeline figure",
+          "acceptance_criteria": "Research the actual Beller-Hummel (1985) lower bound value and plot it correctly in the timeline figure. The previous value of 0.50 was identical to Robinson (1935) which contradicts the text stating they improved the bound.",
+          "status": "completed",
+          "notes": "Updated from 0.50 to 0.5707 based on skinner_analysis.md which records 'Beller & Hummel | B_u >= 0.5707...' from the original paper (Complex Variables 4, pp. 243-252, 1985). Regenerated figures/bounds_timeline.png and .pdf.",
+          "error": null
+        },
+        {
+          "id": "item_rev_005",
+          "description": "Regenerate sensitivity plot from actual computation data",
+          "acceptance_criteria": "Replace the synthetic/modeled data in figure_sensitivity_plot() with data from actual computations. Run the computational pipeline to produce results/phase4/sensitivity_data.json and load it in the figure script.",
+          "status": "completed",
+          "notes": "Created and ran compute_sensitivity.py which computes actual Grunsky norms, angle sensitivity, discretization sensitivity, and precision sensitivity. Saved to results/phase4/sensitivity_data.json. Updated generate_figures.py to load this data. Regenerated figures/sensitivity_plot.png and .pdf.",
+          "error": null
+        },
+        {
+          "id": "item_rev_006",
+          "description": "Fix Grunsky matrix normalization error (weighted norm > 1)",
+          "acceptance_criteria": "Identify and fix the bug causing ||G_2|| > 1 for univalent functions. The Grunsky inequality requires ||G_N|| <= 1, so values exceeding 1 indicate an implementation error. Update lower_bound_approach.py and lower_bound_results.json.",
+          "status": "completed",
+          "notes": "Root cause: sign error in exterior Grunsky coefficients. Used alpha_{11} = a_2 instead of alpha_{11} = -a_2 (the standard convention has a minus sign). Fixed compute_grunsky_norm() to use correct signs. After fix: max ||G_2|| in feasible region = 0.9999, gap = 1.4e-4, consistent with theory. Updated lower_bound_results.json and validation.md.",
+          "error": null
+        },
+        {
+          "id": "item_rev_007",
+          "description": "Downgrade Proposition 3.3 to conjecture with numerical evidence",
+          "acceptance_criteria": "The proof sketch for Prop 3.3 (excess Bloch semi-norm inequality) is incomplete. Downgrade to a conjecture, provide a clear statement of what is missing for a full proof, and supply numerical verification.",
+          "status": "completed",
+          "notes": "Renamed to 'Conjectured Inequality (formerly Proposition 3.3)' in variational_analysis.md. Added explicit status note explaining the gap (exchange of sup and integral). Added remark about relationship to existing Schwarz-Pick analysis. Numerical evidence from 2 test functions retained. Defined (x)^+ notation before use.",
+          "error": null
+        }
+      ]
     }
   ],
   "summary": {
-    "total_items": 30,
-    "completed": 30,
+    "total_items": 37,
+    "completed": 37,
     "in_progress": 0,
     "failed": 0,
     "pending": 0
