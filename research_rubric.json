@@ -1,0 +1,302 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T12:00:00Z",
+  "updated_at": "2026-03-04T19:03:37.453887+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T12:00:00Z",
+      "completed_at": "2026-03-04T19:03:37.453870+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "research_target": "Fused Single-Pass SIMD JSON Parser: Beating simdjson with Speculative Structural Indexing and Zero-Copy On-Demand Parsing",
+  "viral_thesis": "simdjson parses JSON at gigabytes per second using a two-pass SIMD approach (structural indexing then tape generation). We hypothesize that fusing these passes via speculative execution \u2014 borrowing branch prediction concepts from CPU microarchitecture \u2014 combined with AVX-512 VBMI2 compress-store instructions and a novel predictive structural classifier, can eliminate the second pass entirely for common JSON shapes, achieving 1.5-3x speedup over simdjson 4.3 on real-world workloads. A JSON parser that verifiably beats the fastest parser in the world would generate massive excitement.",
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Deep analysis of repository structure and Archivara framework capabilities",
+          "acceptance_criteria": "Produce results/analysis/repo_structure.md documenting: (1) all modules in .archivara/ and .opencode/, (2) how concept_evolve.py orchestrates sub-agents, (3) how semantic_scholar.py interfaces with the API, (4) the 5 agent roles and their tool permissions, (5) data flow diagram from orchestrator through researcher to writer/reviewer. Minimum 500 words with code references.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Comprehensive literature review on SIMD JSON parsing using web search and Semantic Scholar",
+          "acceptance_criteria": "Search the web and Semantic Scholar for at least 20 papers/resources on: (1) simdjson architecture (Lemire & Langdale 2019 VLDB, simdjson 4.3 2026), (2) SIMD string processing (Langdale & Lemire structural indexing), (3) branchless programming techniques, (4) AVX-512 VBMI2/VPCOMPRESSB applications, (5) speculative execution in parsers, (6) zero-copy DOM designs, (7) GPU-accelerated parsing. Create sources.bib in repo root with at least 15 BibTeX entries. Produce results/literature/json_parsing_survey.md with structured summary of each paper's key contribution and relevance.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Analyze simdjson source code architecture and identify performance ceilings",
+          "acceptance_criteria": "Document in results/analysis/simdjson_architecture.md: (1) the two-pass design (structural indexing pass + tape generation pass), (2) how SIMD classifies structural characters using lookup tables, (3) the bit manipulation for quote/escape tracking, (4) the on-demand API vs DOM API performance tradeoffs, (5) known bottlenecks from simdjson's own issue tracker and benchmarks. Include specific throughput numbers (GB/s) from simdjson benchmarks on twitter.json, github_events.json, and other standard test files.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Cross-domain concept tree exploration for novel parsing acceleration ideas",
+          "acceptance_criteria": "Use concept_evolve tool with 'evolve' command on topic 'speculative execution in data parsing' to generate concept cards. Results must appear in results/concept_evolve/tree/ with: (1) at least 10 cross-domain concept cards spanning CPU architecture, compiler optimization, GPU computing, database query processing, and network packet parsing, (2) adjacency graph with at least 15 edges, (3) DFS walk producing at least 5 novel connection paths. Delegate to concept-tree-explorer subagent for path analysis.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Competitive landscape analysis: catalog every JSON parser claiming >1 GB/s throughput",
+          "acceptance_criteria": "Search the web for all high-performance JSON parsers (simdjson, RapidJSON, sajson, yyjson, sonic-json, simd-json-rs, etc.). Produce results/analysis/competitive_landscape.md with table: parser name, language, peak throughput (GB/s), SIMD ISA used, algorithmic approach, year, and citation. At least 8 parsers cataloged. Add all cited sources to sources.bib. Use literature-graph-miner subagent to mine citation chains from the simdjson VLDB paper to find derivative and competing work.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Identify the theoretical performance ceiling for JSON parsing on modern hardware",
+          "acceptance_criteria": "Calculate and document in results/analysis/theoretical_ceiling.md: (1) memory bandwidth ceiling on target hardware (e.g., DDR5-4800 dual channel = ~77 GB/s, L2 cache bandwidth ~500 GB/s), (2) SIMD throughput ceiling (AVX-512 at 64 bytes/cycle), (3) instruction throughput limits from uops analysis, (4) branch misprediction overhead model for JSON's inherent unpredictability, (5) Amdahl's law analysis showing what fraction of simdjson's work is parallelizable and what the maximum speedup could be. Include concrete numeric predictions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Build reproducible benchmark harness with standard JSON test corpus",
+          "acceptance_criteria": "Create benchmark/ directory with: (1) C/C++ harness using Google Benchmark or custom high-resolution timer, (2) standard test files: twitter.json (~630KB), github_events.json (~65KB), canada.json (~2.2MB), citm_catalog.json (~1.7MB), mesh.json, and at least 2 synthetic stress-test files (deeply nested, wide arrays, long strings), (3) warm-up and statistical rigor: minimum 100 iterations, report mean/median/p99/stddev, (4) hardware counter integration via perf_event_open or PAPI for IPC, branch misses, cache misses, (5) Makefile or build script that compiles with -O3 -march=native -mavx512f -mavx512bw -mavx512vbmi2. All benchmarks must be runnable with a single command.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Baseline simdjson 4.x performance measurement on target hardware",
+          "acceptance_criteria": "Compile simdjson (latest release) and run full benchmark suite. Produce results/baselines/simdjson_baseline.json with: (1) throughput in GB/s for each test file, (2) hardware counters (IPC, branch miss rate, L1/L2/L3 miss rates, instructions retired), (3) per-stage breakdown if possible (indexing pass time vs tape pass time), (4) comparison between simdjson DOM API and On-Demand API, (5) results for both AVX2 and AVX-512 code paths. Generate figures/simdjson_baseline_throughput.png bar chart. All numbers must be reproducible within 5% variance.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Baseline measurements for all competing parsers from literature review",
+          "acceptance_criteria": "Build and benchmark at least 4 competing parsers (yyjson, RapidJSON, sajson, sonic-json or equivalent) on the same test corpus and hardware. Produce results/baselines/competing_parsers.json with same metrics as item_008. Generate figures/baseline_comparison.png grouped bar chart. Document any compilation or compatibility issues. This establishes the performance frontier that our novel approach must exceed.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Profile simdjson hot paths and quantify the two-pass overhead",
+          "acceptance_criteria": "Use perf record/report or Intel VTune to produce fine-grained profiling of simdjson. Produce results/profiling/simdjson_hotspots.md documenting: (1) top 10 hottest functions by cycles, (2) percentage of time in structural indexing vs tape generation vs validation, (3) specific assembly-level bottlenecks (port pressure, latency chains), (4) quantify exactly how much time the second pass (tape generation) takes as a fraction of total \u2014 this is our optimization target. (5) Identify any memory-bandwidth vs compute-bound transitions across different file sizes. Use concept_evolve 'probe' command on 'simdjson two-pass overhead bottleneck' for cross-domain insight.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "JSON structural statistics analysis to inform speculative prediction",
+          "acceptance_criteria": "Write a tool that analyzes JSON files and extracts structural statistics: (1) distribution of token types (string, number, bool, null, array, object), (2) nesting depth histogram, (3) average object key count and value type distribution, (4) string length distribution, (5) number format distribution (int vs float, digit count), (6) structural character density (ratio of {}[]:, to total bytes). Run on entire test corpus. Produce results/analysis/json_statistics.json and results/analysis/json_statistics.md. These statistics directly inform the design of the speculative predictor in Phase 3.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Design and implement speculative single-pass fused structural indexer + tape generator",
+          "acceptance_criteria": "Implement in C (with AVX-512 intrinsics) a novel fused parser that: (1) performs structural character classification AND tape/DOM construction in a single pass over the input, (2) uses speculative execution: predicts likely structure based on preceding context (e.g., after '{' expect string key, after ':' expect value), speculatively writes tape entries, and corrects on misprediction, (3) leverages VPCOMPRESSB (AVX-512 VBMI2) for branchless extraction of structural characters into dense buffers, (4) implements a lightweight finite automaton that validates UTF-8, tracks nesting, and builds the output representation simultaneously, (5) handles the 'easy path' (well-structured, shallow JSON) with zero branches in the hot loop. Code must compile and pass basic correctness tests. Produce src/fused_parser.c and src/fused_parser.h.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement predictive structural classifier using JSON shape statistics",
+          "acceptance_criteria": "Build a prediction module (src/predictor.c, src/predictor.h) that: (1) maintains a small (<=256 byte) prediction state encoding recent structural patterns, (2) predicts the next N structural characters given current context using a precomputed lookup table trained on the JSON statistics from item_011, (3) achieves >85% prediction accuracy on the standard test corpus, (4) prediction check and correction path costs at most 2 extra instructions on the fast path (correct prediction) and at most 15 instructions on the slow path (misprediction), (5) prediction accuracy and overhead measured and documented in results/experiments/predictor_accuracy.json. Concept tree exploration: use concept_evolve 'reframe' on 'branch prediction applied to data parsing' across CPU architecture, compression, and machine learning domains.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement zero-copy arena-based on-demand DOM with SIMD-accelerated string handling",
+          "acceptance_criteria": "Implement output representation (src/arena_dom.c, src/arena_dom.h) that: (1) uses a single contiguous arena allocation (no per-node malloc), (2) strings are represented as (pointer, length) pairs pointing directly into the original input buffer \u2014 true zero-copy for unescaped strings, (3) escaped strings are lazily decoded only when accessed (on-demand), (4) number parsing deferred to access time with SIMD-accelerated fast paths (Eisel-Lemire for floats, SWAR for integers), (5) total memory overhead is at most 8 bytes per JSON value (vs simdjson's ~16 bytes per tape entry). Correctness: parse and re-serialize all test files, verify byte-identical output.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement branchless UTF-8 validation fused into the parsing hot loop",
+          "acceptance_criteria": "Implement UTF-8 validation (src/utf8_validate.c) that: (1) validates UTF-8 simultaneously with structural parsing using the Keiser-Lemire SIMD approach (lookup-based), (2) fused into the single-pass parser so validation adds zero additional passes over the data, (3) correctly rejects all invalid UTF-8 sequences per RFC 8259, (4) passes the full simdjson UTF-8 adversarial test suite if available, (5) overhead of UTF-8 validation measured at less than 10% of total parsing time. Reference and compare against prior work from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement adaptive multi-strategy parser with runtime ISA detection",
+          "acceptance_criteria": "Create src/dispatch.c that: (1) detects available SIMD ISA at runtime (SSE4.2, AVX2, AVX-512, AVX-512 VBMI2) using CPUID, (2) dispatches to optimized code path for each ISA level, (3) includes a portable scalar fallback that is still competitive with RapidJSON, (4) the AVX-512 VBMI2 path uses the full fused speculative parser from item_012, (5) the AVX2 path uses a degraded but still fused approach, (6) all paths produce identical output for identical input (verified by test suite). This ensures the parser works on any x86-64 machine, maximizing adoption potential.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Concept tree deep-dive: explore 3 alternative radical approaches via subagent delegation",
+          "acceptance_criteria": "Use concept_evolve 'evolve' and delegate to concept-tree-explorer subagent to deeply explore 3 alternative approaches: (1) GPU-assisted pre-classification where a compute shader classifies all bytes in parallel before CPU parsing, (2) FPGA/SmartNIC-inspired pipeline parsing where each stage handles one aspect (quote tracking, nesting, type classification) in a deep pipeline, (3) learned index structures for JSON where a small neural network predicts the location of structural characters. For each: produce a concept card in results/concept_evolve/tree/, feasibility analysis (1 page), and go/no-go decision with justification. At least one must be prototyped to proof-of-concept level if deemed feasible.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Full correctness validation against JSON Test Suite and simdjson test corpus",
+          "acceptance_criteria": "Run parser against: (1) Nicolas Seriot's JSON Test Suite (https://github.com/nst/JSONTestSuite) \u2014 all y_*, n_*, and i_* test cases, (2) simdjson's own test files, (3) real-world JSON from APIs (Twitter, GitHub, GeoJSON). Produce results/correctness/test_results.json with: pass/fail for each test case, total pass rate. Acceptance: 100% agreement with simdjson on all y_ (must accept) and n_ (must reject) cases. Any i_ (implementation-defined) disagreements documented with justification.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Head-to-head throughput benchmark against simdjson on all test files",
+          "acceptance_criteria": "Run full benchmark suite (from item_007) comparing our fused parser against simdjson (both DOM and On-Demand APIs). Produce results/experiments/throughput_comparison.json with: (1) throughput in GB/s for each file, each parser, (2) speedup ratio (our parser / simdjson), (3) hardware counter comparison (IPC, branch misses, cache misses), (4) statistical significance via confidence intervals. Generate figures/throughput_comparison.png and figures/speedup_chart.png. Target: achieve >= 1.3x speedup on at least 3 of the standard test files. Compare results against competing parsers from item_009 and prior work throughput numbers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Ablation study: measure contribution of each novel component",
+          "acceptance_criteria": "Disable each novel component independently and measure throughput: (1) fused single-pass vs simdjson-style two-pass, (2) with vs without speculative predictor, (3) with vs without VPCOMPRESSB optimization, (4) with vs without zero-copy arena DOM, (5) with vs without fused UTF-8 validation. Produce results/experiments/ablation_study.json and figures/ablation_study.png stacked bar chart showing each component's contribution to overall speedup. This is critical for the paper to demonstrate that the speedup is not from a single trick but from a novel system design.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Scaling analysis: throughput vs input size and structural complexity",
+          "acceptance_criteria": "Measure throughput across: (1) file sizes from 1KB to 1GB (at least 8 sizes, log-spaced), (2) nesting depths from 1 to 100, (3) varying structural density (ratio of structural chars), (4) varying string lengths (short keys vs long values). Produce results/experiments/scaling_analysis.json and figures/scaling_curves.png (multi-panel figure). Document any crossover points where our approach is slower than simdjson and explain why. Investigate cache effects: identify the L1/L2/L3 capacity boundaries visible in the throughput curves.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Prediction accuracy and misprediction cost analysis",
+          "acceptance_criteria": "Measure the speculative predictor's performance: (1) prediction accuracy per test file, (2) misprediction rate by JSON structure type (object, array, string, number), (3) cycle cost of correct prediction vs misprediction, (4) comparison of prediction accuracy on well-structured vs adversarial JSON, (5) adaptive predictor warmup time analysis. Produce results/experiments/prediction_analysis.json and figures/prediction_accuracy.png. Delegate analysis of prediction patterns to concept-tree-explorer subagent to identify if there are concept tree paths suggesting improved prediction strategies.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Cross-platform evaluation: AVX2 vs AVX-512 vs scalar fallback performance",
+          "acceptance_criteria": "Benchmark all three ISA paths on the full test corpus (can simulate AVX2-only by masking CPUID if needed). Produce results/experiments/cross_platform.json with: (1) throughput for each ISA level on each test file, (2) speedup of AVX-512 over AVX2, AVX2 over scalar, (3) verify scalar path still beats RapidJSON by at least 1.2x, (4) document the ISA-specific optimizations that matter most. Generate figures/cross_platform_comparison.png. This demonstrates the parser is not a one-trick pony that only works on bleeding-edge hardware.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Synthesize findings into a compelling research paper with publication-quality figures",
+          "acceptance_criteria": "Write research_paper.tex (LaTeX, ACM or IEEE format) with: (1) Abstract highlighting the key result (Nx speedup over simdjson), (2) Introduction motivating why faster JSON parsing matters (cite web traffic statistics, API call volumes), (3) Background on simdjson's two-pass approach with clear explanation accessible to non-experts, (4) Our Approach section detailing fused single-pass design, speculative prediction, and zero-copy DOM, (5) Evaluation with all figures from Phase 4, (6) Related Work section citing at least 10 papers from sources.bib, (7) Conclusion with limitations and future work. Paper should be 10-14 pages. All figures must be publication quality (vector PDF preferred).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Write Twitter/social-media-optimized summary for viral dissemination",
+          "acceptance_criteria": "Produce results/social/viral_summary.md containing: (1) a compelling 280-character tweet announcing the result with concrete speedup number, (2) a Twitter thread (10-15 tweets) explaining the approach progressively from simple analogy to technical detail, (3) a single hero figure (figures/hero_chart.png) showing the dramatic speedup bar chart optimized for social media (large fonts, clear colors, dramatic comparison), (4) a 1-paragraph 'explain like I'm 5' summary, (5) key talking points for Hacker News / Reddit discussions. The framing must make clear this is a real, verifiable result, not vaporware.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Complete sources.bib with all cited works and verify citation completeness",
+          "acceptance_criteria": "Final sources.bib must contain: (1) at least 15 unique BibTeX entries, (2) all papers referenced in research_paper.tex, (3) every entry must have: author, title, year, and venue/url, (4) entries for simdjson (original and follow-ups), competing parsers, SIMD techniques, speculative execution literature, UTF-8 validation, and floating-point parsing. Use semantic_scholar bibtex command to generate entries where possible. Cross-check that every \\cite{} in the paper has a corresponding entry.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Peer review simulation and response to anticipated criticisms",
+          "acceptance_criteria": "Produce results/review/peer_review.md addressing: (1) 'Is the comparison fair?' \u2014 document exact compiler flags, hardware, simdjson version, warmup methodology, (2) 'Does it fully validate JSON?' \u2014 reference correctness results from item_018, (3) 'Does it only work on AVX-512?' \u2014 reference cross-platform results from item_023, (4) 'Is speculative prediction just overfitting to benchmarks?' \u2014 show prediction works on unseen real-world JSON, (5) 'What about memory safety?' \u2014 document buffer handling and bounds checking approach, (6) at least 3 additional anticipated criticisms with responses. Delegate to literature-graph-miner subagent to find any recent work (2025-2026) that might challenge our claims.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_028",
+          "description": "Reproducibility package and open-source release preparation",
+          "acceptance_criteria": "Produce results/reproducibility/README.md with: (1) exact build instructions (compiler, flags, dependencies), (2) exact hardware specification used for all benchmarks, (3) script to reproduce all figures from raw benchmark data, (4) Docker/container spec or equivalent for reproducible environment, (5) MIT or Apache-2.0 license file, (6) clean API documentation for the parser (how to use it in 10 lines of code). The goal: anyone should be able to clone the repo, build, run benchmarks, and verify our claims within 30 minutes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 28,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 28
+  }
+}
