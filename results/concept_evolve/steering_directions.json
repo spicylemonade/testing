@@ -1,26 +1,26 @@
 [
   {
-    "direction": "Residue class sieve + evolutionary search hybrid",
-    "rationale": "The renormalization group analysis identifies residue classes mod 2^k with systematically high delay. By restricting the genetic algorithm's search to numbers in these 'good' residue classes, we combine the theoretical insight of RG with the exploratory power of GA. This should dramatically improve search efficiency — instead of searching all numbers, we search a tiny fraction known to be enriched for high delay.",
-    "first_step": "Compute average delay for each residue class mod 2^k for k=8,10,12,14,16 over all n up to 2^30. Identify the top 0.1% of residue classes at each level. Construct the intersection of top classes across all levels to get a 'golden residue set'. Then run a genetic algorithm restricted to this set.",
-    "expected_signal": "The GA restricted to golden residues should find numbers with 20-50% higher delay-to-bit-length ratio compared to unrestricted GA, within the same computational budget. If this signal appears, it validates both the RG filtering and the GA exploration."
+    "direction": "Residue class sieve + GPU exhaustive search for A284668(19)",
+    "rationale": "Our analysis shows delay records fall in predictable residue classes mod 2^k. By pre-computing which classes have the highest guaranteed initial ascent, we can restrict an exhaustive GPU search to <1% of the search space. Barina (2025) showed GPU throughput of ~10^12 numbers/second. With sieving, searching all of [10^18, 10^19) becomes feasible on a single GPU in ~weeks.",
+    "first_step": "Implement a CUDA kernel that: (1) uses a 2^16 lookup table for trailing 16 bits to skip low-delay residue classes, (2) computes compressed Collatz stopping time for surviving candidates, (3) reports any candidate with stopping time > 2283. Run on an A100 GPU.",
+    "expected_signal": "Either find A284668(19) != A284668(18) (a new record exceeding 2283 steps), or confirm A284668(19) = 931386509544713451 (the 10^18 champion is also the 10^19 champion). Either result is publishable."
   },
   {
-    "direction": "Neural surrogate + basin-hopping for scalable search",
-    "rationale": "Computing Collatz delay exactly is expensive for large numbers. A neural network trained on smaller numbers can serve as a cheap surrogate fitness function, enabling evaluation of orders of magnitude more candidates. Basin-hopping uses the surrogate for fast exploration and exact computation only for promising candidates, analogous to multi-fidelity optimization in engineering design.",
-    "first_step": "Train a 1D CNN on 5M (binary_representation, delay) pairs for 32-bit numbers. Validate that the CNN's ranking of candidates correlates well (Spearman rho > 0.7) with true delay ranking. Then use the CNN as surrogate in a basin-hopping loop: generate 100K candidates via bit-flip perturbation, score with CNN, compute exact delay only for the top 100.",
-    "expected_signal": "The CNN surrogate should achieve Spearman rho > 0.7 on held-out test data, meaning it can reliably identify the top decile of high-delay numbers. If confirmed, the surrogate-guided basin-hopping should find higher-delay numbers than random search at 100x lower computational cost."
+    "direction": "Quantify the short-range correlation structure via 3-adic analysis",
+    "rationale": "Our transition matrix analysis revealed that the compressed parity sequence deviates from i.i.d. Bernoulli in a specific way: P(1->1) = 0.366 vs expected 0.398. This ~8% deviation persists across all scales and suggests the Collatz dynamics has a 3-adic structure that creates short-range anti-correlations. The 3-adic viewpoint (expanding in powers of 3 rather than 2) may reveal this structure analytically.",
+    "first_step": "Represent delay record numbers in 3-adic form. Compute the Collatz orbit in 3-adic coordinates. Measure the distribution of 3-adic digits along the orbit. Compare with the binary/parity representation. Look for patterns that explain the transition matrix deviation.",
+    "expected_signal": "The 3-adic representation should reveal why P(1->1) is suppressed: two consecutive odd steps in compressed Collatz correspond to specific 3-adic constraints that reduce the probability below the i.i.d. prediction."
   },
   {
-    "direction": "Motif-based constructive search inspired by DNA regulatory elements",
-    "rationale": "Known delay records share specific binary motifs (analogous to transcription factor binding sites in DNA). By identifying these motifs and using them as building blocks, we can construct candidate numbers combinatorially rather than searching randomly. This is akin to how synthetic biologists design promoter sequences from known motifs.",
-    "first_step": "Convert all ~131 known delay records to binary strings. Extract all 8-mers and 12-mers. Compute enrichment relative to uniform random expectation. Identify top 20 enriched motifs. Then generate candidate numbers by: (1) concatenating random selections from top motifs, (2) filling gaps with random bits, (3) computing exact delay.",
-    "expected_signal": "Enriched motifs should have enrichment scores E > 3 (3x more frequent in records than expected by chance). Candidates constructed from these motifs should have mean delay 30-50% above random numbers of the same bit-length. Finding even one number with delay exceeding the highest confirmed record would be a genuine discovery."
+    "direction": "Prove the Lyapunov critical exponent analytically",
+    "rationale": "Our data shows lambda(n) ~ -C/log(n) for delay record champions, with C ~ 0.5. This logarithmic approach to criticality is reminiscent of the Berezinskii-Kosterlitz-Thouless (BKT) transition in 2D physics. If we can prove this scaling law, it would give the first rigorous bound on how slowly Collatz orbits can converge - a significant step toward the full conjecture.",
+    "first_step": "Formalize the claim: for the n-th delay record d_n, prove that lambda(d_n) > -A/log(d_n) for some constant A. Use Tao's (2019) almost-all result as a starting point. The key is to show that numbers with lambda too close to 0 are 'rare' in a quantifiable sense.",
+    "expected_signal": "A rigorous lower bound on |lambda| for delay records of the form |lambda| > C/log(n)^(1+epsilon) would be a genuinely new mathematical result, publishable in a top journal."
   },
   {
-    "direction": "Extreme value theory for predicting the 'next frontier'",
-    "rationale": "Rather than blindly searching, use EVT fitted to known records to predict WHERE the next record should be found and WHAT delay it should have. This guides computational resources to the most productive search range, avoiding wasted effort in regions where records are unlikely.",
-    "first_step": "Fit a generalized extreme value distribution to the 131 known delay records, modeling delay as a function of log(starting_number). Use the fitted model to compute: (1) the expected starting number of record #132, (2) its expected delay, (3) the 95% prediction interval. Then focus search effort on the predicted range.",
-    "expected_signal": "The GEV model should retrodict the last 10-20 known records with < 10% error when trained on earlier records. The predicted range for #132 should be a relatively narrow band (spanning < 1 order of magnitude in starting number), making targeted search feasible."
+    "direction": "Generalize to the (q,r) Collatz family and test universality",
+    "rationale": "Our findings (Lyapunov criticality, transition matrix convergence, stopping time scaling) might be universal across all generalized Collatz maps T(n) = n/2 if even, (qn+r)/2 if odd. Testing this would either confirm a deep universality class or reveal that (3,1) is special. This connects to the universality concept in statistical physics.",
+    "first_step": "Implement the generalized Collatz map for (q,r) = (5,1), (7,1), (3,3), (5,3). For each, find delay records up to 10^8. Compute Lyapunov exponents and transition matrices. Compare scaling exponents with (3,1).",
+    "expected_signal": "If the scaling exponent alpha ~ 1.39 and the transition matrix deviations are the same across (q,r), this suggests a deep universality. If they differ, the specific values may depend on q in a predictable way (e.g., alpha ~ f(ln(2)/ln(q)))."
   }
 ]
