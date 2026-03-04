@@ -1,0 +1,166 @@
+{
+  "id": "speculative_decoding",
+  "title": "Speculative & Novel Huffman Decode Approaches",
+  "parent": "deflate_spec_analysis",
+  "created": "2026-03-04T06:00:00Z",
+  "status": "completed",
+  "relevance_to_deflate": 5,
+  "impact": 3,
+  "feasibility": 2,
+
+  "summary": "Systematic investigation of approaches to break the serial Huffman dependency chain in DEFLATE decompression. The serial chain (symbol N's bit position depends on symbol N-1's code length) creates a ~6-12 cycle loop-carried dependency per symbol that fundamentally limits single-stream throughput. We evaluated multiple micro-optimization and architectural approaches.",
+
+  "serial_dependency_analysis": {
+    "description": "Each Huffman symbol decode requires: (1) peek bits from buffer, (2) table lookup, (3) extract code length, (4) shift buffer by code length. Steps 1-4 form a sequential chain because step 4 of symbol N determines the bit position for step 1 of symbol N+1.",
+    "measured_cycle_cost": "~6-12 cycles per symbol on modern x86-64 (table lookup latency + shift)",
+    "theoretical_max_throughput": "At ~8 bits/symbol average and ~8 cycles/symbol at 4 GHz: ~4 GB/s. Our measured ~1.75 GB/s suggests ~60% efficiency.",
+    "implication": "Single-stream throughput is bounded by this chain. Wider tables or faster bit manipulation cannot eliminate it — only reduce the constant factor."
+  },
+
+  "experiments_conducted": [
+    {
+      "name": "Branchless length-extra extraction",
+      "description": "Always extract extra bits for length/distance codes, mask to 0 when extra_bits=0, avoiding the conditional branch.",
+      "result": "No sustained improvement under 50-iteration benchmarks. The compiler already handles the conditional efficiently via cmov or branch prediction.",
+      "throughput_delta": "~0%",
+      "conclusion": "The branch predictor handles this pattern well; removing it doesn't help."
+    },
+    {
+      "name": "Single-refill strategy for backrefs",
+      "description": "Perform one large refill at the start of the backref path instead of per-field refill checks for length, distance, and extra bits.",
+      "result": "Marginal-to-no improvement. The bit reader already has 56+ bits after refill, enough for most complete litlen+dist+extras sequences.",
+      "throughput_delta": "~0-1%",
+      "conclusion": "The existing refill strategy is already near-optimal."
+    },
+    {
+      "name": "4-literal unrolled loop",
+      "description": "Unroll the main decode loop to attempt 4 consecutive literal decodes before checking for non-literal symbols.",
+      "result": "Performance regression. The complex control flow (fallback from any position in the 4-literal sequence to backref handling) confused the compiler's optimization and branch prediction.",
+      "throughput_delta": "-3 to -8%",
+      "conclusion": "The current 3-literal cascade (attempt 1, try 2nd, try 3rd) is the sweet spot."
+    },
+    {
+      "name": "Inline short-copy for common matches",
+      "description": "For matches <= 8 bytes with distance >= 8, inline the copy directly in the decode loop instead of calling fast_copy().",
+      "result": "Performance regression. The additional branch to check match length hurt more than the avoided function call overhead.",
+      "throughput_delta": "-2 to -5%",
+      "conclusion": "fast_copy() with __builtin_expect is already well-optimized by the compiler."
+    }
+  ],
+
+  "novel_approaches_evaluated": [
+    {
+      "name": "Multi-stream ILP (interleaved sub-streams)",
+      "description": "Decode 2-4 independent Huffman streams in parallel within a single thread, interleaving instructions to hide latency.",
+      "feasibility": "NOT FEASIBLE for standard DEFLATE. The format specifies a single bitstream per block. Would require a custom compression format (like GDeflate or Brotli's multi-stream).",
+      "theoretical_speedup": "2-4x if format allowed it",
+      "conclusion": "Cannot be applied to standard ZIP files without format modification."
+    },
+    {
+      "name": "Speculative decode with rollback",
+      "description": "Speculatively decode symbol N+1 assuming the most common code length for symbol N, then verify and rollback if wrong.",
+      "feasibility": "MARGINAL. The verification cost (~3 cycles for compare+branch) plus rollback cost (~5-10 cycles to restore state) means net benefit only if prediction accuracy > 80%. For typical Huffman distributions, the most common code length covers 40-60% of symbols.",
+      "theoretical_speedup": "1.2-1.5x with 80% accuracy, negative with <70% accuracy",
+      "conclusion": "Risk/reward ratio is poor. Implementation complexity is high, and mispredict penalty erases gains. The 3-literal cascade already achieves a similar effect for the literal-only case."
+    },
+    {
+      "name": "Convergence-based parallel sync",
+      "description": "Start decoding from multiple points in the bitstream simultaneously, using the fact that incorrect starting positions will eventually produce invalid Huffman codes, allowing detection and correction.",
+      "feasibility": "THEORETICALLY INTERESTING but impractical. Convergence distance is unpredictable (could be 1 symbol or 1000+). The correction overhead dominates for typical block sizes.",
+      "theoretical_speedup": "2-4x with fast convergence",
+      "conclusion": "Better suited for very large blocks (>1MB). Our corpus blocks average 64-262KB."
+    },
+    {
+      "name": "Precomputed mega-table (16+ bit lookup)",
+      "description": "Use a very wide primary table (14-16 bits) to decode 2-3 symbols per lookup more frequently.",
+      "feasibility": "FEASIBLE but diminishing returns. 14-bit table = 64KB (fits L1). 16-bit table = 256KB (blows L1). Our 11-bit + secondary table already handles >99% of codes in primary lookup.",
+      "theoretical_speedup": "5-15% from reducing secondary table accesses",
+      "conclusion": "Marginal gain. The secondary table path is <1% of lookups for typical data. A 12-bit table (8KB) might be worth testing."
+    },
+    {
+      "name": "Parallel block decoding (multi-threaded)",
+      "description": "Decode multiple DEFLATE blocks on separate threads in parallel.",
+      "feasibility": "LIMITED. Most real files have 1-5 compressed blocks, each 64-262KB decompressed. The parallelism is severely limited, and inter-block output dependencies (LZ77 can reference previous blocks) make this complex.",
+      "theoretical_speedup": "Up to Nx for N blocks, but N is typically 1-5",
+      "conclusion": "Deferred to item_017 for detailed analysis. Go/no-go depends on corpus characteristics."
+    }
+  ],
+
+  "concept_evolve_probe_results": {
+    "query": "speculative Huffman decoding: breaking serial dependency chain",
+    "steering_directions": [
+      "Convergence-based parallel Huffman with bounded synchronization distance",
+      "Compression-time reformatting (GDeflate-style sub-stream interleaving)",
+      "Neural codeword boundary predictor trained on bitstream statistics",
+      "Exploit LZ77 backreference structure for block-level parallelism",
+      "Hybrid approach: fixed-length escape codes as synchronization markers"
+    ],
+    "assessment": "All 5 directions either require format modification (incompatible with standard ZIP) or have unpredictable convergence properties. The most promising for standard DEFLATE is exploiting LZ77 structure for block-level parallelism (evaluated in item_017)."
+  },
+
+  "block_structure_analysis": {
+    "description": "Empirical analysis of DEFLATE block structure across 20-file benchmark corpus at compression levels 1, 6, 9.",
+    "findings": {
+      "typical_block_count": "1-5 blocks for most real data files",
+      "stored_blocks": "Only appear for incompressible data (random bytes, binary headers)",
+      "fixed_huffman": "Rarely used (0 out of 20 files at level 6)",
+      "dynamic_huffman": "Dominant: used by all compressible files",
+      "block_sizes": {
+        "min_meaningful": "1024 bytes (text_1k)",
+        "typical_range": "65536-262144 bytes decompressed",
+        "max_observed": "262144 bytes (256KB, zlib's default block size)"
+      },
+      "backref_ratios": {
+        "text_heavy": "84-99.9% backrefs (english_prose: 92.5%, text_1024k: 96.2%)",
+        "code_and_markup": "38-53% backrefs (bundle.js: 52.3%, source_code: 53.2%)",
+        "binary": "0-41% backrefs (structured_binary: 41.5%, binary_elf: 0.1%)"
+      }
+    }
+  },
+
+  "key_conclusions": [
+    "The serial Huffman dependency chain is the FUNDAMENTAL bottleneck for single-stream DEFLATE decompression.",
+    "Micro-optimizations within the existing decode loop architecture yield diminishing returns — we are already at ~60% of the theoretical single-stream limit.",
+    "Breaking the 2000 MB/s barrier for backref-heavy data within standard DEFLATE requires either: (a) reducing per-symbol cycle cost below 6 cycles (very hard), or (b) fundamentally different processing model.",
+    "The 3-literal cascade (decode up to 3 literals per refill) is the most effective micro-optimization, providing ~4.7x over naive.",
+    "SIMD copy, branchless bitreader, and fast table build are important for correctness and edge cases but contribute <5% each to peak throughput on typical data.",
+    "Multi-stream and format-modifying approaches (GDeflate, Brotli-style) can achieve 2-4x more but are incompatible with standard ZIP.",
+    "Our best remaining optimization vectors are: (1) 12-bit primary table, (2) backref fast-path tightening, (3) compiler tuning (PGO/LTO), (4) parallel block decode for multi-block files."
+  ],
+
+  "remaining_optimization_vectors": [
+    {
+      "name": "12-bit primary table",
+      "expected_gain": "NEGATIVE (-10%)",
+      "effort": "low",
+      "description": "TESTED: Increased primary table from 11 to 12 bits (4096 entries, 16KB). REGRESSED from ~1750 to ~1574 MB/s. The extra 8KB causes L1 cache pressure that outweighs the subtable lookup savings. 11-bit (8KB) confirmed as optimal, consistent with libdeflate's choice."
+    },
+    {
+      "name": "Tighter backref fast-path",
+      "expected_gain": "5-15% on backref-heavy files",
+      "effort": "medium",
+      "description": "Combine length decode, distance decode, and copy into a tighter sequence with fewer branches. Profile-guided optimization of the hot path."
+    },
+    {
+      "name": "Profile-guided optimization (PGO)",
+      "expected_gain": "5-15%",
+      "effort": "low",
+      "description": "GCC -fprofile-generate / -fprofile-use on the benchmark corpus. Helps branch prediction and code layout."
+    },
+    {
+      "name": "Link-time optimization (LTO)",
+      "expected_gain": "2-5%",
+      "effort": "low",
+      "description": "GCC -flto for whole-program optimization across bitreader.h + fast_decode.c."
+    }
+  ],
+
+  "references": [
+    "rfc1951",
+    "libdeflate2024",
+    "zlibng2024",
+    "isal2024",
+    "gdeflate2022",
+    "moffat2019"
+  ]
+}

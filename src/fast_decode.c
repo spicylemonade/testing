@@ -1,33 +1,46 @@
 /*
- * fast_decode.c - High-performance DEFLATE decode loop with multi-symbol Huffman
+ * fast_decode.c - High-performance DEFLATE decode loop
  *
- * Key optimizations:
+ * Key optimizations (inspired by libdeflate's architecture):
  *   1. 11-bit primary Huffman table (2048 entries) — fits in L1 cache
- *   2. Secondary table for codes > 11 bits (up to 15)
- *   3. Multi-symbol decode: up to 2 literal symbols per table lookup
+ *   2. Secondary subtables for codes > 11 bits (up to 15)
+ *   3. Multi-literal decode: up to 3 fast literals per refill cycle
  *   4. 64-bit branchless bit buffer (see bitreader.h)
- *   5. Word-at-a-time match copying with overlap handling
- *   6. Branchless literal/backref dispatch where possible
+ *   5. Packed table entries: base value + extra bits + code length in one u32
+ *   6. saved_bitbuf technique: extract extra bits from pre-consume snapshot
+ *   7. SSE2/AVX2 SIMD match copying with tiered distance handling
+ *   8. Pre-computed fixed Huffman tables (built once)
+ *   9. Next-entry preload during match copy to hide latency
  *
- * Table entry layout (32-bit):
- *   - For single-symbol entries:
- *     bits[15:0]  = symbol (0-285 litlen, 0-29 dist)
- *     bits[19:16] = code length (1-11 for primary, or 0 if subtable redirect)
- *     bits[23:20] = type: 0=literal, 1=length, 2=end-of-block, 3=subtable
- *     bits[31:24] = reserved / extra info
+ * Table entry layout (32-bit), libdeflate-style:
  *
- *   - For double-symbol entries (two consecutive literals):
- *     bits[7:0]   = first literal byte
- *     bits[15:8]  = second literal byte
- *     bits[19:16] = total code length (sum of both)
- *     bits[23:20] = type: 4=double-literal
- *     bits[31:24] = reserved
+ *   Literal:
+ *     Bit 31:     1 (HUFFDEC_LITERAL flag — testable via sign bit)
+ *     Bits 23-16: literal byte value
+ *     Bits 3-0:   codeword length (bits to consume)
  *
- *   - For subtable redirect:
- *     bits[15:0]  = subtable offset
- *     bits[19:16] = 0 (unused)
- *     bits[23:20] = type: 3=subtable
- *     bits[27:24] = subtable bits (extra bits to index into subtable)
+ *   Length:
+ *     Bit 31:     0 (!HUFFDEC_LITERAL)
+ *     Bits 24-16: length base value (3..258)
+ *     Bits 15-13: 0 (no exceptional flags)
+ *     Bits 11-8:  codeword length only (for saved_bitbuf shift)
+ *     Bits 4-0:   codeword length + num_extra_bits (total bits to consume)
+ *
+ *   End-of-block:
+ *     Bit 31:     0
+ *     Bit 15:     1 (HUFFDEC_EXCEPTIONAL)
+ *     Bit 13:     1 (HUFFDEC_END_OF_BLOCK)
+ *     Bits 3-0:   codeword length
+ *
+ *   Subtable pointer:
+ *     Bit 31:     0
+ *     Bits 30-16: subtable start index
+ *     Bit 15:     1 (HUFFDEC_EXCEPTIONAL)
+ *     Bit 14:     1 (HUFFDEC_SUBTABLE_POINTER)
+ *     Bits 11-8:  number of subtable bits
+ *     Bits 3-0:   number of primary table bits
+ *
+ *   Offset (distance) entries have same format as Length but with offset base.
  */
 
 #include "fast_deflate.h"
@@ -44,43 +57,105 @@
 #define MAX_SUBTABLE_BITS 4                       /* 15 - 11 */
 #define MAX_CODEWORD      15
 #define MAX_LIT_LEN       286                     /* 0..285 literal/length symbols */
-#define MAX_DIST          30                      /* 0..29 distance codes */
+#define MAX_DIST          32                      /* 0..31 distance codes (padded) */
 
-/* Table entry fields */
-#define ENTRY_SYM_MASK    0x0000FFFFU
-#define ENTRY_LEN_SHIFT   16
-#define ENTRY_LEN_MASK    0x000F0000U
-#define ENTRY_TYPE_SHIFT  20
-#define ENTRY_TYPE_MASK   0x00F00000U
-#define ENTRY_SUB_SHIFT   24
-#define ENTRY_SUB_MASK    0xFF000000U
+/* Entry flags */
+#define HUFFDEC_LITERAL         0x80000000U  /* Bit 31: literal flag (sign bit) */
+#define HUFFDEC_EXCEPTIONAL     0x00008000U  /* Bit 15: subtable or EOB */
+#define HUFFDEC_SUBTABLE_PTR    0x00004000U  /* Bit 14: subtable pointer */
+#define HUFFDEC_END_OF_BLOCK    0x00002000U  /* Bit 13: end of block */
 
-/* Entry types */
-#define TYPE_LITERAL      0
-#define TYPE_LENGTH       1
-#define TYPE_EOB          2
-#define TYPE_SUBTABLE     3
+/* Extract helpers */
+#define ENTRY_LITVAL(e)      (((e) >> 16) & 0xFF)     /* literal byte */
+#define ENTRY_BASEVAL(e)     ((e) >> 16)               /* length/offset base */
+#define ENTRY_BITS(e)        ((e) & 0x1F)              /* total bits to consume (low 5) */
+#define ENTRY_CODELEN(e)     (((e) >> 8) & 0xF)        /* code length only (bits 11-8) */
+#define ENTRY_SUBTBL_IDX(e)  ((e) >> 16)               /* subtable start index */
+#define ENTRY_SUBTBL_BITS(e) (((e) >> 8) & 0x3F)       /* subtable bits (bits 13-8, masked) */
 
-/* Construct a table entry */
-static inline uint32_t make_entry(int sym, int len, int type) {
-    return (uint32_t)sym
-         | ((uint32_t)len << ENTRY_LEN_SHIFT)
-         | ((uint32_t)type << ENTRY_TYPE_SHIFT);
-}
+#define BITMASK(n) ((1U << (n)) - 1)
 
-static inline uint32_t make_subtable_entry(int offset, int sub_bits) {
-    return (uint32_t)offset
-         | ((uint32_t)TYPE_SUBTABLE << ENTRY_TYPE_SHIFT)
-         | ((uint32_t)sub_bits << ENTRY_SUB_SHIFT);
-}
+/* ========================================================================== */
+/*                   Litlen and Offset decode result tables                   */
+/* ========================================================================== */
 
-static inline uint32_t make_double_entry(int s1, int s2, int l) { (void)s1; (void)s2; (void)l; return 0; }
+/*
+ * Static per-symbol result templates, indexed by symbol.
+ * During table build, we OR in the codeword length to produce final entries.
+ */
 
-/* Extract fields */
-static inline int entry_sym(uint32_t e)      { return (int)(e & ENTRY_SYM_MASK); }
-static inline int entry_len(uint32_t e)      { return (int)((e >> ENTRY_LEN_SHIFT) & 0xF); }
-static inline int entry_type(uint32_t e)     { return (int)((e >> ENTRY_TYPE_SHIFT) & 0xF); }
-static inline int entry_sub_bits(uint32_t e) { return (int)((e >> ENTRY_SUB_SHIFT) & 0xFF); }
+/* Literals: HUFFDEC_LITERAL | (byte << 16) */
+/* Lengths: (base << 16) | num_extra_bits */
+/* EOB: HUFFDEC_EXCEPTIONAL | HUFFDEC_END_OF_BLOCK */
+static const uint32_t litlen_decode_results[288] = {
+    /* 0..255: literals */
+#define L(v) (HUFFDEC_LITERAL | ((uint32_t)(v) << 16))
+    L(0),   L(1),   L(2),   L(3),   L(4),   L(5),   L(6),   L(7),
+    L(8),   L(9),   L(10),  L(11),  L(12),  L(13),  L(14),  L(15),
+    L(16),  L(17),  L(18),  L(19),  L(20),  L(21),  L(22),  L(23),
+    L(24),  L(25),  L(26),  L(27),  L(28),  L(29),  L(30),  L(31),
+    L(32),  L(33),  L(34),  L(35),  L(36),  L(37),  L(38),  L(39),
+    L(40),  L(41),  L(42),  L(43),  L(44),  L(45),  L(46),  L(47),
+    L(48),  L(49),  L(50),  L(51),  L(52),  L(53),  L(54),  L(55),
+    L(56),  L(57),  L(58),  L(59),  L(60),  L(61),  L(62),  L(63),
+    L(64),  L(65),  L(66),  L(67),  L(68),  L(69),  L(70),  L(71),
+    L(72),  L(73),  L(74),  L(75),  L(76),  L(77),  L(78),  L(79),
+    L(80),  L(81),  L(82),  L(83),  L(84),  L(85),  L(86),  L(87),
+    L(88),  L(89),  L(90),  L(91),  L(92),  L(93),  L(94),  L(95),
+    L(96),  L(97),  L(98),  L(99),  L(100), L(101), L(102), L(103),
+    L(104), L(105), L(106), L(107), L(108), L(109), L(110), L(111),
+    L(112), L(113), L(114), L(115), L(116), L(117), L(118), L(119),
+    L(120), L(121), L(122), L(123), L(124), L(125), L(126), L(127),
+    L(128), L(129), L(130), L(131), L(132), L(133), L(134), L(135),
+    L(136), L(137), L(138), L(139), L(140), L(141), L(142), L(143),
+    L(144), L(145), L(146), L(147), L(148), L(149), L(150), L(151),
+    L(152), L(153), L(154), L(155), L(156), L(157), L(158), L(159),
+    L(160), L(161), L(162), L(163), L(164), L(165), L(166), L(167),
+    L(168), L(169), L(170), L(171), L(172), L(173), L(174), L(175),
+    L(176), L(177), L(178), L(179), L(180), L(181), L(182), L(183),
+    L(184), L(185), L(186), L(187), L(188), L(189), L(190), L(191),
+    L(192), L(193), L(194), L(195), L(196), L(197), L(198), L(199),
+    L(200), L(201), L(202), L(203), L(204), L(205), L(206), L(207),
+    L(208), L(209), L(210), L(211), L(212), L(213), L(214), L(215),
+    L(216), L(217), L(218), L(219), L(220), L(221), L(222), L(223),
+    L(224), L(225), L(226), L(227), L(228), L(229), L(230), L(231),
+    L(232), L(233), L(234), L(235), L(236), L(237), L(238), L(239),
+    L(240), L(241), L(242), L(243), L(244), L(245), L(246), L(247),
+    L(248), L(249), L(250), L(251), L(252), L(253), L(254), L(255),
+#undef L
+    /* 256: end-of-block */
+    HUFFDEC_EXCEPTIONAL | HUFFDEC_END_OF_BLOCK,
+    /* 257..285: lengths — (base << 16) | num_extra_bits */
+#define LEN(base, extra) (((uint32_t)(base) << 16) | (extra))
+    LEN(3,0),   LEN(4,0),   LEN(5,0),   LEN(6,0),
+    LEN(7,0),   LEN(8,0),   LEN(9,0),   LEN(10,0),
+    LEN(11,1),  LEN(13,1),  LEN(15,1),  LEN(17,1),
+    LEN(19,2),  LEN(23,2),  LEN(27,2),  LEN(31,2),
+    LEN(35,3),  LEN(43,3),  LEN(51,3),  LEN(59,3),
+    LEN(67,4),  LEN(83,4),  LEN(99,4),  LEN(115,4),
+    LEN(131,5), LEN(163,5), LEN(195,5), LEN(227,5),
+    LEN(258,0),
+#undef LEN
+    /* 286-287: unused but some encoders emit them */
+    0, 0
+};
+
+static const uint32_t offset_decode_results[32] = {
+#define OFF(base, extra) (((uint32_t)(base) << 16) | (extra))
+    OFF(1,0),     OFF(2,0),     OFF(3,0),     OFF(4,0),
+    OFF(5,1),     OFF(7,1),     OFF(9,2),     OFF(13,2),
+    OFF(17,3),    OFF(25,3),    OFF(33,4),    OFF(49,4),
+    OFF(65,5),    OFF(97,5),    OFF(129,6),   OFF(193,6),
+    OFF(257,7),   OFF(385,7),   OFF(513,8),   OFF(769,8),
+    OFF(1025,9),  OFF(1537,9),  OFF(2049,10), OFF(3073,10),
+    OFF(4097,11), OFF(6145,11), OFF(8193,12), OFF(12289,12),
+    OFF(16385,13),OFF(24577,13),OFF(24577,13),OFF(24577,13),
+#undef OFF
+};
+
+static const uint8_t codelen_order[19] = {
+    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
+};
 
 /* ========================================================================== */
 /*                        Table construction                                  */
@@ -90,10 +165,7 @@ static inline int entry_sub_bits(uint32_t e) { return (int)((e >> ENTRY_SUB_SHIF
 #define MAX_LITLEN_TABLE  (PRIMARY_SIZE + 1024)
 #define MAX_DIST_TABLE    (PRIMARY_SIZE + 512)
 
-/*
- * Bit-reverse an n-bit code (DEFLATE uses LSB-first).
- * Uses byte-level lookup table for fast reversal.
- */
+/* Bit-reverse LUT */
 static const uint8_t bit_reverse_lut[256] = {
     0x00,0x80,0x40,0xC0,0x20,0xA0,0x60,0xE0,0x10,0x90,0x50,0xD0,0x30,0xB0,0x70,0xF0,
     0x08,0x88,0x48,0xC8,0x28,0xA8,0x68,0xE8,0x18,0x98,0x58,0xD8,0x38,0xB8,0x78,0xF8,
@@ -119,20 +191,25 @@ static inline int bit_reverse(int code, int len) {
 }
 
 /*
- * Build a fast Huffman lookup table from code lengths.
+ * Build a packed Huffman lookup table from code lengths.
  *
- * Two-pass approach:
- *   Pass 1: Fill primary table, determine max subtable bits per primary index
- *   Pass 2: Allocate subtables, fill subtable entries
+ * For litlen tables, uses litlen_decode_results[] to pack base+extra into entry.
+ * For offset tables, uses offset_decode_results[].
  *
- * Returns the total table size (primary + subtables), or -1 on error.
+ * Entry format for length/offset codes:
+ *   bits[31:16] = base value
+ *   bits[15:13] = flags (exceptional, subtable_ptr, eob)
+ *   bits[11:8]  = codeword length (for saved_bitbuf extraction)
+ *   bits[4:0]   = codeword length + extra bits (total bits to consume)
+ *
+ * Returns total table size, or -1 on error.
  */
-static int build_fast_table(uint32_t *table, int primary_bits,
-                            const uint8_t *lengths, int num_symbols,
-                            int is_litlen) {
+static int build_packed_table(uint32_t *table, int primary_bits,
+                              const uint8_t *lengths, int num_symbols,
+                              const uint32_t *decode_results) {
     int bl_count[MAX_CODEWORD + 1] = {0};
     int next_code[MAX_CODEWORD + 1] = {0};
-    int sorted_codes[MAX_LIT_LEN + MAX_DIST]; /* reversed codes */
+    int reversed_codes[288 + 32]; /* enough for litlen or dist */
     int primary_size = 1 << primary_bits;
 
     /* Count codes per bit length */
@@ -144,38 +221,36 @@ static int build_fast_table(uint32_t *table, int primary_bits,
     }
     bl_count[0] = 0;
 
-    /* If no codes at all, just clear the table */
     if (max_len == 0) {
         memset(table, 0, primary_size * sizeof(uint32_t));
         return primary_size;
     }
 
-    /* Compute starting code for each bit length (RFC 1951 canonical) */
+    /* Compute starting code for each bit length */
     int code = 0;
     for (int bits = 1; bits <= MAX_CODEWORD; bits++) {
         code = (code + bl_count[bits - 1]) << 1;
         next_code[bits] = code;
     }
 
-    /* Assign canonical codes and bit-reverse them */
+    /* Assign canonical codes and bit-reverse */
     for (int sym = 0; sym < num_symbols; sym++) {
         int len = lengths[sym];
-        if (len == 0) { sorted_codes[sym] = -1; continue; }
+        if (len == 0) { reversed_codes[sym] = -1; continue; }
         int c = next_code[len]++;
-        sorted_codes[sym] = bit_reverse(c, len);
+        reversed_codes[sym] = bit_reverse(c, len);
     }
 
     /* Clear primary table */
     memset(table, 0, primary_size * sizeof(uint32_t));
 
-    /* Pass 1: Determine max subtable bits needed per primary index */
+    /* Pass 1: Determine max subtable bits per primary index */
     int8_t max_sub_bits[PRIMARY_SIZE];
     memset(max_sub_bits, 0, sizeof(max_sub_bits));
-
     for (int sym = 0; sym < num_symbols; sym++) {
         int len = lengths[sym];
         if (len <= primary_bits || len == 0) continue;
-        int reversed = sorted_codes[sym];
+        int reversed = reversed_codes[sym];
         int primary_idx = reversed & (primary_size - 1);
         int extra = len - primary_bits;
         if (extra > max_sub_bits[primary_idx])
@@ -184,120 +259,115 @@ static int build_fast_table(uint32_t *table, int primary_bits,
 
     /* Allocate subtables */
     int subtable_offset = primary_size;
-    int sub_offsets[PRIMARY_SIZE]; /* offset of each subtable, or -1 */
+    int sub_offsets[PRIMARY_SIZE];
     memset(sub_offsets, -1, sizeof(sub_offsets));
 
     for (int idx = 0; idx < primary_size; idx++) {
         if (max_sub_bits[idx] > 0) {
             sub_offsets[idx] = subtable_offset;
             int sub_size = 1 << max_sub_bits[idx];
-            /* Write subtable redirect in primary table */
-            table[idx] = make_subtable_entry(subtable_offset, max_sub_bits[idx]);
-            /* Clear subtable */
+            /* Write subtable redirect in primary table:
+             * bits[30:16] = subtable start index
+             * bit 15 = HUFFDEC_EXCEPTIONAL
+             * bit 14 = HUFFDEC_SUBTABLE_PTR
+             * bits[11:8] = subtable bits
+             * bits[3:0] = primary_bits
+             */
+            table[idx] = ((uint32_t)subtable_offset << 16)
+                       | HUFFDEC_EXCEPTIONAL
+                       | HUFFDEC_SUBTABLE_PTR
+                       | ((uint32_t)max_sub_bits[idx] << 8)
+                       | (uint32_t)primary_bits;
             memset(&table[subtable_offset], 0, sub_size * sizeof(uint32_t));
             subtable_offset += sub_size;
         }
     }
 
-    /* Pass 2: Fill all entries */
+    /* Pass 2: Fill all entries with packed format */
     for (int sym = 0; sym < num_symbols; sym++) {
         int len = lengths[sym];
         if (len == 0) continue;
-        int reversed = sorted_codes[sym];
+        int reversed = reversed_codes[sym];
 
-        /* Determine entry type */
-        int type;
-        if (is_litlen) {
-            if (sym < 256)       type = TYPE_LITERAL;
-            else if (sym == 256) type = TYPE_EOB;
-            else                 type = TYPE_LENGTH;
-        } else {
-            type = TYPE_LITERAL;
-        }
-
-        uint32_t entry = make_entry(sym, len, type);
+        /* Get the result template for this symbol */
+        uint32_t result = decode_results[sym];
 
         if (len <= primary_bits) {
+            /*
+             * Build the final packed entry:
+             *   For literals:  result already has HUFFDEC_LITERAL | (byte << 16)
+             *                  OR in codelen as bits[3:0]
+             *   For lengths:   result has (base << 16) | extra_bits
+             *                  Final entry = result | (codelen << 8) | codelen
+             *                  But bits[4:0] should be codelen + extra_bits
+             *   For EOB:       result has HUFFDEC_EXCEPTIONAL | HUFFDEC_END_OF_BLOCK
+             *                  OR in codelen as bits[3:0]
+             */
+            uint32_t entry;
+            if (result & HUFFDEC_LITERAL) {
+                /* Literal: just add codelen to low bits */
+                entry = result | (uint32_t)len;
+            } else if (result & HUFFDEC_EXCEPTIONAL) {
+                /* EOB: add codelen to low bits */
+                entry = result | (uint32_t)len;
+            } else {
+                /* Length/offset: extra_bits is in result low bits */
+                int extra_bits = result & 0x1F;
+                entry = (result & 0xFFFF0000U)  /* base value in high 16 */
+                      | ((uint32_t)len << 8)     /* codelen in bits[11:8] */
+                      | (uint32_t)(len + extra_bits); /* total bits in [4:0] */
+            }
+
             /* Fill primary table slots */
             int fill = 1 << len;
             for (int idx = reversed; idx < primary_size; idx += fill) {
-                /* Don't overwrite subtable redirects */
-                if (sub_offsets[idx] < 0) {
+                if (sub_offsets[idx] < 0)
                     table[idx] = entry;
-                }
             }
         } else {
-            /* Fill subtable entries */
+            /* Subtable entries */
             int primary_idx = reversed & (primary_size - 1);
             int sub_off = sub_offsets[primary_idx];
-            if (sub_off < 0) return -1; /* shouldn't happen */
+            if (sub_off < 0) return -1;
             int sub_bits = max_sub_bits[primary_idx];
             int sub_size = 1 << sub_bits;
-            int extra_bits = len - primary_bits;
+            int extra_code_bits = len - primary_bits;
             int extra_code = reversed >> primary_bits;
-            int sub_fill = 1 << extra_bits;
-            for (int si = extra_code; si < sub_size; si += sub_fill) {
-                table[sub_off + si] = entry;
+
+            /* Build entry — for subtable entries, codelen is the FULL length */
+            uint32_t entry;
+            if (result & HUFFDEC_LITERAL) {
+                entry = result | (uint32_t)len;
+            } else if (result & HUFFDEC_EXCEPTIONAL) {
+                entry = result | (uint32_t)len;
+            } else {
+                int extra_bits = result & 0x1F;
+                entry = (result & 0xFFFF0000U)
+                      | ((uint32_t)len << 8)
+                      | (uint32_t)(len + extra_bits);
             }
+
+            int sub_fill = 1 << extra_code_bits;
+            for (int si = extra_code; si < sub_size; si += sub_fill)
+                table[sub_off + si] = entry;
         }
     }
 
-    (void)make_double_entry; /* suppress unused warning */
     return subtable_offset;
 }
-
-/* ========================================================================== */
-/*                      Length/Distance tables (RFC 1951)                     */
-/* ========================================================================== */
-
-static const uint16_t length_base[29] = {
-    3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,
-    67,83,99,115,131,163,195,227,258
-};
-static const uint8_t length_extra[29] = {
-    0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0
-};
-static const uint16_t dist_base[30] = {
-    1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,
-    1025,1537,2049,3073,4097,6145,8193,12289,16385,24577
-};
-static const uint8_t dist_extra[30] = {
-    0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13
-};
-static const uint8_t codelen_order[19] = {
-    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
-};
 
 /* ========================================================================== */
 /*                         Copy with overlap handling                         */
 /* ========================================================================== */
 
-/*
- * Fast memory copy for LZ77 back-references.
- * Handles overlapping copies (distance < length) correctly.
- *
- * Optimized for common DEFLATE match patterns:
- *   - Most matches are short (3-10 bytes) with distance >= 8
- *   - RLE (distance=1) is common for repetitive data
- *   - Long matches (>32 bytes) benefit from wider copies
- */
 static inline void fast_copy(uint8_t *dst, size_t dst_pos,
                              uint32_t distance, uint32_t length) {
     uint8_t *out = dst + dst_pos;
     const uint8_t *src = out - distance;
 
     if (__builtin_expect(distance >= 16, 1)) {
-        /* Non-overlapping or wide-overlap: use wide copies.
-         * Most common case for typical DEFLATE streams.
-         *
-         * IMPORTANT: SIMD copy width must not exceed distance, otherwise
-         * the load reads bytes beyond the valid source (which may be
-         * uninitialized output). Use SSE2 only when distance >= 16,
-         * AVX2 only when distance >= 32.
-         */
 #ifdef __AVX2__
         if (distance >= 32 && length >= 32) {
-            /* AVX2 path for large copies with distance >= 32 */
             uint8_t *end = out + length;
             do {
                 __m256i chunk = _mm256_loadu_si256((const __m256i *)src);
@@ -308,7 +378,6 @@ static inline void fast_copy(uint8_t *dst, size_t dst_pos,
             return;
         }
 #endif
-        /* SSE2 / 16-byte copy path — safe when distance >= 16 */
         if (length >= 16) {
             uint8_t *end = out + length;
             do {
@@ -319,7 +388,6 @@ static inline void fast_copy(uint8_t *dst, size_t dst_pos,
             } while (out < end);
             return;
         }
-        /* Short match with large distance: 8-byte copies are sufficient */
         {
             uint64_t chunk;
             memcpy(&chunk, src, 8);
@@ -330,9 +398,6 @@ static inline void fast_copy(uint8_t *dst, size_t dst_pos,
             }
         }
     } else if (distance >= 8) {
-        /* Medium distance (8-15): 8-byte copies, step by 8.
-         * Since distance >= 8, each 8-byte read from src doesn't overlap
-         * with the 8-byte write to out within the same iteration. */
         uint8_t *end = out + length;
         do {
             uint64_t chunk;
@@ -342,13 +407,8 @@ static inline void fast_copy(uint8_t *dst, size_t dst_pos,
             out += 8;
         } while (out < end);
     } else if (distance == 1) {
-        /* RLE: single byte repeated — very common */
         memset(out, *src, length);
     } else if (distance >= 4) {
-        /* Distance 4-7: copy 4 bytes at a time, step by 4.
-         * Since distance >= 4, each 4-byte read from src doesn't overlap
-         * with the 4-byte write to out within the same iteration.
-         * We step by 4 (not distance) to avoid skipping bytes. */
         uint8_t *end = out + length;
         do {
             uint32_t chunk;
@@ -358,7 +418,6 @@ static inline void fast_copy(uint8_t *dst, size_t dst_pos,
             out += 4;
         } while (out < end);
     } else {
-        /* Distance 2-3: byte-at-a-time or small-pattern expansion */
         if (distance == 2) {
             uint16_t pat;
             memcpy(&pat, src, 2);
@@ -368,9 +427,8 @@ static inline void fast_copy(uint8_t *dst, size_t dst_pos,
                 out += 2;
             }
         } else { /* distance == 3 */
-            for (uint32_t i = 0; i < length; i++) {
+            for (uint32_t i = 0; i < length; i++)
                 out[i] = src[i];
-            }
         }
     }
 }
@@ -390,7 +448,6 @@ static void build_fixed_dist_lengths(uint8_t *lengths) {
     for (int i = 0; i < 32; i++) lengths[i] = 5;
 }
 
-/* Pre-computed fixed Huffman tables — built once on first use. */
 static uint32_t fixed_litlen_table[MAX_LITLEN_TABLE];
 static uint32_t fixed_dist_table[MAX_DIST_TABLE];
 static int fixed_tables_built = 0;
@@ -400,14 +457,58 @@ static void ensure_fixed_tables(void) {
     uint8_t ll[288], dl[32];
     build_fixed_litlen_lengths(ll);
     build_fixed_dist_lengths(dl);
-    build_fast_table(fixed_litlen_table, PRIMARY_BITS, ll, 288, 1);
-    build_fast_table(fixed_dist_table, PRIMARY_BITS, dl, 32, 0);
+    build_packed_table(fixed_litlen_table, PRIMARY_BITS, ll, 288, litlen_decode_results);
+    build_packed_table(fixed_dist_table, PRIMARY_BITS, dl, 32, offset_decode_results);
     fixed_tables_built = 1;
 }
 
 /* ========================================================================== */
 /*                    Dynamic Huffman table decode                            */
 /* ========================================================================== */
+
+/* Code-length codes use a simple 7-bit table (not packed format) */
+#define CL_TABLE_BITS 7
+#define CL_TABLE_SIZE (1 << CL_TABLE_BITS)
+
+/* Simple code-length table entry: sym in bits[15:4], len in bits[3:0] */
+static int build_cl_table(uint32_t *table, const uint8_t *lengths, int count) {
+    int bl_count[16] = {0};
+    int next_code[16] = {0};
+    int tsize = CL_TABLE_SIZE;
+
+    int max_len = 0;
+    for (int i = 0; i < count; i++) {
+        bl_count[lengths[i]]++;
+        if (lengths[i] > max_len) max_len = lengths[i];
+    }
+    bl_count[0] = 0;
+
+    if (max_len == 0) {
+        memset(table, 0, tsize * sizeof(uint32_t));
+        return 0;
+    }
+
+    int code = 0;
+    for (int b = 1; b <= 15; b++) {
+        code = (code + bl_count[b-1]) << 1;
+        next_code[b] = code;
+    }
+
+    memset(table, 0, tsize * sizeof(uint32_t));
+
+    for (int sym = 0; sym < count; sym++) {
+        int len = lengths[sym];
+        if (len == 0) continue;
+        int c = next_code[len]++;
+        int rev = bit_reverse(c, len);
+        /* Pack: sym in bits[15:4], len in bits[3:0] */
+        uint32_t entry = ((uint32_t)sym << 4) | (uint32_t)len;
+        int fill = 1 << len;
+        for (int idx = rev; idx < tsize; idx += fill)
+            table[idx] = entry;
+    }
+    return 0;
+}
 
 static int decode_dynamic_tables(fast_bitreader_t *br,
                                  uint32_t *litlen_table,
@@ -419,19 +520,15 @@ static int decode_dynamic_tables(fast_bitreader_t *br,
 
     if (hlit > 286 || hdist > 30) return FD_ERROR_BAD_DATA;
 
-    /* Read code-length code lengths */
     uint8_t cl_lengths[19] = {0};
     for (int i = 0; i < hclen; i++) {
         fbr_ensure(br, 3);
         cl_lengths[codelen_order[i]] = (uint8_t)fbr_read_fast(br, 3);
     }
 
-    /* Build code-length table (7-bit, small) */
-    uint32_t cl_table[128];
-    if (build_fast_table(cl_table, 7, cl_lengths, 19, 0) < 0)
-        return FD_ERROR_BAD_DATA;
+    uint32_t cl_table[CL_TABLE_SIZE];
+    build_cl_table(cl_table, cl_lengths, 19);
 
-    /* Decode all code lengths */
     int total = hlit + hdist;
     uint8_t all_lengths[286 + 30];
     memset(all_lengths, 0, sizeof(all_lengths));
@@ -439,10 +536,10 @@ static int decode_dynamic_tables(fast_bitreader_t *br,
     int i = 0;
     while (i < total) {
         fbr_refill(br);
-        uint32_t idx = (uint32_t)fbr_peek(br, 7);
+        uint32_t idx = (uint32_t)fbr_peek(br, CL_TABLE_BITS);
         uint32_t entry = cl_table[idx];
-        int len = entry_len(entry);
-        int sym = entry_sym(entry);
+        int len = (int)(entry & 0xF);
+        int sym = (int)(entry >> 4);
         if (len == 0) return FD_ERROR_BAD_DATA;
         fbr_consume(br, len);
 
@@ -467,10 +564,11 @@ static int decode_dynamic_tables(fast_bitreader_t *br,
         }
     }
 
-    /* Build litlen and dist fast tables */
-    if (build_fast_table(litlen_table, PRIMARY_BITS, all_lengths, hlit, 1) < 0)
+    if (build_packed_table(litlen_table, PRIMARY_BITS, all_lengths, hlit,
+                           litlen_decode_results) < 0)
         return FD_ERROR_BAD_DATA;
-    if (build_fast_table(dist_table, PRIMARY_BITS, all_lengths + hlit, hdist, 0) < 0)
+    if (build_packed_table(dist_table, PRIMARY_BITS, all_lengths + hlit, hdist,
+                           offset_decode_results) < 0)
         return FD_ERROR_BAD_DATA;
 
     return FD_OK;
@@ -480,12 +578,6 @@ static int decode_dynamic_tables(fast_bitreader_t *br,
 /*                          Fast decode loop                                  */
 /* ========================================================================== */
 
-/*
- * fd_inflate_fast - High-performance DEFLATE decompressor.
- *
- * Uses 11-bit primary Huffman table, 64-bit branchless bit reader,
- * multi-symbol decode, and word-at-a-time copy.
- */
 __attribute__((flatten))
 int fd_inflate_fast(const uint8_t *src, size_t src_len,
                     uint8_t *dst, size_t dst_len,
@@ -496,21 +588,19 @@ int fd_inflate_fast(const uint8_t *src, size_t src_len,
     size_t out_pos = 0;
     int bfinal;
 
-    /* Allocate tables on stack */
     uint32_t litlen_table[MAX_LITLEN_TABLE];
     uint32_t dist_table[MAX_DIST_TABLE];
 
     do {
         fbr_refill(&br);
 
-        /* Read block header */
         bfinal = (int)fbr_read_fast(&br, 1);
         int btype = (int)fbr_read_fast(&br, 2);
 
         if (btype == 3) return FD_ERROR_BAD_BLOCK;
 
         if (btype == 0) {
-            /* Stored (non-compressed) block */
+            /* Stored block */
             fbr_align_byte(&br);
             fbr_refill(&br);
             uint32_t len  = (uint32_t)fbr_read_fast(&br, 16);
@@ -518,39 +608,31 @@ int fd_inflate_fast(const uint8_t *src, size_t src_len,
             if ((len ^ nlen) != 0xFFFF) return FD_ERROR_BAD_DATA;
             if (out_pos + len > dst_len) return FD_ERROR_SHORT_BUF;
 
-            /* Copy directly from bitreader's byte stream */
-            /* First, drain any remaining bits in the buffer */
             while (br.nbits >= 8 && len > 0) {
                 dst[out_pos++] = (uint8_t)(br.bits & 0xFF);
                 br.bits >>= 8;
                 br.nbits -= 8;
                 len--;
             }
-            /* Then copy from the byte pointer */
             if (len > 0) {
                 if (br.ptr + len > br.data_end) return FD_ERROR_BAD_DATA;
                 memcpy(dst + out_pos, br.ptr, len);
                 br.ptr += len;
                 out_pos += len;
             }
-            /* Reset bit buffer — stored blocks consume whole bytes,
-             * next block starts at the current byte boundary */
             br.bits = 0;
             br.nbits = 0;
             continue;
         }
 
-        /* Compressed block — use table pointers for flexible source */
         const uint32_t *ll_tbl;
         const uint32_t *dt_tbl;
 
         if (btype == 1) {
-            /* Fixed Huffman — use pre-computed tables (zero build cost) */
             ensure_fixed_tables();
             ll_tbl = fixed_litlen_table;
             dt_tbl = fixed_dist_table;
         } else {
-            /* Dynamic Huffman */
             int rc = decode_dynamic_tables(&br, litlen_table, dist_table);
             if (rc != FD_OK) return rc;
             ll_tbl = litlen_table;
@@ -558,169 +640,219 @@ int fd_inflate_fast(const uint8_t *src, size_t src_len,
         }
 
         /*
-         * Main decode loop — optimized for minimal branches.
+         * Fast decode loop using packed entries and saved_bitbuf.
          *
-         * Structure: refill once, decode symbol, fast-path for literals.
-         * After consuming at most ~30 bits per iteration (litlen + dist + extras),
-         * we refill. With 56+ bits in the buffer after refill, we can decode
-         * at least one full litlen+dist pair before the next refill.
+         * Key technique: before consuming bits for a length/offset code,
+         * we save the bitbuf. The extra bits follow the codeword bits
+         * in the saved buffer, so we can extract them with:
+         *   extra_val = (saved_bitbuf & mask) >> codelen
+         * where mask = (1 << (codelen + extra_bits)) - 1
+         *
+         * The packed entry has:
+         *   bits[4:0]  = codelen + extra_bits (total bits to consume)
+         *   bits[11:8] = codelen (for the shift amount)
+         *   bits[31:16] = base value
+         *
+         * So: value = base + ((saved_bitbuf & BITMASK(total)) >> codelen)
+         * Which is: ENTRY_BASEVAL(entry) + (EXTRACT(saved, entry) >> ENTRY_CODELEN(entry))
          */
         {
-            /* Safety margin: stop copying when we're close to end of output */
             const size_t safe_end = (dst_len > 274) ? dst_len - 274 : 0;
+            uint32_t match_length = 0; /* shared between primary/subtable length paths */
 
             fbr_refill(&br);
+            uint32_t entry = ll_tbl[br.bits & BITMASK(PRIMARY_BITS)];
 
             for (;;) {
-                /* Decode litlen symbol */
-                uint32_t bits = (uint32_t)(br.bits & ((1u << PRIMARY_BITS) - 1));
-                uint32_t entry = ll_tbl[bits];
+                uint64_t saved_bitbuf;
 
-                if (__builtin_expect(entry_type(entry) == TYPE_LITERAL, 1)) {
-                    /* FAST PATH: single literal — most common case.
-                     * Consume bits and emit byte without full refill. */
-                    int codelen = entry_len(entry);
-                    br.bits >>= codelen;
-                    br.nbits -= codelen;
-                    dst[out_pos++] = (uint8_t)(entry & 0xFF); /* sym is in low bits */
+                /*
+                 * Save bitbuf before consuming. For literals, the codelen
+                 * is in bits[3:0]. For lengths, total_bits is in bits[4:0].
+                 */
+                saved_bitbuf = br.bits;
+                br.bits >>= (uint8_t)entry;
+                br.nbits -= (uint8_t)entry;
 
-                    /* Try to decode another literal immediately (no refill) */
+                if (__builtin_expect((int32_t)entry < 0, 1)) {
+                    /* HUFFDEC_LITERAL (bit 31 set = negative as signed).
+                     * Literal value is in bits[23:16]. */
+                    dst[out_pos++] = (uint8_t)(entry >> 16);
+
+                    /* Try 2nd fast literal without refill */
                     if (__builtin_expect(br.nbits >= PRIMARY_BITS, 1)) {
-                        bits = (uint32_t)(br.bits & ((1u << PRIMARY_BITS) - 1));
-                        entry = ll_tbl[bits];
-                        if (__builtin_expect(entry_type(entry) == TYPE_LITERAL, 1)) {
-                            codelen = entry_len(entry);
-                            br.bits >>= codelen;
-                            br.nbits -= codelen;
-                            dst[out_pos++] = (uint8_t)(entry & 0xFF);
+                        entry = ll_tbl[br.bits & BITMASK(PRIMARY_BITS)];
+                        if (__builtin_expect((int32_t)entry < 0, 1)) {
+                            saved_bitbuf = br.bits;
+                            br.bits >>= (uint8_t)entry;
+                            br.nbits -= (uint8_t)entry;
+                            dst[out_pos++] = (uint8_t)(entry >> 16);
 
-                            /* Third literal? */
+                            /* Try 3rd fast literal */
                             if (__builtin_expect(br.nbits >= PRIMARY_BITS, 1)) {
-                                bits = (uint32_t)(br.bits & ((1u << PRIMARY_BITS) - 1));
-                                entry = ll_tbl[bits];
-                                if (entry_type(entry) == TYPE_LITERAL) {
-                                    codelen = entry_len(entry);
-                                    br.bits >>= codelen;
-                                    br.nbits -= codelen;
-                                    dst[out_pos++] = (uint8_t)(entry & 0xFF);
+                                entry = ll_tbl[br.bits & BITMASK(PRIMARY_BITS)];
+                                if ((int32_t)entry < 0) {
+                                    br.bits >>= (uint8_t)entry;
+                                    br.nbits -= (uint8_t)entry;
+                                    dst[out_pos++] = (uint8_t)(entry >> 16);
+                                    /* Preload next entry after refill */
+                                    fbr_refill(&br);
+                                    entry = ll_tbl[br.bits & BITMASK(PRIMARY_BITS)];
+                                    if (__builtin_expect(out_pos >= safe_end, 0)) {
+                                        if (out_pos >= dst_len)
+                                            return FD_ERROR_SHORT_BUF;
+                                    }
+                                    continue;
                                 }
+                                /* Non-literal: fall through to handle it */
+                            } else {
+                                /* Need refill, then preload */
+                                fbr_refill(&br);
+                                entry = ll_tbl[br.bits & BITMASK(PRIMARY_BITS)];
+                                if (__builtin_expect(out_pos >= safe_end, 0)) {
+                                    if (out_pos >= dst_len)
+                                        return FD_ERROR_SHORT_BUF;
+                                }
+                                continue;
                             }
                         }
-                    }
-
-                    /* Refill and check bounds */
-                    fbr_refill(&br);
-                    if (__builtin_expect(out_pos >= safe_end, 0)) {
-                        if (out_pos >= dst_len) return FD_ERROR_SHORT_BUF;
-                    }
-                    continue;
-                }
-
-                /* Slow paths: EOB, subtable, or length code */
-                int type = entry_type(entry);
-                int codelen = entry_len(entry);
-
-                if (type == TYPE_EOB) {
-                    br.bits >>= codelen;
-                    br.nbits -= codelen;
-                    break;
-                }
-
-                if (__builtin_expect(type == TYPE_SUBTABLE, 0)) {
-                    int sub_off = entry_sym(entry);
-                    int sub_bits = entry_sub_bits(entry);
-                    br.bits >>= PRIMARY_BITS;
-                    br.nbits -= PRIMARY_BITS;
-                    if (__builtin_expect(br.nbits < sub_bits, 0)) fbr_refill(&br);
-                    uint32_t sub_idx = (uint32_t)(br.bits & ((1u << sub_bits) - 1));
-                    entry = ll_tbl[sub_off + sub_idx];
-                    type = entry_type(entry);
-                    codelen = entry_len(entry) - PRIMARY_BITS;
-                    br.bits >>= codelen;
-                    br.nbits -= codelen;
-
-                    if (type == TYPE_LITERAL) {
-                        dst[out_pos++] = (uint8_t)(entry & 0xFF);
+                        /* Non-literal from 2nd: entry already loaded, fall through */
+                    } else {
+                        /* Need refill */
                         fbr_refill(&br);
+                        entry = ll_tbl[br.bits & BITMASK(PRIMARY_BITS)];
+                        if (__builtin_expect(out_pos >= safe_end, 0)) {
+                            if (out_pos >= dst_len)
+                                return FD_ERROR_SHORT_BUF;
+                        }
                         continue;
                     }
-                    if (type == TYPE_EOB) break;
-                    /* Fall through to backref handling */
-                } else {
-                    /* TYPE_LENGTH in primary table */
-                    br.bits >>= codelen;
-                    br.nbits -= codelen;
+
+                    /* Fall through: entry contains a non-literal from a
+                     * subsequent literal attempt. Re-save and consume. */
+                    saved_bitbuf = br.bits;
+                    br.bits >>= (uint8_t)entry;
+                    br.nbits -= (uint8_t)entry;
                 }
 
-                /* Back-reference: decode length + distance */
-                int sym = entry_sym(entry);
-                int len_idx = sym - 257;
-                if (__builtin_expect((unsigned)len_idx >= 29, 0))
-                    return FD_ERROR_BAD_DATA;
+                /* Not a literal. Check for exceptional (EOB or subtable). */
+                if (__builtin_expect(entry & HUFFDEC_EXCEPTIONAL, 0)) {
+                    if (entry & HUFFDEC_END_OF_BLOCK)
+                        break;
 
-                uint32_t match_len = length_base[len_idx];
-                {
-                    int extra = length_extra[len_idx];
-                    if (extra) {
-                        if (__builtin_expect(br.nbits < extra, 0)) fbr_refill(&br);
-                        match_len += (uint32_t)(br.bits & ((1u << extra) - 1));
-                        br.bits >>= extra;
-                        br.nbits -= extra;
+                    /* Subtable pointer */
+                    uint32_t sub_idx = ENTRY_SUBTBL_IDX(entry);
+                    int sub_bits = ENTRY_SUBTBL_BITS(entry);
+                    /* We already consumed primary_bits via the entry shift.
+                     * Now index into subtable with the next sub_bits. */
+                    /* Actually, we consumed (uint8_t)entry bits which is
+                     * primary_bits (stored in bits[3:0] of subtable ptr entry). */
+                    if (__builtin_expect(br.nbits < (int)sub_bits, 0))
+                        fbr_refill(&br);
+                    entry = ll_tbl[sub_idx + (br.bits & BITMASK(sub_bits))];
+
+                    /* The subtable entry could be literal, length, or EOB */
+                    if ((int32_t)entry < 0) {
+                        /* Literal from subtable */
+                        int sub_codelen = ENTRY_BITS(entry) - PRIMARY_BITS;
+                        br.bits >>= sub_codelen;
+                        br.nbits -= sub_codelen;
+                        dst[out_pos++] = (uint8_t)(entry >> 16);
+                        fbr_refill(&br);
+                        entry = ll_tbl[br.bits & BITMASK(PRIMARY_BITS)];
+                        continue;
+                    }
+                    if (entry & HUFFDEC_END_OF_BLOCK) {
+                        int sub_codelen = ENTRY_BITS(entry) - PRIMARY_BITS;
+                        br.bits >>= sub_codelen;
+                        br.nbits -= sub_codelen;
+                        break;
+                    }
+                    /* Length from subtable: consume remaining bits and extract
+                     * extra bits. The entry has full codelen in bits[11:8] and
+                     * full total_bits in bits[4:0]. We need to consume
+                     * total_bits - primary_bits from current buffer. */
+                    {
+                        int total_bits = ENTRY_BITS(entry);
+                        int remaining = total_bits - PRIMARY_BITS;
+                        saved_bitbuf = br.bits;
+                        br.bits >>= remaining;
+                        br.nbits -= remaining;
+                        int codelen_remaining = ENTRY_CODELEN(entry) - PRIMARY_BITS;
+                        match_length = ENTRY_BASEVAL(entry)
+                            + (uint32_t)((saved_bitbuf & BITMASK(remaining)) >> codelen_remaining);
+                        goto decode_distance;
                     }
                 }
 
-                /* Decode distance */
-                if (__builtin_expect(br.nbits < PRIMARY_BITS, 0)) fbr_refill(&br);
-                bits = (uint32_t)(br.bits & ((1u << PRIMARY_BITS) - 1));
-                entry = dt_tbl[bits];
-                type = entry_type(entry);
-                codelen = entry_len(entry);
+                /* Length entry (not exceptional, not literal).
+                 * saved_bitbuf was captured before consume.
+                 * Extract length = base + extra_bits_value. */
+                match_length = ENTRY_BASEVAL(entry)
+                    + (uint32_t)((saved_bitbuf & BITMASK((uint8_t)entry))
+                                 >> (uint8_t)(entry >> 8));
 
-                int dist_sym;
-                if (__builtin_expect(type != TYPE_SUBTABLE, 1)) {
-                    br.bits >>= codelen;
-                    br.nbits -= codelen;
-                    dist_sym = entry_sym(entry);
-                } else {
-                    int sub_off = entry_sym(entry);
-                    int sub_bits = entry_sub_bits(entry);
+            decode_distance:
+                /* Decode distance */
+                if (__builtin_expect(br.nbits < PRIMARY_BITS, 0))
+                    fbr_refill(&br);
+
+                entry = dt_tbl[br.bits & BITMASK(PRIMARY_BITS)];
+
+                if (__builtin_expect(entry & HUFFDEC_EXCEPTIONAL, 0)) {
+                    /* Subtable for distance */
+                    uint32_t sub_idx = ENTRY_SUBTBL_IDX(entry);
+                    int sub_bits = ENTRY_SUBTBL_BITS(entry);
                     br.bits >>= PRIMARY_BITS;
                     br.nbits -= PRIMARY_BITS;
                     if (br.nbits < sub_bits) fbr_refill(&br);
-                    uint32_t sub_idx = (uint32_t)(br.bits & ((1u << sub_bits) - 1));
-                    entry = dt_tbl[sub_off + sub_idx];
-                    codelen = entry_len(entry) - PRIMARY_BITS;
-                    br.bits >>= codelen;
-                    br.nbits -= codelen;
-                    dist_sym = entry_sym(entry);
+                    entry = dt_tbl[sub_idx + (br.bits & BITMASK(sub_bits))];
+                    /* Consume remaining bits for this entry */
+                    int remaining = ENTRY_BITS(entry) - PRIMARY_BITS;
+                    saved_bitbuf = br.bits;
+                    br.bits >>= remaining;
+                    br.nbits -= remaining;
+                    int codelen_remaining = ENTRY_CODELEN(entry) - PRIMARY_BITS;
+                    uint32_t dist_sub = ENTRY_BASEVAL(entry)
+                        + (uint32_t)((saved_bitbuf & BITMASK(remaining)) >> codelen_remaining);
+
+                    if (__builtin_expect(dist_sub > out_pos, 0))
+                        return FD_ERROR_BAD_DATA;
+                    if (__builtin_expect(out_pos + match_length > dst_len, 0))
+                        return FD_ERROR_SHORT_BUF;
+
+                    fast_copy(dst, out_pos, dist_sub, match_length);
+                    out_pos += match_length;
+
+                    fbr_refill(&br);
+                    entry = ll_tbl[br.bits & BITMASK(PRIMARY_BITS)];
+                    continue;
                 }
 
-                if (__builtin_expect((unsigned)dist_sym >= 30, 0))
-                    return FD_ERROR_BAD_DATA;
+                /* Common case: distance from primary table */
+                saved_bitbuf = br.bits;
+                br.bits >>= (uint8_t)entry;
+                br.nbits -= (uint8_t)entry;
 
-                uint32_t distance = dist_base[dist_sym];
-                int extra = dist_extra[dist_sym];
-                if (extra) {
-                    if (__builtin_expect(br.nbits < extra, 0)) fbr_refill(&br);
-                    distance += (uint32_t)(br.bits & ((1u << extra) - 1));
-                    br.bits >>= extra;
-                    br.nbits -= extra;
+                {
+                    uint32_t distance = ENTRY_BASEVAL(entry)
+                        + (uint32_t)((saved_bitbuf & BITMASK((uint8_t)entry))
+                                     >> (uint8_t)(entry >> 8));
+
+                    if (__builtin_expect(distance > out_pos, 0))
+                        return FD_ERROR_BAD_DATA;
+                    if (__builtin_expect(out_pos + match_length > dst_len, 0))
+                        return FD_ERROR_SHORT_BUF;
+
+                    fast_copy(dst, out_pos, distance, match_length);
+                    out_pos += match_length;
                 }
 
-                /* Validate and copy */
-                if (__builtin_expect(distance > out_pos, 0))
-                    return FD_ERROR_BAD_DATA;
-                if (__builtin_expect(out_pos + match_len > dst_len, 0))
-                    return FD_ERROR_SHORT_BUF;
-
-                fast_copy(dst, out_pos, distance, match_len);
-                out_pos += match_len;
-
-                /* Refill for next iteration's litlen decode */
+                /* Preload next litlen entry (overlaps with copy latency) */
                 fbr_refill(&br);
+                entry = ll_tbl[br.bits & BITMASK(PRIMARY_BITS)];
             }
         }
-
     } while (!bfinal);
 
     if (out_len) *out_len = out_pos;
