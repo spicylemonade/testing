@@ -1,0 +1,50 @@
+{
+  "associations": [
+    "Collatz conjecture -> 3n+1 map -> iterated function systems -> fractal geometry -> self-similarity at all scales",
+    "Random walk with drift -> Brownian motion -> Ito calculus -> stochastic PDEs -> turbulence models in physics",
+    "Delay records -> extreme value theory -> fat tails -> black swan events -> Nassim Taleb's framework",
+    "Binary representation of numbers -> DNA as 4-letter code -> motif discovery -> CRISPR target identification",
+    "Energy landscapes -> protein misfolding diseases (Alzheimer's) -> amyloid formation -> prion dynamics",
+    "Genetic algorithms -> natural selection -> fitness landscapes -> Wright-Fisher model -> population genetics",
+    "Kolmogorov complexity -> minimum description length -> Occam's razor -> Bayesian model selection",
+    "Renormalization group -> universality classes -> critical exponents -> second-order phase transitions -> superconductivity",
+    "QUBO formulation -> traveling salesman -> protein folding -> circuit design -> logistics optimization",
+    "Self-organized criticality -> power laws -> Zipf's law in linguistics -> city size distributions -> wealth inequality",
+    "Simulated annealing -> metallurgical annealing process -> crystal growth -> materials science -> semiconductor manufacturing",
+    "Large deviations theory -> rare mutation events in evolution -> cancer genomics -> drug resistance",
+    "Compression algorithms -> error-correcting codes -> Shannon limit -> deep space communication -> Voyager spacecraft"
+  ],
+  "blind_spots": [
+    "Algebraic structure: We focus on statistical/computational approaches but may miss algebraic properties of specific residue classes that deterministically produce high delays (e.g., numbers of form 2^k - 1 have known behavior).",
+    "p-adic analysis: The Collatz map has a natural p-adic formulation (2-adic and 3-adic). This perspective might reveal structure invisible in real analysis but is underexplored in our concept cards.",
+    "Ergodic theory: Formal ergodic properties of the Collatz map on p-adic integers (or on certain subsets of naturals) could provide rigorous bounds rather than heuristic estimates.",
+    "Negative numbers and extensions: The Collatz conjecture has non-trivial cycles for negative integers. Our framework ignores these entirely, but they might illuminate positive-side dynamics.",
+    "Multi-step Collatz variants: Generalizations like 5n+1 or qn+1 maps have different dynamics. Cross-fertilization from studying these variants could inform 3n+1 strategy.",
+    "Hardware-specific optimizations: Our search strategies are algorithm-level. GPU/FPGA-specific bit manipulation tricks (like those in Barina's 2^71 verification) could dramatically change what's computationally feasible.",
+    "Connection to cryptography: The Collatz map shares structural similarity with certain hash functions. Techniques from cryptanalysis (differential/linear) might reveal trajectory shortcuts.",
+    "Measure-theoretic approach: We assume delay records are 'typical' extremes of a random process. But Collatz iterates are deterministic — the randomness is in the number theory, not the dynamics. This distinction might matter.",
+    "Graph-theoretic structure: The Collatz tree (the inverse graph of the Collatz map) has specific tree structure. Graph mining on this tree might reveal patterns we're missing with forward-iteration analysis."
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "What if we restrict to palindromic binary numbers?",
+      "result": "Palindromic numbers like 101101 have symmetric binary structure. Empirically, they tend to have slightly below-average delay because the symmetry constrains trajectory diversity. This rules out palindromes as a productive search space for records."
+    },
+    {
+      "constraint": "What if we only consider numbers of form 4k+3 (ending in ...11)?",
+      "result": "Numbers ≡ 3 mod 4 are odd and T(n) = (3n+1)/2 is even (since 3(4k+3)+1 = 12k+10 is divisible by 2 but not 4). This means only one halving step. These numbers take an 'upward' first step and are slightly enriched among delay records."
+    },
+    {
+      "constraint": "What if we inject a maximum bit-length constraint of 64 bits?",
+      "result": "With 64-bit constraint, we can use native hardware integers for speed but are limited to n < 2^64 ≈ 1.8×10^19. Known path records go up to ~2.4×10^18. There's still uncharted territory in [2.4×10^18, 1.8×10^19] — about 7.5x more numbers. Several new records are expected here."
+    },
+    {
+      "constraint": "What if trajectory must stay below n^3 (stronger than n^2 heuristic)?",
+      "result": "Surprisingly, no counterexample is known to max(trajectory) < n^3 for any starting n. But the n^2 prediction is much tighter. Imposing n^3 as a hard constraint would not eliminate any known records and is thus not useful as a filter."
+    },
+    {
+      "constraint": "What if we search only among highly composite numbers?",
+      "result": "Highly composite numbers (with many divisors) tend to be very even-heavy and collapse quickly via division. They are poor candidates for delay records. This confirms that 'interesting' Collatz numbers are odd-biased, not divisor-rich."
+    }
+  ]
+}

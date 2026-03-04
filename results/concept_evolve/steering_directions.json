@@ -1,0 +1,20 @@
+[
+  {
+    "direction": "Focus on mutation-based search from known champions with accelerated simulation",
+    "rationale": "The most productive approach historically: perturb known high-scoring machines by changing one or two transitions and simulate. This is how Kropitz, Ligocki, and mxdys found their records. The search space near champions is much more fertile than random enumeration.",
+    "first_step": "Implement the accelerated TM simulator and verify it reproduces known BB(4) and BB(5) values. Then systematically mutate the Kropitz 10↑↑15 champion (which is simulable, unlike the mxdys 2↑↑↑5 champion).",
+    "expected_signal": "Finding machines in the mutation neighborhood that score comparably to or better than the Kropitz champion within the first 10K mutations."
+  },
+  {
+    "direction": "Construct shift-overflow-counter TMs by design rather than search",
+    "rationale": "The mxdys champion uses shift overflow counters. Instead of searching blindly, we can reverse-engineer the structural pattern and construct new machines that implement similar counter hierarchies with different halt conditions.",
+    "first_step": "Analyze the transition graph of the Kropitz champion to identify the counter increment, overflow detection, and halt logic modules. Then enumerate variations of these modules.",
+    "expected_signal": "Producing at least one new halting machine with sigma > 10↑↑10 by construction rather than random search."
+  },
+  {
+    "direction": "Hybrid genetic/simulated-annealing search with fitness based on simulation length",
+    "rationale": "Combining evolutionary search with annealing allows exploring the TM space more efficiently than pure enumeration. The fitness landscape is highly rugged (most machines loop forever or halt quickly), so a stochastic approach with restart capability is essential.",
+    "first_step": "Implement a GA with single-transition mutation and tournament selection. Use the accelerated simulator to evaluate fitness. Start with a population seeded from known high-scoring machines.",
+    "expected_signal": "The GA discovering machines with sigma > 10^1000 within 100K generations, demonstrating it can navigate to high-scoring regions."
+  }
+]

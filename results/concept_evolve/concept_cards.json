@@ -1,0 +1,122 @@
+[
+  {
+    "symbolic_name": "stochastic_collatz_model",
+    "description": "Models Collatz iteration as a biased random walk on log-space, where odd steps multiply by ~3/2 and even steps divide by 2. The Lagarias-Weiss heuristic predicts max(trajectory) ~ n^2 for starting value n. This stochastic framework yields closed-form predictions for delay distributions.",
+    "domains": ["dynamical_systems", "probability_theory", "number_theory"],
+    "mathematical_formalization": "Let X_k = log_2(T^k(n)). At each step, X_{k+1} = X_k - 1 with prob ~1/2 (even), or X_{k+1} = X_k + log_2(3/2) with prob ~1/2 (odd). Expected drift: mu = (1/2)(-1) + (1/2)(log_2(3/2)) ≈ -0.2075. Variance: sigma^2 ≈ 0.52. Delay ~ |X_0|/|mu| + O(sqrt(|X_0|/sigma)).",
+    "analogical_connections": ["Brownian motion with drift in physics", "Gambler's ruin problem", "Random walk on energy landscapes in protein folding"],
+    "implementation_hypothesis": "Build a Monte Carlo simulator that generates synthetic Collatz-like trajectories using the stochastic model. Compare predicted delay distributions with actual Collatz delays to identify anomalous numbers (those deviating significantly from prediction). These anomalies are candidates for delay records.",
+    "experiment_seed": "Generate 10M random numbers, compute actual vs predicted delay. Rank by (actual_delay - predicted_delay) / predicted_stddev to find statistically anomalous high-delay numbers.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "genetic_delay_maximizer",
+    "description": "Uses evolutionary algorithms to breed starting numbers with high Collatz delay. Numbers are represented as bitstrings; crossover splices binary representations, and mutation flips bits. Fitness = delay(n) / log2(n), normalizing for number size. Inspired by biological evolution optimizing fitness landscapes.",
+    "domains": ["evolutionary_computation", "number_theory", "biological_evolution"],
+    "mathematical_formalization": "Population P = {n_1, ..., n_K}. Fitness f(n) = delay(n) / ceil(log_2(n)). Selection: tournament of size t. Crossover: single-point on binary representation. Mutation: flip bit i with probability p_mut. Elitism: keep top e individuals. Iterate until convergence or budget exhaustion.",
+    "analogical_connections": ["Natural selection optimizing phenotype in fitness landscapes", "Genetic programming for symbolic regression", "Protein sequence evolution under selection pressure"],
+    "implementation_hypothesis": "Implement a genetic algorithm in Python where each individual is an integer. Use bit-level crossover and mutation. Track the Pareto frontier of (bit_length, delay) pairs. After convergence, verify that discovered numbers genuinely have high delay relative to their size.",
+    "experiment_seed": "Run GA with population 1000, 500 generations, bit-lengths 40-80. Compare best found delay/bit ratios against known records.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "information_theoretic_sieve",
+    "description": "Uses Kolmogorov complexity intuition to sieve for high-delay Collatz numbers. Numbers with low descriptive complexity (highly structured binary representations) tend to have predictable trajectories. High-delay candidates should have intermediate effective complexity — structured enough to avoid quick convergence but not so random as to follow the mean.",
+    "domains": ["information_theory", "algorithmic_complexity", "number_theory"],
+    "mathematical_formalization": "Effective complexity C_eff(n) = K(n) - K(regularity(n)). For Collatz, regularity relates to the distribution of odd/even steps. Target: numbers n where H(bits(n)) ≈ 0.6-0.8, avoiding both perfectly structured and perfectly random patterns.",
+    "analogical_connections": ["Edge of chaos in cellular automata (Langton's lambda)", "Intermediate complexity in biological genomes", "Critical phenomena in statistical physics"],
+    "implementation_hypothesis": "Sieve numbers by computing the compressibility of their binary representation (using zlib). Numbers in the 'Goldilocks zone' of compressibility are candidates for high delay. Filter through actual Collatz computation.",
+    "experiment_seed": "For n in range 2^50 to 2^60, sample 100K numbers stratified by compression ratio. Correlate compression ratio with delay. Identify optimal compression band.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "energy_landscape_navigator",
+    "description": "Maps the Collatz iteration onto a rugged energy landscape where 'energy' E(n) = -delay(n). Finding high-delay numbers becomes finding deep energy minima. Simulated annealing and basin-hopping algorithms from computational chemistry can navigate this landscape efficiently, escaping local optima.",
+    "domains": ["statistical_physics", "computational_chemistry", "optimization"],
+    "mathematical_formalization": "Energy E(n) = -delay(n). Temperature schedule T(k) = T_0 * alpha^k. Acceptance: P(accept n') = min(1, exp(-(E(n')-E(n))/T(k))). Neighborhood: n' from bit-flips. Basin-hopping: local minimization + random perturbation.",
+    "analogical_connections": ["Protein folding energy landscape navigation", "Spin glass optimization in condensed matter", "Metropolis-Hastings MCMC in Bayesian statistics"],
+    "implementation_hypothesis": "Implement simulated annealing where the state is an integer n and moves are bit-flips. The 'energy' is negative delay. Cool slowly to find deep local minima in delay-space.",
+    "experiment_seed": "Start from known delay records. Perform basin-hopping with 1000 restarts, 10000 steps each. Track whether SA finds higher delay than random search of equal cost.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "dna_motif_number_patterns",
+    "description": "Analyzes binary representations of known Collatz delay records to identify recurring 'motifs' — short binary patterns that appear disproportionately in high-delay numbers, analogous to regulatory motifs in DNA. These motifs guide construction of new high-delay candidates.",
+    "domains": ["computational_biology", "pattern_recognition", "number_theory"],
+    "mathematical_formalization": "Given delay records D = {n_1, ..., n_k}, extract all k-mers from binary(n_i) for k=4..16. Enrichment score: E(motif) = freq_in_records / freq_in_random. Significant motifs have E >> 1 with p < 0.01 by Fisher's exact test.",
+    "analogical_connections": ["Transcription factor binding site discovery in genomics", "N-gram language models in NLP", "Crystal structure motifs in materials science"],
+    "implementation_hypothesis": "Convert all known delay records to binary strings. Run motif discovery (analogous to MEME in bioinformatics). Construct new numbers by concatenating enriched motifs. Test their Collatz delay.",
+    "experiment_seed": "Analyze the ~131 known delay records. Extract 8-bit motifs. Compare frequencies against uniform random. Use top motifs to construct 10000 candidates.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "renormalization_group_collatz",
+    "description": "Applies renormalization group (RG) ideas from statistical physics to Collatz dynamics. By coarse-graining the trajectory — grouping multiple steps into effective single steps — we identify scale-invariant structure. The Collatz map on residue classes mod 2^k forms a natural RG hierarchy.",
+    "domains": ["statistical_physics", "number_theory", "dynamical_systems"],
+    "mathematical_formalization": "Define coarse-grained map T_k: Z/(2^k Z) -> Z/(2^k Z) by iterating T exactly k times on residue classes. Fixed points of T_k correspond to 'self-similar' trajectories. Critical exponents: delay(n) ~ n^gamma near fixed points.",
+    "analogical_connections": ["Kadanoff block spin transformation in Ising model", "Wavelet multiresolution analysis", "Hierarchical clustering in ML"],
+    "implementation_hypothesis": "Compute T_k for k=1..20. Identify residue classes mod 2^k that produce above-average delays. Numbers in intersection of good classes across scales are prime candidates.",
+    "experiment_seed": "For k=1..16, compute average delay in each residue class mod 2^k up to 2^30. Identify top 1% classes at each level. Construct intersections.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "extremal_statistics_predictor",
+    "description": "Uses extreme value theory (EVT) to predict the expected delay of the k-th delay record. The GEV distribution fitted to known records forecasts where the next record should fall, and whether any found value is genuinely surprising or merely expected.",
+    "domains": ["extreme_value_theory", "statistics", "number_theory"],
+    "mathematical_formalization": "Model delay records via GEV: P(D_n <= d) ~ exp(-(1 + xi*(d - mu_n)/sigma_n)^{-1/xi}) where mu_n, sigma_n scale with log(n). Fit xi, mu_0, sigma_0 from known records.",
+    "analogical_connections": ["Flood prediction in hydrology", "Maximum earthquake magnitude prediction", "Record-breaking temperature analysis in climate science"],
+    "implementation_hypothesis": "Fit GEV to known delay records (delay vs log(n)). Predict expected delay of next record. Estimate optimal search range.",
+    "experiment_seed": "Collect ~131 known delay records. Fit GEV. Compute 95% prediction interval for record #132. Cross-validate by removing last 10.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "random_walk_heuristic",
+    "description": "Constructs numbers with provably long odd-step runs by engineering their binary representation. A Collatz trajectory's length is dominated by the ratio of odd to even steps. Numbers whose initial trajectory has unusually high odd-step ratio will have high delay. Connects to large deviations theory.",
+    "domains": ["probability_theory", "large_deviations", "number_theory"],
+    "mathematical_formalization": "Collatz on n: if odd, n -> (3n+1)/2^v where v = v_2(3n+1). Trajectory with many v=1 steps grows as (3/2)^k. P(k consecutive odd) ~ (1/2)^k. By large deviations: P(fraction_odd > 1/2 + eps) ~ exp(-n * I(eps)).",
+    "analogical_connections": ["Large deviations in queuing theory", "Rare event simulation in computational physics", "Extreme weather as large deviation phenomena"],
+    "implementation_hypothesis": "Construct numbers whose binary representation encodes a specific odd/even step pattern using the Chinese Remainder Theorem to force many consecutive odd steps.",
+    "experiment_seed": "For k=10..30, construct smallest n with k consecutive odd Collatz steps. Measure total delay. Compare against random numbers of same bit-length.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "self_organized_criticality",
+    "description": "The distribution of Collatz delays follows a power law, reminiscent of self-organized criticality (SOC) in sandpile models and earthquake dynamics. This suggests the Collatz system operates near a critical point where scale-free behavior emerges without parameter tuning.",
+    "domains": ["complex_systems", "statistical_physics", "number_theory"],
+    "mathematical_formalization": "P(delay > d) ~ d^{-alpha} for large d, with alpha ≈ 2-3 (empirical). Analogous to Gutenberg-Richter: P(magnitude > M) ~ 10^{-bM}. The 'avalanche size' in sandpile corresponds to trajectory length.",
+    "analogical_connections": ["Bak-Tang-Wiesenfeld sandpile model", "Gutenberg-Richter earthquake law", "Power-law degree distributions in scale-free networks"],
+    "implementation_hypothesis": "Compute delay distribution for n up to 10^8. Fit power law via MLE. Use fitted exponent for importance sampling guided by the power-law tail.",
+    "experiment_seed": "Compute delays for n = 1 to 10^8. Plot CCDF on log-log. Fit power law tail. Compare exponent with SOC universality classes.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "compression_guided_search",
+    "description": "Uses LZ-complexity of Collatz trajectories (encoded as binary sequences of odd/even steps) to identify trajectories that are 'algorithmically deep' — requiring many steps to generate despite compressible structure. High logical depth numbers are delay record candidates.",
+    "domains": ["algorithmic_information_theory", "data_compression", "dynamical_systems"],
+    "mathematical_formalization": "For trajectory tau(n) = (s_1, ..., s_D), s_i in {O, E}, compute LZ-complexity C_LZ(tau). Logical depth delta(n) ≈ D(n) - C_LZ(tau) * log(D(n)). High delta = long but structured trajectory.",
+    "analogical_connections": ["Bennett's logical depth", "DNA sequence complexity in molecular evolution", "Compression distance in phylogenetics"],
+    "implementation_hypothesis": "For each candidate n, compute full trajectory, encode as binary (0=even, 1=odd). Compute LZ76 complexity. Rank by delay / LZ_complexity ratio.",
+    "experiment_seed": "Compute LZ complexity of trajectories for all n up to 10^7. Identify top 0.1% by delay/LZ ratio. Analyze binary representations.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "neural_trajectory_predictor",
+    "description": "Trains a neural network to predict Collatz delay from binary representation of n. Learned features reveal structure invisible to hand-crafted heuristics. Gradient ascent on input space generates candidates, analogous to how AlphaFold learned protein folding.",
+    "domains": ["deep_learning", "number_theory", "computational_biology"],
+    "mathematical_formalization": "f_theta: {0,1}^B -> R, f_theta(bits(n)) ≈ delay(n). Architecture: 1D CNN. Loss: MSE. Use grad f_theta w.r.t. input to identify influential bit positions. Generate candidates by gradient ascent on input.",
+    "analogical_connections": ["AlphaFold for protein structure prediction", "Neural combinatorial optimization for TSP", "Generative models in drug discovery"],
+    "implementation_hypothesis": "Train CNN on (binary_representation, delay) pairs for n up to 10^7. Score candidates. Apply gradient-based input optimization. Verify top candidates.",
+    "experiment_seed": "1M training pairs. Train CNN. Screen 10M candidates. Compare top 100 predicted vs brute-force top 100.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "quantum_annealing_analog",
+    "description": "Formulates Collatz delay maximization as a QUBO problem, mapping to quantum annealing language. The QUBO formulation reveals quadratic interaction structure between bits of n that influence delay, enabling classical solvers to exploit this structure.",
+    "domains": ["quantum_computing", "optimization", "number_theory"],
+    "mathematical_formalization": "n as bits x = (x_1, ..., x_B). Approximate delay(n) ≈ sum_i a_i x_i + sum_{i<j} b_{ij} x_i x_j. Maximize QUBO: max_x x^T Q x.",
+    "analogical_connections": ["D-Wave quantum annealing", "Ising model in statistical physics", "Hopfield networks in neural computation"],
+    "implementation_hypothesis": "Fit quadratic model of delay as function of bit variables via LASSO. Solve QUBO exactly for small B, approximately for large B. Compare against random baseline.",
+    "experiment_seed": "Training data for B=30 bits. Fit QUBO matrix Q. Find maximum. Verify QUBO-optimal x has genuinely high delay.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  }
+]
