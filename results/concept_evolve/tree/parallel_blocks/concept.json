@@ -1,0 +1,151 @@
+{
+  "id": "parallel_blocks",
+  "title": "Parallel Block Decoding Feasibility Analysis",
+  "parent": "speculative_decoding",
+  "created": "2026-03-04T07:00:00Z",
+  "status": "completed",
+  "relevance_to_deflate": 4,
+  "impact": 2,
+  "feasibility": 2,
+
+  "summary": "Comprehensive evaluation of parallel DEFLATE block decoding for standard ZIP files. Conclusion: NOT RECOMMENDED for our use case. The combination of (a) few blocks per file, (b) large block sizes, (c) inter-block output dependencies, and (d) inability to detect block boundaries without serial parsing makes parallel block decode infeasible for meaningful speedup on standard DEFLATE streams.",
+
+  "block_structure_empirical_data": {
+    "methodology": "Analyzed all 20 corpus files at compression levels 1, 6, and 9 using a custom block structure analyzer that parses DEFLATE headers and counts blocks, types, decompressed sizes, and literal/backref ratios.",
+    "level_6_summary": {
+      "total_files": 20,
+      "files_with_1_block": 10,
+      "files_with_2_blocks": 5,
+      "files_with_3_5_blocks": 3,
+      "files_with_more_blocks": 2,
+      "note": "Files with >5 blocks are all incompressible (stored blocks: binary_elf=13, random_bytes=16)"
+    },
+    "block_count_distribution": [
+      {"file": "text_1k.txt", "blocks_l6": 1, "blocks_l1": 1, "decompressed_kb": 1},
+      {"file": "text_4k.txt", "blocks_l6": 1, "blocks_l1": 1, "decompressed_kb": 4},
+      {"file": "text_16k.txt", "blocks_l6": 1, "blocks_l1": 1, "decompressed_kb": 16},
+      {"file": "text_64k.txt", "blocks_l6": 1, "blocks_l1": 1, "decompressed_kb": 64},
+      {"file": "bundle.js", "blocks_l6": 1, "blocks_l1": 1, "decompressed_kb": 163},
+      {"file": "webpage.html", "blocks_l6": 1, "blocks_l1": 1, "decompressed_kb": 174},
+      {"file": "source_code.c", "blocks_l6": 2, "blocks_l1": 1, "decompressed_kb": 262},
+      {"file": "english_prose.txt", "blocks_l6": 2, "blocks_l1": 3, "decompressed_kb": 262},
+      {"file": "markup.xml", "blocks_l6": 2, "blocks_l1": 1, "decompressed_kb": 262},
+      {"file": "text_1024k.txt", "blocks_l6": 5, "blocks_l1": 9, "decompressed_kb": 1024},
+      {"file": "tabular.csv", "blocks_l6": 4, "blocks_l1": 4, "decompressed_kb": 258}
+    ],
+    "block_types": {
+      "stored": "Only for incompressible data (random_bytes, binary headers)",
+      "fixed_huffman": "Zero instances at any compression level",
+      "dynamic_huffman": "100% of compressed blocks"
+    },
+    "block_sizes": {
+      "minimum": "1024 bytes (text_1k, single block)",
+      "typical": "64KB-262KB decompressed",
+      "maximum": "262144 bytes (256KB, zlib default block boundary)",
+      "note": "zlib creates new blocks at 128KB/256KB boundaries depending on version and settings"
+    }
+  },
+
+  "challenges_for_parallel_decode": [
+    {
+      "challenge": "Block boundary detection requires serial parsing",
+      "severity": "CRITICAL",
+      "description": "DEFLATE block boundaries are NOT byte-aligned and cannot be found without decoding the Huffman stream serially. The end-of-block (EOB) symbol is a variable-length Huffman code embedded in the bitstream. To find block N+1, you must decode all of block N.",
+      "implication": "Cannot partition work in advance. Must either scan serially or use speculative starting points.",
+      "comparison": "GDeflate solves this by reformatting: each block starts at a known byte offset. But this requires a custom compression format, incompatible with standard ZIP."
+    },
+    {
+      "challenge": "Inter-block output dependencies (LZ77 window)",
+      "severity": "HIGH",
+      "description": "Back-references can span block boundaries: a match in block N can reference data written in block N-1 (up to 32KB back). This means block N's output depends on block N-1's final 32KB. Blocks cannot be decoded in isolation.",
+      "implication": "Even if we could find block boundaries, blocks need the tail of the previous block's output. Could be handled by pre-copying the 32KB overlap, but adds complexity.",
+      "comparison": "GDeflate uses independently decodable blocks with no cross-block references."
+    },
+    {
+      "challenge": "Too few blocks for meaningful parallelism",
+      "severity": "HIGH",
+      "description": "50% of our corpus files (10/20) have exactly 1 compressed block. 75% (15/20) have ≤2 blocks. Even text_1024k (1MB) has only 5 blocks. Maximum parallelism for typical files is 1-2 threads.",
+      "implication": "Thread creation/synchronization overhead likely exceeds the benefit for 1-2 blocks. Even with 5 blocks, Amdahl's law limits speedup to ~2-3x at best."
+    },
+    {
+      "challenge": "Non-uniform block sizes",
+      "severity": "MEDIUM",
+      "description": "Block sizes vary significantly even within a single file. For english_prose L6: blocks are 180KB and 81KB — a 2.2:1 ratio. This means the larger block dominates execution time.",
+      "implication": "Load imbalance limits parallelism. The critical path is the largest block."
+    },
+    {
+      "challenge": "Threading overhead",
+      "severity": "MEDIUM",
+      "description": "For files <256KB (most of our corpus), the single-block decode time is ~100-500 microseconds. Thread creation/synchronization overhead on Linux is ~10-50 microseconds, which is 5-50% of total decode time.",
+      "implication": "Only beneficial for large files (>512KB) with multiple blocks."
+    }
+  ],
+
+  "approaches_evaluated": [
+    {
+      "name": "Multi-threaded block decode",
+      "description": "Scan for block boundaries serially (fast, since we just need to find EOB), then decode blocks in parallel on separate threads.",
+      "feasibility": "LOW",
+      "reason": "Block boundary scanning IS decoding. You can't find the EOB without decoding all preceding symbols. Also, only 1-5 blocks per file."
+    },
+    {
+      "name": "Speculative parallel start",
+      "description": "Start decoding at estimated block boundaries (e.g., every N bytes). If we guess wrong, discard and retry.",
+      "feasibility": "VERY LOW",
+      "reason": "DEFLATE has no byte-aligned sync points. A wrong starting bit position will produce invalid Huffman codes, but detecting invalidity may take many symbols. The retry overhead is prohibitive."
+    },
+    {
+      "name": "GDeflate-style reformatting",
+      "description": "During compression, output independently decodable blocks with explicit byte-aligned boundaries. Compatible with DEFLATE syntax but not with existing compressors.",
+      "feasibility": "HIGH (but out of scope)",
+      "reason": "Requires controlling the compressor. Not compatible with standard ZIP files produced by other tools. This is the GDeflate/GPU approach."
+    },
+    {
+      "name": "Pipeline parallelism",
+      "description": "Overlap block N's match copying with block N+1's Huffman decoding. The Huffman decode output goes to a staging buffer, then the match copy uses the output buffer.",
+      "feasibility": "LOW",
+      "reason": "Match copy and Huffman decode are interleaved (every match copy happens between Huffman decodes). Can't cleanly separate them into pipeline stages."
+    }
+  ],
+
+  "comparison_with_prior_work": {
+    "gdeflate": {
+      "citation": "gdeflate2022",
+      "approach": "Custom compression format that splits data into independently decodable 64KB tiles. Each tile has its own Huffman tables and no cross-tile references.",
+      "speedup": "10-40x over CPU zlib via GPU parallelism",
+      "applicability": "NOT applicable to standard ZIP files. Requires custom compressor."
+    },
+    "pugz": {
+      "citation": "pugz2019",
+      "approach": "Parallel decompression of gzip streams by scanning for sync points (block boundaries that happen to align on byte boundaries + known fixed-Huffman patterns).",
+      "speedup": "2-6x on multi-core for large files (>10MB)",
+      "applicability": "Only works with certain compressor outputs (gzip with sync markers). Not general for arbitrary DEFLATE streams."
+    },
+    "isal_multithread": {
+      "citation": "isal2024",
+      "approach": "ISA-L provides a multi-threaded decompression API for large buffers, splitting at stored block boundaries or using speculative sync.",
+      "speedup": "~2x on 4+ threads for large files",
+      "applicability": "Only effective for files with stored block markers. Not applicable to fully compressed DEFLATE."
+    }
+  },
+
+  "recommendation": "NO-GO for parallel block decoding",
+  "recommendation_rationale": [
+    "50% of corpus files have only 1 block — zero parallelism available.",
+    "Block boundaries cannot be detected without serial decoding.",
+    "Inter-block LZ77 dependencies prevent independent block decode.",
+    "Threading overhead dominates for small/medium files (<512KB).",
+    "All viable parallel approaches require either format modification (GDeflate) or special compressor output (pugz).",
+    "Our focus should remain on maximizing single-stream throughput, where the packed entry optimization has been highly effective."
+  ],
+
+  "alternative_recommendation": "Focus remaining effort on: (1) further hot-path micro-optimization, (2) PGO builds for deployment, (3) comprehensive evaluation and documentation.",
+
+  "references": [
+    "rfc1951",
+    "gdeflate2022",
+    "pugz2019",
+    "isal2024",
+    "libdeflate2024"
+  ]
+}
