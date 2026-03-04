@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "bandit_position_selection",
+  "description": "Treat the selection of which positions to mutate as a multi-armed bandit problem. Use Thompson sampling or UCB to adaptively allocate evaluation budget to the most promising mutable positions, rapidly identifying high-value positions before optimizing amino acid choices.",
+  "domains": ["bandit_algorithms", "resource_allocation", "protein_engineering", "sequential_decision_making"],
+  "mathematical_formalization": "N candidate positions as arms. Reward mu_i = max_a ddG(position_i, amino_acid_a). Thompson sampling: sample theta_i ~ Beta(alpha_i, beta_i), select top-k. Evaluate, update posteriors. After T rounds, commit to top-k and optimize amino acids.",
+  "analogical_connections": [
+    "Clinical trial design: allocating patients to identify best treatment",
+    "Qiu et al. (Princeton): tree search-based evolutionary bandits with Bayesian regret bounds",
+    "A/B testing: multi-armed bandit for web page optimization"
+  ],
+  "implementation_hypothesis": "Phase 1: Thompson sampling for 200 rounds over 50 candidate positions. Phase 2: For top-8 positions, run beam search over amino acid choices. Total: ~2000 scorer calls.",
+  "experiment_seed": "Compare bandit-selected vs top-by-single-mutant-ddG vs random positions + beam search on 50 Mega-scale proteins with k={3,5,8}.",
+  "folder_plan": ["src/optimizers/bandit_positions.py", "src/optimizers/thompson_sampling.py", "tests/test_bandit.py"]
+}

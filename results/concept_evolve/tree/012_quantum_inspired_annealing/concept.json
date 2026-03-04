@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "quantum_inspired_annealing",
+  "description": "Encode multi-site mutation optimization as a QUBO problem and solve with simulated quantum annealing on classical hardware. Binary variables represent mutation inclusion, pairwise terms encode epistasis. This bridges quantum computing research with protein engineering.",
+  "domains": ["quantum_computing", "statistical_physics", "protein_engineering", "combinatorial_optimization"],
+  "mathematical_formalization": "Binary x_{i,a} = 1 if position i has amino acid a. QUBO: min H = sum h_{i,a} * x_{i,a} + sum J_{(i,a),(j,b)} * x_{i,a} * x_{j,b}, subject to sum_a x_{i,a} = 1. h from single-mutant ddG, J from pairwise epistasis. Solve via simulated annealing with transverse field.",
+  "analogical_connections": [
+    "Mohseni et al. (2024): ML + quantum annealing for protein design outperforms conventional optimization classically",
+    "Ising model spin glasses: mutations = spins, stability = ground state energy",
+    "VLSI circuit placement: components on silicon map to residues in protein"
+  ],
+  "implementation_hypothesis": "Encode k positions * 20 states as k*20 binary variables with one-hot constraints. Set h from ESM-2, J from double-mutant screen or GNN. Run simulated annealing with parallel tempering (16 replicas, 10K sweeps). Also try D-Wave neal sampler.",
+  "experiment_seed": "Formulate QUBO for 30 Mega-scale proteins with k=6. Compare SA, parallel tempering, neal vs beam search and MCTS. Measure best ddG, time, and solution diversity.",
+  "folder_plan": ["src/optimizers/qubo_formulation.py", "src/optimizers/simulated_annealing.py", "src/optimizers/parallel_tempering.py"]
+}
