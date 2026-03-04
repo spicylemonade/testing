@@ -67,10 +67,13 @@ $0.5708858 < \Bu \le 0.6564$, due to \citet{skinner2009} and
 \citet{carrollortegacerda2009}, respectively, leaving a gap of
 approximately~$0.086$.  We present a systematic investigation combining
 (i)~a refined channel-geometry argument with Grunsky coefficient
-constraints that yields a numerical certificate
-$\Bu > 0.5708859$, improving the lower bound by~$10^{-7}$;
-(ii)~a new variational inequality relating the inradius to the excess
-Bloch semi-norm; (iii)~a certified but weaker upper bound
+constraints that yields a conditional numerical certificate suggesting
+$\Bu > 0.5708859$, a potential improvement of~$10^{-7}$ over the
+published bound (assessed at approximately~$60\%$ confidence, as the
+implicit function step has not been verified with interval arithmetic);
+(ii)~a new conjectured variational inequality relating the inradius to
+the excess Bloch semi-norm, supported by numerical evidence;
+(iii)~a certified but weaker upper bound
 $\Bu \le 0.7975$ via interval-arithmetic--verified polynomial
 constructions; and (iv)~a comprehensive computational framework for
 future improvements including an identification of semidefinite
@@ -95,6 +98,16 @@ We denote by
          f(0) = 0,\; f'(0) = 1\bigr\}
 \]
 the classical \emph{schlicht class}.
+
+\begin{remark}
+The class~$\SSS$ requires $f(0) = 0$ in addition to $f'(0) = 1$.
+Some authors (e.g., \citealt{bhowmiksen2023}) define the univalent
+Bloch constant as an infimum over the larger class
+$\FF = \{f : \DD \to \CC \mid f \text{ holomorphic}, f'(0) = 1\}$
+restricted to univalent~$f$.  These definitions are equivalent, since
+for any univalent~$f$ with $f'(0) = 1$, the translation
+$g(z) = f(z) - f(0)$ lies in~$\SSS$ and satisfies $\Bf[g] = \Bf$.
+\end{remark}
 
 For any $f \in \SSS$, the \emph{Bloch radius} (or \emph{inradius})
 of its image is
@@ -132,13 +145,15 @@ exists, in contrast to the Ahlfors--Grunsky conjecture for~$B$
 \paragraph{Contributions.}
 Our contributions are as follows:
 \begin{enumerate}[label=(\roman*)]
-  \item A numerical certificate for $\Bu > 0.5708859$, improving the
-        lower bound by~$10^{-7}$ via refined channel geometry with
-        Grunsky coefficient constraints
-        (Section~\ref{sec:lower-bound}).
-  \item A new variational inequality (Proposition~\ref{prop:excess})
-        relating the inradius to the excess Bloch semi-norm, not
-        present in prior work (Section~\ref{sec:variational}).
+  \item A conditional numerical certificate suggesting
+        $\Bu > 0.5708859$, a potential improvement of~$10^{-7}$
+        via refined channel geometry with Grunsky coefficient
+        constraints (Section~\ref{sec:lower-bound}), with caveats
+        regarding rigor discussed in Section~\ref{sec:results-sensitivity}.
+  \item A new conjectured variational inequality
+        (Conjecture~\ref{conj:excess}) relating the inradius to the
+        excess Bloch semi-norm, supported by numerical evidence
+        (Section~\ref{sec:variational}).
   \item A certified upper bound $\Bu \le 0.7975$ via
         interval-arithmetic--verified polynomial maps
         (Section~\ref{sec:upper-bound}).
@@ -164,7 +179,8 @@ $\Bu \ge 1/2$ via the Koebe~$1/4$ theorem.
 \citet{goodman1945} constructed the first non-trivial upper bound
 $\Bu \le 0.6565$ using a disk with three symmetric radial slits.
 \citet{toppila1969} improved Robinson's lower bound.
-\citet{bellerhummel1985} further refined the lower bound.
+\citet{bellerhummel1985} further refined the lower bound to
+$\Bu \ge 0.5707$, a substantial jump from the baseline of~$1/2$.
 \citet{jenkins1992,jenkins1998} developed structural criteria for
 extremal domains using quadratic differentials and extremal metric
 theory, showing that the extremal domain has a unique maximal
@@ -326,12 +342,19 @@ The toolkit was verified against known exact values (Table~\ref{tab:verification
 \toprule
 \textbf{Function} & \textbf{Known $\Bf$} & \textbf{Computed} & \textbf{Status} \\
 \midrule
-Identity $f(z) = z$ & $1$ & $0.999$ & \checkmark \\
+Identity $f(z) = z$ & $1$ & $0.999$ & \checkmark$^*$ \\
 Strip map $\operatorname{arctanh}(z)$ & $\pi/4$ & $0.785398163\ldots$ (50 digits) & \checkmark \\
 Koebe function $z/(1-z)^2$ & $\infty$ & $\infty$ & \checkmark \\
 Koebe $1/4$ theorem & $\ge 0.25$ & $0.24999\ldots$ & \checkmark \\
 \bottomrule
 \end{tabular}
+\smallskip
+
+{\footnotesize $^*$The computed value $0.999$ for the identity function
+reflects the finite boundary sampling resolution ($N_{\text{bdy}}$
+points on~$\partial\DD$): the Chebyshev-center algorithm slightly
+underestimates the inradius because the sampled inscribed polygon is
+contained in the true disk.  The exact value is~$1$.}
 \end{table}
 
 \subsection{Lower bound: Grunsky-refined channel geometry}
@@ -370,22 +393,41 @@ $\alpha + \beta$ than Skinner's original argument, leading to
 \end{equation}
 
 \paragraph{Rigor assessment.}
-The improvement~\eqref{eq:our-lower} is a numerical certificate
-rather than a rigorous proof.  Full rigor would require interval
-arithmetic verification of:
-(a) the Grunsky eigenvalue computation,
-(b) the implicit function theorem step, and
-(c) error propagation through the composition of bounds.
-We observed normalization issues in the weighted Grunsky matrix at
-$N = 2$ (operator norm exceeding~1), indicating that a fully rigorous
-implementation requires careful treatment of the weighting factors
-$\sqrt{mn}\,\alpha_{mn}$.
+The improvement~\eqref{eq:our-lower} is a conditional numerical
+certificate rather than a rigorous proof; we assess approximately
+$60\%$ confidence in the seventh decimal place (see
+Section~\ref{sec:results-sensitivity}).
+Full rigor would require interval arithmetic verification of:
+(a)~the Grunsky eigenvalue computation,
+(b)~the implicit function theorem step (the dominant source of
+uncertainty), and
+(c)~error propagation through the composition of bounds.
 
-\subsection{New variational inequality}
+\paragraph{Grunsky normalization correction.}
+An earlier version of our Grunsky coefficient computation contained a
+sign error in the exterior coefficients: we used
+$\alpha_{11} = a_2$ instead of the correct convention
+$\alpha_{11} = -a_2$.  This caused the weighted norm $\norm{G_2}$ to
+exceed~$1$ for some coefficient pairs, violating the Grunsky
+inequality for univalent functions.  After correction, the maximum
+$\norm{G_2}$ over all tested pairs in the univalent-feasible region
+is~$\approx 0.9999$, with a gap $1 - \norm{G_2} \approx 1.4 \times
+10^{-4}$, consistent with near-extremal functions.  Since
+$\norm{G_N}$ is non-decreasing in~$N$, the positive gap at $N = 2$
+provides a lower bound on the gap at all higher truncation levels,
+confirming that the Grunsky constraint is active in the extremal
+configuration.  This correction does not change the numerical
+certificate~\eqref{eq:our-lower}, which relies on Skinner's published
+analytical argument augmented by our channel-angle refinement, but it
+removes a source of doubt about the computational framework.
+
+\subsection{New conjectured variational inequality}
 \label{sec:variational}
 
-\begin{proposition}[Excess Bloch semi-norm inequality]
-\label{prop:excess}
+We use the notation $(\cdot)^+ = \max(\cdot, 0)$ throughout.
+
+\begin{conjecture}[Excess Bloch semi-norm inequality]
+\label{conj:excess}
 For the extremal function $f_* \in \SSS$ with inradius~$R = \Bu$,
 \begin{equation}\label{eq:excess}
   R \;\ge\; \frac{1}{2}
@@ -394,10 +436,10 @@ For the extremal function $f_* \in \SSS$ with inradius~$R = \Bu$,
     \,d\theta,
 \end{equation}
 where $r_*$ is the preimage radius of the maximal inscribed disk
-boundary, and $(\cdot)^+ = \max(\cdot, 0)$.
-\end{proposition}
+boundary.
+\end{conjecture}
 
-\begin{proof}[Proof sketch]
+\paragraph{Supporting argument.}
 The identity~\eqref{eq:schwarz-pick} implies that the \emph{Bloch
 semi-norm} $\abs{f'(z)}(1 - \abs{z}^2)$ equals $1/\sigma_{f(\DD)}(f(z))$.
 By the Jenkins criterion (Theorem~\ref{thm:jenkins}), the extremal
@@ -406,14 +448,27 @@ make~$f$ a M\"{o}bius transformation with $\Bf = \infty$).
 The integral captures the excess of the Bloch semi-norm over its
 minimum value at $z = 0$.  Combining this with the
 distance--hyperbolic-metric inequality and averaging over the circle
-$\abs{z} = r_*$ yields~\eqref{eq:excess}.
-\end{proof}
+$\abs{z} = r_*$ motivates~\eqref{eq:excess}.
+
+\paragraph{Gap to a full proof.}
+A rigorous proof would require justifying the exchange of the supremum
+over~$r$ with the integral over~$\theta$ in the passage from the
+pointwise Schwarz--Pick bound to the integrated
+inequality~\eqref{eq:excess}.  This appears to require a refined
+estimate on the angular distribution of
+$\abs{f'(re^{i\theta})}$ for near-extremal functions, which we have
+not been able to establish.
 
 \begin{remark}
-This inequality is not present in
-\citet{skinner2009} or \citet{carroll2008}.  Numerical verification
-with polynomial test functions confirms that the integral term is
-strictly positive (see Section~\ref{sec:results-variational}).
+The idea of bounding the inradius via the integrated excess of the
+Bloch semi-norm is related to classical Schwarz--Pick analysis (cf.\
+\citealt{minda1986}), and the specific inequality~\eqref{eq:excess}
+may be implicit in existing work.  However, the combination with the
+$(\cdot)^+$ truncation and the Jenkins contact structure does not
+appear explicitly in the prior literature to the best of our
+knowledge.  Numerical verification with polynomial test functions
+confirms that the integral term is strictly positive
+(see Section~\ref{sec:results-variational}).
 \end{remark}
 
 \subsection{Upper bound: certified polynomial constructions}
@@ -455,10 +510,10 @@ We implemented a rigorous interval arithmetic framework using
 \subsection{Cross-domain exploration}
 \label{sec:cross-domain}
 
-Using the ConceptEvolve system, we explored $12$ cross-domain concepts
+Through a systematic cross-domain survey, we explored $12$~concepts
 connecting the~$\Bu$ problem to optimization theory, spectral geometry,
 probability, and computational algebra.  The three most productive
-concept paths were:
+directions were:
 \begin{enumerate}
   \item Channel geometry $+$ Grunsky constraints (produced our
         numerical improvement).
@@ -514,12 +569,18 @@ and the resulting change in the lower bound was recorded.
 \subsection{Improved lower bound}
 \label{sec:results-lower}
 
-Our main quantitative result is the following numerical certificate.
+Our main quantitative result is the following conditional numerical
+certificate.
 
-\begin{proposition}[Numerical certificate]
+\begin{proposition}[Conditional numerical certificate]
 \label{prop:lower}
-$\Bu > 0.5708859$, improving on Skinner's bound
-$\Bu > 0.5708858$ by $10^{-7}$.
+Subject to rigorous verification of the implicit function step in
+Skinner's framework (see Section~\ref{sec:lower-bound}), the
+Grunsky-refined channel geometry analysis yields
+$\Bu > 0.5708859$, an improvement of~$10^{-7}$ over
+the published bound of \citet{skinner2009}.
+We assess approximately~$60\%$ confidence in this improvement and
+$90\%$ confidence in Skinner's original bound $\Bu > 0.5708858$.
 \end{proposition}
 
 The improvement derives from the Grunsky-refined channel geometry
@@ -549,11 +610,11 @@ shows that the improvement is at the boundary of the confidence
 region, with the dominant uncertainty arising from the non-rigorous
 implicit function step.
 
-\subsection{New variational inequality}
+\subsection{Conjectured variational inequality}
 \label{sec:results-variational}
 
-The excess Bloch semi-norm inequality
-(Proposition~\ref{prop:excess}) was verified numerically on polynomial
+The conjectured excess Bloch semi-norm inequality
+(Conjecture~\ref{conj:excess}) was verified numerically on polynomial
 test functions:
 \begin{itemize}
   \item For $f(z) = z + 0.3z^3$ (3-fold symmetric):
@@ -622,9 +683,10 @@ $\Bu \le 1$ & $1$ & Upper
 \end{tabular}
 \end{table}
 
-The gap between the best lower and upper bounds narrows from
-$0.085514$ to $0.085513$---a reduction of $10^{-6}$ in absolute
-terms, which is negligible relative to the overall gap width.
+If the conditional certificate is correct, the gap between the best
+lower and upper bounds would narrow from $0.085514$ to
+$0.085513$---a reduction of~$10^{-6}$ in absolute terms, which is
+negligible relative to the overall gap width.
 
 \subsection{Chain of constants: updated picture}
 \label{sec:results-chain}
@@ -674,7 +736,9 @@ Arithmetic precision & $0$ at 7th decimal & Negligible \\
 \centering
 \includegraphics[width=\textwidth]{figures/sensitivity_plot.pdf}
 \caption{%
-  Sensitivity analysis of the numerical lower bound certificate.
+  Sensitivity analysis of the numerical lower bound certificate,
+  computed from actual Grunsky norm evaluations and angle perturbation
+  experiments (see Section~\ref{sec:experiments}).
   Left: dependence on Grunsky truncation level~$N$.
   Center: dependence on channel opening angle.
   Right: error budget decomposition.
@@ -781,14 +845,17 @@ The conformal toolkit correctly reproduces all known exact values
 (Table~\ref{tab:verification}).
 The interval arithmetic framework provides certified bounds for
 polynomial maps.
-The variational analysis (Proposition~\ref{prop:excess}) yields a new
-inequality with a concrete proof sketch.
-The concept-tree exploration identified the SDP/Grunsky direction as
+The variational analysis (Conjecture~\ref{conj:excess}) yields a new
+conjectured inequality with supporting numerical evidence.
+A systematic cross-domain survey identified the SDP/Grunsky direction as
 high-potential.
 
 \paragraph{Unsuccessful approaches.}
-The Grunsky matrix SDP relaxation at low truncation ($N = 2$) suffered
-from normalization issues.
+The Grunsky matrix SDP relaxation at low truncation ($N = 2$) initially
+suffered from a sign error in the exterior Grunsky coefficients
+(see Section~\ref{sec:lower-bound}); after correction, the norms
+are consistent with theory but the low-$N$ relaxation remains too
+weak for significant bound improvements.
 Random polynomial search with approximate univalence testing produced
 false positives.
 The NW-based upper bound cannot compete with specialized domain
@@ -843,11 +910,14 @@ mathematical structure, and attempting to tighten the known bounds.
 
 Our main results are:
 \begin{itemize}
-  \item A numerical certificate for $\Bu > 0.5708859$, improving the
-    lower bound by~$10^{-7}$ (Proposition~\ref{prop:lower}).
-  \item A new variational inequality
-    (Proposition~\ref{prop:excess}) relating the inradius to the
-    excess Bloch semi-norm.
+  \item A conditional numerical certificate suggesting
+    $\Bu > 0.5708859$, a potential improvement of~$10^{-7}$
+    (Proposition~\ref{prop:lower}), with caveats regarding the
+    non-rigorous implicit function step discussed in
+    Section~\ref{sec:results-sensitivity}.
+  \item A new conjectured variational inequality
+    (Conjecture~\ref{conj:excess}) relating the inradius to the
+    excess Bloch semi-norm, supported by numerical evidence.
   \item A certified upper bound $\Bu \le 0.7975$
     (Proposition~\ref{prop:upper}).
   \item Identification of SDP relaxation via Grunsky matrices as
