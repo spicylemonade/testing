@@ -31,7 +31,10 @@ naive: $(SRC_DIR)/naive_inflate.c $(INCLUDE_DIR)/fast_deflate.h
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o test_naive $(SRC_DIR)/naive_inflate.c $(TEST_DIR)/test_correctness.c $(LDFLAGS)
 
 bench_harness: $(BENCH_DIR)/benchmark.c $(SRC_DIR)/naive_inflate.c $(INCLUDE_DIR)/fast_deflate.h
-	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o $@ $< $(SRC_DIR)/naive_inflate.c $(LDFLAGS) -lm
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(LIBDEFLATE_DIR) \
+		-o $@ $< $(SRC_DIR)/naive_inflate.c \
+		$(LIBDEFLATE_DIR)/libdeflate.a \
+		$(LDFLAGS) -lm -ldl
 
 test_correctness: $(TEST_DIR)/test_correctness.c $(SRC_DIR)/naive_inflate.c $(INCLUDE_DIR)/fast_deflate.h
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o $@ $< $(SRC_DIR)/naive_inflate.c $(LDFLAGS)
