@@ -1,0 +1,300 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T00:00:00Z",
+  "updated_at": "2026-03-04T04:46:15.082444+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T00:00:00Z",
+      "completed_at": "2026-03-04T04:46:15.082424+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and research infrastructure",
+          "acceptance_criteria": "Produce results/concept_evolve/tree/repo_analysis/concept.json documenting all modules (.archivara/, agent config, concept_evolve, semantic_scholar), their interconnections, and the intended multi-agent workflow. Include a dependency graph of the tooling pipeline.",
+          "status": "pending",
+          "notes": "Foundation item: every subsequent item depends on understanding the orchestration infrastructure.",
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Deep-dive into RFC 1951 (DEFLATE) specification and identify serial bottlenecks",
+          "acceptance_criteria": "Create results/concept_evolve/tree/deflate_spec_analysis/concept.json containing: (a) a complete breakdown of the three DEFLATE block types (uncompressed, fixed Huffman, dynamic Huffman), (b) a data-dependency graph showing the serial chain in Huffman decoding (symbol N depends on bit-length of symbol N-1), (c) identification of at least 5 specific pipeline stalls caused by the serial dependency, (d) analysis of back-reference (LZ77) distance/length decoding overhead. Must cite RFC 1951 in sources.bib.",
+          "status": "pending",
+          "notes": "Core problem decomposition. The serial Huffman dependency is the central bottleneck to attack.",
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Conduct web-based literature search for fast DEFLATE decompression techniques",
+          "acceptance_criteria": "Use web search and Semantic Scholar to find at least 15 relevant papers, blog posts, or technical reports on fast DEFLATE/Huffman decoding. Must cover: (a) libdeflate by Eric Biggers, (b) zlib-ng optimizations, (c) Intel ISA-L DEFLATE, (d) SIMD-based approaches (e.g., Moffat & Petri table-based decoding), (e) GPU-based parallel decompression (e.g., nvcomp, GDeflate), (f) speculative/multi-symbol Huffman decoding, (g) bitstream interleaving techniques. Create sources.bib with valid BibTeX entries for all 15+ sources. Produce a summary table in results/concept_evolve/tree/literature_review/README.md with columns: source, year, technique, claimed speedup, compatibility with standard DEFLATE.",
+          "status": "pending",
+          "notes": "Delegate to subagent: use researcher agent with semantic_scholar for citation graph mining + web search for implementation-focused sources.",
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Analyze existing high-performance DEFLATE implementations (libdeflate, zlib-ng, ISA-L)",
+          "acceptance_criteria": "For each of libdeflate, zlib-ng, and Intel ISA-L: (a) document the decoding hot-loop structure, (b) identify specific optimizations used (table sizes, branch elimination, SIMD usage, multi-symbol decode), (c) measure or cite reported throughput on representative workloads. Create results/concept_evolve/tree/impl_analysis/concept.json with a comparative matrix. At least 3 entries in sources.bib must reference these implementations' source repositories or associated publications.",
+          "status": "pending",
+          "notes": "Understanding what the best existing implementations already do is critical to finding remaining headroom.",
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Concept-tree exploration: cross-domain techniques for breaking serial dependencies",
+          "acceptance_criteria": "Run concept_evolve 'evolve' on 'breaking serial dependencies in variable-length decoding' and 'reframe' on 'DEFLATE Huffman serial bottleneck'. Produce at least 10 concept cards in results/concept_evolve/tree/ covering bridges from domains such as: (a) branch prediction / speculative execution in CPUs, (b) parallel prefix sum algorithms, (c) error-correcting codes with known symbol boundaries, (d) database query pipelining, (e) signal processing (overlapping FFT windows). Each concept card must include a 'relevance_to_deflate' field rating applicability 1-5.",
+          "status": "pending",
+          "notes": "This is the creative divergent-thinking step. Forces exploration of non-obvious solution paths from distant domains.",
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Identify target hardware capabilities and microarchitectural opportunities on modern x86-64",
+          "acceptance_criteria": "Document in results/concept_evolve/tree/hardware_analysis/concept.json: (a) relevant x86-64 ISA extensions (BMI1/2, AVX2, AVX-512, VPCLMULQDQ, PDEP/PEXT), (b) instruction throughput and latency on Zen 4 and Alder Lake/Raptor Lake cores, (c) branch misprediction costs, (d) cache line and prefetch considerations for streaming decompression, (e) at least 3 specific instructions (e.g., PDEP, PEXT, TZCNT, LZCNT) with concrete use cases in Huffman decoding. Must cite at least 2 microarchitecture references in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Set up build system and project scaffolding for the decompressor",
+          "acceptance_criteria": "Create a C (or C/C++ hybrid) project with: (a) CMakeLists.txt or Makefile supporting -O3 -march=native builds, (b) directory structure: src/, include/, bench/, tests/, (c) a trivial 'hello world' that compiles and links against zlib-ng for comparison, (d) a script (bench/run_benchmarks.sh) that will be extended later. Project must build cleanly with GCC 12+ and Clang 15+ on x86-64 Linux.",
+          "status": "pending",
+          "notes": "Depends on item_002, item_004 for informed architectural decisions.",
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement a correct, naive DEFLATE decompressor as reference baseline",
+          "acceptance_criteria": "Implement a fully RFC 1951-compliant DEFLATE decompressor in src/ that: (a) handles all three block types, (b) correctly decodes dynamic Huffman tables, (c) handles back-references up to 32KB window, (d) passes validation against at least 50 diverse ZIP files (text, binaries, web assets, Canterbury corpus). Add tests/test_correctness.c that compares output byte-for-byte against zlib's output for each test file.",
+          "status": "pending",
+          "notes": "Correctness first, performance later. This naive version establishes the correctness oracle.",
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Curate a representative benchmark corpus",
+          "acceptance_criteria": "Assemble bench/corpus/ containing at least 20 files across categories: (a) 5+ text files (English prose, source code, JSON, XML, CSV), (b) 5+ compiled binaries (ELF, WASM, .class), (c) 5+ web assets (HTML, CSS, JS bundles, WOFF fonts), (d) 3+ mixed/adversarial (Canterbury corpus, Silesia corpus entries, highly repetitive data, near-incompressible data). Each file compressed at default and maximum compression levels. Document file list and characteristics in bench/corpus/README.md.",
+          "status": "pending",
+          "notes": "Real-world representativeness is critical for credible benchmarks.",
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Build a rigorous benchmarking harness with statistical methodology",
+          "acceptance_criteria": "Implement bench/benchmark.c (or .py wrapper) that: (a) measures wall-clock throughput (MB/s) with rdtsc or clock_gettime, (b) runs each test at least 100 iterations with warmup, (c) reports median, mean, p5, p95, and standard deviation, (d) pins to a single core and disables frequency scaling (or documents how to), (e) compares our implementation vs. zlib 1.3+, zlib-ng (latest), and libdeflate on the same corpus. First benchmark run must produce a baseline_results.json in results/ with per-file throughput for all compared implementations.",
+          "status": "pending",
+          "notes": "Delegate benchmark harness design to subagent for thorough statistical methodology review.",
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Profile the naive baseline and zlib-ng to identify optimization targets",
+          "acceptance_criteria": "Using perf stat, perf record, and/or Intel VTune: (a) produce a hotspot analysis showing top 10 functions by cycle count for both our naive decoder and zlib-ng, (b) measure branch misprediction rates in the Huffman decode loop, (c) measure IPC (instructions per cycle) and cache miss rates, (d) identify the percentage of total time spent in Huffman table lookup vs. LZ77 copy vs. output buffering. Results documented in results/profiling_baseline.md with embedded perf output.",
+          "status": "pending",
+          "notes": "Data-driven optimization: measure before optimizing.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Implement multi-symbol Huffman decoding with wide lookup tables",
+          "acceptance_criteria": "Implement a decode loop in src/fast_decode.c that: (a) uses a primary lookup table of at least 11 bits (2048 entries) to decode 1-3 symbols per table access, (b) falls back to a secondary table for codes longer than the primary table width, (c) achieves correct output on the full test corpus (item_008 tests pass), (d) demonstrates measurable speedup (>=20%) over the naive baseline on at least 3 corpus files. Document the table layout and decode logic in results/concept_evolve/tree/multi_symbol_decode/README.md.",
+          "status": "pending",
+          "notes": "This is the single most impactful known optimization. Depends on item_008, item_011.",
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement SIMD-accelerated literal byte copying for long literal runs",
+          "acceptance_criteria": "Implement in src/simd_literals.c: (a) detect literal runs of length >= 16 bytes in the DEFLATE stream, (b) use SSE2/AVX2 intrinsics to copy literal blocks in 16/32-byte chunks directly to the output buffer, (c) similarly accelerate LZ77 back-reference copies (match length >= 16) with SIMD memcpy, (d) all correctness tests pass, (e) demonstrate >= 10% throughput improvement on text-heavy corpus files vs. scalar literal copying. Compare against memcpy baseline.",
+          "status": "pending",
+          "notes": "Literal runs are common in text/web content. SIMD copy is low-hanging fruit once decoding is handled.",
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Design and implement speculative multi-stream or look-ahead Huffman decoding",
+          "acceptance_criteria": "Research and implement at least one novel approach to break the serial Huffman dependency. Options include: (a) speculative decode of the next N symbols assuming the most probable bit-lengths, with rollback on misprediction, (b) parallel decode of interleaved sub-streams (if format allows block-level parallelism), (c) precomputed 'fast path' tables for common Huffman code distributions. Implementation in src/speculative_decode.c. Must include: a design document in results/concept_evolve/tree/speculative_decoding/concept.json explaining the chosen approach, its theoretical speedup bound, and comparison to approaches from the literature review (item_003). Correctness tests pass. Demonstrate any measurable throughput delta vs. item_012.",
+          "status": "pending",
+          "notes": "This is the highest-risk, highest-reward item. The novel contribution. Delegate design exploration to subagent with concept_evolve 'probe' on 'speculative Huffman decoding'.",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Optimize bit-reader with branchless refill and PDEP/PEXT extraction",
+          "acceptance_criteria": "Implement in src/bitreader.c a high-performance bit reader that: (a) maintains a 64-bit bit buffer refilled branchlessly from the input stream, (b) uses PDEP/PEXT (BMI2) for extracting variable-width bit fields where beneficial, (c) minimizes branch mispredictions to < 1% in the decode hot loop (measured with perf), (d) correctness tests pass, (e) the bit reader alone (isolated microbenchmark) achieves >= 2 GB/s input processing rate. Document the refill strategy and compare against the zlib-ng bit reader approach.",
+          "status": "pending",
+          "notes": "The bit reader is in the innermost loop; every saved cycle here multiplies across billions of symbols.",
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement optimized dynamic Huffman table construction",
+          "acceptance_criteria": "Implement in src/table_build.c: (a) fast construction of the code-length Huffman table, literal/length table, and distance table from the dynamic block header, (b) use at most 2 passes over the code lengths (no unnecessary allocations), (c) table build time < 1 microsecond for typical dynamic blocks (measured), (d) cache the most recently used table and skip rebuild when consecutive blocks share the same Huffman tree (opportunistic). Correctness tests pass.",
+          "status": "pending",
+          "notes": "Table build overhead matters for small blocks (common in web assets). Caching is a novel micro-optimization.",
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Concept-tree exploration: evaluate parallel block decoding and block-boundary detection",
+          "acceptance_criteria": "Create results/concept_evolve/tree/parallel_blocks/concept.json evaluating: (a) whether DEFLATE block boundaries can be detected in parallel (scan for BFINAL bits, fixed Huffman signatures, or stored block headers), (b) the feasibility and expected speedup of decoding multiple blocks on separate threads, (c) analysis of how block sizes distribute in real-world ZIP files (measure on the benchmark corpus), (d) comparison to GDeflate's approach of splitting into independently decodable chunks. Must reference at least 3 papers from sources.bib. Conclude with a go/no-go recommendation for pursuing parallel block decode.",
+          "status": "pending",
+          "notes": "Subagent delegation: use researcher to mine citation graph around parallel decompression + concept_evolve 'probe'.",
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Integrate all optimizations into a unified fast decoder pipeline",
+          "acceptance_criteria": "Create src/fast_inflate.c that combines: (a) the optimized bit reader (item_015), (b) multi-symbol Huffman decode (item_012), (c) SIMD literal/match copying (item_013), (d) speculative decoding if viable (item_014), (e) fast table build (item_016). The unified decoder must: pass all correctness tests, expose a simple API (inflate_fast(src, src_len, dst, dst_len) -> status), and be benchmarkable through the existing harness. No regressions on any corpus file vs. the best individual optimization.",
+          "status": "pending",
+          "notes": "Integration is non-trivial: optimizations may interact (e.g., speculation + SIMD copy pipeline).",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_019",
+          "description": "Full benchmark comparison: our decoder vs. zlib, zlib-ng, libdeflate, ISA-L",
+          "acceptance_criteria": "Run the benchmarking harness (item_010) with the unified fast decoder (item_018) against all baselines on the full corpus. Produce results/benchmark_final.json with per-file throughput (MB/s) for each decoder. Generate figures/throughput_comparison.png (bar chart) and figures/speedup_heatmap.png (heatmap of speedup by file type and decoder). Report the geometric mean speedup over zlib-ng across all corpus files. Target: >=2x geometric mean speedup over zlib-ng.",
+          "status": "pending",
+          "notes": "The headline result. If <2x, identify which corpus files fall short and analyze why.",
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Ablation study: measure contribution of each optimization independently",
+          "acceptance_criteria": "Run benchmarks with each optimization enabled/disabled independently: (a) multi-symbol decode only, (b) SIMD copy only, (c) optimized bit reader only, (d) speculative decode only (if applicable), (e) fast table build only, (f) all combined. Produce results/ablation_study.json and figures/ablation_chart.png showing the marginal contribution of each optimization on 5 representative corpus files. Document interactions (e.g., does multi-symbol decode + SIMD copy yield super-linear or sub-linear gains?).",
+          "status": "pending",
+          "notes": "Essential for understanding which optimizations matter most and how they compose.",
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Stress test correctness on adversarial and edge-case inputs",
+          "acceptance_criteria": "Create tests/test_adversarial.c that tests: (a) empty DEFLATE streams, (b) streams with only stored blocks, (c) streams with maximum back-reference distance (32768), (d) streams with all 286 literal/length codes used, (e) streams with maximum code length (15 bits), (f) at least 100 randomly generated valid DEFLATE streams (via a fuzzer or generator script), (g) all known zlib test vectors. All tests must pass with zero byte-level differences from zlib's output. Run under Valgrind or ASan/UBSan with zero errors.",
+          "status": "pending",
+          "notes": "Correctness is non-negotiable for a drop-in replacement.",
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Measure performance across different x86-64 microarchitectures",
+          "acceptance_criteria": "Benchmark the fast decoder on at least 2 distinct x86-64 microarchitectures (e.g., Intel Alder Lake / Raptor Lake and AMD Zen 3/4; or via cloud instances). Alternatively, if only one physical machine is available, use perf counters to analyze and predict performance on other microarchitectures using known instruction latencies. Produce results/cross_arch_analysis.md documenting: (a) per-arch throughput, (b) any ISA features that are bottlenecks on specific arches (e.g., PDEP performance on AMD pre-Zen3), (c) recommendations for arch-specific code paths.",
+          "status": "pending",
+          "notes": "Subagent delegation: explore microarchitectural differences for BMI2/SIMD performance across vendors.",
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Compare results against claims from prior work identified in literature review",
+          "acceptance_criteria": "For each of the top 5 most relevant prior works from sources.bib (item_003): (a) reproduce or cite their reported throughput numbers, (b) compare against our results on equivalent or similar workloads, (c) explain any discrepancies (different hardware, compiler, corpus). Produce results/prior_work_comparison.md with a comparison table. If any prior work claims higher throughput than ours, analyze their techniques and document what we could adopt.",
+          "status": "pending",
+          "notes": "Scientific rigor requires comparing against the state of the art, not just zlib.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Write a comprehensive technical report documenting the research",
+          "acceptance_criteria": "Produce results/technical_report.md (3000-6000 words) containing: (a) Abstract, (b) Introduction with problem statement, (c) Background on DEFLATE and existing work (citing >= 10 entries from sources.bib), (d) Method section describing each optimization with pseudocode, (e) Experimental setup (hardware, compiler, corpus), (f) Results with inline references to figures/, (g) Ablation analysis, (h) Discussion of limitations and future work, (i) Conclusion. Must be written for an audience of systems programmers familiar with compression.",
+          "status": "pending",
+          "notes": "Delegate to writer agent for drafting, reviewer agent for quality control.",
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Synthesize concept-tree findings into a transferable-insights document",
+          "acceptance_criteria": "Produce results/concept_evolve/tree/synthesis/README.md that: (a) summarizes all concept cards generated during the research, (b) identifies which cross-domain bridges (item_005) actually led to implemented optimizations, (c) identifies 3+ unexplored but promising concept paths for future work, (d) rates each explored concept on impact (1-5) and feasibility (1-5). This serves as a knowledge map for future researchers.",
+          "status": "pending",
+          "notes": "Meta-analysis of the concept exploration process itself.",
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Finalize sources.bib with complete and verified citations",
+          "acceptance_criteria": "sources.bib in repo root contains: (a) at least 15 BibTeX entries, (b) every entry has complete fields (author, title, year, and venue/url), (c) every source cited in the technical report (item_024) has a corresponding entry, (d) entries are alphabetized by citation key, (e) no duplicate entries. Validate with a BibTeX parser (bibtool or biber --tool) with zero errors.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Create a reproducibility package and update README",
+          "acceptance_criteria": "Update README.md to include: (a) project overview, (b) build instructions (compiler requirements, dependencies), (c) how to run benchmarks, (d) how to run tests, (e) summary of results with link to technical report. Create a bench/reproduce.sh script that builds everything, downloads/generates the corpus, runs benchmarks, and produces all figures in one command. Verify the script runs end-to-end on a clean checkout.",
+          "status": "pending",
+          "notes": "Reproducibility is essential for credibility.",
+          "error": null
+        },
+        {
+          "id": "item_028",
+          "description": "Peer review of all artifacts by reviewer agent",
+          "acceptance_criteria": "The reviewer agent must: (a) verify all acceptance criteria of items 001-027 are met, (b) check that benchmark methodology is statistically sound (item_010 criteria), (c) verify that the technical report (item_024) accurately reflects the experimental results, (d) flag any unsupported claims, (e) produce results/review_report.md with pass/fail for each item and specific feedback on any failures. At least 90% of items must pass (no more than 2 failures).",
+          "status": "pending",
+          "notes": "Quality gate before declaring the research complete.",
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 28,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 28
+  }
+}
