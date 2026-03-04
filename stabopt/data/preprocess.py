@@ -27,8 +27,11 @@ def preprocess_megascale(
 ) -> pd.DataFrame:
     """Preprocess the Mega-scale dataset into standardized format.
 
+    Handles the real Tsuboyama et al. 2023 Dataset2/3 format from Zenodo,
+    which has columns: name, mut_type, WT_name, aa_seq, ddG_ML, deltaG, etc.
+
     Args:
-        input_path: Path to raw CSV. If None, downloads first.
+        input_path: Path to raw CSV. If None, looks for extracted Zenodo data.
         output_dir: Output directory for parquet. If None, uses DATA_DIR.
 
     Returns:
@@ -37,70 +40,33 @@ def preprocess_megascale(
     out = Path(output_dir) if output_dir else DATA_DIR
     out.mkdir(parents=True, exist_ok=True)
 
-    if input_path is None:
-        raw_path = download_megascale(str(out))
-    else:
+    # Try to find the real Tsuboyama dataset first
+    zenodo_path = out / "Processed_K50_dG_datasets" / "Tsuboyama2023_Dataset2_Dataset3_20230416.csv"
+
+    if input_path is not None:
         raw_path = Path(input_path)
+    elif zenodo_path.exists():
+        raw_path = zenodo_path
+    else:
+        raw_path = download_megascale(str(out))
 
     print(f"Reading Mega-scale data from {raw_path}...")
-    df = pd.read_csv(raw_path)
-
-    print(f"  Raw rows: {len(df)}")
+    df = pd.read_csv(raw_path, low_memory=False)
+    print(f"  Raw rows: {len(df):,}")
     print(f"  Columns: {list(df.columns)}")
 
-    # Standardize column names — the Mega-scale dataset uses various schemas
-    # depending on the exact download source. We handle common variants.
-    col_map = _detect_megascale_columns(df)
-
-    processed = pd.DataFrame()
-
-    # Protein identifier
-    if "protein_name" in col_map:
-        processed["pdb_id"] = df[col_map["protein_name"]].astype(str)
+    # Check if this is the real Tsuboyama dataset
+    if "WT_name" in df.columns and "mut_type" in df.columns:
+        processed = _process_tsuboyama_format(df)
     else:
-        processed["pdb_id"] = "unknown"
-
-    # Chain (default A if not present)
-    if "chain" in col_map:
-        processed["chain"] = df[col_map["chain"]].astype(str)
-    else:
-        processed["chain"] = "A"
-
-    # Mutations
-    if "mutations" in col_map:
-        processed["mutations"] = df[col_map["mutations"]].astype(str)
-    elif "mut_type" in col_map:
-        # Reconstruct mutation string from available columns
-        processed["mutations"] = df.apply(
-            lambda row: _reconstruct_mutation_str(row, col_map), axis=1
-        )
-    else:
-        processed["mutations"] = ""
-
-    # ddG value
-    if "ddG" in col_map:
-        processed["ddG"] = pd.to_numeric(df[col_map["ddG"]], errors="coerce")
-    else:
-        processed["ddG"] = np.nan
-
-    # Number of mutations
-    if "n_mut" in col_map:
-        processed["num_mutations"] = pd.to_numeric(
-            df[col_map["n_mut"]], errors="coerce"
-        ).fillna(1).astype(int)
-    else:
-        processed["num_mutations"] = processed["mutations"].apply(_count_mutations)
-
-    # Wild-type sequence (if available)
-    if "sequence" in col_map:
-        processed["wt_sequence"] = df[col_map["sequence"]].astype(str)
-    elif "aa_seq" in col_map:
-        processed["wt_sequence"] = df[col_map["aa_seq"]].astype(str)
+        # Fallback to generic detection
+        col_map = _detect_megascale_columns(df)
+        processed = _process_generic_format(df, col_map)
 
     # Drop rows with missing ddG
     initial_len = len(processed)
     processed = processed.dropna(subset=["ddG"]).reset_index(drop=True)
-    print(f"  After dropping NaN ddG: {len(processed)} (removed {initial_len - len(processed)})")
+    print(f"  After dropping NaN ddG: {len(processed):,} (removed {initial_len - len(processed):,})")
 
     # Save
     dest = out / "megascale_processed.parquet"
@@ -109,6 +75,85 @@ def preprocess_megascale(
 
     # Print summary
     _print_summary("Mega-scale", processed)
+
+    return processed
+
+
+def _process_tsuboyama_format(df: pd.DataFrame) -> pd.DataFrame:
+    """Process the real Tsuboyama et al. 2023 Dataset 2/3 format."""
+    processed = pd.DataFrame()
+
+    # Protein identifier (WT_name contains PDB names like "1A32.pdb")
+    processed["pdb_id"] = df["WT_name"].astype(str).str.replace(".pdb", "", regex=False)
+    processed["chain"] = "A"
+
+    # Mutation string from mut_type (format: "A10G" or "A10G:L20F")
+    processed["mutations"] = df["mut_type"].astype(str).str.replace(":", "+")
+
+    # ddG value — use ddG_ML (ML-corrected stability change)
+    processed["ddG"] = pd.to_numeric(df["ddG_ML"], errors="coerce")
+
+    # Also keep deltaG (experimental) if available
+    if "deltaG" in df.columns:
+        processed["deltaG_exp"] = pd.to_numeric(df["deltaG"], errors="coerce")
+
+    # Number of mutations
+    processed["num_mutations"] = df["mut_type"].apply(
+        lambda x: 0 if str(x) in ("wt", "nan", "NaN")
+        else str(x).count(":") + 1 if ":" in str(x)
+        else (1 if re.match(r"^[A-Z]\d+[A-Z]", str(x)) else 0)
+    )
+
+    # Wild-type sequence
+    if "aa_seq" in df.columns:
+        processed["wt_sequence"] = df["aa_seq"].astype(str)
+
+    # Stabilizing flag
+    if "Stabilizing_mut" in df.columns:
+        processed["is_stabilizing"] = df["Stabilizing_mut"]
+
+    return processed
+
+
+def _process_generic_format(df: pd.DataFrame, col_map: dict) -> pd.DataFrame:
+    """Process generic format using auto-detected column mapping."""
+    processed = pd.DataFrame()
+
+    if "protein_name" in col_map:
+        processed["pdb_id"] = df[col_map["protein_name"]].astype(str)
+    else:
+        processed["pdb_id"] = "unknown"
+
+    if "chain" in col_map:
+        processed["chain"] = df[col_map["chain"]].astype(str)
+    else:
+        processed["chain"] = "A"
+
+    if "mutations" in col_map:
+        processed["mutations"] = df[col_map["mutations"]].astype(str)
+    elif "mut_type" in col_map:
+        processed["mutations"] = df.apply(
+            lambda row: _reconstruct_mutation_str(row, col_map), axis=1
+        )
+    else:
+        processed["mutations"] = ""
+
+    if "ddG" in col_map:
+        processed["ddG"] = pd.to_numeric(df[col_map["ddG"]], errors="coerce")
+    else:
+        processed["ddG"] = np.nan
+
+    if "n_mut" in col_map:
+        processed["num_mutations"] = pd.to_numeric(
+            df[col_map["n_mut"]], errors="coerce"
+        ).fillna(1).astype(int)
+    else:
+        processed["num_mutations"] = processed["mutations"].apply(_count_mutations)
+
+    if "sequence" in col_map:
+        processed["wt_sequence"] = df[col_map["sequence"]].astype(str)
+    elif "aa_seq" in col_map:
+        processed["wt_sequence"] = df[col_map["aa_seq"]].astype(str)
 
     return processed
 
