@@ -1,0 +1,292 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T12:00:00Z",
+  "updated_at": "2026-03-04T06:41:12.607207+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T12:00:00Z",
+      "completed_at": "2026-03-04T06:41:12.607193+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Deep analysis of the DEFLATE specification (RFC 1951) identifying serial dependencies, bitstream structure, Huffman table encoding, LZ77 back-reference format, and block types (stored, static, dynamic)",
+          "acceptance_criteria": "Produce results/deflate_spec_analysis.md covering: (1) all three DEFLATE block types and their headers, (2) the Huffman code construction algorithm including code-length alphabet, (3) the bit-level serial dependency chain from symbol N to symbol N+1, (4) LZ77 length/distance pair encoding with extra bits, (5) end-of-block sentinel. Minimum 200 lines with diagrams.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Web search and literature review of state-of-the-art DEFLATE decompression implementations and parallel Huffman decoding techniques",
+          "acceptance_criteria": "Search the web for at least 20 relevant sources including: libdeflate (ebiggers), zlib-ng, ISA-L (Intel), SIMDflate (AVX-512), GDEFLATE (NVIDIA draft-uralsky-gdeflate-00), Weissenberger & Schmidt 'Massively Parallel Huffman Decoding on GPUs' (2018), the ATI/AMD GPU parallel Huffman decoding patent (US9906239), zune-inflate (Rust), Starflate (C++23), and the 20.5Gbps GZIP ASIC accelerator paper. Create and maintain sources.bib in repo root with BibTeX entries for all consulted sources. At least 10 relevant academic papers cited in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Survey of existing high-performance DEFLATE implementations: libdeflate, zlib-ng, ISA-L, Chromium zlib, zlib-cloudflare, and their key optimization techniques",
+          "acceptance_criteria": "Produce results/impl_survey.md documenting for each implementation: (1) language, (2) decompression strategy (table-based vs tree-based Huffman), (3) SIMD usage (which ISA extensions), (4) table sizes and lookup approach (single-level vs two-level), (5) bit buffer management, (6) LZ77 copy optimization, (7) known throughput numbers. Minimum 6 implementations surveyed, minimum 250 lines.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Concept-tree exploration via subagent delegation: explore the core bottleneck (serial Huffman dependency) across multiple domains (hardware design, information theory, compiler optimization, signal processing) to surface non-obvious approaches",
+          "acceptance_criteria": "Use ConceptEvolve 'evolve' command targeting 'breaking serial Huffman decoding dependency in DEFLATE bitstreams'. Produce at least 8 concept cards in results/concept_evolve/tree/ with cross-domain bridges. Each concept card must include feasibility assessment for x86-64 software implementation. Steering directions file must exist at results/concept_evolve/steering_directions.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Citation graph mining via subagent: starting from Weissenberger & Schmidt (2018) and the libdeflate repository, mine the citation and reference graph to discover overlooked techniques for parallel entropy decoding",
+          "acceptance_criteria": "Use literature-graph-miner subagent to trace at least 2 hops of citations/references from seed papers. Identify at least 3 techniques not covered in the initial literature search. Add all newly discovered papers to sources.bib. Produce results/citation_graph_analysis.md summarizing the citation landscape with a focus on techniques transferable to CPU x86-64 DEFLATE decoding.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Identify and rank candidate optimization techniques for >=2x throughput improvement, synthesizing findings from literature review, implementation survey, and concept-tree exploration",
+          "acceptance_criteria": "Produce results/technique_ranking.md with a ranked list of at least 8 candidate techniques. Each entry must include: (1) technique name, (2) estimated speedup potential with justification, (3) implementation complexity (low/medium/high), (4) RFC 1951 compatibility assessment (must be fully compatible), (5) hardware requirements (SSE4.2/AVX2/AVX-512), (6) citations to prior work from sources.bib. Top 3 techniques must be selected for Phase 3 prototyping.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Set up benchmarking infrastructure with representative test corpus covering text, compiled binaries, and web assets",
+          "acceptance_criteria": "Create results/benchmarks/ directory with: (1) benchmark harness code supporting cycle-accurate timing (rdtsc or clock_gettime), (2) test corpus of at least 5 files: Canterbury corpus silesia.tar (or subset), a compiled binary (e.g., /usr/bin/ls), minified JavaScript, HTML document, and a PNG-extracted DEFLATE stream. (3) Each file pre-compressed with standard DEFLATE at levels 1, 6, and 9. (4) Benchmark reports throughput in MB/s of uncompressed output.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Build and benchmark zlib-ng (develop branch) as the primary baseline, plus libdeflate and ISA-L as secondary baselines",
+          "acceptance_criteria": "Produce results/baseline_benchmarks.md with: (1) zlib-ng decompression throughput (MB/s) for each corpus file at each compression level, (2) libdeflate throughput for same, (3) ISA-L throughput for same, (4) CPU model and frequency documented, (5) statistical methodology (minimum 100 iterations, report mean/median/p95/stdev), (6) comparison table showing relative performance. All numbers must be reproducible from a single benchmark script.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Profile zlib-ng decompression with perf/VTune to identify the exact hotspots: Huffman table lookup, bit buffer management, LZ77 copy loop, branch misprediction sites",
+          "acceptance_criteria": "Produce results/profiling_report.md with: (1) top 10 hottest functions by cycle count, (2) IPC (instructions per cycle) for the inflate inner loop, (3) branch misprediction rate per 1000 symbols decoded, (4) cache miss rate (L1d, L2, LLC), (5) annotated disassembly of the critical Huffman decode loop showing the serial dependency chain. Include perf stat and perf record output summaries.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Characterize DEFLATE bitstream statistics across the test corpus to guide optimization: average symbol bit-lengths, literal vs length/distance ratio, block sizes, dynamic vs static Huffman usage",
+          "acceptance_criteria": "Produce results/bitstream_statistics.md with per-file analysis: (1) number of DEFLATE blocks, (2) % dynamic vs static vs stored blocks, (3) average literal symbol bit length, (4) literal-to-backreference ratio, (5) average match length and distance, (6) distribution of extra-bits counts, (7) Huffman table entropy vs theoretical minimum. Data must be presented in tables suitable for later inclusion in a research paper.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Subagent-delegated deep analysis: probe the speculative multi-symbol decode bottleneck using ConceptEvolve to identify the optimal speculation width and recovery strategy for x86-64",
+          "acceptance_criteria": "Use ConceptEvolve 'probe' command on the 'speculative multi-symbol decode' concept. Produce a concept card in results/concept_evolve/tree/ analyzing: (1) theoretical maximum symbols decodable in parallel given x86-64 register width (64-bit, 256-bit AVX2, 512-bit AVX-512), (2) speculation failure rate estimates based on bitstream statistics from item_010, (3) recovery cost model (cycles wasted on misspeculation), (4) comparison with libdeflate's existing 4-symbol fast path.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Design and implement speculative multi-symbol Huffman decoder: decode 2-4 symbols speculatively from the bitstream by precomputing next-symbol offsets for all possible bit-length outcomes",
+          "acceptance_criteria": "Produce src/speculative_decode.c (or .h) implementing: (1) a precomputed decode table that maps N input bits to up to 4 decoded symbols plus total consumed bits, (2) table generation from dynamic Huffman code lengths, (3) fallback path for rare symbols exceeding table coverage, (4) unit tests verifying correctness against zlib output for all corpus files. Table size must be documented and justified (target: <=64KB L1-friendly).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Design and implement SIMD-accelerated literal run fast path: when consecutive literal bytes are detected, use AVX2/SSE to bulk-copy decoded literals to the output buffer",
+          "acceptance_criteria": "Produce src/simd_literals.c implementing: (1) detection of literal runs (consecutive symbols 0-255) during Huffman decode, (2) AVX2 vectorized literal extraction from the bitstream when literals use a known fixed code (e.g., 8 or 9 bits in static Huffman), (3) seamless fallback to scalar path for non-literal symbols. Correctness verified against zlib for all corpus files. Throughput improvement measured and documented for literal-heavy workloads (text files).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Design and implement optimized bit-buffer management: branchless refill using 64-bit or 128-bit loads, minimizing refill overhead that gates Huffman throughput",
+          "acceptance_criteria": "Produce src/bitbuffer.c implementing: (1) 64-bit bit-buffer with unconditional refill (load 8 bytes, shift) every decode step instead of conditional refill, (2) ensure no unaligned access penalties on modern x86-64, (3) measure refill overhead reduction vs zlib-ng's approach. Correctness verified for all corpus files. Include microbenchmark showing cycles-per-refill comparison.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Design and implement branchless LZ77 back-reference copy with overlapping-match support using SIMD",
+          "acceptance_criteria": "Produce src/lz77_copy.c implementing: (1) branchless distance/length dispatch (no switch on match length), (2) AVX2-based copy for distances >= 32 bytes, (3) correct handling of overlapping copies (distance < length) using byte-by-byte or shuffle-based repetition, (4) comparison benchmark vs zlib-ng's inffast.c copy loop showing cycles per back-reference. Correctness verified for all corpus files.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Integrate all components into a unified DEFLATE decompression pipeline and verify end-to-end RFC 1951 compliance",
+          "acceptance_criteria": "Produce src/fast_inflate.c that integrates speculative decode, SIMD literals, optimized bit-buffer, and branchless LZ77 copy into a single inflate function. (1) Passes decompression of all three block types (stored, static Huffman, dynamic Huffman), (2) bit-exact output match with zlib for every file in the test corpus at all compression levels, (3) handles edge cases: empty blocks, single-byte files, maximum back-reference distance (32KB), maximum match length (258), and all 286 literal/length codes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Concept-tree reframing via subagent: reframe the DEFLATE serial bottleneck through at least 8 domains to discover any remaining overlooked optimization angles before evaluation",
+          "acceptance_criteria": "Use ConceptEvolve 'reframe' command on 'serial bitstream decoding throughput bottleneck'. Produce results/concept_evolve/reframe_output.json covering at least 8 domains (e.g., signal processing, VLSI pipelining, speculative execution in CPUs, database query optimization, neural network inference, error-correcting codes, branch prediction, parsing theory). Identify at least 1 novel technique not previously considered and assess its feasibility.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Full benchmark evaluation of the integrated fast_inflate against all baselines (zlib-ng, libdeflate, ISA-L) on the complete test corpus",
+          "acceptance_criteria": "Produce results/evaluation_benchmarks.md with: (1) throughput (MB/s) for fast_inflate vs all baselines for every corpus file at compression levels 1, 6, 9, (2) speedup ratios computed as fast_inflate/zlib-ng for each case, (3) geometric mean speedup across all workloads, (4) target of >=2x geometric mean speedup over zlib-ng clearly assessed as met or not met, (5) statistical confidence intervals (95%) for all measurements, (6) comparison against throughput numbers from prior work cited in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Ablation study: measure the individual contribution of each optimization (speculative decode, SIMD literals, branchless LZ77, optimized bit-buffer) by enabling them one at a time",
+          "acceptance_criteria": "Produce results/ablation_study.md with: (1) baseline-only throughput, (2) +speculative decode throughput, (3) +SIMD literals throughput, (4) +branchless LZ77 throughput, (5) +optimized bit-buffer throughput, (6) all-combined throughput, (7) stacked bar chart or table showing % contribution of each optimization, (8) analysis of which optimization matters most for each workload type (text vs binary vs web). Produce corresponding figure in figures/ablation_chart.png.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Microarchitectural analysis of the optimized decoder using perf counters: IPC, branch mispredictions, cache behavior, port utilization",
+          "acceptance_criteria": "Produce results/microarch_analysis.md with: (1) IPC comparison between zlib-ng and fast_inflate on the same workload, (2) branch misprediction reduction (absolute and %), (3) L1d cache miss rate comparison, (4) retired instructions per decoded symbol, (5) frontend/backend stall breakdown. Include perf stat summaries as appendices. Compare against profiling data from item_009.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Scalability and robustness testing: adversarial inputs, worst-case DEFLATE streams (all back-references, maximum code lengths, pathological Huffman trees)",
+          "acceptance_criteria": "Produce results/robustness_report.md documenting: (1) correct handling of maximally-compressed streams (all back-refs, distance=1 fill patterns), (2) correct handling of 15-bit Huffman codes (maximum DEFLATE code length), (3) no buffer overflows or undefined behavior (verified with AddressSanitizer and UndefinedBehaviorSanitizer), (4) performance on adversarial inputs compared to baselines (must not be worse than 0.5x baseline), (5) fuzz testing results (at least 1 million iterations with no crashes).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Subagent-delegated concept-tree walk: traverse the full concept tree built during research to identify any unexplored high-value paths or blind spots before final analysis",
+          "acceptance_criteria": "Use concept-tree-explorer subagent to walk all concept folders in results/concept_evolve/tree/. Produce results/concept_tree_audit.md identifying: (1) concepts that were explored but not implemented and why, (2) any remaining high-value paths worth future investigation, (3) anomalies or contradictions between concept cards and experimental results, (4) overall concept coverage assessment (% of identified techniques actually evaluated).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Write the research paper: structured technical report covering motivation, background, approach, implementation, evaluation, and comparison to prior work",
+          "acceptance_criteria": "Produce research_paper.tex (LaTeX) with: (1) Abstract summarizing key result (Nx speedup over zlib-ng), (2) Introduction with motivation and contributions, (3) Background section on DEFLATE/RFC 1951 and prior optimization work, (4) Design section covering each optimization technique, (5) Implementation section with key code-level decisions, (6) Evaluation section with all benchmark results from Phase 4, (7) Related Work section citing at least 10 papers from sources.bib, (8) Conclusion with limitations and future work. Minimum 4000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Generate publication-quality figures: throughput comparison bar charts, ablation breakdown, profiling flamegraph, speedup heatmap across workloads and compression levels",
+          "acceptance_criteria": "Produce at least 4 figures in figures/ directory: (1) figures/throughput_comparison.png \u2014 grouped bar chart of MB/s for all decoders across all workloads, (2) figures/speedup_heatmap.png \u2014 heatmap of speedup ratios (workload x compression level), (3) figures/ablation_chart.png \u2014 stacked contribution of each optimization, (4) figures/ipc_comparison.png \u2014 IPC comparison between baseline and optimized decoder. All figures must have axis labels, legends, and be referenced in research_paper.tex.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Final sources.bib validation and completeness check: ensure all cited works in the paper have corresponding BibTeX entries and all entries are properly formatted",
+          "acceptance_criteria": "sources.bib contains at least 15 BibTeX entries covering: (1) RFC 1951 (Deutsch 1996), (2) zlib/zlib-ng, (3) libdeflate, (4) ISA-L, (5) at least 5 academic papers on parallel/fast Huffman decoding, (6) GDEFLATE specification, (7) at least 3 papers on SIMD-accelerated compression. Every \\cite{} in research_paper.tex has a matching entry. No orphaned entries that are never cited.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Peer review preparation: compile the paper, verify all cross-references, ensure reproducibility by documenting build instructions and benchmark reproduction steps",
+          "acceptance_criteria": "Produce: (1) research_paper.pdf compiled from .tex with no LaTeX warnings, (2) README.md updated with build instructions for the fast_inflate implementation, (3) results/reproducibility.md documenting exact steps to reproduce all benchmark numbers (compiler flags, CPU governor settings, iteration counts), (4) all source code compiles cleanly with -Wall -Werror on GCC 12+ and Clang 15+.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Subagent-delegated final synthesis: use concept-tree-explorer to generate a research retrospective synthesizing the full concept evolution journey from initial exploration to final results",
+          "acceptance_criteria": "Use concept-tree-explorer subagent to produce results/research_retrospective.md covering: (1) which initial hypotheses from Phase 1 proved correct and which did not, (2) the most impactful optimization discovered and why it works, (3) surprises or non-obvious findings, (4) concrete future work directions ranked by expected impact, (5) lessons learned about DEFLATE optimization that generalize to other entropy-coded formats (e.g., JPEG, H.264 CABAC). Minimum 500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
