@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "pareto_multi_scorer_ensemble",
+  "description": "Instead of combining scores into a single objective, maintain a Pareto front over multiple stability-related objectives: thermostability (ddG), kinetic stability, aggregation propensity, and expression level. Use multi-objective evolutionary algorithms (NSGA-II) to evolve mutation sets that are Pareto-optimal.",
+  "domains": ["multi_objective_optimization", "evolutionary_computation", "protein_engineering", "decision_theory"],
+  "mathematical_formalization": "Objectives: f_1(S) = predicted ddG, f_2(S) = recovery probability, f_3(S) = aggregation score, f_4(S) = expression level. S dominates T iff f_i(S) >= f_i(T) for all i and f_j(S) > f_j(T) for some j. NSGA-II with crowding distance for Pareto front diversity.",
+  "analogical_connections": [
+    "Wu et al. (2026): multi-objective optimization achieving +8C Tm with >95% activity retention",
+    "LAffAb: co-optimizing antibody affinity and stability with combinatorial libraries",
+    "Portfolio optimization: maximizing return while minimizing risk"
+  ],
+  "implementation_hypothesis": "Population of 100 mutation sets. Initialize from top single mutants. Crossover: uniform. Mutation: swap one amino acid. NSGA-II selection. 50 generations. Total: 100*50*4 = 20K evaluations.",
+  "experiment_seed": "Select 10 well-characterized FireProtDB proteins. Run NSGA-II targeting ddG + expression. Compare Pareto front vs single-objective greedy.",
+  "folder_plan": ["src/optimizers/nsga2_mutations.py", "src/scorers/aggregation_scorer.py", "src/scorers/expression_scorer.py"]
+}

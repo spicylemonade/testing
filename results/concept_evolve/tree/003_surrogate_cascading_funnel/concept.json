@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "surrogate_cascading_funnel",
+  "description": "Arrange multiple stability predictors in a cascading funnel from fast/cheap to slow/accurate: ESM-2 zero-shot (microseconds per variant) filters millions of candidates, ProteinMPNN (milliseconds) re-ranks the top thousands, and RaSP or Rosetta (seconds) validates the top tens. This mirrors drug discovery screening funnels and multi-fidelity optimization.",
+  "domains": ["drug_discovery", "multi_fidelity_optimization", "information_theory", "protein_engineering"],
+  "mathematical_formalization": "Given scorers f_1 (fast, noisy), f_2 (medium), f_3 (slow, accurate) with costs c_1 << c_2 << c_3. Define funnel: S_1 = top_N1({x : f_1(x) > t_1}), S_2 = top_N2({x in S_1 : f_2(x) > t_2}), S_3 = argmax_{x in S_2} f_3(x). Optimize thresholds and sizes to maximize P(x* in S_3) subject to total cost <= budget.",
+  "analogical_connections": [
+    "Drug discovery: primary screen (millions) -> hit confirmation (thousands) -> lead optimization (dozens)",
+    "Multi-fidelity Bayesian optimization: cheap evaluations guide expensive ones",
+    "Information funnel in deep learning: progressive compression through layers"
+  ],
+  "implementation_hypothesis": "Stage 1: ESM-2 single-mutant pre-screen. Stage 2: Enumerate top-5 per position combinations (5^k candidates). Stage 3: ESM-2 batch scoring, keep top-1000. Stage 4: ProteinMPNN re-scoring, keep top-50. Stage 5: RaSP final validation. For k=8: 5^8 = 390K candidates at Stage 2.",
+  "experiment_seed": "Benchmark on 20 Mega-scale proteins: compare funnel approach vs using only the most accurate scorer on all candidates.",
+  "folder_plan": ["src/pipeline/cascading_funnel.py", "src/scorers/esm2_scorer.py", "src/scorers/proteinmpnn_scorer.py", "src/scorers/rasp_scorer.py"]
+}

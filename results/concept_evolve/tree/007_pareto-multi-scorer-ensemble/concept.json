@@ -1,0 +1,26 @@
+{
+  "symbolic_name": "pareto_multi_scorer_ensemble",
+  "description": "Instead of combining scores into a single objective, maintain a Pareto front over multiple stability-related objectives: thermostability (ddG), kinetic stability, aggregation propensity, and expression level. Use multi-objective evolutionary algorithms (NSGA-II) to evolve mutation sets that are Pareto-optimal, ensuring the final designs are robust across multiple properties.",
+  "domains": [
+    "multi_objective_optimization",
+    "evolutionary_computation",
+    "protein_engineering",
+    "decision_theory"
+  ],
+  "mathematical_formalization": "Objectives: f_1(S) = predicted ddG (ESM-2), f_2(S) = ProteinMPNN recovery probability, f_3(S) = predicted aggregation score, f_4(S) = predicted expression level. Mutation set S dominates T iff f_i(S) >= f_i(T) for all i and f_j(S) > f_j(T) for some j. NSGA-II: population of mutation sets, crossover = swap subsets of mutations, mutation = replace one mutation. Crowding distance maintains Pareto front diversity.",
+  "analogical_connections": [
+    "Wu et al. (2026) used multi-objective optimization with ABACUS-R + MSA Transformer achieving ddT ~8C with >95% activity retention",
+    "LAffAb (Fleishman lab) co-optimizes antibody affinity and stability with combinatorial libraries of up to 9 mutations",
+    "Portfolio optimization in finance: maximizing return while minimizing risk across multiple assets \u2014 mutations are assets, properties are returns/risks"
+  ],
+  "implementation_hypothesis": "Population of 100 mutation sets (each 3-8 mutations). Initialize from top-ranked single mutants. Crossover: uniform crossover of mutation positions. Mutation: 20% chance to swap any mutation for random alternative. Selection: NSGA-II non-dominated sorting + crowding distance. Run 50 generations. Total scorer calls: 100 * 50 * 4 scorers = 20K evaluations, feasible in minutes on A100.",
+  "experiment_seed": "Select 10 well-characterized proteins from FireProtDB with known multi-mutant stability data. Run NSGA-II optimization targeting ddG + expression predictors. Compare Pareto front solutions vs single-objective greedy on: (a) predicted ddG, (b) predicted solubility, (c) agreement with experimental data. Measure hypervolume indicator for Pareto front quality.",
+  "folder_plan": [
+    "src/optimizers/nsga2_mutations.py",
+    "src/scorers/aggregation_scorer.py",
+    "src/scorers/expression_scorer.py",
+    "tests/test_pareto.py"
+  ],
+  "generated_at": "2026-03-04T09:36:16.205934+00:00",
+  "project_folder": "concept_evolve/tree/007_pareto-multi-scorer-ensemble"
+}

@@ -1,0 +1,15 @@
+{
+  "symbolic_name": "inverse_folding_energy_oracle",
+  "description": "Use inverse folding models (ProteinMPNN, ESM-IF) as efficient energy oracles that approximate the free energy landscape. Recent work shows inverse folding log-likelihoods have a direct free-energy interpretation. Combine sequence-based (ESM-2) and structure-based (ProteinMPNN) scores as complementary views for robust multi-mutant scoring.",
+  "domains": ["statistical_mechanics", "protein_design", "machine_learning", "information_theory"],
+  "mathematical_formalization": "For structure X and sequence s: ddG(mut) ~ -kT * [log P(s_mut|X) - log P(s_wt|X)]. Combined oracle: ddG_combined = w_1 * ddG_ESM2 + w_2 * ddG_MPNN + w_3 * ddG_ESM2 * ddG_MPNN, weights learned from Mega-scale data.",
+  "analogical_connections": [
+    "Ensemble methods in ML: combining weak learners",
+    "SPURS (Li & Luo 2025) rewires PLM + inverse folding for stability prediction",
+    "Free energy perturbation in molecular dynamics",
+    "Multi-view learning: sequence and structure views"
+  ],
+  "implementation_hypothesis": "Load ESM-2 and ProteinMPNN on GPU. Compute masked marginal and conditional probability. Linearly combine with calibrated weights. Add pairwise interaction correction. ~5ms per variant on A100.",
+  "experiment_seed": "Train combination weights on 80% Mega-scale single mutants, test on 20%. Compare ESM-2 alone, ProteinMPNN alone, linear combo, combo with interactions. Evaluate on FireProtDB multi-mutants.",
+  "folder_plan": ["src/scorers/combined_oracle.py", "src/scorers/esm2_scorer.py", "src/scorers/proteinmpnn_scorer.py", "src/training/calibrate_weights.py"]
+}

@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "adaptive_beam_search_mutations",
+  "description": "Use beam search with adaptive beam width to construct multi-mutation combinations incrementally. Adapt beam width based on score diversity: widen when top candidates are close (exploration needed), narrow when a clear winner emerges.",
+  "domains": ["natural_language_processing", "search_algorithms", "protein_engineering", "information_theory"],
+  "mathematical_formalization": "Beam B_0 = {wildtype}. At step t: B_{t+1} = top_W(t)(expansions). Adaptive width: W(t) = W_base * (1 + alpha * entropy(scores(B_t))). High entropy -> wide beam (explore), low entropy -> narrow beam (exploit).",
+  "analogical_connections": [
+    "Beam search in machine translation: top-k partial translations",
+    "g-DPO (Cradle 2025): sequence space clustering to prune redundant variants",
+    "Branch and bound: beam search is soft branch and bound"
+  ],
+  "implementation_hypothesis": "Top-50 candidate mutations. Base beam W=100. At each of k=8 steps: expand 100 entries by 50 candidates, score 5000 with ESM-2 batch, keep top-100. Adaptive: adjust W by score diversity. Total: ~40K scorer calls in ~40 seconds on A100.",
+  "experiment_seed": "Compare beam W={50,100,200} vs greedy (W=1) vs exhaustive (k<=4) on 30 Mega-scale proteins. Measure diversity and best score.",
+  "folder_plan": ["src/optimizers/beam_search.py", "src/optimizers/adaptive_beam.py", "tests/test_beam.py"]
+}

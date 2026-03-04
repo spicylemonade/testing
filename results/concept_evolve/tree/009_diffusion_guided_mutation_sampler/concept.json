@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "diffusion_guided_mutation_sampler",
+  "description": "Repurpose protein sequence diffusion models as guided samplers for multi-mutant generation. Start from the wild-type sequence, apply partial noising at mutable positions only, then denoise conditioned on structure and a stability-maximizing guidance signal. This generates diverse, high-quality mutation combinations in a single denoising pass.",
+  "domains": ["generative_modeling", "diffusion_models", "protein_design", "stochastic_optimization"],
+  "mathematical_formalization": "x_0 = wild-type, mask positions P = {p_1,...,p_k}. Forward: x_t[P] = noise(x_0[P], t). Reverse: x_{t-1}[P] = denoise(x_t, structure, t) + lambda * grad(f_stability(x_t)). Generate N samples, rank by f_stability.",
+  "analogical_connections": [
+    "Classifier-guided diffusion in image generation (Dhariwal & Nichol 2021)",
+    "MCTD-ME: masked diffusion as rollout engine in MCTS",
+    "Langevin dynamics: gradient-guided stochastic energy landscape sampling"
+  ],
+  "implementation_hypothesis": "ESM-2 backbone, mask k positions, sample from masked LM with ProteinMPNN structure guidance. 256 parallel candidates on A100 (~10s). Score with combined oracle, return top-10.",
+  "experiment_seed": "Generate 1000 multi-mutant candidates (k=5) for 20 proteins. Compare diversity, quality, and coverage vs beam search and MCTS. Ablate guidance lambda.",
+  "folder_plan": ["src/samplers/diffusion_guided.py", "src/samplers/guidance.py", "tests/test_diffusion.py"]
+}

@@ -1,0 +1,26 @@
+{
+  "symbolic_name": "epistasis_aware_sparse_search",
+  "description": "Exploit the empirical observation that higher-order epistasis in proteins is sparse \u2014 most fitness effects are well-approximated by first and second-order terms. Build a sparse interaction graph from cheap pairwise evaluations, then search only the connected components and high-interaction subsets, pruning the combinatorial space by orders of magnitude.",
+  "domains": [
+    "statistical_genetics",
+    "sparse_optimization",
+    "protein_biophysics",
+    "compressed_sensing"
+  ],
+  "mathematical_formalization": "Model fitness f(x) = sum_i alpha_i * x_i + sum_{i<j} beta_{ij} * x_i * x_j + epsilon, where x_i in {0,...,19} encodes amino acid at position i. Estimate beta_{ij} from O(k^2 * 19) pairwise evaluations. Define interaction graph G where edge (i,j) exists iff |beta_{ij}| > threshold. Decompose search into connected components of G. Total search space: product over components of |A|^{|C_m|} instead of |A|^k.",
+  "analogical_connections": [
+    "Compressed sensing in signal processing: sparse signals can be recovered from few measurements \u2014 epistatic interactions are the sparse signal in mutation space",
+    "Ising models in statistical physics: pairwise interaction terms define phase behavior, just as pairwise epistasis defines the fitness landscape topology",
+    "Ranganathan (2019) showed epistasis up to 13th order is extraordinarily sparse, enabling learning from limited measurements"
+  ],
+  "implementation_hypothesis": "Phase 1: Score all single mutants at k positions (19*k calls). Phase 2: For each pair (i,j), score 19*19 double mutants, compute epistasis e_{ij} = ddG(i,j) - ddG(i) - ddG(j). Phase 3: Build interaction graph, threshold edges by |e_{ij}|. Phase 4: For each connected component, do exhaustive or beam search. Phase 5: Combine best per-component solutions. For k=8 with sparse graph (avg degree 2), reduces from 19^8 to roughly 19^3 * (k/3) searches.",
+  "experiment_seed": "Use Mega-scale double mutant data to validate the sparsity assumption: compute all pairwise epistasis terms for 50 proteins, measure fraction of pairs with |epistasis| > 0.5 kcal/mol. Then compare full-space search vs sparse-graph-decomposed search on predicted ddG quality and speed.",
+  "folder_plan": [
+    "src/epistasis/interaction_graph.py",
+    "src/epistasis/sparse_decomposition.py",
+    "src/optimizers/component_search.py",
+    "tests/test_epistasis_sparsity.py"
+  ],
+  "generated_at": "2026-03-04T09:36:16.201430+00:00",
+  "project_folder": "concept_evolve/tree/002_epistasis-aware-sparse-search"
+}

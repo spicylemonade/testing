@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "mcts_mutation_tree",
+  "description": "Apply Monte Carlo Tree Search to explore the tree of sequential mutation additions. Each tree level represents adding one more mutation to the growing set. MCTS balances exploration of novel mutation combinations with exploitation of promising branches, using UCB1 or PUCT selection. Rollouts use a fast scorer (ESM-2) while backup propagates accurate scores.",
+  "domains": [
+    "game_AI",
+    "tree_search",
+    "protein_engineering",
+    "reinforcement_learning"
+  ],
+  "mathematical_formalization": "Tree T where root = wild-type, each node at depth d represents a set of d mutations. Children of node S = {S + {m} : m in remaining candidates}. UCB1 selection: select child maximizing Q(s,a)/N(s,a) + c * sqrt(ln(N(s))/N(s,a)). Rollout: greedily extend to depth k using fast scorer, return predicted ddG. Backup: update Q values along path. After B simulations, return deepest node with best Q.",
+  "analogical_connections": [
+    "AlphaGo/AlphaZero: MCTS with neural network value/policy guides for Go \u2014 mutations are moves, stability is the game outcome",
+    "MCTD-ME (Liu et al. 2025) integrates MCTS with diffusion models for protein inverse folding",
+    "ProtInvTree uses reward-guided tree search for deliberate protein inverse folding",
+    "Tree search for compiler optimization: exploring transformation sequences"
+  ],
+  "implementation_hypothesis": "Define action space: candidate mutations (top-50 from single-mutant screen). Tree depth = target number of simultaneous mutations (3-8). Selection: PUCT with ESM-2 single-mutant score as prior policy. Expansion: add one new mutation. Rollout: greedily fill remaining positions with top-scoring mutations. Backup: average of rollout scores. Run 1000-5000 simulations. O(5000 * k) scorer calls total. Use virtual loss for parallel MCTS on GPU.",
+  "experiment_seed": "Compare MCTS vs greedy accumulation vs random sampling on 50 Mega-scale proteins. For each, target k=5 simultaneous mutations from top-30 single-mutant candidates. Measure: best predicted ddG found vs number of scorer evaluations (efficiency curve). Test different exploration constants c = {0.1, 0.5, 1.0, 2.0}.",
+  "folder_plan": [
+    "src/optimizers/mcts_mutations.py",
+    "src/optimizers/mcts_node.py",
+    "tests/test_mcts.py",
+    "configs/mcts_config.yaml"
+  ],
+  "generated_at": "2026-03-04T09:36:16.204215+00:00",
+  "project_folder": "concept_evolve/tree/005_mcts-mutation-tree"
+}

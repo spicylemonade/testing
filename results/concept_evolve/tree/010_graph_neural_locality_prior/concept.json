@@ -1,0 +1,15 @@
+{
+  "symbolic_name": "graph_neural_locality_prior",
+  "description": "Leverage the 3D protein structure graph to encode a locality prior: mutations at spatially proximal positions interact more strongly than distant ones. Build a structure-aware GNN that predicts pairwise epistasis from local structural context, enabling informed pruning of the combinatorial search space to structurally coupled mutation clusters.",
+  "domains": ["graph_neural_networks", "structural_biology", "spatial_statistics", "protein_biophysics"],
+  "mathematical_formalization": "Protein graph G = (V, E) where V = residues, E = contacts (C_alpha < 8A). GNN predicts epistasis: e_{ij} = GNN(h_i, h_j, d_{ij}, G). Cluster positions by thresholding |e_{ij}|. Search within clusters.",
+  "analogical_connections": [
+    "Stability Oracle: graph-transformer for stability prediction",
+    "AlphaGMut: alpha shapes for mutation effect prediction",
+    "Spatial econometrics: Tobler's law — near things are more related",
+    "Community detection in social networks"
+  ],
+  "implementation_hypothesis": "Pre-compute contact graph from PDB. Extract features via pre-trained GVP-GNN or ProteinMPNN encoder (frozen). Train MLP to predict pairwise epistasis. Training data: Mega-scale double mutants. At inference: predict epistasis, cluster, search.",
+  "experiment_seed": "Train GNN on 80% Mega-scale double mutant data. Test epistasis prediction on 20% held-out proteins. Measure correlation and graph accuracy. Use predicted graph to guide search.",
+  "folder_plan": ["src/models/epistasis_gnn.py", "src/structure/contact_graph.py", "src/training/train_epistasis.py"]
+}

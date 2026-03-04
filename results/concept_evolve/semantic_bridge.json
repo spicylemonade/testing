@@ -1,0 +1,72 @@
+{
+  "nodes": [
+    {"id": "game_theoretic_mutation_selection", "domain": "game_theory"},
+    {"id": "epistasis_aware_sparse_search", "domain": "statistical_genetics"},
+    {"id": "surrogate_cascading_funnel", "domain": "drug_discovery"},
+    {"id": "submodular_stability_maximization", "domain": "approximation_algorithms"},
+    {"id": "mcts_mutation_tree", "domain": "game_AI"},
+    {"id": "inverse_folding_energy_oracle", "domain": "statistical_mechanics"},
+    {"id": "pareto_multi_scorer_ensemble", "domain": "multi_objective_optimization"},
+    {"id": "adaptive_beam_search_mutations", "domain": "natural_language_processing"},
+    {"id": "diffusion_guided_mutation_sampler", "domain": "generative_modeling"},
+    {"id": "graph_neural_locality_prior", "domain": "graph_neural_networks"},
+    {"id": "bandit_position_selection", "domain": "bandit_algorithms"},
+    {"id": "quantum_inspired_annealing", "domain": "quantum_computing"},
+    {"id": "mega_scale_dataset", "domain": "experimental_biology"},
+    {"id": "fireprotdb", "domain": "protein_databases"},
+    {"id": "esm2_model", "domain": "protein_language_models"},
+    {"id": "proteinmpnn_model", "domain": "inverse_folding"},
+    {"id": "rasp_model", "domain": "stability_prediction"}
+  ],
+  "edges": [
+    {"source": "game_theoretic_mutation_selection", "target": "epistasis_aware_sparse_search", "relation": "Game payoff coupling between players directly encodes pairwise epistasis; sparse epistasis means sparse game structure with decomposable equilibria"},
+    {"source": "game_theoretic_mutation_selection", "target": "mcts_mutation_tree", "relation": "Both treat optimization as sequential decision-making; game equilibria can serve as leaf evaluations in MCTS rollouts"},
+    {"source": "game_theoretic_mutation_selection", "target": "bandit_position_selection", "relation": "Bandit selects WHICH positions to include as players; game theory optimizes WHAT amino acid each player chooses"},
+    {"source": "epistasis_aware_sparse_search", "target": "graph_neural_locality_prior", "relation": "GNN predicts the interaction graph that sparse search decomposes; structural locality enables sparsity assumption"},
+    {"source": "epistasis_aware_sparse_search", "target": "quantum_inspired_annealing", "relation": "Sparse epistasis maps to sparse J-coupling matrix in QUBO, making annealing more efficient with fewer frustrated interactions"},
+    {"source": "epistasis_aware_sparse_search", "target": "submodular_stability_maximization", "relation": "If epistasis is predominantly negative (diminishing returns), the stability function is approximately submodular, enabling greedy guarantees"},
+    {"source": "surrogate_cascading_funnel", "target": "inverse_folding_energy_oracle", "relation": "The combined oracle serves as the mid-tier scorer in the funnel between fast ESM-2 and slow Rosetta/RaSP"},
+    {"source": "surrogate_cascading_funnel", "target": "pareto_multi_scorer_ensemble", "relation": "Instead of cascading sequentially, Pareto approach runs all scorers in parallel and keeps non-dominated solutions"},
+    {"source": "surrogate_cascading_funnel", "target": "adaptive_beam_search_mutations", "relation": "Beam search can use the funnel as its scoring function: fast scorer for beam expansion, accurate scorer for final beam selection"},
+    {"source": "submodular_stability_maximization", "target": "adaptive_beam_search_mutations", "relation": "Greedy submodular selection is beam search with width 1; beam search generalizes to width W for better exploration"},
+    {"source": "submodular_stability_maximization", "target": "bandit_position_selection", "relation": "Lazy greedy evaluation is an implicit bandit: positions with high marginal gain are evaluated more often"},
+    {"source": "mcts_mutation_tree", "target": "diffusion_guided_mutation_sampler", "relation": "MCTD-ME unifies these: diffusion denoising replaces random rollouts in MCTS, providing structure-aware multi-token proposals"},
+    {"source": "mcts_mutation_tree", "target": "adaptive_beam_search_mutations", "relation": "Beam search is MCTS without backpropagation; MCTS adds exploration bonuses and value backup for better global search"},
+    {"source": "mcts_mutation_tree", "target": "bandit_position_selection", "relation": "UCB1 in MCTS IS a bandit algorithm applied at each tree node; Thompson sampling could replace UCB1 for position selection"},
+    {"source": "inverse_folding_energy_oracle", "target": "diffusion_guided_mutation_sampler", "relation": "Inverse folding probabilities provide the guidance gradient for diffusion denoising at mutable positions"},
+    {"source": "inverse_folding_energy_oracle", "target": "graph_neural_locality_prior", "relation": "Both exploit 3D structure; inverse folding encoder provides pre-trained structure embeddings for the GNN epistasis predictor"},
+    {"source": "pareto_multi_scorer_ensemble", "target": "inverse_folding_energy_oracle", "relation": "Each scorer in the ensemble (ESM-2, ProteinMPNN, RaSP) becomes a separate Pareto objective instead of being combined"},
+    {"source": "adaptive_beam_search_mutations", "target": "diffusion_guided_mutation_sampler", "relation": "Diffusion generates diverse candidate sets that seed beam search; beam search refines diffusion samples deterministically"},
+    {"source": "graph_neural_locality_prior", "target": "quantum_inspired_annealing", "relation": "GNN-predicted epistasis directly provides J-coupling terms for the QUBO Hamiltonian, closing the structure-to-optimization loop"},
+    {"source": "bandit_position_selection", "target": "surrogate_cascading_funnel", "relation": "Bandit budget allocation across positions mirrors funnel budget allocation across scoring tiers; both optimize information per evaluation dollar"},
+    {"source": "mega_scale_dataset", "target": "epistasis_aware_sparse_search", "relation": "Mega-scale double mutant data empirically validates sparsity assumption and trains epistasis predictors"},
+    {"source": "mega_scale_dataset", "target": "inverse_folding_energy_oracle", "relation": "776K experimental measurements calibrate combined oracle weights and validate zero-shot predictions"},
+    {"source": "mega_scale_dataset", "target": "graph_neural_locality_prior", "relation": "Mega-scale data provides training labels for the GNN epistasis predictor"},
+    {"source": "fireprotdb", "target": "pareto_multi_scorer_ensemble", "relation": "FireProtDB multi-mutant entries serve as external validation for Pareto-optimal design predictions"},
+    {"source": "esm2_model", "target": "surrogate_cascading_funnel", "relation": "ESM-2 serves as the fast first-stage filter in the cascading funnel"},
+    {"source": "proteinmpnn_model", "target": "inverse_folding_energy_oracle", "relation": "ProteinMPNN provides the structure-conditioned component of the combined energy oracle"},
+    {"source": "rasp_model", "target": "surrogate_cascading_funnel", "relation": "RaSP serves as the accurate final-stage validator in the cascading funnel"}
+  ],
+  "bridge_chains": [
+    {
+      "path": ["bandit_position_selection", "game_theoretic_mutation_selection", "epistasis_aware_sparse_search", "graph_neural_locality_prior"],
+      "domains_crossed": ["bandit_algorithms", "game_theory", "statistical_genetics", "graph_neural_networks"],
+      "narrative": "Bandits identify the most informative positions to mutate, game theory finds equilibrium amino acids at those positions, sparse epistasis decomposition validates that the equilibrium captures the dominant interactions, and GNN structural priors predict which position pairs interact — closing a loop from resource allocation through game theory to structural biology."
+    },
+    {
+      "path": ["diffusion_guided_mutation_sampler", "inverse_folding_energy_oracle", "surrogate_cascading_funnel", "adaptive_beam_search_mutations"],
+      "domains_crossed": ["generative_modeling", "statistical_mechanics", "drug_discovery", "natural_language_processing"],
+      "narrative": "Diffusion models generate diverse candidate mutation sets guided by inverse folding energy oracles, which are themselves arranged in a multi-fidelity funnel from NLP-style language models to physics-inspired energy functions, with beam search (from machine translation) refining the top candidates at each funnel stage."
+    },
+    {
+      "path": ["quantum_inspired_annealing", "epistasis_aware_sparse_search", "submodular_stability_maximization", "mcts_mutation_tree"],
+      "domains_crossed": ["quantum_computing", "statistical_genetics", "approximation_algorithms", "game_AI"],
+      "narrative": "QUBO encoding maps the mutation optimization to an Ising model solvable by quantum-inspired annealing, but the same sparse epistasis structure that makes QUBO tractable also supports submodular approximation guarantees for greedy algorithms, which in turn define the rollout policy in MCTS — connecting quantum physics to game AI through the mathematical structure of the fitness landscape."
+    },
+    {
+      "path": ["graph_neural_locality_prior", "inverse_folding_energy_oracle", "pareto_multi_scorer_ensemble", "surrogate_cascading_funnel"],
+      "domains_crossed": ["graph_neural_networks", "statistical_mechanics", "multi_objective_optimization", "drug_discovery"],
+      "narrative": "GNN structural features feed into inverse folding oracles, whose predictions become objectives in a Pareto ensemble rather than a single combined score, and the multi-objective Pareto front is navigated through a cascading funnel that progressively filters with more expensive evaluations — bridging from molecular structure through thermodynamics through decision theory to screening logistics."
+    }
+  ]
+}

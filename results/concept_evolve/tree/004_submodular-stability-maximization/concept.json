@@ -1,0 +1,25 @@
+{
+  "symbolic_name": "submodular_stability_maximization",
+  "description": "Frame multi-site stabilization as a submodular maximization problem under cardinality constraints. If the marginal stability gain of adding a mutation decreases as more mutations are already present (diminishing returns), the greedy algorithm provides a (1-1/e)-approximation guarantee. This gives provable quality bounds missing from heuristic search.",
+  "domains": [
+    "submodular_optimization",
+    "approximation_algorithms",
+    "protein_engineering",
+    "information_theory"
+  ],
+  "mathematical_formalization": "Let V = set of all candidate single mutations, k = budget of simultaneous mutations. Define f(S) = predicted stability improvement of mutation set S. If f is monotone submodular (f(S + {v}) - f(S) >= f(T + {v}) - f(T) for S subset T), then greedy: iteratively add v* = argmax_v f(S + {v}) - f(S) achieves f(S_greedy) >= (1 - 1/e) * f(S_optimal). Total cost: O(k * |V|) scorer evaluations.",
+  "analogical_connections": [
+    "Sensor placement optimization: placing sensors to maximize information coverage is submodular \u2014 mutations are sensors, stability is coverage",
+    "Feature selection in ML: selecting features for maximum mutual information with target is submodular",
+    "Sviridenko (2004) showed (1-1/e)-approximation is tight for submodular maximization under cardinality constraints"
+  ],
+  "implementation_hypothesis": "Pre-screen: identify N candidate stabilizing single mutations from ESM-2 (e.g., N=50-100). Define f(S) = ESM-2 pseudo-likelihood of sequence with mutations S applied. Test submodularity empirically on 1000 random (S, T, v) triples. If approximately submodular (violations < 5%), run greedy with lazy evaluation (accelerated greedy). Expected O(k*N) calls with lazy eval vs O(k*N) standard greedy.",
+  "experiment_seed": "For 30 proteins from Mega-scale dataset, enumerate all subsets of size 2-4 from top-20 single mutants. Check submodularity ratio gamma = min_{S,T,v} [f(S+v)-f(S)] / [f(T+v)-f(T)] for S subset T. If gamma > 0.5, submodularity is approximately preserved. Compare greedy solution quality to exhaustive search for subsets of size 3-5.",
+  "folder_plan": [
+    "src/optimizers/submodular_greedy.py",
+    "src/analysis/submodularity_check.py",
+    "tests/test_submodular.py"
+  ],
+  "generated_at": "2026-03-04T09:36:16.203213+00:00",
+  "project_folder": "concept_evolve/tree/004_submodular-stability-maximization"
+}

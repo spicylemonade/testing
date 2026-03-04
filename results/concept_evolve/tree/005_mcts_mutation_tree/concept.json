@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "mcts_mutation_tree",
+  "description": "Apply Monte Carlo Tree Search to explore the tree of sequential mutation additions. Each tree level represents adding one more mutation to the growing set. MCTS balances exploration of novel mutation combinations with exploitation of promising branches, using UCB1 or PUCT selection. Rollouts use a fast scorer (ESM-2) while backup propagates accurate scores.",
+  "domains": ["game_AI", "tree_search", "protein_engineering", "reinforcement_learning"],
+  "mathematical_formalization": "Tree T where root = wild-type, each node at depth d represents d mutations. UCB1 selection: maximize Q(s,a)/N(s,a) + c * sqrt(ln(N(s))/N(s,a)). Rollout: greedily extend to depth k using fast scorer. Backup: update Q values along path. After B simulations, return deepest node with best Q.",
+  "analogical_connections": [
+    "AlphaGo/AlphaZero: MCTS with neural network guidance",
+    "MCTD-ME (Liu et al. 2025): MCTS with diffusion models for protein inverse folding",
+    "Tree search for compiler optimization"
+  ],
+  "implementation_hypothesis": "Action space: top-50 candidate mutations. Tree depth = target k (3-8). Selection: PUCT with ESM-2 prior. Rollout: greedy fill. Run 1000-5000 simulations. O(5000*k) scorer calls. Virtual loss for parallel MCTS on GPU.",
+  "experiment_seed": "Compare MCTS vs greedy vs random on 50 Mega-scale proteins with k=5 from top-30 candidates. Test exploration constants c = {0.1, 0.5, 1.0, 2.0}.",
+  "folder_plan": ["src/optimizers/mcts_mutations.py", "src/optimizers/mcts_node.py", "tests/test_mcts.py"]
+}

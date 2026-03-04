@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "epistasis_aware_sparse_search",
+  "description": "Exploit the empirical observation that higher-order epistasis in proteins is sparse — most fitness effects are well-approximated by first and second-order terms. Build a sparse interaction graph from cheap pairwise evaluations, then search only the connected components and high-interaction subsets, pruning the combinatorial space by orders of magnitude.",
+  "domains": ["statistical_genetics", "sparse_optimization", "protein_biophysics", "compressed_sensing"],
+  "mathematical_formalization": "Model fitness f(x) = sum_i alpha_i * x_i + sum_{i<j} beta_{ij} * x_i * x_j + epsilon, where x_i encodes amino acid at position i. Estimate beta_{ij} from O(k^2 * 19) pairwise evaluations. Define interaction graph G where edge (i,j) exists iff |beta_{ij}| > threshold. Decompose search into connected components of G.",
+  "analogical_connections": [
+    "Compressed sensing: sparse signals recovered from few measurements — epistatic interactions are the sparse signal",
+    "Ising models in statistical physics: pairwise interaction terms define phase behavior",
+    "Ranganathan (2019) showed epistasis up to 13th order is extraordinarily sparse"
+  ],
+  "implementation_hypothesis": "Phase 1: Score all single mutants. Phase 2: Score pairwise double mutants for candidate pairs. Phase 3: Build interaction graph, threshold edges. Phase 4: Exhaustive or beam search within connected components. Phase 5: Combine per-component solutions.",
+  "experiment_seed": "Use Mega-scale double mutant data to validate sparsity: compute pairwise epistasis for 50 proteins, measure fraction of pairs with |epistasis| > 0.5 kcal/mol.",
+  "folder_plan": ["src/epistasis/interaction_graph.py", "src/epistasis/sparse_decomposition.py", "src/optimizers/component_search.py"]
+}

@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "surrogate_cascading_funnel",
+  "description": "Arrange multiple stability predictors in a cascading funnel from fast/cheap to slow/accurate: ESM-2 zero-shot (microseconds per variant) filters millions of candidates, ProteinMPNN (milliseconds) re-ranks the top thousands, and RaSP or Rosetta (seconds) validates the top tens. This mirrors drug discovery screening funnels and multi-fidelity optimization.",
+  "domains": [
+    "drug_discovery",
+    "multi_fidelity_optimization",
+    "information_theory",
+    "protein_engineering"
+  ],
+  "mathematical_formalization": "Given scorers f_1 (fast, noisy), f_2 (medium), f_3 (slow, accurate) with costs c_1 << c_2 << c_3 and correlations rho_{12}, rho_{23}. Define funnel: S_1 = top_N1({x : f_1(x) > t_1}), S_2 = top_N2({x in S_1 : f_2(x) > t_2}), S_3 = argmax_{x in S_2} f_3(x). Optimize thresholds t_i and sizes N_i to maximize P(x* in S_3) subject to total cost sum_i c_i * |S_i| <= budget T.",
+  "analogical_connections": [
+    "High-throughput drug screening: primary screen (millions) -> hit confirmation (thousands) -> lead optimization (dozens)",
+    "Multi-fidelity Bayesian optimization: cheap approximate evaluations guide expensive precise evaluations",
+    "Information funnel in deep learning: progressive compression of representations through network layers"
+  ],
+  "implementation_hypothesis": "Stage 1: Generate all single-mutant ESM-2 scores at k positions (19*k calls, ~milliseconds total). Stage 2: Enumerate all combinations of top-5 per position (5^k candidates). Stage 3: Score with ESM-2 marginal likelihood, keep top-1000. Stage 4: Re-score top-1000 with ProteinMPNN, keep top-50. Stage 5: Score top-50 with RaSP. Return ranked list. For k=8: 5^8 = 390K candidates at Stage 2, well within ESM-2 batch throughput on A100.",
+  "experiment_seed": "Benchmark on 20 Mega-scale proteins: compare funnel approach vs using only the most accurate scorer on all candidates. Measure: Spearman correlation with experimental ddG, computational cost, and recall of top-10 stabilizing variants. Vary funnel widths (top-3 to top-10 per position) to find Pareto frontier of speed vs quality.",
+  "folder_plan": [
+    "src/pipeline/cascading_funnel.py",
+    "src/scorers/esm2_scorer.py",
+    "src/scorers/proteinmpnn_scorer.py",
+    "src/scorers/rasp_scorer.py",
+    "configs/funnel_config.yaml"
+  ],
+  "generated_at": "2026-03-04T09:36:16.202293+00:00",
+  "project_folder": "concept_evolve/tree/003_surrogate-cascading-funnel"
+}

@@ -1,0 +1,173 @@
+[
+  {
+    "symbolic_name": "game_theoretic_mutation_selection",
+    "description": "Model each mutable position as a strategic player in a cooperative game, where each player selects an amino acid substitution to maximize a shared stability objective. Equilibrium solutions (Nash or correlated equilibria) represent stable mutation combinations where no single position has incentive to deviate, naturally handling pairwise epistasis as cross-player payoff coupling.",
+    "domains": ["game_theory", "protein_engineering", "combinatorial_optimization"],
+    "mathematical_formalization": "Let S = {s_1, ..., s_k} be k mutable positions, each with action set A_i (possible amino acids). Define payoff u(a_1,...,a_k) = -ddG(a_1,...,a_k) from a pretrained scorer. Find Nash equilibrium: a_i* = argmax_{a_i} u(a_i, a_{-i}*) for all i. Solve via best-response dynamics: a_i^{t+1} = argmax_{a_i} u(a_i, a_{-i}^t). Convergence in O(k * |A|) scorer calls per iteration vs O(|A|^k) brute force.",
+    "analogical_connections": [
+      "GameOpt (Bal et al., ICLR 2025) applies cooperative games to combinatorial Bayesian optimization for protein design with 20^X configurations",
+      "Congestion games in network routing where each router selects paths to minimize latency — positions are routers, amino acids are paths",
+      "Auction mechanisms where bidders (positions) coordinate to maximize social welfare (stability)"
+    ],
+    "implementation_hypothesis": "Implement iterative best-response: (1) Initialize all positions to wild-type. (2) For each position i in random order, score all 19 substitutions while holding other positions fixed — requires 19*k scorer calls per sweep. (3) Each position adopts its best response. (4) Repeat until convergence or max iterations. Use ESM-2 log-likelihood ratio as scorer. For k=8 positions, this is 152 calls/sweep vs 19^8 ≈ 17B brute force. Add UCB exploration bonus for positions with high uncertainty.",
+    "experiment_seed": "Take 100 proteins from the Mega-scale dataset. For each, select 5-8 positions with highest single-mutant ddG improvement. Run game-theoretic search vs greedy accumulation vs random multi-mutant sampling. Compare: (a) predicted ddG of best combination found, (b) wall-clock time, (c) number of scorer calls. Validate top-10 predictions against experimental data where available.",
+    "folder_plan": ["src/optimizers/game_theoretic.py", "src/scorers/esm2_scorer.py", "tests/test_game_optimizer.py", "configs/game_search.yaml"]
+  },
+  {
+    "symbolic_name": "epistasis_aware_sparse_search",
+    "description": "Exploit the empirical observation that higher-order epistasis in proteins is sparse — most fitness effects are well-approximated by first and second-order terms. Build a sparse interaction graph from cheap pairwise evaluations, then search only the connected components and high-interaction subsets, pruning the combinatorial space by orders of magnitude.",
+    "domains": ["statistical_genetics", "sparse_optimization", "protein_biophysics", "compressed_sensing"],
+    "mathematical_formalization": "Model fitness f(x) = sum_i alpha_i * x_i + sum_{i<j} beta_{ij} * x_i * x_j + epsilon, where x_i in {0,...,19} encodes amino acid at position i. Estimate beta_{ij} from O(k^2 * 19) pairwise evaluations. Define interaction graph G where edge (i,j) exists iff |beta_{ij}| > threshold. Decompose search into connected components of G. Total search space: product over components of |A|^{|C_m|} instead of |A|^k.",
+    "analogical_connections": [
+      "Compressed sensing in signal processing: sparse signals can be recovered from few measurements — epistatic interactions are the sparse signal in mutation space",
+      "Ising models in statistical physics: pairwise interaction terms define phase behavior, just as pairwise epistasis defines the fitness landscape topology",
+      "Ranganathan (2019) showed epistasis up to 13th order is extraordinarily sparse, enabling learning from limited measurements"
+    ],
+    "implementation_hypothesis": "Phase 1: Score all single mutants at k positions (19*k calls). Phase 2: For each pair (i,j), score 19*19 double mutants, compute epistasis e_{ij} = ddG(i,j) - ddG(i) - ddG(j). Phase 3: Build interaction graph, threshold edges by |e_{ij}|. Phase 4: For each connected component, do exhaustive or beam search. Phase 5: Combine best per-component solutions. For k=8 with sparse graph (avg degree 2), reduces from 19^8 to roughly 19^3 * (k/3) searches.",
+    "experiment_seed": "Use Mega-scale double mutant data to validate the sparsity assumption: compute all pairwise epistasis terms for 50 proteins, measure fraction of pairs with |epistasis| > 0.5 kcal/mol. Then compare full-space search vs sparse-graph-decomposed search on predicted ddG quality and speed.",
+    "folder_plan": ["src/epistasis/interaction_graph.py", "src/epistasis/sparse_decomposition.py", "src/optimizers/component_search.py", "tests/test_epistasis_sparsity.py"]
+  },
+  {
+    "symbolic_name": "surrogate_cascading_funnel",
+    "description": "Arrange multiple stability predictors in a cascading funnel from fast/cheap to slow/accurate: ESM-2 zero-shot (microseconds per variant) filters millions of candidates, ProteinMPNN (milliseconds) re-ranks the top thousands, and RaSP or Rosetta (seconds) validates the top tens. This mirrors drug discovery screening funnels and multi-fidelity optimization.",
+    "domains": ["drug_discovery", "multi_fidelity_optimization", "information_theory", "protein_engineering"],
+    "mathematical_formalization": "Given scorers f_1 (fast, noisy), f_2 (medium), f_3 (slow, accurate) with costs c_1 << c_2 << c_3 and correlations rho_{12}, rho_{23}. Define funnel: S_1 = top_N1({x : f_1(x) > t_1}), S_2 = top_N2({x in S_1 : f_2(x) > t_2}), S_3 = argmax_{x in S_2} f_3(x). Optimize thresholds t_i and sizes N_i to maximize P(x* in S_3) subject to total cost sum_i c_i * |S_i| <= budget T.",
+    "analogical_connections": [
+      "High-throughput drug screening: primary screen (millions) -> hit confirmation (thousands) -> lead optimization (dozens)",
+      "Multi-fidelity Bayesian optimization: cheap approximate evaluations guide expensive precise evaluations",
+      "Information funnel in deep learning: progressive compression of representations through network layers"
+    ],
+    "implementation_hypothesis": "Stage 1: Generate all single-mutant ESM-2 scores at k positions (19*k calls, ~milliseconds total). Stage 2: Enumerate all combinations of top-5 per position (5^k candidates). Stage 3: Score with ESM-2 marginal likelihood, keep top-1000. Stage 4: Re-score top-1000 with ProteinMPNN, keep top-50. Stage 5: Score top-50 with RaSP. Return ranked list. For k=8: 5^8 = 390K candidates at Stage 2, well within ESM-2 batch throughput on A100.",
+    "experiment_seed": "Benchmark on 20 Mega-scale proteins: compare funnel approach vs using only the most accurate scorer on all candidates. Measure: Spearman correlation with experimental ddG, computational cost, and recall of top-10 stabilizing variants. Vary funnel widths (top-3 to top-10 per position) to find Pareto frontier of speed vs quality.",
+    "folder_plan": ["src/pipeline/cascading_funnel.py", "src/scorers/esm2_scorer.py", "src/scorers/proteinmpnn_scorer.py", "src/scorers/rasp_scorer.py", "configs/funnel_config.yaml"]
+  },
+  {
+    "symbolic_name": "submodular_stability_maximization",
+    "description": "Frame multi-site stabilization as a submodular maximization problem under cardinality constraints. If the marginal stability gain of adding a mutation decreases as more mutations are already present (diminishing returns), the greedy algorithm provides a (1-1/e)-approximation guarantee. This gives provable quality bounds missing from heuristic search.",
+    "domains": ["submodular_optimization", "approximation_algorithms", "protein_engineering", "information_theory"],
+    "mathematical_formalization": "Let V = set of all candidate single mutations, k = budget of simultaneous mutations. Define f(S) = predicted stability improvement of mutation set S. If f is monotone submodular (f(S + {v}) - f(S) >= f(T + {v}) - f(T) for S subset T), then greedy: iteratively add v* = argmax_v f(S + {v}) - f(S) achieves f(S_greedy) >= (1 - 1/e) * f(S_optimal). Total cost: O(k * |V|) scorer evaluations.",
+    "analogical_connections": [
+      "Sensor placement optimization: placing sensors to maximize information coverage is submodular — mutations are sensors, stability is coverage",
+      "Feature selection in ML: selecting features for maximum mutual information with target is submodular",
+      "Sviridenko (2004) showed (1-1/e)-approximation is tight for submodular maximization under cardinality constraints"
+    ],
+    "implementation_hypothesis": "Pre-screen: identify N candidate stabilizing single mutations from ESM-2 (e.g., N=50-100). Define f(S) = ESM-2 pseudo-likelihood of sequence with mutations S applied. Test submodularity empirically on 1000 random (S, T, v) triples. If approximately submodular (violations < 5%), run greedy with lazy evaluation (accelerated greedy). Expected O(k*N) calls with lazy eval vs O(k*N) standard greedy.",
+    "experiment_seed": "For 30 proteins from Mega-scale dataset, enumerate all subsets of size 2-4 from top-20 single mutants. Check submodularity ratio gamma = min_{S,T,v} [f(S+v)-f(S)] / [f(T+v)-f(T)] for S subset T. If gamma > 0.5, submodularity is approximately preserved. Compare greedy solution quality to exhaustive search for subsets of size 3-5.",
+    "folder_plan": ["src/optimizers/submodular_greedy.py", "src/analysis/submodularity_check.py", "tests/test_submodular.py"]
+  },
+  {
+    "symbolic_name": "mcts_mutation_tree",
+    "description": "Apply Monte Carlo Tree Search to explore the tree of sequential mutation additions. Each tree level represents adding one more mutation to the growing set. MCTS balances exploration of novel mutation combinations with exploitation of promising branches, using UCB1 or PUCT selection. Rollouts use a fast scorer (ESM-2) while backup propagates accurate scores.",
+    "domains": ["game_AI", "tree_search", "protein_engineering", "reinforcement_learning"],
+    "mathematical_formalization": "Tree T where root = wild-type, each node at depth d represents a set of d mutations. Children of node S = {S + {m} : m in remaining candidates}. UCB1 selection: select child maximizing Q(s,a)/N(s,a) + c * sqrt(ln(N(s))/N(s,a)). Rollout: greedily extend to depth k using fast scorer, return predicted ddG. Backup: update Q values along path. After B simulations, return deepest node with best Q.",
+    "analogical_connections": [
+      "AlphaGo/AlphaZero: MCTS with neural network value/policy guides for Go — mutations are moves, stability is the game outcome",
+      "MCTD-ME (Liu et al. 2025) integrates MCTS with diffusion models for protein inverse folding",
+      "ProtInvTree uses reward-guided tree search for deliberate protein inverse folding",
+      "Tree search for compiler optimization: exploring transformation sequences"
+    ],
+    "implementation_hypothesis": "Define action space: candidate mutations (top-50 from single-mutant screen). Tree depth = target number of simultaneous mutations (3-8). Selection: PUCT with ESM-2 single-mutant score as prior policy. Expansion: add one new mutation. Rollout: greedily fill remaining positions with top-scoring mutations. Backup: average of rollout scores. Run 1000-5000 simulations. O(5000 * k) scorer calls total. Use virtual loss for parallel MCTS on GPU.",
+    "experiment_seed": "Compare MCTS vs greedy accumulation vs random sampling on 50 Mega-scale proteins. For each, target k=5 simultaneous mutations from top-30 single-mutant candidates. Measure: best predicted ddG found vs number of scorer evaluations (efficiency curve). Test different exploration constants c = {0.1, 0.5, 1.0, 2.0}.",
+    "folder_plan": ["src/optimizers/mcts_mutations.py", "src/optimizers/mcts_node.py", "tests/test_mcts.py", "configs/mcts_config.yaml"]
+  },
+  {
+    "symbolic_name": "inverse_folding_energy_oracle",
+    "description": "Use inverse folding models (ProteinMPNN, ESM-IF) as efficient energy oracles that approximate the free energy landscape. Recent work (Frellsen et al. 2025) shows inverse folding log-likelihoods have a direct free-energy interpretation. Combine sequence-based (ESM-2) and structure-based (ProteinMPNN) scores as complementary views of the energy surface for more robust multi-mutant scoring.",
+    "domains": ["statistical_mechanics", "protein_design", "machine_learning", "information_theory"],
+    "mathematical_formalization": "For structure X and sequence s, inverse folding model gives P(s|X). Stability change: ddG(mut) proportional to -kT * [log P(s_mut|X) - log P(s_wt|X)]. Combined oracle: ddG_combined = w_1 * ddG_ESM2(s) + w_2 * ddG_MPNN(s|X) + w_3 * ddG_ESM2(s) * ddG_MPNN(s|X), where weights w_i learned from Mega-scale training split. Cross-term captures epistasis between sequence and structure signals.",
+    "analogical_connections": [
+      "Ensemble methods in ML: combining weak learners (random forest) — each scorer is a weak learner of true ddG",
+      "SPURS (Li & Luo 2025) rewires and integrates PLM + inverse folding for stability prediction",
+      "Free energy perturbation in molecular dynamics: different Hamiltonians give complementary energy estimates",
+      "Multi-view learning: sequence view and structure view are two modalities of the same protein"
+    ],
+    "implementation_hypothesis": "Build a fast combined scorer: (1) Load ESM-2 (650M) and ProteinMPNN on GPU. (2) For a mutation set, compute ESM-2 masked marginal score and ProteinMPNN conditional probability in a single forward pass each. (3) Linearly combine with weights calibrated on 10K Mega-scale variants. (4) Add epistasis correction: for each pair (i,j) in mutation set, add learned interaction term beta_{ij} * score_i * score_j. Total inference: ~5ms per variant on A100.",
+    "experiment_seed": "Train linear combination weights on 80% of Mega-scale single mutants, test on 20%. Compare: ESM-2 alone, ProteinMPNN alone, linear combination, combination with interaction terms. Metrics: Spearman rho, AUROC for classifying stabilizing vs destabilizing mutations. Then evaluate on FireProtDB multi-mutants as external test set.",
+    "folder_plan": ["src/scorers/combined_oracle.py", "src/scorers/esm2_scorer.py", "src/scorers/proteinmpnn_scorer.py", "src/training/calibrate_weights.py", "tests/test_oracle.py"]
+  },
+  {
+    "symbolic_name": "pareto_multi_scorer_ensemble",
+    "description": "Instead of combining scores into a single objective, maintain a Pareto front over multiple stability-related objectives: thermostability (ddG), kinetic stability, aggregation propensity, and expression level. Use multi-objective evolutionary algorithms (NSGA-II) to evolve mutation sets that are Pareto-optimal, ensuring the final designs are robust across multiple properties.",
+    "domains": ["multi_objective_optimization", "evolutionary_computation", "protein_engineering", "decision_theory"],
+    "mathematical_formalization": "Objectives: f_1(S) = predicted ddG (ESM-2), f_2(S) = ProteinMPNN recovery probability, f_3(S) = predicted aggregation score, f_4(S) = predicted expression level. Mutation set S dominates T iff f_i(S) >= f_i(T) for all i and f_j(S) > f_j(T) for some j. NSGA-II: population of mutation sets, crossover = swap subsets of mutations, mutation = replace one mutation. Crowding distance maintains Pareto front diversity.",
+    "analogical_connections": [
+      "Wu et al. (2026) used multi-objective optimization with ABACUS-R + MSA Transformer achieving ddT ~8C with >95% activity retention",
+      "LAffAb (Fleishman lab) co-optimizes antibody affinity and stability with combinatorial libraries of up to 9 mutations",
+      "Portfolio optimization in finance: maximizing return while minimizing risk across multiple assets — mutations are assets, properties are returns/risks"
+    ],
+    "implementation_hypothesis": "Population of 100 mutation sets (each 3-8 mutations). Initialize from top-ranked single mutants. Crossover: uniform crossover of mutation positions. Mutation: 20% chance to swap any mutation for random alternative. Selection: NSGA-II non-dominated sorting + crowding distance. Run 50 generations. Total scorer calls: 100 * 50 * 4 scorers = 20K evaluations, feasible in minutes on A100.",
+    "experiment_seed": "Select 10 well-characterized proteins from FireProtDB with known multi-mutant stability data. Run NSGA-II optimization targeting ddG + expression predictors. Compare Pareto front solutions vs single-objective greedy on: (a) predicted ddG, (b) predicted solubility, (c) agreement with experimental data. Measure hypervolume indicator for Pareto front quality.",
+    "folder_plan": ["src/optimizers/nsga2_mutations.py", "src/scorers/aggregation_scorer.py", "src/scorers/expression_scorer.py", "tests/test_pareto.py"]
+  },
+  {
+    "symbolic_name": "adaptive_beam_search_mutations",
+    "description": "Use beam search with adaptive beam width to construct multi-mutation combinations incrementally. Start from wild-type, at each step expand beam by adding all possible next mutations, score with ESM-2, and prune to beam width. Adapt beam width based on score diversity: widen when top candidates are close (exploration needed), narrow when a clear winner emerges.",
+    "domains": ["natural_language_processing", "search_algorithms", "protein_engineering", "information_theory"],
+    "mathematical_formalization": "Beam B_0 = {wildtype}. At step t: B_{t+1} = top_W(t)({S + {m} : S in B_t, m in candidates \\ S}), scored by f(S). Adaptive width: W(t) = W_base * (1 + alpha * entropy(scores(B_t))), where entropy measures score diversity. High entropy -> wide beam (explore), low entropy -> narrow beam (exploit). Total evaluations: sum_t W(t) * |candidates| over k steps.",
+    "analogical_connections": [
+      "Beam search in machine translation: maintaining top-k partial translations — mutations are tokens, stability is translation quality",
+      "g-DPO (Cradle 2025) uses sequence space clustering to prune redundant protein variants — analogous to beam deduplication",
+      "Branch and bound in integer programming: pruning suboptimal branches — beam search is soft branch and bound"
+    ],
+    "implementation_hypothesis": "Candidates: top-50 single mutations from ESM-2 pre-screen. Base beam width W=100. At each of k=8 steps, expand each beam entry by 50 candidates, score all 5000 expansions with ESM-2 batch inference on A100 (~1 second), keep top-100. Adaptive: if std(scores) < threshold, increase W to 200 for next step. Total: 8 * 100 * 50 = 40K scorer calls, ~40 seconds on A100.",
+    "experiment_seed": "Compare beam search (W=50,100,200) vs greedy (W=1) vs exhaustive (where feasible, k<=4) on 30 Mega-scale proteins. Plot: best score found vs computational cost for each method. Measure beam diversity (average pairwise Hamming distance between beam entries) to verify exploration. Test adaptive vs fixed beam width.",
+    "folder_plan": ["src/optimizers/beam_search.py", "src/optimizers/adaptive_beam.py", "tests/test_beam.py"]
+  },
+  {
+    "symbolic_name": "diffusion_guided_mutation_sampler",
+    "description": "Repurpose protein sequence diffusion models as guided samplers for multi-mutant generation. Start from the wild-type sequence, apply a partial noising process at the mutable positions only, then denoise conditioned on the structure and a stability-maximizing guidance signal. This generates diverse, high-quality mutation combinations in a single denoising pass.",
+    "domains": ["generative_modeling", "diffusion_models", "protein_design", "stochastic_optimization"],
+    "mathematical_formalization": "Let x_0 = wild-type sequence, mask positions P = {p_1,...,p_k}. Forward: x_t[P] = noise(x_0[P], t) for t in [0,T]. Reverse: x_{t-1}[P] = denoise(x_t, structure, t) + lambda * gradient(f_stability(x_t)). Guidance strength lambda controls exploitation vs exploration. Generate N samples from this process, rank by f_stability, return Pareto-optimal set.",
+    "analogical_connections": [
+      "Classifier-guided diffusion in image generation (Dhariwal & Nichol 2021): nudge diffusion toward high-class-probability images — stability score is the classifier",
+      "MCTD-ME (Liu et al. 2025) uses masked diffusion denoising as rollout engine in MCTS for protein design",
+      "Langevin dynamics in molecular simulation: gradient-guided stochastic sampling of energy landscapes"
+    ],
+    "implementation_hypothesis": "Use ESM-2 as backbone, apply masked diffusion at k positions. Guidance: at each denoising step, compute gradient of ProteinMPNN log-probability w.r.t. token logits, add scaled gradient to ESM-2 denoised logits. Sample 256 candidates in parallel on A100 (~10 seconds). Score all 256 with combined oracle, return top-10. Repeat with different guidance strengths for diversity.",
+    "experiment_seed": "Generate 1000 multi-mutant candidates (k=5) for 20 Mega-scale proteins using guided diffusion. Compare diversity (unique sequences), quality (predicted ddG), and coverage (fraction of experimentally stabilizing multi-mutants found) vs beam search and MCTS. Ablate guidance strength lambda over {0, 0.1, 0.5, 1.0, 5.0}.",
+    "folder_plan": ["src/samplers/diffusion_guided.py", "src/samplers/guidance.py", "tests/test_diffusion.py", "configs/diffusion_config.yaml"]
+  },
+  {
+    "symbolic_name": "graph_neural_locality_prior",
+    "description": "Leverage the 3D protein structure graph to encode a locality prior: mutations at spatially proximal positions interact more strongly than distant ones. Build a structure-aware GNN that predicts pairwise epistasis from local structural context, enabling informed pruning of the combinatorial search space to structurally coupled mutation clusters.",
+    "domains": ["graph_neural_networks", "structural_biology", "spatial_statistics", "protein_biophysics"],
+    "mathematical_formalization": "Protein structure graph G = (V, E) where V = residues, E = contacts (C_alpha distance < 8A). For each candidate mutation pair (i,j), GNN predicts epistasis: e_{ij} = GNN(h_i, h_j, d_{ij}, G), where h_i is node embedding from pre-trained structure model, d_{ij} is spatial distance. Cluster mutable positions by thresholding predicted |e_{ij}|. Search within and across clusters.",
+    "analogical_connections": [
+      "Stability Oracle (Klivans et al. 2024) uses graph-transformer on protein structure for stability prediction",
+      "AlphaGMut uses alpha shapes of protein structures for mutation effect prediction",
+      "Spatial econometrics: Tobler's law ('near things are more related') — structural proximity predicts epistatic coupling",
+      "Community detection in social networks: densely connected subgraphs — structurally coupled residue clusters"
+    ],
+    "implementation_hypothesis": "Pre-compute protein contact graph from PDB. Extract local structure features using pre-trained GVP-GNN or ProteinMPNN encoder (frozen). Train lightweight MLP to predict pairwise epistasis from concatenated node embeddings. Training data: Mega-scale double mutant epistasis values. At inference: predict epistasis for all candidate pairs, cluster positions, search clusters independently. Reduces 8-position search to 2-3 clusters of 2-3 positions each.",
+    "experiment_seed": "Train GNN epistasis predictor on 80% of Mega-scale double mutant data. Test on 20% held-out proteins (not mutations). Measure: (a) correlation of predicted vs true epistasis, (b) accuracy of interaction graph (which pairs interact significantly). Use predicted graph to guide combinatorial search and compare search efficiency vs search with no locality prior.",
+    "folder_plan": ["src/models/epistasis_gnn.py", "src/structure/contact_graph.py", "src/training/train_epistasis.py", "tests/test_gnn.py"]
+  },
+  {
+    "symbolic_name": "bandit_position_selection",
+    "description": "Treat the selection of which positions to mutate as a multi-armed bandit problem, separate from which amino acid to place at each position. Use Thompson sampling or UCB to adaptively allocate evaluation budget to the most promising mutable positions, rapidly identifying the high-value positions before optimizing the amino acid choices.",
+    "domains": ["bandit_algorithms", "resource_allocation", "protein_engineering", "sequential_decision_making"],
+    "mathematical_formalization": "N candidate positions, each an arm with unknown reward distribution mu_i = max_a ddG(position_i, amino_acid_a). Thompson sampling: maintain Beta posterior for each position's probability of being in optimal set. Sample theta_i ~ Beta(alpha_i, beta_i), select top-k positions with highest theta_i. Evaluate random mutation at selected positions. Update posteriors. After T rounds, commit to top-k positions, then optimize amino acids within those positions.",
+    "analogical_connections": [
+      "Clinical trial design: allocating patients to treatments to identify best drug — positions are treatments, stability gain is the outcome",
+      "Qiu et al. (Princeton) tree search-based evolutionary bandits for protein sequence optimization with Bayesian regret bounds",
+      "A/B testing: multi-armed bandit for web page optimization — mutation positions are variants to test"
+    ],
+    "implementation_hypothesis": "Phase 1 (Position selection): For N=50 candidate positions, run Thompson sampling for 200 rounds. Each round: sample position priorities from posteriors, evaluate a random mutation at top-k positions, update posteriors. Phase 2 (Amino acid optimization): For the 8 positions with highest posterior mean, run beam search or game-theoretic optimization over amino acid choices. Total budget: 200 * k + beam_search_budget ≈ 2000 scorer calls.",
+    "experiment_seed": "On 50 Mega-scale proteins, compare: (a) bandit-selected positions + beam search, (b) top-k-by-single-mutant-ddG positions + beam search, (c) random k positions + beam search. Measure: final multi-mutant ddG, position overlap with oracle-optimal positions (known from exhaustive single-mutant data). Test with k = {3, 5, 8}.",
+    "folder_plan": ["src/optimizers/bandit_positions.py", "src/optimizers/thompson_sampling.py", "tests/test_bandit.py"]
+  },
+  {
+    "symbolic_name": "quantum_inspired_annealing",
+    "description": "Encode the multi-site mutation optimization as a QUBO (Quadratic Unconstrained Binary Optimization) problem and solve with simulated quantum annealing on classical hardware. Each binary variable represents whether a specific mutation is included, with pairwise terms encoding epistasis. This bridges quantum computing research with protein engineering.",
+    "domains": ["quantum_computing", "statistical_physics", "protein_engineering", "combinatorial_optimization"],
+    "mathematical_formalization": "Binary variables x_{i,a} = 1 if position i has amino acid a. QUBO: minimize H = sum_{i,a} h_{i,a} * x_{i,a} + sum_{(i,a),(j,b)} J_{(i,a),(j,b)} * x_{i,a} * x_{j,b}, subject to sum_a x_{i,a} = 1 for each position i. h_{i,a} = single-mutant ddG, J terms encode pairwise epistasis. Solve via simulated annealing with transverse field (quantum tunneling analog): P(flip) = exp(-deltaH / T) * (1 + Gamma * tunneling_term).",
+    "analogical_connections": [
+      "Mohseni et al. (2024) integrate ML with quantum annealing for protein design, showing quantum-inspired reformulation outperforms conventional optimization even classically",
+      "Ising model spin glasses: protein mutations map to spin configurations, stability maps to ground state energy",
+      "VLSI circuit placement: placing components to minimize wire length is QUBO — residues are components, interactions are wires"
+    ],
+    "implementation_hypothesis": "Encode k mutable positions with 20 states each as k*20 binary variables with one-hot constraints. Set h terms from ESM-2 single-mutant scores. Estimate J terms from double-mutant screen or GNN epistasis predictor. Run simulated annealing with parallel tempering (16 replicas) for 10K sweeps. Also try D-Wave-style quantum-inspired sampler (qbsolv or neal). Compare to classical beam search on same problem instances.",
+    "experiment_seed": "Formulate QUBO for 30 Mega-scale proteins with k=6 mutable positions. Compare simulated annealing, parallel tempering, and D-Wave neal sampler vs beam search and MCTS. Measure: best ddG found, time to find within 5% of best known, number of distinct near-optimal solutions found (diversity).",
+    "folder_plan": ["src/optimizers/qubo_formulation.py", "src/optimizers/simulated_annealing.py", "src/optimizers/parallel_tempering.py", "tests/test_qubo.py"]
+  }
+]

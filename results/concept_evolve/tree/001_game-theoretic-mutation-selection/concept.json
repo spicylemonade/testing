@@ -1,0 +1,25 @@
+{
+  "symbolic_name": "game_theoretic_mutation_selection",
+  "description": "Model each mutable position as a strategic player in a cooperative game, where each player selects an amino acid substitution to maximize a shared stability objective. Equilibrium solutions (Nash or correlated equilibria) represent stable mutation combinations where no single position has incentive to deviate, naturally handling pairwise epistasis as cross-player payoff coupling.",
+  "domains": [
+    "game_theory",
+    "protein_engineering",
+    "combinatorial_optimization"
+  ],
+  "mathematical_formalization": "Let S = {s_1, ..., s_k} be k mutable positions, each with action set A_i (possible amino acids). Define payoff u(a_1,...,a_k) = -ddG(a_1,...,a_k) from a pretrained scorer. Find Nash equilibrium: a_i* = argmax_{a_i} u(a_i, a_{-i}*) for all i. Solve via best-response dynamics: a_i^{t+1} = argmax_{a_i} u(a_i, a_{-i}^t). Convergence in O(k * |A|) scorer calls per iteration vs O(|A|^k) brute force.",
+  "analogical_connections": [
+    "GameOpt (Bal et al., ICLR 2025) applies cooperative games to combinatorial Bayesian optimization for protein design with 20^X configurations",
+    "Congestion games in network routing where each router selects paths to minimize latency \u2014 positions are routers, amino acids are paths",
+    "Auction mechanisms where bidders (positions) coordinate to maximize social welfare (stability)"
+  ],
+  "implementation_hypothesis": "Implement iterative best-response: (1) Initialize all positions to wild-type. (2) For each position i in random order, score all 19 substitutions while holding other positions fixed \u2014 requires 19*k scorer calls per sweep. (3) Each position adopts its best response. (4) Repeat until convergence or max iterations. Use ESM-2 log-likelihood ratio as scorer. For k=8 positions, this is 152 calls/sweep vs 19^8 \u2248 17B brute force. Add UCB exploration bonus for positions with high uncertainty.",
+  "experiment_seed": "Take 100 proteins from the Mega-scale dataset. For each, select 5-8 positions with highest single-mutant ddG improvement. Run game-theoretic search vs greedy accumulation vs random multi-mutant sampling. Compare: (a) predicted ddG of best combination found, (b) wall-clock time, (c) number of scorer calls. Validate top-10 predictions against experimental data where available.",
+  "folder_plan": [
+    "src/optimizers/game_theoretic.py",
+    "src/scorers/esm2_scorer.py",
+    "tests/test_game_optimizer.py",
+    "configs/game_search.yaml"
+  ],
+  "generated_at": "2026-03-04T09:36:16.200433+00:00",
+  "project_folder": "concept_evolve/tree/001_game-theoretic-mutation-selection"
+}

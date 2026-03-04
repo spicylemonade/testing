@@ -1,0 +1,96 @@
+{
+  "associations": [
+    {
+      "seed": "combinatorial protein stability",
+      "expansions": [
+        "Traveling salesman problem — visiting positions in optimal order is analogous to sequential mutation addition",
+        "Genetic algorithm crossover — recombining mutation sets from two parents mirrors natural recombination in directed evolution",
+        "Neural architecture search — searching discrete architecture spaces is structurally identical to searching discrete mutation spaces",
+        "Chip placement — placing transistors optimally on silicon maps to placing amino acids optimally in a protein scaffold",
+        "RNA secondary structure design — combinatorial base pair optimization with pseudoknot constraints parallels epistatic mutation constraints",
+        "Drug cocktail optimization — selecting combinations of drugs for synergistic effect parallels selecting combinations of mutations for additive/synergistic stability",
+        "Feature selection in high-dimensional ML — choosing k features from N candidates to maximize predictive power is mathematically identical to choosing k mutations from N candidates to maximize stability"
+      ]
+    },
+    {
+      "seed": "fast scoring on GPU",
+      "expansions": [
+        "Batched inference amortization — score thousands of variants in a single GPU forward pass",
+        "KV-cache reuse — for language models, the wild-type context is shared across all variants, enabling massive cache reuse",
+        "Sparse attention patterns — only recompute attention at mutated positions, not the full sequence",
+        "Quantization — INT8 or FP16 inference for ESM-2 on A100 doubles throughput at minimal accuracy cost",
+        "Speculative decoding — use a small model to propose candidates and a large model to verify, reducing total large-model calls",
+        "Tensor parallelism — split ESM-2 across GPU memory for larger batch sizes"
+      ]
+    },
+    {
+      "seed": "15-minute pipeline constraint",
+      "expansions": [
+        "Anytime algorithms — return the best solution found so far at any interruption point",
+        "Progressive refinement — start with coarse search (large steps in mutation space), progressively refine promising regions",
+        "Budget-aware optimization — allocate time budget across stages: 30% position selection, 50% combinatorial search, 20% final validation",
+        "Warm starting — cache ESM-2 embeddings for the wild-type protein to avoid recomputation",
+        "Early termination — stop search when improvement rate falls below threshold"
+      ]
+    }
+  ],
+  "blind_spots": [
+    {
+      "area": "Multi-mutant epistasis beyond pairwise",
+      "concern": "All proposed methods approximate higher-order epistasis from first/second-order terms. However, Tokuriki (2023) showed pervasive higher-order epistasis in adaptive enzyme evolution. For 6-8 simultaneous mutations, third and fourth-order terms may be significant, and our pairwise decomposition could miss critical synergistic combinations.",
+      "mitigation": "Include a small number of higher-order interaction terms for structurally clustered positions, or use the full ESM-2 sequence score (which implicitly captures all orders through attention) as a sanity check on pairwise-decomposed predictions."
+    },
+    {
+      "area": "Structural perturbation from multiple mutations",
+      "concern": "All scoring methods assume the backbone structure is unchanged (fixed PDB). Multiple simultaneous mutations, especially in the core, can cause backbone rearrangements that invalidate fixed-backbone predictions. This is a fundamental limitation of structure-based inverse folding approaches.",
+      "mitigation": "Filter out mutation combinations that are predicted to alter backbone by checking ProteinMPNN per-residue confidence. For high-confidence designs, optionally run a fast structure relaxation (e.g., OpenMM energy minimization) as a final validation step."
+    },
+    {
+      "area": "Training data bias in scorers",
+      "concern": "ESM-2 was trained on natural sequences (evolutionary bias), ProteinMPNN on designed/solved structures (PDB bias), and Mega-scale data covers only small domains (40-72 amino acids). Extrapolation to larger proteins or highly engineered variants may be unreliable.",
+      "mitigation": "Include calibration uncertainty estimates with predictions. Use ensemble disagreement between ESM-2 and ProteinMPNN as an uncertainty proxy. Flag predictions where scorer disagreement exceeds a threshold."
+    },
+    {
+      "area": "Solvent and context effects",
+      "concern": "Thermostability depends on buffer conditions, pH, ionic strength, and binding partners — none of which are captured by sequence/structure models. The same mutations may be stabilizing at pH 7 but destabilizing at pH 4.",
+      "mitigation": "Acknowledge this limitation in output. Consider adding a post-hoc filter using predicted pI and charge distribution at target pH."
+    },
+    {
+      "area": "Kinetic vs thermodynamic stability",
+      "concern": "ddG measures thermodynamic stability, but practically relevant stability may be kinetic (resistance to unfolding rate). Some mutations stabilize thermodynamically but create kinetic traps or aggregation intermediates.",
+      "mitigation": "Include aggregation propensity prediction (e.g., Tango, CamSol) as a Pareto objective alongside ddG."
+    },
+    {
+      "area": "Validation gap",
+      "concern": "Mega-scale dataset contains small domains; FireProtDB has limited multi-mutant data. Neither provides comprehensive experimental validation for 6-8 simultaneous mutations on diverse protein families. We may be optimizing for in silico metrics that don't translate to wet-lab success.",
+      "mitigation": "Use cross-validation on Mega-scale double mutants as a proxy. Report confidence intervals. Recommend experimental validation of top-3 designs."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "injected_constraint": "What if the scoring function is anti-submodular (increasing returns)?",
+      "result": "If mutations exhibit positive epistasis (synergistic stabilization), the fitness function has increasing returns and is supermodular. In this case, greedy algorithms can perform arbitrarily poorly. The game-theoretic approach becomes more important because Nash equilibria still exist for supermodular games (they become coordination games). MCTS exploration becomes critical to escape local optima created by the supermodular landscape. The QUBO formulation naturally handles this via positive J-coupling terms.",
+      "implication": "Need to empirically test the submodularity ratio before committing to greedy approaches. If the landscape is mixed (some positions show synergy, others diminishing returns), a hybrid approach is needed."
+    },
+    {
+      "injected_constraint": "What if the protein has no stabilizing single mutations?",
+      "result": "If all single mutations are destabilizing (common for well-optimized designed proteins or thermophilic enzymes), single-mutant pre-screening eliminates all candidates. But combinations of individually neutral or slightly destabilizing mutations CAN be stabilizing through compensatory epistasis. The diffusion-guided sampler and MCTS are better suited here because they don't rely on greedy single-mutant pre-filtering. The game-theoretic approach also works because it searches for equilibria, not greedy improvements.",
+      "implication": "The pipeline should include a mode that considers mutations beyond the top stabilizing single mutants — perhaps all mutations with ddG > -1.0 kcal/mol (including slightly destabilizing) as candidates."
+    },
+    {
+      "injected_constraint": "What if the GPU has only 16GB memory instead of 80GB (A100)?",
+      "result": "ESM-2 650M fits in 16GB but batch sizes drop dramatically. ProteinMPNN is smaller and unaffected. The cascading funnel becomes critical: use tiny batches at the ESM-2 stage but rely more on ProteinMPNN for bulk scoring. Alternatively, use ESM-2 8M or ESM-2 150M as the fast filter. The 15-minute budget becomes much tighter, favoring the beam search (fewer but targeted evaluations) over diffusion sampling (requires large parallel batches).",
+      "implication": "Pipeline should auto-detect GPU memory and adjust model size, batch size, and search strategy accordingly. Include a fallback mode using only ProteinMPNN + lightweight ESM variant."
+    },
+    {
+      "injected_constraint": "What if mutations must avoid certain positions (e.g., active site, binding interface)?",
+      "result": "This is a constrained optimization problem. Submodular greedy naturally handles cardinality constraints but not position exclusions. MCTS and beam search easily incorporate position masks. Game-theoretic approach reduces the player set. The QUBO formulation adds linear penalty terms for forbidden positions. This is actually a common real-world requirement that tests the flexibility of each approach.",
+      "implication": "All optimizers should accept a position mask as input. This is straightforward to implement and critical for practical usability."
+    },
+    {
+      "injected_constraint": "What if we require the output mutations to be reversible (no prolines, no cysteines)?",
+      "result": "Amino acid restrictions reduce the action space per position from 19 to a smaller set. This makes all methods faster but may eliminate the globally optimal solution. The beam search and MCTS naturally handle this by restricting the action space. The QUBO formulation simply removes the corresponding binary variables. The impact is minor computationally but could significantly affect solution quality if the best mutations happen to be prolines or cysteines.",
+      "implication": "Support a per-position allowed amino acid set as input configuration."
+    }
+  ]
+}

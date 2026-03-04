@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "graph_neural_locality_prior",
+  "description": "Leverage the 3D protein structure graph to encode a locality prior: mutations at spatially proximal positions interact more strongly than distant ones. Build a structure-aware GNN that predicts pairwise epistasis from local structural context, enabling informed pruning of the combinatorial search space to structurally coupled mutation clusters.",
+  "domains": [
+    "graph_neural_networks",
+    "structural_biology",
+    "spatial_statistics",
+    "protein_biophysics"
+  ],
+  "mathematical_formalization": "Protein structure graph G = (V, E) where V = residues, E = contacts (C_alpha distance < 8A). For each candidate mutation pair (i,j), GNN predicts epistasis: e_{ij} = GNN(h_i, h_j, d_{ij}, G), where h_i is node embedding from pre-trained structure model, d_{ij} is spatial distance. Cluster mutable positions by thresholding predicted |e_{ij}|. Search within and across clusters.",
+  "analogical_connections": [
+    "Stability Oracle (Klivans et al. 2024) uses graph-transformer on protein structure for stability prediction",
+    "AlphaGMut uses alpha shapes of protein structures for mutation effect prediction",
+    "Spatial econometrics: Tobler's law ('near things are more related') \u2014 structural proximity predicts epistatic coupling",
+    "Community detection in social networks: densely connected subgraphs \u2014 structurally coupled residue clusters"
+  ],
+  "implementation_hypothesis": "Pre-compute protein contact graph from PDB. Extract local structure features using pre-trained GVP-GNN or ProteinMPNN encoder (frozen). Train lightweight MLP to predict pairwise epistasis from concatenated node embeddings. Training data: Mega-scale double mutant epistasis values. At inference: predict epistasis for all candidate pairs, cluster positions, search clusters independently. Reduces 8-position search to 2-3 clusters of 2-3 positions each.",
+  "experiment_seed": "Train GNN epistasis predictor on 80% of Mega-scale double mutant data. Test on 20% held-out proteins (not mutations). Measure: (a) correlation of predicted vs true epistasis, (b) accuracy of interaction graph (which pairs interact significantly). Use predicted graph to guide combinatorial search and compare search efficiency vs search with no locality prior.",
+  "folder_plan": [
+    "src/models/epistasis_gnn.py",
+    "src/structure/contact_graph.py",
+    "src/training/train_epistasis.py",
+    "tests/test_gnn.py"
+  ],
+  "generated_at": "2026-03-04T09:36:16.208338+00:00",
+  "project_folder": "concept_evolve/tree/010_graph-neural-locality-prior"
+}

@@ -1,0 +1,26 @@
+{
+  "symbolic_name": "quantum_inspired_annealing",
+  "description": "Encode the multi-site mutation optimization as a QUBO (Quadratic Unconstrained Binary Optimization) problem and solve with simulated quantum annealing on classical hardware. Each binary variable represents whether a specific mutation is included, with pairwise terms encoding epistasis. This bridges quantum computing research with protein engineering.",
+  "domains": [
+    "quantum_computing",
+    "statistical_physics",
+    "protein_engineering",
+    "combinatorial_optimization"
+  ],
+  "mathematical_formalization": "Binary variables x_{i,a} = 1 if position i has amino acid a. QUBO: minimize H = sum_{i,a} h_{i,a} * x_{i,a} + sum_{(i,a),(j,b)} J_{(i,a),(j,b)} * x_{i,a} * x_{j,b}, subject to sum_a x_{i,a} = 1 for each position i. h_{i,a} = single-mutant ddG, J terms encode pairwise epistasis. Solve via simulated annealing with transverse field (quantum tunneling analog): P(flip) = exp(-deltaH / T) * (1 + Gamma * tunneling_term).",
+  "analogical_connections": [
+    "Mohseni et al. (2024) integrate ML with quantum annealing for protein design, showing quantum-inspired reformulation outperforms conventional optimization even classically",
+    "Ising model spin glasses: protein mutations map to spin configurations, stability maps to ground state energy",
+    "VLSI circuit placement: placing components to minimize wire length is QUBO \u2014 residues are components, interactions are wires"
+  ],
+  "implementation_hypothesis": "Encode k mutable positions with 20 states each as k*20 binary variables with one-hot constraints. Set h terms from ESM-2 single-mutant scores. Estimate J terms from double-mutant screen or GNN epistasis predictor. Run simulated annealing with parallel tempering (16 replicas) for 10K sweeps. Also try D-Wave-style quantum-inspired sampler (qbsolv or neal). Compare to classical beam search on same problem instances.",
+  "experiment_seed": "Formulate QUBO for 30 Mega-scale proteins with k=6 mutable positions. Compare simulated annealing, parallel tempering, and D-Wave neal sampler vs beam search and MCTS. Measure: best ddG found, time to find within 5% of best known, number of distinct near-optimal solutions found (diversity).",
+  "folder_plan": [
+    "src/optimizers/qubo_formulation.py",
+    "src/optimizers/simulated_annealing.py",
+    "src/optimizers/parallel_tempering.py",
+    "tests/test_qubo.py"
+  ],
+  "generated_at": "2026-03-04T09:36:16.209940+00:00",
+  "project_folder": "concept_evolve/tree/012_quantum-inspired-annealing"
+}
