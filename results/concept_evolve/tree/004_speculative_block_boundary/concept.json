@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "speculative_block_boundary",
+  "description": "DEFLATE streams consist of multiple blocks whose boundaries are unknown until the preceding block is fully decoded. By speculatively guessing block boundary positions (via statistical models or fixed-interval heuristics), multiple threads can begin decoding at guessed positions simultaneously. Failed speculations are discarded cheaply if detected via Huffman table validation or CRC mismatch.",
+  "domains": ["data_compression", "computer_architecture", "distributed_systems", "machine_learning"],
+  "mathematical_formalization": "Let B_1, B_2, ..., B_m be DEFLATE blocks with sizes s_1, ..., s_m drawn from distribution D_s. Cumulative positions P_k = sum_{i=1}^{k} s_i. Speculate boundary at position hat{P}_k. Cost of wrong speculation: C_miss = T_decode(hat{P}_k, P_k) wasted work. Expected benefit: E[speedup] = m / (1 + p_miss * C_miss/T_block) where p_miss is misprediction rate. With adaptive predictor learning D_s, p_miss -> 0 for stationary sources.",
+  "analogical_connections": [
+    "Directly analogous to branch prediction in CPUs: speculate on control flow, roll back on misprediction",
+    "Like optimistic concurrency control in databases: proceed assuming no conflicts, validate and retry if wrong",
+    "Similar to speculative execution in TLS (Thread-Level Speculation): threads execute ahead of confirmed program order"
+  ],
+  "implementation_hypothesis": "Thread T0 decodes block B_k sequentially. Thread T1 starts decoding at guessed position P_hat = P_{k-1} + avg_block_size. T1 first attempts to validate: check if position looks like a valid block header (3-bit header, valid HLIT/HDIST/HCLEN). If validation passes, decode speculatively into temp buffer. When T0 confirms actual boundary, either commit T1's work or discard. Use per-file block size EMA for prediction.",
+  "experiment_seed": "Profile block size distributions across Silesia corpus gzip files. Implement 2-thread speculative decoder: T0 sequential, T1 speculative. Measure: (1) speculation accuracy vs. predictor type (fixed, EMA, histogram), (2) net throughput gain including rollback cost, (3) memory overhead of temp buffers. Target: >1.3x speedup on files with consistent block sizes."
+}

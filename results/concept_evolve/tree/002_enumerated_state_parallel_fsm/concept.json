@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "enumerated_state_parallel_fsm",
+  "description": "Mytkowicz et al. showed that FSM computations can be parallelized by processing each input symbol against all possible states simultaneously, creating transition functions that compose associatively. This transforms the inherently sequential FSM evaluation into a parallel prefix computation over composed transition functions, directly applicable to Huffman decode table lookups.",
+  "domains": ["automata_theory", "parallel_algorithms", "data_compression", "computer_architecture"],
+  "mathematical_formalization": "For FSM with state set Q (|Q|=s), input alphabet Sigma, transition function delta: Q x Sigma -> Q, define lifted transition T_a: Q -> Q as T_a(q) = delta(q,a). For input sequence a_1...a_n, the final state from initial q_0 is (T_{a_n} compose ... compose T_{a_1})(q_0). Since function composition is associative, compute the prefix composition T_{a_1...a_k} for all k using parallel prefix (Ladner-Fischer). Total work: O(n * s^2), depth O(log n). Convergence: if T_{a_i...a_j} maps all states to a single state, subsequent compositions collapse to O(1).",
+  "analogical_connections": [
+    "Like matrix chain multiplication: composing transition matrices via parallel reduction",
+    "Analogous to carry-lookahead adders: breaking sequential dependency in arithmetic by precomputing generate/propagate",
+    "Similar to speculative multithreading: executing with all possible initial conditions and selecting the correct one"
+  ],
+  "implementation_hypothesis": "For Huffman decoding with max codeword length L, the decoder FSM has at most 2^L states (internal tree nodes + leaves). Represent each lifted transition T_a as a lookup table Q -> Q. Use SIMD gather instructions (VPGATHERDD) to apply T_a to all s states simultaneously. Compose adjacent transitions via SIMD table composition. For L=15, s is large; use convergence property to prune: after processing ~20-30 bits, most states converge, reducing effective s.",
+  "experiment_seed": "Implement enumerated-state Huffman decode for canonical Huffman codes with L<=15. Measure convergence rate (how many bits until all start states map to one) on DEFLATE blocks from Silesia, Canterbury, and Calgary corpora. Compare throughput to scalar decode baseline on Zen4/Sapphire Rapids. Profile SIMD gather latency impact."
+}

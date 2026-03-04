@@ -1,0 +1,97 @@
+{
+  "associations": [
+    {
+      "seed": "serial Huffman decode dependency",
+      "expansions": [
+        "carry chain in binary addition -> carry-lookahead -> parallel prefix",
+        "sequential instruction decode in x86 -> superscalar with branch prediction -> speculative out-of-order execution",
+        "serial XML parsing -> SAX vs DOM -> streaming parallel tokenization",
+        "sequential CRC computation -> parallel CRC via polynomial algebra -> PCLMULQDQ instruction",
+        "linked list traversal -> pointer chasing -> hash-based jump tables",
+        "sequential regex matching -> Thompson NFA -> parallel NFA simulation",
+        "phase-locked loop acquisition -> frequency synchronization -> Huffman code synchronization",
+        "epidemic spreading on networks -> information propagation -> LZ77 dependency wavefronts",
+        "Viterbi decoding trellis -> forward-backward algorithm -> parallel trellis processing",
+        "topological sort of DAG -> Kahn's algorithm -> parallel BFS layers"
+      ]
+    },
+    {
+      "seed": "DEFLATE bitstream structure",
+      "expansions": [
+        "TCP packet segmentation -> unknown segment boundaries -> streaming reassembly",
+        "video codec slice boundaries -> independent decode units -> GPU tile decode",
+        "database page format -> slotted pages -> parallel tuple extraction",
+        "neural network layer boundaries -> pipeline parallelism -> micro-batching",
+        "music notation -> measure boundaries -> parallel voice rendering",
+        "chromosome boundaries in genome -> independent contigs -> parallel alignment"
+      ]
+    },
+    {
+      "seed": "breaking data dependencies",
+      "expansions": [
+        "loop-carried dependencies -> scalar expansion -> vectorization",
+        "recurrence relations -> matrix exponentiation -> parallel evaluation",
+        "blockchain validation -> UTXO model -> parallel transaction verification",
+        "financial option pricing -> binomial tree -> parallel tree evaluation",
+        "recursive descent parsing -> packrat parsing -> parallel PEG"
+      ]
+    }
+  ],
+  "blind_spots": [
+    {
+      "area": "Memory bandwidth bottleneck",
+      "description": "Most analysis focuses on compute (Huffman table lookups, bit manipulation) but real-world decompression is often memory-bandwidth bound. Parallel schemes that increase memory traffic (e.g., enumerated-state FSM with large transition tables, or scatter/gather for LZ77) may not improve wall-clock time if they saturate memory bandwidth. Need to account for L1/L2/L3 cache residency of tables."
+    },
+    {
+      "area": "Dynamic Huffman tables per block",
+      "description": "DEFLATE uses different Huffman tables per block. Most parallel schemes assume a known, fixed table. Table construction itself is sequential, and table changes invalidate precomputed transition tables. The overhead of rebuilding transducer composition tables per block may dominate for streams with many small blocks."
+    },
+    {
+      "area": "LZ77 and Huffman interaction",
+      "description": "Parallel Huffman decoding alone is insufficient for DEFLATE because the LZ77 back-reference chain creates a second serial dependency. Two-phase approaches (parallel Huffman then wavefront LZ77) may have poor cache behavior as the working set changes between phases."
+    },
+    {
+      "area": "Worst-case vs. average-case sync behavior",
+      "description": "Synchronization convergence analysis relies on average-case assumptions about misaligned decode. Adversarial or pathological inputs (e.g., all same-length codewords) can cause worst-case O(n) sync distance, breaking all speculative approaches. Need robustness guarantees."
+    },
+    {
+      "area": "Energy and power considerations",
+      "description": "Parallel decompression may be faster but consume more energy (more active cores, wider SIMD). For battery-constrained or thermally-limited scenarios, the energy-per-byte metric matters more than throughput. The Intel DEFLATE accelerator (IAA/QAT) may win on energy despite lower throughput."
+    },
+    {
+      "area": "Existing hardware accelerators",
+      "description": "Intel IAA (In-Memory Analytics Accelerator), AMD compression coprocessors, and NVIDIA nvCOMP provide hardware-assisted decompression. Software parallel approaches compete with dedicated hardware that can pipeline the serial dependency in custom logic. This hardware perspective is underrepresented in the concept cards."
+    },
+    {
+      "area": "Interaction with storage I/O",
+      "description": "In practice, decompression occurs as data arrives from storage (NVMe, network). The I/O latency and bandwidth may be the true bottleneck, making parallel decompression less impactful than overlapping I/O with compute via double buffering."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "What if the Huffman code has only one codeword length (all symbols encoded with same number of bits)?",
+      "analysis": "Synchronization becomes trivial (every bit position aligned to fixed-width boundaries is valid), but the code is maximally inefficient. The enumerated-state FSM collapses to a simple counter. However, this removes the serial dependency entirely—it becomes a fixed-width decode, trivially SIMD-parallelizable. The interesting insight: codes with LOW length variance are easier to parallelize but compress worse; codes with HIGH length variance compress well but are harder to parallelize. This is a fundamental compression-parallelism tradeoff.",
+      "implication": "Design compression formats that constrain codeword length variance (e.g., maximum length 9 instead of 15) to improve parallelizability at small compression ratio cost."
+    },
+    {
+      "constraint": "What if we are not allowed to modify the compression format at all (strict DEFLATE compatibility)?",
+      "analysis": "This eliminates GDEFLATE-style approaches and forces us into speculation-based methods (sync point convergence, speculative block boundaries, cache prefetch). The remaining parallelism sources are: (1) ILP via sync-point splitting within blocks, (2) multi-core via speculative block-level parallelism, (3) overlap of I/O and compute. Dougallj's 25% speedup on Apple M1 may be near the practical ceiling for single-block ILP.",
+      "implication": "For strict compatibility, focus on the cache-prefetch architecture (rapidgzip approach) combined with sync-point ILP within blocks. Accept diminishing returns beyond 2-4x speedup."
+    },
+    {
+      "constraint": "What if decompression must be streaming (input arrives incrementally, output consumed immediately)?",
+      "analysis": "Streaming eliminates look-ahead-based methods (can't scan ahead for sync points if the data hasn't arrived). Only techniques that process bits as they arrive are viable: branch prediction optimization, transducer composition for per-byte amortization, and pipeline parallelism (one stage does Huffman, next does LZ77). The enumerated-state approach still works if we buffer enough input to form chunks.",
+      "implication": "For streaming scenarios, invest in single-thread optimizations (better table decode, branch hints) and pipeline parallelism between Huffman and LZ77 stages."
+    },
+    {
+      "constraint": "What if we had unbounded parallelism (infinite SIMD width, infinite cores)?",
+      "analysis": "The fundamental limit becomes the depth of the computation DAG: O(log n) for parallel prefix Huffman decode + O(d) for LZ77 chain depth where d is max chain length. For typical data, d ~ O(log n), so total depth is O(log n). This means DEFLATE decompression is in NC (efficiently parallelizable), but the constants matter enormously. With infinite parallelism, the bottleneck shifts to the LZ77 dependency graph depth, not Huffman decode.",
+      "implication": "Research should prioritize LZ77 chain-depth reduction (at compression time) as much as Huffman parallelism, since LZ77 is the deeper serial bottleneck with unlimited resources."
+    },
+    {
+      "constraint": "What if Huffman tables could have unbounded maximum codeword length?",
+      "analysis": "Synchronization distance grows with max codeword length. The enumerated-state FSM has state space 2^L which becomes impractical. The sync-point method needs L probes. In the limit, variable-length codes with no maximum length (like Elias gamma) cannot be synchronized at all from a random offset. This reveals that the max length bound is the key structural property enabling parallelism.",
+      "implication": "The parallelizability of a prefix code is primarily determined by its maximum codeword length. Format designers should minimize max length aggressively."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "branch_prediction_huffman",
+  "description": "Modern x86-64 CPUs use sophisticated branch predictors (TAGE, perceptron) that learn patterns in control flow. Huffman decoding's per-symbol branch (which codeword length?) is highly predictable for natural language and structured data because symbol frequencies follow Zipf-like distributions. By restructuring the decode loop to expose this predictability, we can achieve near-zero branch misprediction overhead, effectively hiding the serial dependency in the pipeline.",
+  "domains": ["computer_architecture", "data_compression", "natural_language_processing", "statistics"],
+  "mathematical_formalization": "Let p_l = probability of codeword length l. Branch predictor accuracy A = sum_l p_l * P(correct | length=l). For TAGE with history h, P(correct | length=l) approx 1 - 1/2^(min(count_l, counter_bits)). For Zipfian sources, top-3 lengths account for >80% of symbols, so A > 0.95. Effective CPI = CPI_base + (1-A) * misprediction_penalty. With A=0.95 and penalty=15 cycles: CPI overhead = 0.75 cycles/symbol.",
+  "analogical_connections": [
+    "Like a card counter in blackjack: exploiting statistical regularity to predict the next event",
+    "Analogous to Lempel-Ziv complexity: predictable sequences have low complexity and are easily compressible (and decodable)",
+    "Similar to adaptive coding in arithmetic compression: the model adapts to source statistics"
+  ],
+  "implementation_hypothesis": "Restructure Huffman decode loop: use a multi-way branch (switch on peeked bits) rather than tree traversal. Arrange cases so the most common codeword lengths are checked first (branchless for top-2 lengths). Use CMOV for length selection when possible. Profile-guided optimization (PGO) to train branch predictor weights. Use __builtin_expect to hint likely lengths.",
+  "experiment_seed": "Benchmark Huffman decode throughput on Zen4 and Sapphire Rapids with perf stat monitoring branch-misses. Compare: (1) tree-walk decode, (2) table decode with switch, (3) branchless table decode with CMOV. Measure across different entropy sources (English text, random, genomic). Target: <2% branch miss rate on natural text."
+}

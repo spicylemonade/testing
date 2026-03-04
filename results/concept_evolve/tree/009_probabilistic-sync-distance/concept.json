@@ -1,0 +1,25 @@
+{
+  "symbolic_name": "probabilistic_sync_distance",
+  "description": "The expected distance to synchronization when starting Huffman decoding at a random offset follows a distribution determined by the code's length distribution and combinatorial properties. Codes where most codewords have similar lengths synchronize slowly; codes with diverse lengths synchronize quickly. This connects to renewal theory: synchronization is a renewal event in a process with inter-arrival times equal to (mis)decoded symbol lengths.",
+  "domains": [
+    "probability_theory",
+    "coding_theory",
+    "renewal_theory",
+    "data_compression"
+  ],
+  "mathematical_formalization": "Model misaligned decode as a random walk on Z_n (offsets mod max_length). At each step, advance by random L ~ p(l|misaligned). Synchronization = hitting time to offset 0 (mod boundary). By renewal theory, E[sync_distance] = 1/pi_0 where pi_0 is the stationary probability of being on a valid boundary. For Huffman code with length distribution {p_l}: pi_0 = (sum_l l * p_l)^{-1} * 1 = 1/E[L]. So E[sync_distance] approx E[L] / P(random_offset_is_boundary).",
+  "analogical_connections": [
+    "Like the coupon collector problem: waiting for a specific alignment event",
+    "Analogous to frame synchronization in communication systems: detecting the start of a frame in a continuous bitstream",
+    "Similar to mixing time of Markov chains: how quickly does the chain forget its starting state"
+  ],
+  "implementation_hypothesis": "For a given Huffman table, precompute the expected sync distance analytically using renewal theory formulas. Use this to determine optimal chunk sizes for parallel decoding: chunks should be at least k * E[sync_distance] bits apart (k~3 for high probability of sync). Implement as a compile-time computation when Huffman tables are static, or as a fast online computation when tables change per-block.",
+  "experiment_seed": "For 1000 random Huffman codes with 256 symbols and varying entropy, compute: (1) theoretical sync distance from renewal theory, (2) empirical sync distance via simulation, (3) correlation between sync distance and code properties (max length, entropy, length variance). Validate that 3 * E[sync_distance] gives >99% sync probability.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T06:59:03.255269+00:00",
+  "project_folder": "concept_evolve/tree/009_probabilistic-sync-distance"
+}

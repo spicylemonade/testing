@@ -1,0 +1,25 @@
+{
+  "symbolic_name": "information_bottleneck_pruning",
+  "description": "The information bottleneck principle (Tishby et al.) provides a framework for finding minimal sufficient statistics. Applied to Huffman decoding, we can identify which bits in the compressed stream carry the most information about symbol boundaries (the 'relevant variable'). This guides where to place synchronization probes and how to prune the enumerated state space in parallel FSM decode, focusing computation on high-information bit positions.",
+  "domains": [
+    "information_theory",
+    "machine_learning",
+    "data_compression",
+    "statistical_mechanics"
+  ],
+  "mathematical_formalization": "Let X = compressed bits, Y = symbol boundary positions. The information bottleneck finds compressed representation T of X that minimizes I(X;T) - beta * I(T;Y). For Huffman codes, bits near the start of long codewords carry more boundary information (high I(bit_k; Y)). Optimal probe placement minimizes expected sync distance: argmin_{offsets} E[convergence_time | probes at offsets] subject to |offsets| <= budget.",
+  "analogical_connections": [
+    "Like principal component analysis: identify the dimensions that carry the most variance (boundary information)",
+    "Analogous to attention mechanisms in transformers: focus computation on the most informative positions",
+    "Similar to sensor placement optimization: where to place sensors to maximize coverage with minimum resources"
+  ],
+  "implementation_hypothesis": "Offline: analyze Huffman code statistics to compute I(bit_position_mod_period; is_boundary). Online: use these statistics to weight probe starting positions in the sync-point finder, starting more probes near high-information positions. For the enumerated FSM approach, prune states with low posterior probability given observed bits, reducing effective state count from 2^L to ~sqrt(2^L).",
+  "experiment_seed": "Compute mutual information I(bit_k; boundary) for k=0..14 across a training set of DEFLATE blocks. Use these to design an information-weighted probe placement strategy. Compare sync-point finding speed and accuracy to uniform probe placement. Measure: (1) average convergence distance reduction, (2) computational overhead of weighted placement, (3) generalization across different file types.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T06:59:03.251883+00:00",
+  "project_folder": "concept_evolve/tree/006_information-bottleneck-pruning"
+}

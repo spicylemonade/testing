@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "cache_prefetch_speculation",
+  "description": "Rapidgzip's architecture uses a cache-and-prefetcher design where speculative decompression results are cached and reused. Multiple threads speculatively decompress from guessed positions; results that turn out to be correct are served from cache, while incorrect ones are discarded. This transforms the problem from 'parallel decompression' to 'speculative prefetching with validation', borrowing directly from CPU cache hierarchy design.",
+  "domains": ["computer_architecture", "data_compression", "operating_systems", "caching_theory"],
+  "mathematical_formalization": "Cache C stores pairs (offset, decoded_block). Prefetcher launches k threads at positions {P_1, ..., P_k}. Hit rate H(k) = P(correct position in {P_i}). For uniformly spaced P_i with interval Delta across block of size S: H(k) >= 1 - (Delta/S)^k if sync succeeds. Total throughput T = T_seq * H(k) * k / (1 + overhead_per_thread). Optimal k = argmax_k T(k) subject to memory budget M >= k * block_size.",
+  "analogical_connections": [
+    "Like CPU prefetch instructions: speculatively load data before it's needed",
+    "Analogous to read-ahead in file systems: predict future reads based on access patterns",
+    "Similar to speculative execution in modern CPUs: compute results before knowing if they'll be used"
+  ],
+  "implementation_hypothesis": "Maintain a thread pool of W workers. On decompression request, determine file size and launch W workers at positions {0, N/W, 2N/W, ...}. Each worker finds the nearest sync point and decompresses until the next worker's confirmed start. Use a concurrent hash map indexed by (byte_offset -> decoded_chunk). Main thread consumes from the cache in order, blocking if the next chunk isn't ready. Discard invalid prefetches.",
+  "experiment_seed": "Implement cache-prefetch parallel DEFLATE decoder with W = {2,4,8,16} workers. Benchmark on gzip files of size 100MB-10GB from Silesia. Measure: (1) wall-clock decompression time vs. W, (2) cache hit rate, (3) wasted work from invalid speculations, (4) memory overhead. Compare to rapidgzip and pigz."
+}

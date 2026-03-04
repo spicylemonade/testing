@@ -1,0 +1,25 @@
+{
+  "symbolic_name": "bitstream_swizzle_interleaving",
+  "description": "NVIDIA's GDEFLATE format demonstrates that rearranging the bit layout of a DEFLATE stream\u2014interleaving bits across 32 lanes\u2014enables SIMD-parallel Huffman decoding without changing the compression ratio. Each SIMD lane processes its own bit substream, breaking the serial dependency. This bit-swizzle transformation is invertible and can be applied at compression time or as a transcoding step.",
+  "domains": [
+    "data_compression",
+    "GPU_computing",
+    "digital_signal_processing",
+    "information_theory"
+  ],
+  "mathematical_formalization": "Given DEFLATE bitstream B = b_0 b_1 ... b_{N-1}, define swizzled stream B' where b'_{i*W + j} = b_{j*ceil(N/W) + i} for W=32 SIMD lanes. Each lane k reads bits {b_{k*ceil(N/W)}, b_{k*ceil(N/W)+1}, ...}. Huffman decode per-lane is independent. Compression ratio: identical to DEFLATE (bijective bit permutation). Decompression throughput: Theta(W * T_sequential) minus synchronization overhead for LZ77 back-references.",
+  "analogical_connections": [
+    "Like transpose of a matrix: rows become columns, enabling column-parallel processing",
+    "Analogous to frequency-division multiplexing in telecommunications: single channel split into parallel subchannels",
+    "Similar to AoS-to-SoA transformation in data layout optimization"
+  ],
+  "implementation_hypothesis": "At compression time, after LZ77 and Huffman encoding, perform a bit-level interleave: distribute consecutive bits round-robin across W=32 substreams. Store substream lengths in a header. At decompression, each AVX-512 lane reads from its substream independently. Use VPMOVMSKB/VPSHUFB for fast bit extraction. Handle LZ77 back-references in a second pass after all lanes complete Huffman decode.",
+  "experiment_seed": "Implement a DEFLATE-to-GDEFLATE transcoder and measure: (1) transcoding overhead, (2) parallel decompression throughput on AVX-512 vs. scalar DEFLATE, (3) compression ratio preservation. Test on mixed workloads: text (enwik8), genomic (FASTQ), binary (object files). Compare to zstd and lz4 throughput.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T06:59:03.248695+00:00",
+  "project_folder": "concept_evolve/tree/003_bitstream-swizzle-interleaving"
+}

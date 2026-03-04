@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "simd_multi_table_decode",
+  "description": "Instead of decoding one Huffman symbol per cycle, use SIMD to decode multiple symbols in parallel from the same bitstream by maintaining multiple speculative decode cursors. Each SIMD lane starts at a different speculative bit offset; only the lane that turns out to be at a valid boundary produces the correct next symbol. This is ILP extraction from a single stream, not multi-stream parallelism.",
+  "domains": ["computer_architecture", "data_compression", "SIMD_programming", "digital_circuit_design"],
+  "mathematical_formalization": "With W SIMD lanes and max codeword length L, launch W speculative decodes at offsets {cursor, cursor+1, ..., cursor+W-1}. The correct next symbol starts at offset cursor+len(current_symbol). Expected ILP gain: W / E[L] since on average E[L] lanes are 'within' the current symbol. Effective throughput: T = min(W/E[L], memory_bandwidth/symbol_size) symbols per SIMD operation.",
+  "analogical_connections": [
+    "Like superscalar execution: multiple functional units process instructions from the same stream",
+    "Analogous to OFDM in wireless: multiple subcarriers carry data simultaneously on one channel",
+    "Similar to simultaneous multithreading (SMT): multiple threads share execution resources"
+  ],
+  "implementation_hypothesis": "Using AVX-512: load 64 bytes of bitstream. For each of 16 lanes, peek at bits starting at offset cursor+lane_id, look up in Huffman table (VPGATHERDD from table), get (symbol, length). After the first symbol is decoded (length known), validate which lane(s) are at valid next offsets. Use mask registers to select valid results. Amortized cost: ~1 table lookup per symbol vs. ~2 for serial decode with bit manipulation.",
+  "experiment_seed": "Implement AVX-512 multi-cursor Huffman decode. Benchmark symbol decode rate on synthetic streams with known length distributions (uniform, Zipfian, bimodal). Measure: (1) symbols decoded per SIMD instruction, (2) validation overhead, (3) comparison to Fabian Giesen's multi-stream approach. Test on Ice Lake and Zen4."
+}

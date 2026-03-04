@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "prefix_scan_composition",
+  "description": "Parallel prefix scan (Blelloch, Ladner-Fischer) computes all prefix sums of an associative operator in O(n) work and O(log n) depth. When the operator is FSM transition function composition, this directly parallelizes sequential FSM evaluation. For Huffman decoding, each bit maps to a transition function; the parallel prefix of these functions gives the decoder state at every position, enabling extraction of all symbol boundaries simultaneously.",
+  "domains": ["parallel_algorithms", "automata_theory", "data_compression", "VLSI_design"],
+  "mathematical_formalization": "Given transitions T_1, T_2, ..., T_n (each T_i: Q -> Q), compute all prefixes: P_k = T_k compose T_{k-1} compose ... compose T_1. Using Ladner-Fischer parallel prefix: depth O(log n), work O(n * cost(compose)). For |Q|=s, compose cost = O(s) (apply table). Total: O(n*s) work, O(s * log n) depth. For Huffman with effective s << 2^L due to convergence: work approaches O(n * sqrt(2^L)).",
+  "analogical_connections": [
+    "Like carry-lookahead addition: precompute generate/propagate to break the carry chain",
+    "Analogous to parallel rendering: compute visibility at all pixels by composing occlusion functions",
+    "Similar to CRC computation via parallel polynomial evaluation"
+  ],
+  "implementation_hypothesis": "Divide bitstream into chunks of 512 bits. For each chunk, compute the composed transition function (mapping from any start state to end state) using sequential decode within the chunk. Then perform a parallel prefix scan across chunks to determine actual start states. Finally, use known start states to extract symbols from each chunk. On AVX-512: process 8 chunks of 64 bits per vector register.",
+  "experiment_seed": "Implement chunked parallel prefix Huffman decode. Vary chunk size from 64 to 4096 bits. Measure: (1) throughput vs. chunk size, (2) parallel prefix overhead vs. sequential intra-chunk decode time, (3) effective state count after convergence within chunks. Compare to pugz/rapidgzip on multi-core for block-level parallelism."
+}

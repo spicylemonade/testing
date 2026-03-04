@@ -1,0 +1,82 @@
+{
+  "nodes": [
+    {"id": "sync_point_convergence", "domain": "data_compression"},
+    {"id": "enumerated_state_parallel_fsm", "domain": "automata_theory"},
+    {"id": "bitstream_swizzle_interleaving", "domain": "GPU_computing"},
+    {"id": "speculative_block_boundary", "domain": "computer_architecture"},
+    {"id": "wavefront_lz77_resolution", "domain": "graph_algorithms"},
+    {"id": "information_bottleneck_pruning", "domain": "information_theory"},
+    {"id": "branch_prediction_huffman", "domain": "computer_architecture"},
+    {"id": "prefix_scan_composition", "domain": "parallel_algorithms"},
+    {"id": "probabilistic_sync_distance", "domain": "probability_theory"},
+    {"id": "cache_prefetch_speculation", "domain": "operating_systems"},
+    {"id": "simd_multi_table_decode", "domain": "SIMD_programming"},
+    {"id": "transducer_composition_monoid", "domain": "abstract_algebra"},
+    {"id": "huffman_self_sync_property", "domain": "coding_theory"},
+    {"id": "parallel_prefix_ladner_fischer", "domain": "parallel_algorithms"},
+    {"id": "gdeflate_format", "domain": "GPU_computing"},
+    {"id": "rapidgzip_architecture", "domain": "systems_engineering"},
+    {"id": "lz77_dependency_graph", "domain": "data_compression"},
+    {"id": "cpu_branch_predictor", "domain": "computer_architecture"},
+    {"id": "renewal_theory", "domain": "probability_theory"},
+    {"id": "wfst_speech_recognition", "domain": "speech_recognition"}
+  ],
+  "edges": [
+    {"source": "sync_point_convergence", "target": "probabilistic_sync_distance", "relation": "Sync convergence behavior is characterized by renewal-theoretic sync distance models"},
+    {"source": "sync_point_convergence", "target": "huffman_self_sync_property", "relation": "Sync point finding exploits the self-synchronization property of prefix codes"},
+    {"source": "sync_point_convergence", "target": "cache_prefetch_speculation", "relation": "Sync points enable speculative parallel decompression by providing validated split locations"},
+    {"source": "enumerated_state_parallel_fsm", "target": "prefix_scan_composition", "relation": "Enumerated FSM transitions compose associatively, enabling parallel prefix reduction"},
+    {"source": "enumerated_state_parallel_fsm", "target": "transducer_composition_monoid", "relation": "FSM enumeration generalizes to transducer composition in the monoid of state-to-state functions"},
+    {"source": "enumerated_state_parallel_fsm", "target": "simd_multi_table_decode", "relation": "Enumerating over all states per bit is the theoretical basis for multi-lane SIMD decode"},
+    {"source": "bitstream_swizzle_interleaving", "target": "gdeflate_format", "relation": "GDEFLATE is the canonical implementation of bit-level interleaving for parallel DEFLATE"},
+    {"source": "bitstream_swizzle_interleaving", "target": "wavefront_lz77_resolution", "relation": "After swizzled Huffman decode, LZ77 references must still be resolved via wavefront"},
+    {"source": "speculative_block_boundary", "target": "cache_prefetch_speculation", "relation": "Block boundary speculation is the core mechanism enabling cache-prefetch parallel architectures"},
+    {"source": "speculative_block_boundary", "target": "branch_prediction_huffman", "relation": "Block boundary speculation mirrors CPU branch prediction: predict, execute, validate"},
+    {"source": "speculative_block_boundary", "target": "rapidgzip_architecture", "relation": "Rapidgzip implements speculative block boundary prediction with cache-based validation"},
+    {"source": "wavefront_lz77_resolution", "target": "lz77_dependency_graph", "relation": "Wavefront processes the LZ77 reference DAG level-by-level"},
+    {"source": "wavefront_lz77_resolution", "target": "prefix_scan_composition", "relation": "Short LZ77 chains can be resolved via parallel prefix on the copy dependency structure"},
+    {"source": "information_bottleneck_pruning", "target": "sync_point_convergence", "relation": "IB identifies which bit positions carry most boundary info, guiding probe placement"},
+    {"source": "information_bottleneck_pruning", "target": "enumerated_state_parallel_fsm", "relation": "IB-based state pruning reduces the enumeration cost in parallel FSM evaluation"},
+    {"source": "branch_prediction_huffman", "target": "cpu_branch_predictor", "relation": "Huffman decode branch patterns interact with CPU TAGE/perceptron branch predictors"},
+    {"source": "branch_prediction_huffman", "target": "simd_multi_table_decode", "relation": "When branch prediction fails, SIMD multi-table decode provides an alternative ILP path"},
+    {"source": "prefix_scan_composition", "target": "parallel_prefix_ladner_fischer", "relation": "Ladner-Fischer construction provides the optimal depth/work tradeoff for prefix scan"},
+    {"source": "prefix_scan_composition", "target": "transducer_composition_monoid", "relation": "Prefix scan requires associative composition, which transducer monoid provides"},
+    {"source": "probabilistic_sync_distance", "target": "renewal_theory", "relation": "Sync distance analysis uses renewal theory to model inter-synchronization gaps"},
+    {"source": "probabilistic_sync_distance", "target": "information_bottleneck_pruning", "relation": "Expected sync distance determines the information value of probe placements"},
+    {"source": "transducer_composition_monoid", "target": "wfst_speech_recognition", "relation": "WFST composition in speech recognition is the same algebraic structure applied to a different domain"},
+    {"source": "simd_multi_table_decode", "target": "sync_point_convergence", "relation": "Multi-cursor SIMD decode is essentially running sync-point convergence during normal decoding"},
+    {"source": "cache_prefetch_speculation", "target": "rapidgzip_architecture", "relation": "Rapidgzip implements the cache-prefetch speculation pattern for gzip streams"}
+  ],
+  "bridge_chains": [
+    {
+      "name": "renewal_theory_to_simd_decode",
+      "path": ["renewal_theory", "probabilistic_sync_distance", "sync_point_convergence", "simd_multi_table_decode"],
+      "domains_crossed": ["probability_theory", "coding_theory", "data_compression", "SIMD_programming"],
+      "description": "Renewal theory predicts sync distance, which determines how far apart SIMD decode cursors must be to guarantee convergence, directly parameterizing the multi-cursor decode strategy."
+    },
+    {
+      "name": "algebra_to_gpu_decompression",
+      "path": ["wfst_speech_recognition", "transducer_composition_monoid", "prefix_scan_composition", "enumerated_state_parallel_fsm", "bitstream_swizzle_interleaving", "gdeflate_format"],
+      "domains_crossed": ["speech_recognition", "abstract_algebra", "parallel_algorithms", "automata_theory", "GPU_computing"],
+      "description": "WFST composition in speech recognition uses the same monoid structure that enables parallel prefix scan of FSM transitions, which is the theoretical foundation for GPU-parallel bit-swizzled DEFLATE decode."
+    },
+    {
+      "name": "cpu_architecture_to_compression",
+      "path": ["cpu_branch_predictor", "branch_prediction_huffman", "speculative_block_boundary", "cache_prefetch_speculation", "rapidgzip_architecture"],
+      "domains_crossed": ["computer_architecture", "data_compression", "operating_systems", "systems_engineering"],
+      "description": "CPU branch prediction techniques inspire speculative block boundary prediction, which when combined with cache-prefetch patterns from OS design, produces practical parallel decompression systems like rapidgzip."
+    },
+    {
+      "name": "information_theory_to_parallel_algorithms",
+      "path": ["information_bottleneck_pruning", "enumerated_state_parallel_fsm", "prefix_scan_composition", "parallel_prefix_ladner_fischer"],
+      "domains_crossed": ["information_theory", "automata_theory", "parallel_algorithms"],
+      "description": "Information bottleneck analysis prunes the state space of enumerated FSM evaluation, reducing the work constant in parallel prefix scan, making Ladner-Fischer construction practical for large Huffman alphabets."
+    },
+    {
+      "name": "graph_theory_to_hardware",
+      "path": ["lz77_dependency_graph", "wavefront_lz77_resolution", "bitstream_swizzle_interleaving", "simd_multi_table_decode"],
+      "domains_crossed": ["graph_algorithms", "parallel_algorithms", "GPU_computing", "SIMD_programming"],
+      "description": "Modeling LZ77 as a dependency graph enables wavefront parallelism, which pairs with bit-swizzled Huffman decode to create a two-phase parallel decompression pipeline implementable in SIMD."
+    }
+  ]
+}

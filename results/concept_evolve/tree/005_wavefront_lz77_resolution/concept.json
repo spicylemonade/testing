@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "wavefront_lz77_resolution",
+  "description": "LZ77 back-references create data dependencies where output bytes depend on previously decompressed bytes. After parallel Huffman decoding resolves all literal/length/distance triples, a second pass must resolve these chains. Wavefront parallelism processes independent chains simultaneously: references pointing to already-resolved regions can execute immediately, creating a wavefront that propagates through the dependency graph.",
+  "domains": ["data_compression", "graph_algorithms", "GPU_computing", "parallel_algorithms"],
+  "mathematical_formalization": "Model LZ77 output as a DAG G=(V,E) where V = {output positions} and (u,v) in E iff position v back-references position u. The wavefront at step t is W_t = {v : all predecessors of v in union_{i<t} W_i}. W_0 = {literals}. Decompression depth = longest path in G. For typical data, depth is O(log n) due to short reference chains. Sitaridi's MRR: iterate resolution rounds, each round resolving one level of indirection. Work O(n * d) where d = max chain depth.",
+  "analogical_connections": [
+    "Like topological sort execution: process nodes whose dependencies are satisfied",
+    "Analogous to relaxation methods in numerical PDE solvers: wavefront sweeps resolve local dependencies iteratively",
+    "Similar to instruction scheduling in out-of-order processors: execute instructions whose operands are ready"
+  ],
+  "implementation_hypothesis": "After Huffman decode pass produces array of (literal | ref(len, dist)) entries, build a dependency bitvector: bit i is set if position i is a literal or its reference target is already resolved. Process all set positions in parallel using SIMD scatter/gather. Mark newly resolved positions. Iterate until all resolved. For most data, 3-5 rounds suffice. Use Sitaridi's MRR algorithm adapted for CPU SIMD.",
+  "experiment_seed": "Profile LZ77 reference chain depth across Silesia corpus. Implement multi-round resolution on AVX-512 with 64-byte scatter/gather. Measure: (1) rounds needed to full resolution, (2) throughput vs. sequential memcpy-based decode, (3) impact of compression level (higher level = deeper chains). Compare to Sitaridi's GPU results scaled to CPU."
+}

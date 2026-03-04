@@ -1,0 +1,25 @@
+{
+  "symbolic_name": "sync_point_convergence",
+  "description": "Variable-length prefix codes (Huffman, x86 instructions) naturally resynchronize when decoded from an arbitrary offset, because misaligned decodes produce arbitrary-length results that probabilistically converge to valid boundaries. By launching n parallel decoders at n consecutive offsets (where n is the maximum codeword length), at least one is guaranteed to be aligned, and all others converge to the same offset, yielding a synchronization point that splits the stream for parallel processing.",
+  "domains": [
+    "data_compression",
+    "formal_languages",
+    "probability_theory",
+    "parallel_computing"
+  ],
+  "mathematical_formalization": "Let C be a prefix code with max length n. For offset o, define D(o) = o + len(decode(o)). Starting n probes at offsets {o, o+1, ..., o+n-1}, the synchronization point is S = min{p > o+n : D^k(i) = p for all i in probes, for some k_i}. Expected convergence distance E[S - o] = O(n * H(C)) where H(C) is the entropy of the code length distribution.",
+  "analogical_connections": [
+    "Like tributaries joining a river: misaligned decoders are streams that inevitably merge into the main channel",
+    "Analogous to phase-locking in oscillator networks: independent oscillators with slightly different frequencies eventually synchronize",
+    "Similar to consensus protocols in distributed systems: multiple nodes with different initial states converge to agreement"
+  ],
+  "implementation_hypothesis": "Maintain a bitmask of n active probes. Repeatedly advance the lowest-offset probe by decoding one symbol. If it lands on another probe's offset, merge them (clear one bit). Continue until only 1 bit remains. The surviving offset is the sync point. On x86-64 with BMI2, use TZCNT for fast lowest-bit extraction. Expected work: O(n^2) symbol decodes in worst case, O(n * log(n)) average.",
+  "experiment_seed": "Benchmark sync point finding on real DEFLATE blocks from the Silesia corpus. Measure: (1) average convergence distance in bits, (2) sync point finding latency in cycles, (3) false sync rate. Compare n=15 (DEFLATE max) vs. n=9 (typical Huffman max). Validate that all sync points produce identical decode output to sequential baseline.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T06:59:03.246663+00:00",
+  "project_folder": "concept_evolve/tree/001_sync-point-convergence"
+}

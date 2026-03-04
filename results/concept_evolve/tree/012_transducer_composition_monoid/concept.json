@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "transducer_composition_monoid",
+  "description": "Huffman decoding can be modeled as a finite-state transducer (FST) that reads bits and outputs symbols. The composition of FSTs forms a monoid under sequential composition, enabling parallel reduction. By precomputing the composed transducer for fixed-size bit chunks, we create a lookup table that maps (start_state, chunk_bits) -> (end_state, output_symbols), amortizing the per-bit overhead into per-chunk cost.",
+  "domains": ["automata_theory", "abstract_algebra", "speech_recognition", "data_compression"],
+  "mathematical_formalization": "Define FST M = (Q, Sigma, Gamma, delta, lambda) where delta: Q x Sigma -> Q (transitions) and lambda: Q x Sigma -> Gamma* (outputs). For chunk c = b_1...b_k, define composed transduction M_c: Q -> (Q x Gamma*) as M_c(q) = (delta*(q,c), lambda*(q,c)). The monoid operation M_c . M_d: Q -> (Q x Gamma*) with (M_c . M_d)(q) = let (q', out1) = M_c(q) in let (q'', out2) = M_d(q') in (q'', out1 ++ out2). This is associative with identity M_epsilon.",
+  "analogical_connections": [
+    "Like precomputed multiplication tables in group theory: lookup replaces repeated operation",
+    "Analogous to n-gram language models: predict output from a fixed-size context window",
+    "Similar to WFST composition in speech recognition pipelines: compose multiple transducers into one for efficient decoding"
+  ],
+  "implementation_hypothesis": "For chunk size k=8 bits and |Q|=s states, precompute table T[s][256] -> (state, symbol_buffer). At decode time, read 8 bits, index T[current_state][byte] to get new state and decoded symbols. This reduces per-symbol cost from ~5 bit operations to ~0.6 table lookups. Table size: s * 256 * (1 + max_symbols_per_byte) bytes. For s=30 (typical DEFLATE effective states): ~30KB, fits in L1.",
+  "experiment_seed": "Build the chunk-transducer table for real DEFLATE Huffman tables. Measure: (1) table build time, (2) decode throughput vs. bit-at-a-time decode, (3) L1 cache pressure from table size. Vary chunk sizes k=4,6,8,10,12. Find the sweet spot where table size fits L1 but amortization is sufficient. Profile on Zen4 with perf stat."
+}

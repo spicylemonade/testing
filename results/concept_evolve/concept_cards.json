@@ -1,0 +1,170 @@
+[
+  {
+    "symbolic_name": "sync_point_convergence",
+    "description": "Variable-length prefix codes (Huffman, x86 instructions) naturally resynchronize when decoded from an arbitrary offset, because misaligned decodes produce arbitrary-length results that probabilistically converge to valid boundaries. By launching n parallel decoders at n consecutive offsets (where n is the maximum codeword length), at least one is guaranteed to be aligned, and all others converge to the same offset, yielding a synchronization point that splits the stream for parallel processing.",
+    "domains": ["data_compression", "formal_languages", "probability_theory", "parallel_computing"],
+    "mathematical_formalization": "Let C be a prefix code with max length n. For offset o, define D(o) = o + len(decode(o)). Starting n probes at offsets {o, o+1, ..., o+n-1}, the synchronization point is S = min{p > o+n : D^k(i) = p for all i in probes, for some k_i}. Expected convergence distance E[S - o] = O(n * H(C)) where H(C) is the entropy of the code length distribution.",
+    "analogical_connections": [
+      "Like tributaries joining a river: misaligned decoders are streams that inevitably merge into the main channel",
+      "Analogous to phase-locking in oscillator networks: independent oscillators with slightly different frequencies eventually synchronize",
+      "Similar to consensus protocols in distributed systems: multiple nodes with different initial states converge to agreement"
+    ],
+    "implementation_hypothesis": "Maintain a bitmask of n active probes. Repeatedly advance the lowest-offset probe by decoding one symbol. If it lands on another probe's offset, merge them (clear one bit). Continue until only 1 bit remains. The surviving offset is the sync point. On x86-64 with BMI2, use TZCNT for fast lowest-bit extraction. Expected work: O(n^2) symbol decodes in worst case, O(n * log(n)) average.",
+    "experiment_seed": "Benchmark sync point finding on real DEFLATE blocks from the Silesia corpus. Measure: (1) average convergence distance in bits, (2) sync point finding latency in cycles, (3) false sync rate. Compare n=15 (DEFLATE max) vs. n=9 (typical Huffman max). Validate that all sync points produce identical decode output to sequential baseline.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "enumerated_state_parallel_fsm",
+    "description": "Mytkowicz et al. showed that FSM computations can be parallelized by processing each input symbol against all possible states simultaneously, creating transition functions that compose associatively. This transforms the inherently sequential FSM evaluation into a parallel prefix computation over composed transition functions, directly applicable to Huffman decode table lookups.",
+    "domains": ["automata_theory", "parallel_algorithms", "data_compression", "computer_architecture"],
+    "mathematical_formalization": "For FSM with state set Q (|Q|=s), input alphabet Sigma, transition function delta: Q x Sigma -> Q, define lifted transition T_a: Q -> Q as T_a(q) = delta(q,a). For input sequence a_1...a_n, the final state from initial q_0 is (T_{a_n} compose ... compose T_{a_1})(q_0). Since function composition is associative, compute the prefix composition T_{a_1...a_k} for all k using parallel prefix (Ladner-Fischer). Total work: O(n * s^2), depth O(log n). Convergence: if T_{a_i...a_j} maps all states to a single state, subsequent compositions collapse to O(1).",
+    "analogical_connections": [
+      "Like matrix chain multiplication: composing transition matrices via parallel reduction",
+      "Analogous to carry-lookahead adders: breaking sequential dependency in arithmetic by precomputing generate/propagate",
+      "Similar to speculative multithreading: executing with all possible initial conditions and selecting the correct one"
+    ],
+    "implementation_hypothesis": "For Huffman decoding with max codeword length L, the decoder FSM has at most 2^L states (internal tree nodes + leaves). Represent each lifted transition T_a as a lookup table Q -> Q. Use SIMD gather instructions (VPGATHERDD) to apply T_a to all s states simultaneously. Compose adjacent transitions via SIMD table composition. For L=15, s is large; use convergence property to prune: after processing ~20-30 bits, most states converge, reducing effective s.",
+    "experiment_seed": "Implement enumerated-state Huffman decode for canonical Huffman codes with L<=15. Measure convergence rate (how many bits until all start states map to one) on DEFLATE blocks from Silesia, Canterbury, and Calgary corpora. Compare throughput to scalar decode baseline on Zen4/Sapphire Rapids. Profile SIMD gather latency impact.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "bitstream_swizzle_interleaving",
+    "description": "NVIDIA's GDEFLATE format demonstrates that rearranging the bit layout of a DEFLATE stream—interleaving bits across 32 lanes—enables SIMD-parallel Huffman decoding without changing the compression ratio. Each SIMD lane processes its own bit substream, breaking the serial dependency. This bit-swizzle transformation is invertible and can be applied at compression time or as a transcoding step.",
+    "domains": ["data_compression", "GPU_computing", "digital_signal_processing", "information_theory"],
+    "mathematical_formalization": "Given DEFLATE bitstream B = b_0 b_1 ... b_{N-1}, define swizzled stream B' where b'_{i*W + j} = b_{j*ceil(N/W) + i} for W=32 SIMD lanes. Each lane k reads bits {b_{k*ceil(N/W)}, b_{k*ceil(N/W)+1}, ...}. Huffman decode per-lane is independent. Compression ratio: identical to DEFLATE (bijective bit permutation). Decompression throughput: Theta(W * T_sequential) minus synchronization overhead for LZ77 back-references.",
+    "analogical_connections": [
+      "Like transpose of a matrix: rows become columns, enabling column-parallel processing",
+      "Analogous to frequency-division multiplexing in telecommunications: single channel split into parallel subchannels",
+      "Similar to AoS-to-SoA transformation in data layout optimization"
+    ],
+    "implementation_hypothesis": "At compression time, after LZ77 and Huffman encoding, perform a bit-level interleave: distribute consecutive bits round-robin across W=32 substreams. Store substream lengths in a header. At decompression, each AVX-512 lane reads from its substream independently. Use VPMOVMSKB/VPSHUFB for fast bit extraction. Handle LZ77 back-references in a second pass after all lanes complete Huffman decode.",
+    "experiment_seed": "Implement a DEFLATE-to-GDEFLATE transcoder and measure: (1) transcoding overhead, (2) parallel decompression throughput on AVX-512 vs. scalar DEFLATE, (3) compression ratio preservation. Test on mixed workloads: text (enwik8), genomic (FASTQ), binary (object files). Compare to zstd and lz4 throughput.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "speculative_block_boundary",
+    "description": "DEFLATE streams consist of multiple blocks whose boundaries are unknown until the preceding block is fully decoded. By speculatively guessing block boundary positions (via statistical models or fixed-interval heuristics), multiple threads can begin decoding at guessed positions simultaneously. Failed speculations are discarded cheaply if detected via Huffman table validation or CRC mismatch.",
+    "domains": ["data_compression", "computer_architecture", "distributed_systems", "machine_learning"],
+    "mathematical_formalization": "Let B_1, B_2, ..., B_m be DEFLATE blocks with sizes s_1, ..., s_m drawn from distribution D_s. Cumulative positions P_k = sum_{i=1}^{k} s_i. Speculate boundary at position hat{P}_k. Cost of wrong speculation: C_miss = T_decode(hat{P}_k, P_k) wasted work. Expected benefit: E[speedup] = m / (1 + p_miss * C_miss/T_block) where p_miss is misprediction rate. With adaptive predictor learning D_s, p_miss -> 0 for stationary sources.",
+    "analogical_connections": [
+      "Directly analogous to branch prediction in CPUs: speculate on control flow, roll back on misprediction",
+      "Like optimistic concurrency control in databases: proceed assuming no conflicts, validate and retry if wrong",
+      "Similar to speculative execution in TLS (Thread-Level Speculation): threads execute ahead of confirmed program order"
+    ],
+    "implementation_hypothesis": "Thread T0 decodes block B_k sequentially. Thread T1 starts decoding at guessed position P_hat = P_{k-1} + avg_block_size. T1 first attempts to validate: check if position looks like a valid block header (3-bit header, valid HLIT/HDIST/HCLEN). If validation passes, decode speculatively into temp buffer. When T0 confirms actual boundary, either commit T1's work or discard. Use per-file block size EMA for prediction.",
+    "experiment_seed": "Profile block size distributions across Silesia corpus gzip files. Implement 2-thread speculative decoder: T0 sequential, T1 speculative. Measure: (1) speculation accuracy vs. predictor type (fixed, EMA, histogram), (2) net throughput gain including rollback cost, (3) memory overhead of temp buffers. Target: >1.3x speedup on files with consistent block sizes.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "wavefront_lz77_resolution",
+    "description": "LZ77 back-references create data dependencies where output bytes depend on previously decompressed bytes. After parallel Huffman decoding resolves all literal/length/distance triples, a second pass must resolve these chains. Wavefront parallelism processes independent chains simultaneously: references pointing to already-resolved regions can execute immediately, creating a wavefront that propagates through the dependency graph.",
+    "domains": ["data_compression", "graph_algorithms", "GPU_computing", "parallel_algorithms"],
+    "mathematical_formalization": "Model LZ77 output as a DAG G=(V,E) where V = {output positions} and (u,v) in E iff position v back-references position u. The wavefront at step t is W_t = {v : all predecessors of v in union_{i<t} W_i}. W_0 = {literals}. Decompression depth = longest path in G. For typical data, depth is O(log n) due to short reference chains. Sitaridi's MRR: iterate resolution rounds, each round resolving one level of indirection. Work O(n * d) where d = max chain depth.",
+    "analogical_connections": [
+      "Like topological sort execution: process nodes whose dependencies are satisfied",
+      "Analogous to relaxation methods in numerical PDE solvers: wavefront sweeps resolve local dependencies iteratively",
+      "Similar to instruction scheduling in out-of-order processors: execute instructions whose operands are ready"
+    ],
+    "implementation_hypothesis": "After Huffman decode pass produces array of (literal | ref(len, dist)) entries, build a dependency bitvector: bit i is set if position i is a literal or its reference target is already resolved. Process all set positions in parallel using SIMD scatter/gather. Mark newly resolved positions. Iterate until all resolved. For most data, 3-5 rounds suffice. Use Sitaridi's MRR algorithm adapted for CPU SIMD.",
+    "experiment_seed": "Profile LZ77 reference chain depth across Silesia corpus. Implement multi-round resolution on AVX-512 with 64-byte scatter/gather. Measure: (1) rounds needed to full resolution, (2) throughput vs. sequential memcpy-based decode, (3) impact of compression level (higher level = deeper chains). Compare to Sitaridi's GPU results scaled to CPU.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "information_bottleneck_pruning",
+    "description": "The information bottleneck principle (Tishby et al.) provides a framework for finding minimal sufficient statistics. Applied to Huffman decoding, we can identify which bits in the compressed stream carry the most information about symbol boundaries (the 'relevant variable'). This guides where to place synchronization probes and how to prune the enumerated state space in parallel FSM decode, focusing computation on high-information bit positions.",
+    "domains": ["information_theory", "machine_learning", "data_compression", "statistical_mechanics"],
+    "mathematical_formalization": "Let X = compressed bits, Y = symbol boundary positions. The information bottleneck finds compressed representation T of X that minimizes I(X;T) - beta * I(T;Y). For Huffman codes, bits near the start of long codewords carry more boundary information (high I(bit_k; Y)). Optimal probe placement minimizes expected sync distance: argmin_{offsets} E[convergence_time | probes at offsets] subject to |offsets| <= budget.",
+    "analogical_connections": [
+      "Like principal component analysis: identify the dimensions that carry the most variance (boundary information)",
+      "Analogous to attention mechanisms in transformers: focus computation on the most informative positions",
+      "Similar to sensor placement optimization: where to place sensors to maximize coverage with minimum resources"
+    ],
+    "implementation_hypothesis": "Offline: analyze Huffman code statistics to compute I(bit_position_mod_period; is_boundary). Online: use these statistics to weight probe starting positions in the sync-point finder, starting more probes near high-information positions. For the enumerated FSM approach, prune states with low posterior probability given observed bits, reducing effective state count from 2^L to ~sqrt(2^L).",
+    "experiment_seed": "Compute mutual information I(bit_k; boundary) for k=0..14 across a training set of DEFLATE blocks. Use these to design an information-weighted probe placement strategy. Compare sync-point finding speed and accuracy to uniform probe placement. Measure: (1) average convergence distance reduction, (2) computational overhead of weighted placement, (3) generalization across different file types.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "branch_prediction_huffman",
+    "description": "Modern x86-64 CPUs use sophisticated branch predictors (TAGE, perceptron) that learn patterns in control flow. Huffman decoding's per-symbol branch (which codeword length?) is highly predictable for natural language and structured data because symbol frequencies follow Zipf-like distributions. By restructuring the decode loop to expose this predictability, we can achieve near-zero branch misprediction overhead, effectively hiding the serial dependency in the pipeline.",
+    "domains": ["computer_architecture", "data_compression", "natural_language_processing", "statistics"],
+    "mathematical_formalization": "Let p_l = probability of codeword length l. Branch predictor accuracy A = sum_l p_l * P(correct | length=l). For TAGE with history h, P(correct | length=l) approx 1 - 1/2^(min(count_l, counter_bits)). For Zipfian sources, top-3 lengths account for >80% of symbols, so A > 0.95. Effective CPI = CPI_base + (1-A) * misprediction_penalty. With A=0.95 and penalty=15 cycles: CPI overhead = 0.75 cycles/symbol.",
+    "analogical_connections": [
+      "Like a card counter in blackjack: exploiting statistical regularity to predict the next event",
+      "Analogous to Lempel-Ziv complexity: predictable sequences have low complexity and are easily compressible (and decodable)",
+      "Similar to adaptive coding in arithmetic compression: the model adapts to source statistics"
+    ],
+    "implementation_hypothesis": "Restructure Huffman decode loop: use a multi-way branch (switch on peeked bits) rather than tree traversal. Arrange cases so the most common codeword lengths are checked first (branchless for top-2 lengths). Use CMOV for length selection when possible. Profile-guided optimization (PGO) to train branch predictor weights. Use __builtin_expect to hint likely lengths.",
+    "experiment_seed": "Benchmark Huffman decode throughput on Zen4 and Sapphire Rapids with perf stat monitoring branch-misses. Compare: (1) tree-walk decode, (2) table decode with switch, (3) branchless table decode with CMOV. Measure across different entropy sources (English text, random, genomic). Target: <2% branch miss rate on natural text.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "prefix_scan_composition",
+    "description": "Parallel prefix scan (Blelloch, Ladner-Fischer) computes all prefix sums of an associative operator in O(n) work and O(log n) depth. When the operator is FSM transition function composition, this directly parallelizes sequential FSM evaluation. For Huffman decoding, each bit maps to a transition function; the parallel prefix of these functions gives the decoder state at every position, enabling extraction of all symbol boundaries simultaneously.",
+    "domains": ["parallel_algorithms", "automata_theory", "data_compression", "VLSI_design"],
+    "mathematical_formalization": "Given transitions T_1, T_2, ..., T_n (each T_i: Q -> Q), compute all prefixes: P_k = T_k compose T_{k-1} compose ... compose T_1. Using Ladner-Fischer parallel prefix: depth O(log n), work O(n * cost(compose)). For |Q|=s, compose cost = O(s) (apply table). Total: O(n*s) work, O(s * log n) depth. For Huffman with effective s << 2^L due to convergence: work approaches O(n * sqrt(2^L)).",
+    "analogical_connections": [
+      "Like carry-lookahead addition: precompute generate/propagate to break the carry chain",
+      "Analogous to parallel rendering: compute visibility at all pixels by composing occlusion functions",
+      "Similar to CRC computation via parallel polynomial evaluation"
+    ],
+    "implementation_hypothesis": "Divide bitstream into chunks of 512 bits. For each chunk, compute the composed transition function (mapping from any start state to end state) using sequential decode within the chunk. Then perform a parallel prefix scan across chunks to determine actual start states. Finally, use known start states to extract symbols from each chunk. On AVX-512: process 8 chunks of 64 bits per vector register.",
+    "experiment_seed": "Implement chunked parallel prefix Huffman decode. Vary chunk size from 64 to 4096 bits. Measure: (1) throughput vs. chunk size, (2) parallel prefix overhead vs. sequential intra-chunk decode time, (3) effective state count after convergence within chunks. Compare to pugz/rapidgzip on multi-core for block-level parallelism.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "probabilistic_sync_distance",
+    "description": "The expected distance to synchronization when starting Huffman decoding at a random offset follows a distribution determined by the code's length distribution and combinatorial properties. Codes where most codewords have similar lengths synchronize slowly; codes with diverse lengths synchronize quickly. This connects to renewal theory: synchronization is a renewal event in a process with inter-arrival times equal to (mis)decoded symbol lengths.",
+    "domains": ["probability_theory", "coding_theory", "renewal_theory", "data_compression"],
+    "mathematical_formalization": "Model misaligned decode as a random walk on Z_n (offsets mod max_length). At each step, advance by random L ~ p(l|misaligned). Synchronization = hitting time to offset 0 (mod boundary). By renewal theory, E[sync_distance] = 1/pi_0 where pi_0 is the stationary probability of being on a valid boundary. For Huffman code with length distribution {p_l}: pi_0 = (sum_l l * p_l)^{-1} * 1 = 1/E[L]. So E[sync_distance] approx E[L] / P(random_offset_is_boundary).",
+    "analogical_connections": [
+      "Like the coupon collector problem: waiting for a specific alignment event",
+      "Analogous to frame synchronization in communication systems: detecting the start of a frame in a continuous bitstream",
+      "Similar to mixing time of Markov chains: how quickly does the chain forget its starting state"
+    ],
+    "implementation_hypothesis": "For a given Huffman table, precompute the expected sync distance analytically using renewal theory formulas. Use this to determine optimal chunk sizes for parallel decoding: chunks should be at least k * E[sync_distance] bits apart (k~3 for high probability of sync). Implement as a compile-time computation when Huffman tables are static, or as a fast online computation when tables change per-block.",
+    "experiment_seed": "For 1000 random Huffman codes with 256 symbols and varying entropy, compute: (1) theoretical sync distance from renewal theory, (2) empirical sync distance via simulation, (3) correlation between sync distance and code properties (max length, entropy, length variance). Validate that 3 * E[sync_distance] gives >99% sync probability.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "cache_prefetch_speculation",
+    "description": "Rapidgzip's architecture uses a cache-and-prefetcher design where speculative decompression results are cached and reused. Multiple threads speculatively decompress from guessed positions; results that turn out to be correct are served from cache, while incorrect ones are discarded. This transforms the problem from 'parallel decompression' to 'speculative prefetching with validation', borrowing directly from CPU cache hierarchy design.",
+    "domains": ["computer_architecture", "data_compression", "operating_systems", "caching_theory"],
+    "mathematical_formalization": "Cache C stores pairs (offset, decoded_block). Prefetcher launches k threads at positions {P_1, ..., P_k}. Hit rate H(k) = P(correct position in {P_i}). For uniformly spaced P_i with interval Delta across block of size S: H(k) >= 1 - (Delta/S)^k if sync succeeds. Total throughput T = T_seq * H(k) * k / (1 + overhead_per_thread). Optimal k = argmax_k T(k) subject to memory budget M >= k * block_size.",
+    "analogical_connections": [
+      "Like CPU prefetch instructions: speculatively load data before it's needed",
+      "Analogous to read-ahead in file systems: predict future reads based on access patterns",
+      "Similar to speculative execution in modern CPUs: compute results before knowing if they'll be used"
+    ],
+    "implementation_hypothesis": "Maintain a thread pool of W workers. On decompression request, determine file size and launch W workers at positions {0, N/W, 2N/W, ...}. Each worker finds the nearest sync point and decompresses until the next worker's confirmed start. Use a concurrent hash map indexed by (byte_offset -> decoded_chunk). Main thread consumes from the cache in order, blocking if the next chunk isn't ready. Discard invalid prefetches.",
+    "experiment_seed": "Implement cache-prefetch parallel DEFLATE decoder with W = {2,4,8,16} workers. Benchmark on gzip files of size 100MB-10GB from Silesia. Measure: (1) wall-clock decompression time vs. W, (2) cache hit rate, (3) wasted work from invalid speculations, (4) memory overhead. Compare to rapidgzip and pigz.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "simd_multi_table_decode",
+    "description": "Instead of decoding one Huffman symbol per cycle, use SIMD to decode multiple symbols in parallel from the same bitstream by maintaining multiple speculative decode cursors. Each SIMD lane starts at a different speculative bit offset; only the lane that turns out to be at a valid boundary produces the correct next symbol. This is ILP extraction from a single stream, not multi-stream parallelism.",
+    "domains": ["computer_architecture", "data_compression", "SIMD_programming", "digital_circuit_design"],
+    "mathematical_formalization": "With W SIMD lanes and max codeword length L, launch W speculative decodes at offsets {cursor, cursor+1, ..., cursor+W-1}. The correct next symbol starts at offset cursor+len(current_symbol). Expected ILP gain: W / E[L] since on average E[L] lanes are 'within' the current symbol. Effective throughput: T = min(W/E[L], memory_bandwidth/symbol_size) symbols per SIMD operation.",
+    "analogical_connections": [
+      "Like superscalar execution: multiple functional units process instructions from the same stream",
+      "Analogous to OFDM in wireless: multiple subcarriers carry data simultaneously on one channel",
+      "Similar to simultaneous multithreading (SMT): multiple threads share execution resources"
+    ],
+    "implementation_hypothesis": "Using AVX-512: load 64 bytes of bitstream. For each of 16 lanes, peek at bits starting at offset cursor+lane_id, look up in Huffman table (VPGATHERDD from table), get (symbol, length). After the first symbol is decoded (length known), validate which lane(s) are at valid next offsets. Use mask registers to select valid results. Amortized cost: ~1 table lookup per symbol vs. ~2 for serial decode with bit manipulation.",
+    "experiment_seed": "Implement AVX-512 multi-cursor Huffman decode. Benchmark symbol decode rate on synthetic streams with known length distributions (uniform, Zipfian, bimodal). Measure: (1) symbols decoded per SIMD instruction, (2) validation overhead, (3) comparison to Fabian Giesen's multi-stream approach. Test on Ice Lake and Zen4.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "transducer_composition_monoid",
+    "description": "Huffman decoding can be modeled as a finite-state transducer (FST) that reads bits and outputs symbols. The composition of FSTs forms a monoid under sequential composition, enabling parallel reduction. By precomputing the composed transducer for fixed-size bit chunks, we create a lookup table that maps (start_state, chunk_bits) -> (end_state, output_symbols), amortizing the per-bit overhead into per-chunk cost.",
+    "domains": ["automata_theory", "abstract_algebra", "speech_recognition", "data_compression"],
+    "mathematical_formalization": "Define FST M = (Q, Sigma, Gamma, delta, lambda) where delta: Q x Sigma -> Q (transitions) and lambda: Q x Sigma -> Gamma* (outputs). For chunk c = b_1...b_k, define composed transduction M_c: Q -> (Q x Gamma*) as M_c(q) = (delta*(q,c), lambda*(q,c)). The monoid operation M_c . M_d: Q -> (Q x Gamma*) with (M_c . M_d)(q) = let (q', out1) = M_c(q) in let (q'', out2) = M_d(q') in (q'', out1 ++ out2). This is associative with identity M_epsilon.",
+    "analogical_connections": [
+      "Like precomputed multiplication tables in group theory: lookup replaces repeated operation",
+      "Analogous to n-gram language models: predict output from a fixed-size context window",
+      "Similar to WFST composition in speech recognition pipelines: compose multiple transducers into one for efficient decoding"
+    ],
+    "implementation_hypothesis": "For chunk size k=8 bits and |Q|=s states, precompute table T[s][256] -> (state, symbol_buffer). At decode time, read 8 bits, index T[current_state][byte] to get new state and decoded symbols. This reduces per-symbol cost from ~5 bit operations to ~0.6 table lookups. Table size: s * 256 * (1 + max_symbols_per_byte) bytes. For s=30 (typical DEFLATE effective states): ~30KB, fits in L1.",
+    "experiment_seed": "Build the chunk-transducer table for real DEFLATE Huffman tables. Measure: (1) table build time, (2) decode throughput vs. bit-at-a-time decode, (3) L1 cache pressure from table size. Vary chunk sizes k=4,6,8,10,12. Find the sweet spot where table size fits L1 but amortization is sufficient. Profile on Zen4 with perf stat.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  }
+]
