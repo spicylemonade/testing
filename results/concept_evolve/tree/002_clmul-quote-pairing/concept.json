@@ -1,0 +1,29 @@
+{
+  "symbolic_name": "clmul_quote_pairing",
+  "description": "Use carry-less multiplication (PCLMULQDQ on x86, PMULL on ARM) to identify which regions of the CSV input are inside quoted fields, transforming the quote-character bitmask into an 'in-string' bitmask in O(1) operations per 64-bit word. This eliminates the need for sequential state tracking of open/close quotes, which is the primary serialization bottleneck in RFC 4180 parsing.",
+  "domains": [
+    "finite field arithmetic (GF(2))",
+    "SIMD/vectorized computing",
+    "formal language theory"
+  ],
+  "mathematical_formalization": "Let Q be the quote bitmask (u64). Compute in_string = CLMUL(Q, 0xFFFFFFFFFFFFFFFF) XOR carry_from_prev_block. In GF(2)[x]: multiplication by all-ones polynomial computes prefix-XOR (cumulative parity). Bit i of result = parity of bits 0..i in Q. If Q has even number of quotes, carry=0; odd implies carry=1 for next block.",
+  "analogical_connections": [
+    "CRC computation: CLMUL was designed for Galois field operations in CRC/AES-GCM; repurposing it for parsing is a cross-domain transfer from cryptography to text processing",
+    "Prefix-sum in parallel computing: the cumulative XOR is a GF(2) prefix sum, analogous to parallel prefix sums used in GPU scan algorithms",
+    "Bracket matching in compilers: the quote-pairing problem is isomorphic to balanced parenthesis checking, solvable via the same cumulative-parity approach"
+  ],
+  "implementation_hypothesis": "For each 64-byte chunk: (1) compute quote bitmask Q via SIMD comparison, (2) CLMUL Q with all-ones constant to get cumulative XOR, (3) XOR with previous block's carry bit propagated across all 64 bits. The in_string mask is then used to suppress structural characters (commas, newlines) that appear inside quotes. On ARM64, use PMULL/PMULL2 with equivalent operands.",
+  "experiment_seed": "Test on CSV files with varying quote density: 0% quoted fields, 25%, 50%, 100%. Measure latency of quote-region identification vs. sequential state machine. Verify correctness against RFC 4180 edge cases: embedded quotes (\"\"), embedded newlines within quotes, fields that are only quotes.",
+  "folder_plan": {
+    "files": [
+      "src/quote_pairing.rs",
+      "tests/rfc4180_edge_cases.rs"
+    ],
+    "folders": [
+      "src/arch/x86/clmul/",
+      "src/arch/arm64/pmull/"
+    ]
+  },
+  "generated_at": "2026-03-04T08:04:49.923000+00:00",
+  "project_folder": "concept_evolve/tree/002_clmul-quote-pairing"
+}

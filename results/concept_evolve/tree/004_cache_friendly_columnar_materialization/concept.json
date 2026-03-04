@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "cache_friendly_columnar_materialization",
+  "description": "After identifying field boundaries via SIMD, materialize parsed output in columnar (column-major) format rather than row-major, writing each field to its corresponding column buffer. This converts the row-oriented scatter pattern into sequential column writes, dramatically improving cache utilization for downstream analytics.",
+  "domains": ["database systems (columnar storage)", "cache optimization / memory hierarchy", "data serialization"],
+  "mathematical_formalization": "Row-major: C*R random writes, O(C * R / L) cache misses when C > cache associativity. Columnar: C sequential write streams, O(R * C / L) with spatial locality. Speedup for materialization: O(C / cache_associativity) fewer misses.",
+  "analogical_connections": [
+    "AoS vs SoA transformation in game engine ECS architectures",
+    "Matrix transposition with cache-oblivious or tiled algorithms",
+    "ETL pipeline 'extract-then-pivot' pattern in data warehouses"
+  ],
+  "implementation_hypothesis": "Allocate C column buffers. During extraction, maintain C write cursors. For each row, write field[j] to column_buffer[j][cursor[j]++]. Use batch sizes of 1024 rows. For strings, use Arrow StringArray layout (offsets + data).",
+  "experiment_seed": "Compare columnar vs. row-major materialization on 1GB CSV with 20 columns. Measure L1/L2/L3 cache miss rates, total throughput, and downstream query speed."
+}

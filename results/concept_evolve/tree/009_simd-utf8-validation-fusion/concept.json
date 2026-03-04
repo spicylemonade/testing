@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "simd_utf8_validation_fusion",
+  "description": "Fuse UTF-8 validation into the SIMD structural character detection pass, validating multi-byte sequences while simultaneously scanning for delimiters. This avoids a separate validation pass and exploits the fact that CSV structural characters (comma, quote, newline) are all single-byte ASCII, meaning any byte >= 0x80 is guaranteed to be non-structural and part of a multi-byte UTF-8 sequence.",
+  "domains": [
+    "character encoding (Unicode)",
+    "SIMD/vectorized computing",
+    "compiler optimization (pass fusion)"
+  ],
+  "mathematical_formalization": "UTF-8 invariant for CSV structural chars: For any byte b in {0x2C, 0x22, 0x0A, 0x0D}, b < 0x80, so it cannot appear as a continuation byte in valid UTF-8. Therefore: structural_mask & utf8_continuation_mask == 0 (always true in valid UTF-8). Validation cost when fused: C_fused = max(C_structural, C_utf8_validate) vs. C_separate = C_structural + C_utf8_validate. Fused throughput >= separate throughput since both operate on same loaded data.",
+  "analogical_connections": [
+    "Lemire's simdutf library: validates and transcodes UTF-8 at gigabytes/second using the same SIMD infrastructure we use for CSV parsing",
+    "Compiler loop fusion: merging two loops over the same data into one is a standard compiler optimization; here we fuse two SIMD passes",
+    "Multimedia codec optimization: video decoders fuse entropy decoding with inverse transform in a single pass for cache efficiency"
+  ],
+  "implementation_hypothesis": "In the classify stage, after computing delimiter bitmasks, add UTF-8 validation logic: (1) identify bytes >= 0x80, (2) check continuation byte patterns (10xxxxxx), (3) verify leading byte length indicators match actual continuation count. Reuse the same SIMD register loads. Report validation errors with byte-precise positions. Cost: ~2 additional SIMD instructions per 32-byte block.",
+  "experiment_seed": "Benchmark fused vs. separate UTF-8 validation + structural detection on: (1) pure ASCII CSV, (2) 10% non-ASCII (European text), (3) 80% non-ASCII (CJK text). Measure throughput and validate that fused version detects all malformed UTF-8 that a standalone validator would catch.",
+  "folder_plan": {
+    "files": [
+      "src/utf8_validate.rs",
+      "src/fused_classify_validate.rs",
+      "tests/utf8_edge_cases.rs"
+    ],
+    "folders": []
+  },
+  "generated_at": "2026-03-04T08:04:49.925996+00:00",
+  "project_folder": "concept_evolve/tree/009_simd-utf8-validation-fusion"
+}

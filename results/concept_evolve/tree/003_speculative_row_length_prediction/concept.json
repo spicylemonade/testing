@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "speculative_row_length_prediction",
+  "description": "Exploit the statistical regularity of real-world CSV files (where consecutive rows often have similar byte lengths) to speculatively predict the start offset of the next N rows, enabling prefetching and parallel parsing of predicted row boundaries. When prediction fails, fall back to exact scanning from the last confirmed boundary.",
+  "domains": ["branch prediction / speculative execution (CPU architecture)", "time-series forecasting", "database query optimization"],
+  "mathematical_formalization": "Let L_i = byte length of row i. Predictor: L_hat_{i+1} = alpha * L_i + (1 - alpha) * L_bar. Predicted start of row i+k: S_hat_{i+k} = S_i + sum_{j=1}^{k} L_hat. Speedup: (1 - P_miss) * k * T_scalar / T_verify.",
+  "analogical_connections": [
+    "CPU branch prediction: two-level adaptive predictor with global history",
+    "Video codec motion estimation: predicting offsets from neighboring data",
+    "Database cardinality estimation: histogram-based statistical models"
+  ],
+  "implementation_hypothesis": "Maintain rolling window of last 8 row lengths. Use EMA to predict next. Issue PREFETCHNTA for predicted row starts. Parse 8 predicted rows in parallel. Verify predictions by checking newline at predicted positions.",
+  "experiment_seed": "Measure prediction accuracy on uniform-width, moderately-variable, and highly-variable CSV files. Compare EMA, median, and mode predictors."
+}

@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "entropy_guided_field_width_prediction",
+  "description": "Use Shannon entropy of observed field-width distributions to adaptively choose between fixed-width fast paths and variable-width slow paths for each column. Columns with low entropy (consistent widths) get optimized fixed-offset extraction; high-entropy columns use the general SIMD-scanned approach. This is an information-theoretic meta-optimization that allocates parsing effort proportionally to structural complexity.",
+  "domains": [
+    "information theory",
+    "adaptive algorithms",
+    "database query optimization (adaptive execution)"
+  ],
+  "mathematical_formalization": "For column j, observe field widths W_j = {w_1, w_2, ..., w_k} over a sample. Compute H(W_j) = -sum p(w) log2 p(w). If H(W_j) < threshold (e.g., 0.5 bits), classify as 'fixed-width' and use predicted width w_mode. Expected extraction cost: C(j) = (1 - P_fixed(j)) * C_scan + P_fixed(j) * C_direct, where C_direct << C_scan. Total speedup: sum_j C_scan / C(j).",
+  "analogical_connections": [
+    "Adaptive compression: algorithms like LZ77 switch between literal and match modes based on local entropy, similar to switching between fixed and variable field extraction",
+    "JIT compilation tiering: V8/HotSpot's adaptive optimization promotes hot code paths to optimized tiers based on runtime profiles, analogous to promoting low-entropy columns to fast paths",
+    "Radar adaptive processing: CFAR (Constant False Alarm Rate) detectors adapt thresholds to local signal statistics, like our entropy-based threshold adaptation"
+  ],
+  "implementation_hypothesis": "During the first N rows (e.g., 1024), profile field widths per column. Compute entropy per column. For columns with H < 0.5, record the mode width and skip SIMD scanning for those columns (use direct offset + length extraction). Re-evaluate entropy every M rows to handle regime changes. Store per-column metadata: {is_fixed: bool, width: usize, entropy: f64}.",
+  "experiment_seed": "Test on CSV files with: (1) all fixed-width columns (pure numeric), (2) mixed fixed/variable, (3) all variable-width. Measure per-column entropy and correlation with parsing speedup. Compare entropy-adaptive parser vs. uniform SIMD-scan parser. Target: 2x speedup on fixed-width-heavy files.",
+  "folder_plan": {
+    "files": [
+      "src/entropy_profiler.rs",
+      "src/adaptive_extractor.rs",
+      "benches/entropy_adaptive.rs"
+    ],
+    "folders": []
+  },
+  "generated_at": "2026-03-04T08:04:49.925588+00:00",
+  "project_folder": "concept_evolve/tree/008_entropy-guided-field-width-prediction"
+}

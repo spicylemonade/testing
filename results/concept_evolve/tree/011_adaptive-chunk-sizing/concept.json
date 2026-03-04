@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "adaptive_chunk_sizing",
+  "description": "Dynamically adjust the SIMD processing chunk size based on runtime conditions: use larger chunks (512-bit AVX-512) for long stretches of unquoted data and smaller chunks (128-bit SSE/NEON) near quote-heavy regions where the overhead of managing quote state across large chunks outweighs the throughput benefit. Inspired by adaptive mesh refinement in computational fluid dynamics.",
+  "domains": [
+    "computational fluid dynamics (adaptive mesh refinement)",
+    "SIMD/vectorized computing",
+    "adaptive algorithms"
+  ],
+  "mathematical_formalization": "Let Q_density(block) = popcount(quote_bitmask) / W be the quote density in a W-byte block. Chunk policy: if Q_density < threshold_low, use W_max (e.g., 64 bytes); if Q_density > threshold_high, use W_min (e.g., 16 bytes). Expected throughput: T = sum_blocks W_block / C(W_block) where C(W) = base_cost + quote_overhead * Q_density * W. Optimization: minimize total cycles sum C(W_block) subject to covering all input.",
+  "analogical_connections": [
+    "Adaptive mesh refinement (AMR): CFD simulations use fine grids near boundaries and coarse grids in smooth regions, analogous to small chunks near quotes and large chunks in clean data",
+    "Variable-rate audio/video encoding: codecs allocate more bits to complex segments and fewer to simple ones, like our variable chunk sizing",
+    "Operating system page sizes: huge pages (2MB) for sequential access, regular pages (4KB) for random access \u2014 same principle of matching granularity to access pattern"
+  ],
+  "implementation_hypothesis": "After Phase 1 structural detection with maximum chunk size, compute quote density per 64-byte block. If a region of consecutive blocks has quote density > 0.1, re-process that region with a careful 16-byte chunk path that tracks quote state more precisely. Cache the 'region type' bitmap for use in Phase 2 extraction optimization.",
+  "experiment_seed": "Compare fixed-64-byte-chunk vs. adaptive-chunk parser on CSV files with: (1) 0% quotes, (2) clustered quotes (some columns always quoted, others never), (3) random 50% quoting. Measure throughput and correctness. Determine if adaptivity overhead is worth the per-chunk benefit.",
+  "folder_plan": {
+    "files": [
+      "src/adaptive_chunker.rs",
+      "src/quote_density.rs",
+      "benches/adaptive_vs_fixed.rs"
+    ],
+    "folders": []
+  },
+  "generated_at": "2026-03-04T08:04:49.926917+00:00",
+  "project_folder": "concept_evolve/tree/011_adaptive-chunk-sizing"
+}

@@ -1,0 +1,133 @@
+{
+  "analyzed_at": "2026-03-04T12:00:00Z",
+  "repository_root": "/home/archivara/work/repo",
+  "directories": {
+    ".archivara/": {
+      "purpose": "Core research infrastructure scripts and configuration",
+      "files": {
+        "concept_evolve.py": "ConceptEvolve CLI - launches OpenCode sub-agents for concept-tree generation (evolve/probe/reframe/walk commands). Writes to results/concept_evolve/. Uses file locking and caching (2h TTL).",
+        "semantic_scholar.py": "Semantic Scholar API client - search, citations, references, recommend, graph, bibtex commands. Writes JSON output, supports --save flag.",
+        "opencode.json": "OpenCode configuration - defines model (claude-opus-4-6), agents, tool bindings, and permissions.",
+        "logs/": "Runtime log directory for agent operations."
+      }
+    },
+    ".opencode/": {
+      "purpose": "OpenCode plugin configuration, agent definitions, and tool wrappers",
+      "files": {
+        "agents/concept-tree-explorer.md": "Subagent definition for concept tree traversal - read-only tools (websearch, webfetch, todoread/write). Focuses on missing links and next experiments.",
+        "agents/literature-graph-miner.md": "Subagent definition for citation graph mining - read-only tools. Prioritizes cross-domain citation chains.",
+        "tools/concept_evolve.ts": "TypeScript tool wrapper for concept_evolve.py - exposes evolve/probe/reframe/walk to OpenCode agents. 20min timeout.",
+        "tools/semantic_scholar.ts": "TypeScript tool wrapper for semantic_scholar.py - exposes search/citations/references/recommend/graph/bibtex to OpenCode agents.",
+        "package.json": "Node.js package for OpenCode tool plugins.",
+        "bun.lock": "Bun lockfile for Node.js dependencies.",
+        "node_modules/": "Installed Node.js dependencies."
+      }
+    },
+    "results/": {
+      "purpose": "Output directory for all research artifacts, experiment data, and concept evolution results",
+      "subdirectories": {
+        "concept_evolve/": "ConceptEvolve outputs: concept_cards.json, semantic_bridge.json, introspection.json, steering_directions.json, evolve_results.json, summary.txt",
+        "concept_evolve/tree/": "Concept tree: index.json, adjacency.json, walk_paths.json, and NNN_slug/ folders with concept.json + README.md",
+        "benchmarks/": "Benchmark data and parser metrics (to be created)",
+        "experiments/": "Experimental results (to be created)",
+        "literature_graph.json": "Citation graph output from semantic_scholar.py graph command"
+      }
+    },
+    "figures/": {
+      "purpose": "Publication-grade figures (PNG 300DPI + PDF)"
+    },
+    "src/": {
+      "purpose": "Source code for parser implementations (to be created)",
+      "planned_subdirectories": {
+        "baseline/": "Scalar baseline CSV parser",
+        "simd/": "SIMD structural character classification (x86-64 AVX2, ARM64 NEON)",
+        "speculative/": "Speculative row-length prediction",
+        "parallel/": "Multi-threaded parallel chunk processing"
+      }
+    },
+    "tests/": {
+      "purpose": "RFC 4180 compliance test suite (to be created)"
+    }
+  },
+  "agent_roles": {
+    "orchestrator": {
+      "status": "completed",
+      "description": "Planning-only rubric author. Creates research_rubric.json. Cannot use concept_evolve tool.",
+      "tools_enabled": ["bash", "write", "edit", "webfetch", "websearch", "todoread", "todowrite"],
+      "tools_disabled": ["concept_evolve"]
+    },
+    "researcher": {
+      "status": "in_progress",
+      "description": "Execution-heavy research worker. Implements experiments, runs benchmarks, writes code.",
+      "tools_enabled": ["bash", "write", "edit", "webfetch", "websearch", "todoread", "todowrite", "concept_evolve", "semantic_scholar"]
+    },
+    "writer": {
+      "status": "pending",
+      "description": "Paper writing and synthesis worker. Produces report.md and documentation.",
+      "tools_enabled": ["bash", "write", "edit", "webfetch", "websearch", "todoread", "todowrite", "semantic_scholar"],
+      "tools_disabled": ["concept_evolve"]
+    },
+    "reviewer": {
+      "status": "pending",
+      "description": "Peer review and quality control worker. Validates claims and methodology.",
+      "tools_enabled": ["bash", "write", "edit", "webfetch", "websearch", "todoread", "todowrite", "semantic_scholar"],
+      "tools_disabled": ["concept_evolve"]
+    },
+    "concept_worker": {
+      "description": "ConceptEvolve sub-worker spawned by concept_evolve.py. No recursive concept tool.",
+      "tools_enabled": ["bash", "read", "write", "edit", "webfetch", "websearch", "semantic_scholar"],
+      "tools_disabled": ["concept_evolve"]
+    }
+  },
+  "tool_bindings": {
+    "concept_evolve": {
+      "wrapper": ".opencode/tools/concept_evolve.ts",
+      "backend": ".archivara/concept_evolve.py",
+      "commands": ["evolve", "probe", "reframe", "walk"],
+      "output_paths": [
+        "results/concept_evolve/concept_cards.json",
+        "results/concept_evolve/semantic_bridge.json",
+        "results/concept_evolve/introspection.json",
+        "results/concept_evolve/steering_directions.json",
+        "results/concept_evolve/evolve_results.json",
+        "results/concept_evolve/tree/index.json",
+        "results/concept_evolve/tree/adjacency.json",
+        "results/concept_evolve/tree/walk_paths.json",
+        "results/concept_evolve/probe_result.json",
+        "results/concept_evolve/reframings.json"
+      ]
+    },
+    "semantic_scholar": {
+      "wrapper": ".opencode/tools/semantic_scholar.ts",
+      "backend": ".archivara/semantic_scholar.py",
+      "commands": ["search", "citations", "references", "recommend", "graph", "bibtex"],
+      "output_paths": ["results/literature_graph.json", "sources.bib"]
+    }
+  },
+  "data_flow": {
+    "concept_evolve_flow": {
+      "input": "User topic string via CLI or tool wrapper",
+      "processing": "concept_evolve.py spawns OpenCode sub-agent via 'opencode run --agent build'. Sub-agent uses websearch, semantic_scholar, and write tools to produce artifacts.",
+      "output": "JSON files in results/concept_evolve/ and concept folders in results/concept_evolve/tree/NNN_slug/",
+      "post_processing": "concept_evolve.py builds adjacency graph, walk paths, and index from sub-agent artifacts"
+    },
+    "semantic_scholar_flow": {
+      "input": "Query string or paper ID via CLI or tool wrapper",
+      "processing": "semantic_scholar.py calls Semantic Scholar API with retry/backoff",
+      "output": "JSON to stdout (or --save path), BibTeX to stdout (>> sources.bib)"
+    },
+    "research_pipeline": {
+      "rubric": "research_rubric.json defines phases and items with status tracking",
+      "agents_sequence": "orchestrator -> researcher -> writer -> reviewer",
+      "artifact_accumulation": "results/ grows through phases; figures/ populated in Phase 4-5"
+    }
+  },
+  "key_files": {
+    "research_rubric.json": "Master rubric with 27 items across 5 phases. Status tracking for frontend display.",
+    "sources.bib": "BibTeX bibliography (to be created). Accumulates references throughout research.",
+    "README.md": "Minimal placeholder.",
+    "TASK_researcher_attempt_1.md": "Full task specification for researcher agent.",
+    ".gitignore": "Git ignore rules.",
+    ".gitattributes": "Git attributes."
+  }
+}

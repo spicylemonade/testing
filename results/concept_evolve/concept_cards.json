@@ -1,0 +1,206 @@
+[
+  {
+    "symbolic_name": "parallel_bit_stream_structural_indexing",
+    "description": "Transform byte-at-a-time delimiter scanning into parallel bit-stream operations by transposing the input into bitplanes and computing structural character bitmasks (comma, quote, newline) across 64-byte chunks simultaneously. This is the foundational technique from simdjson adapted to CSV's simpler grammar, where each structural character class becomes a u64 bitmask that can be processed with population count, leading-zero, and carry-propagation operations.",
+    "domains": ["SIMD/vectorized computing", "compiler theory (lexical analysis)", "information retrieval"],
+    "mathematical_formalization": "Given input block B[0..63], compute bitmasks: M_comma = OR_{i=0}^{63} (B[i] == ',') << i, M_quote = OR (B[i] == '\"') << i, M_newline = OR (B[i] == '\\n') << i. Field boundaries at positions: P = {p : bit p set in (M_comma | M_newline) & ~in_quoted_region}. Throughput model: T = (N / W) * C_simd where W = SIMD width in bytes, C_simd = cycles per SIMD classify op.",
+    "analogical_connections": [
+      "simdjson's stage-1 structural indexing: JSON structural chars ({, }, [, ], :, ,) are analogous to CSV's (comma, quote, newline)",
+      "DNA sequence motif scanning: SIMD-based k-mer matching uses the same vectorized comparison + bitmask extraction pattern",
+      "Network packet classification: TCAM-style parallel field matching mirrors the parallel character classification approach"
+    ],
+    "implementation_hypothesis": "Use _mm256_cmpeq_epi8 (AVX2) or vceqq_u8 (NEON) to compare 32/16 bytes against each target character simultaneously, then _mm256_movemask_epi8 / vshrn to collapse byte-match results into a u32/u16 bitmask. Process 64 bytes per iteration by concatenating two 32-byte results. Use POPCNT and TZCNT to iterate set bits for field boundary extraction.",
+    "experiment_seed": "Benchmark the raw structural character detection throughput (bytes/second) on a 1GB CSV file with varying field counts (5, 20, 100 fields) on both x86-64 (AVX2, AVX-512) and ARM64 (NEON). Compare against scalar byte-by-byte scanning. Target: >10GB/s structural detection on AVX-512.",
+    "folder_plan": {
+      "files": ["src/structural_indexer.rs", "src/bitmask.rs", "benches/structural_bench.rs"],
+      "folders": ["src/arch/x86/", "src/arch/arm64/"]
+    }
+  },
+  {
+    "symbolic_name": "clmul_quote_pairing",
+    "description": "Use carry-less multiplication (PCLMULQDQ on x86, PMULL on ARM) to identify which regions of the CSV input are inside quoted fields, transforming the quote-character bitmask into an 'in-string' bitmask in O(1) operations per 64-bit word. This eliminates the need for sequential state tracking of open/close quotes, which is the primary serialization bottleneck in RFC 4180 parsing.",
+    "domains": ["finite field arithmetic (GF(2))", "SIMD/vectorized computing", "formal language theory"],
+    "mathematical_formalization": "Let Q be the quote bitmask (u64). Compute in_string = CLMUL(Q, 0xFFFFFFFFFFFFFFFF) XOR carry_from_prev_block. In GF(2)[x]: multiplication by all-ones polynomial computes prefix-XOR (cumulative parity). Bit i of result = parity of bits 0..i in Q. If Q has even number of quotes, carry=0; odd implies carry=1 for next block.",
+    "analogical_connections": [
+      "CRC computation: CLMUL was designed for Galois field operations in CRC/AES-GCM; repurposing it for parsing is a cross-domain transfer from cryptography to text processing",
+      "Prefix-sum in parallel computing: the cumulative XOR is a GF(2) prefix sum, analogous to parallel prefix sums used in GPU scan algorithms",
+      "Bracket matching in compilers: the quote-pairing problem is isomorphic to balanced parenthesis checking, solvable via the same cumulative-parity approach"
+    ],
+    "implementation_hypothesis": "For each 64-byte chunk: (1) compute quote bitmask Q via SIMD comparison, (2) CLMUL Q with all-ones constant to get cumulative XOR, (3) XOR with previous block's carry bit propagated across all 64 bits. The in_string mask is then used to suppress structural characters (commas, newlines) that appear inside quotes. On ARM64, use PMULL/PMULL2 with equivalent operands.",
+    "experiment_seed": "Test on CSV files with varying quote density: 0% quoted fields, 25%, 50%, 100%. Measure latency of quote-region identification vs. sequential state machine. Verify correctness against RFC 4180 edge cases: embedded quotes (\"\"), embedded newlines within quotes, fields that are only quotes.",
+    "folder_plan": {
+      "files": ["src/quote_pairing.rs", "tests/rfc4180_edge_cases.rs"],
+      "folders": ["src/arch/x86/clmul/", "src/arch/arm64/pmull/"]
+    }
+  },
+  {
+    "symbolic_name": "speculative_row_length_prediction",
+    "description": "Exploit the statistical regularity of real-world CSV files (where consecutive rows often have similar byte lengths) to speculatively predict the start offset of the next N rows, enabling prefetching and parallel parsing of predicted row boundaries. When prediction fails (mismatch detected), fall back to exact scanning from the last confirmed boundary. Inspired by Mison's speculative JSON field-location prediction.",
+    "domains": ["branch prediction / speculative execution (CPU architecture)", "time-series forecasting", "database query optimization"],
+    "mathematical_formalization": "Let L_i = byte length of row i. Predictor: L_hat_{i+1} = alpha * L_i + (1 - alpha) * L_bar (exponential moving average). Predicted start of row i+k: S_hat_{i+k} = S_i + sum_{j=1}^{k} L_hat_{i+j}. Prediction error: E = |S_actual - S_hat|. If E > 0 for any row in batch, re-scan from last confirmed. Expected speedup: (1 - P_miss) * k * T_scalar / T_verify where P_miss = probability of misprediction.",
+    "analogical_connections": [
+      "CPU branch prediction: the two-level adaptive predictor (global history + local pattern) is analogous to using recent row lengths + file-level statistics",
+      "Video codec motion estimation: predicting next-row offsets is like predicting motion vectors from neighboring macroblocks",
+      "Database cardinality estimation: predicting row counts per page uses similar histogram-based statistical models"
+    ],
+    "implementation_hypothesis": "Maintain a rolling window of last 8 row lengths. Use median or EMA to predict next row length. Issue prefetch instructions (PREFETCHNTA) for predicted row starts. Parse 8 predicted rows in parallel using SIMD structural detection. Verify predictions by checking that predicted newline positions actually contain newline characters. On misprediction, revert to confirmed-boundary + sequential scan.",
+    "experiment_seed": "Measure prediction accuracy and throughput on: (1) uniform-width CSV (e.g., fixed-width numeric), (2) moderately variable CSV (mixed types), (3) highly variable CSV (text fields with large variance). Report P_miss and net throughput impact. Compare EMA, median, and mode predictors.",
+    "folder_plan": {
+      "files": ["src/row_predictor.rs", "src/prefetch.rs", "benches/prediction_accuracy.rs"],
+      "folders": []
+    }
+  },
+  {
+    "symbolic_name": "cache_friendly_columnar_materialization",
+    "description": "After identifying field boundaries via SIMD, materialize parsed output in columnar (column-major) format rather than row-major, writing each field to its corresponding column buffer. This converts the row-oriented scatter pattern into sequential column writes, dramatically improving cache utilization for downstream analytics (which typically process one column at a time). Directly produces Apache Arrow-compatible columnar batches.",
+    "domains": ["database systems (columnar storage)", "cache optimization / memory hierarchy", "data serialization"],
+    "mathematical_formalization": "For a CSV with C columns and R rows in a batch: Row-major materialization generates C*R random writes. Columnar materialization generates C sequential write streams. Cache miss model: row-major = O(C * R / L) misses (L = cache line size) when C > cache ways; columnar = O(R * C / L) with spatial locality. For C > cache associativity, columnar is O(C/assoc) times fewer misses.",
+    "analogical_connections": [
+      "Array-of-Structures vs Structure-of-Arrays (AoS vs SoA): classic game engine optimization where SoA layout enables SIMD vectorization of physics/rendering",
+      "Matrix transposition: the row-to-column conversion is a streaming transpose, amenable to cache-oblivious or tiled algorithms",
+      "ETL pipeline design: the 'extract-then-pivot' pattern mirrors data warehouse loading strategies"
+    ],
+    "implementation_hypothesis": "Allocate C column buffers (one per CSV column). During field extraction, maintain C write cursors. For each row, write field[j] to column_buffer[j][write_cursor[j]++]. Use batch sizes aligned to cache line boundaries (e.g., 1024 rows). For variable-length string columns, use an offsets array + contiguous data buffer (Arrow StringArray layout). For numeric columns, parse-and-convert inline to avoid double-materialization.",
+    "experiment_seed": "Compare columnar vs. row-major materialization on a 1GB CSV with 20 columns. Measure: (1) L1/L2/L3 cache miss rates via perf counters, (2) total parsing+materialization throughput, (3) downstream query speed (sum of one numeric column). Use Intel VTune or perf stat.",
+    "folder_plan": {
+      "files": ["src/columnar_writer.rs", "src/arrow_bridge.rs", "benches/materialization_bench.rs"],
+      "folders": ["src/output/"]
+    }
+  },
+  {
+    "symbolic_name": "vectorized_character_classification",
+    "description": "Use SIMD shuffle-based lookup tables (PSHUFB/TBL) to classify every byte in a 16/32/64-byte chunk into one of several categories (delimiter, quote, newline, whitespace, other) in a single instruction, replacing multi-branch switch statements. This technique from simdjson's vectorized classification can handle CSV's smaller alphabet even more efficiently, producing per-category bitmasks in 2-3 SIMD instructions.",
+    "domains": ["SIMD/vectorized computing", "automata theory (character classes)", "signal processing (lookup tables)"],
+    "mathematical_formalization": "Define classification function f: byte -> {COMMA, QUOTE, NEWLINE, CR, OTHER}. Implement as: low_nibble = byte & 0x0F, high_nibble = byte >> 4. class = LUT_low[low_nibble] & LUT_high[high_nibble]. LUT_low and LUT_high are 16-byte SIMD registers used with PSHUFB. The AND combines the two 4-bit lookups into exact classification. 2 PSHUFB + 1 AND per 16 bytes = 0.1875 instructions/byte.",
+    "analogical_connections": [
+      "Perfect hashing: the nibble-split lookup is a form of perfect hash function for a small character set, similar to minimal perfect hashing in compiler symbol tables",
+      "FPGA look-up tables: the PSHUFB approach mirrors how FPGAs implement arbitrary boolean functions via LUTs, just in software",
+      "Bloom filter probing: the two-table AND-combination resembles a 2-hash Bloom filter check"
+    ],
+    "implementation_hypothesis": "For CSV, we only need to detect 4 characters: comma (0x2C), quote (0x22), LF (0x0A), CR (0x0D). Construct two 16-byte LUTs where LUT_low[nibble] has bits set for characters sharing that low nibble, LUT_high[nibble] has bits set for characters sharing that high nibble. AND the results to get exact matches. Extract per-class bitmasks with additional SIMD comparisons or bit manipulation.",
+    "experiment_seed": "Benchmark vectorized classification vs. scalar switch-case on random byte streams and real CSV data. Measure instructions per byte, branch mispredictions (should be ~0 for vectorized). Compare PSHUFB (SSE), VPSHUFB (AVX2), VPERMB (AVX-512), and TBL (NEON) implementations.",
+    "folder_plan": {
+      "files": ["src/classifier.rs", "src/arch/x86/classify_avx2.rs", "src/arch/arm64/classify_neon.rs"],
+      "folders": []
+    }
+  },
+  {
+    "symbolic_name": "finite_automaton_to_dataflow",
+    "description": "Replace the traditional finite-state-machine (FSM) approach to CSV parsing—which is inherently sequential due to state dependencies—with a data-flow graph where structural indices (bitmasks) flow through transformation stages. This decouples the parsing pipeline into independent stages (classify, quote-pair, mask, extract) that can be software-pipelined and parallelized, eliminating branch-heavy control flow.",
+    "domains": ["compiler design (dataflow analysis)", "hardware design (pipeline architecture)", "streaming systems"],
+    "mathematical_formalization": "Traditional FSM: state_{i+1} = delta(state_i, input_i), sequential dependency chain of length N. Dataflow pipeline: Stage1(classify) -> Stage2(quote_pair) -> Stage3(mask_structural) -> Stage4(extract_fields). Each stage processes W bytes independently. Pipeline throughput: T = min(T_stage_k) for k in {1..4}. Latency: L = sum(L_stage_k). Throughput improvement over FSM: W / C_fsm_per_byte.",
+    "analogical_connections": [
+      "CPU instruction pipeline: the 5-stage RISC pipeline (IF/ID/EX/MEM/WB) is analogous to the parsing pipeline stages, with structural index bitmasks as the data flowing between stages",
+      "Stream processing (Kafka/Flink): each parsing stage is a stream operator with bounded buffers, enabling backpressure-based flow control",
+      "Signal processing filter chains: cascaded FIR/IIR filters process samples in a pipeline, similar to how parsing stages process byte chunks"
+    ],
+    "implementation_hypothesis": "Implement 4 pipeline stages as separate functions operating on 64-byte block descriptors: (1) classify_block -> character bitmasks, (2) resolve_quotes -> in_string mask, (3) apply_mask -> effective delimiter positions, (4) extract_fields -> column data. Software-pipeline by processing block N+1's stage 1 while block N is in stage 2. Use circular buffer of block descriptors.",
+    "experiment_seed": "Compare single-pass FSM parser vs. pipelined dataflow parser on various CSV files. Measure instruction-level parallelism (ILP) via perf counters (instructions per cycle). Profile pipeline stage balance to identify bottleneck stage. Target: IPC > 3.0 on modern OoO cores.",
+    "folder_plan": {
+      "files": ["src/pipeline.rs", "src/stages/classify.rs", "src/stages/quote_resolve.rs", "src/stages/mask.rs", "src/stages/extract.rs"],
+      "folders": ["src/stages/"]
+    }
+  },
+  {
+    "symbolic_name": "branchless_state_machine_encoding",
+    "description": "Encode the CSV parser's state machine transitions as arithmetic/bitwise operations instead of conditional branches, ensuring the CPU pipeline never stalls on mispredictions. The key insight is that CSV has only ~4 states (normal, in-quote, escaped-quote, after-CR), and transitions can be computed as lookup-table indexed operations, completely eliminating if/switch branches in the hot loop.",
+    "domains": ["CPU microarchitecture (branch prediction)", "cryptography (constant-time programming)", "game development (branchless optimization)"],
+    "mathematical_formalization": "State encoding: NORMAL=0, IN_QUOTE=1, ESCAPE=2. Transition: next_state = T[current_state][char_class] where T is a 3x5 table. Branchless: next_state = (state & quote_mask) ^ (char_class & transition_bits). Output actions encoded as: emit_field = (char_class == COMMA) & (state == NORMAL), emit_row = (char_class == NEWLINE) & (state == NORMAL). All computed with AND/OR/XOR, zero branches.",
+    "analogical_connections": [
+      "Constant-time cryptography: avoiding branches to prevent timing side-channels uses identical techniques (CMOV, bitwise select)",
+      "GPU shader programming: GPUs execute both branches of a conditional (predicated execution), making branchless code the natural paradigm",
+      "Digital circuit design: combinational logic implements state machines without 'branches' — purely through gate-level Boolean functions"
+    ],
+    "implementation_hypothesis": "For scalar fallback path: encode state as integer 0-2, char class as integer 0-4. Compute next_state = LOOKUP[state * 5 + char_class] using a 15-entry u8 array. Use CMOV or arithmetic to compute field/row emit signals. For SIMD path, this is unnecessary since bitmask operations replace the FSM entirely. Benchmark the scalar branchless fallback vs. branchy FSM for the non-SIMD tail bytes.",
+    "experiment_seed": "Measure branch misprediction rates on CSV data with varying quote patterns (0%, 10%, 50% quoted fields). Compare branchy vs. branchless scalar parsers using perf stat. Expect branchless to show <0.1% misprediction rate vs. 5-20% for branchy on mixed data.",
+    "folder_plan": {
+      "files": ["src/scalar_parser.rs", "src/branchless.rs", "benches/branch_prediction.rs"],
+      "folders": []
+    }
+  },
+  {
+    "symbolic_name": "entropy_guided_field_width_prediction",
+    "description": "Use Shannon entropy of observed field-width distributions to adaptively choose between fixed-width fast paths and variable-width slow paths for each column. Columns with low entropy (consistent widths) get optimized fixed-offset extraction; high-entropy columns use the general SIMD-scanned approach. This is an information-theoretic meta-optimization that allocates parsing effort proportionally to structural complexity.",
+    "domains": ["information theory", "adaptive algorithms", "database query optimization (adaptive execution)"],
+    "mathematical_formalization": "For column j, observe field widths W_j = {w_1, w_2, ..., w_k} over a sample. Compute H(W_j) = -sum p(w) log2 p(w). If H(W_j) < threshold (e.g., 0.5 bits), classify as 'fixed-width' and use predicted width w_mode. Expected extraction cost: C(j) = (1 - P_fixed(j)) * C_scan + P_fixed(j) * C_direct, where C_direct << C_scan. Total speedup: sum_j C_scan / C(j).",
+    "analogical_connections": [
+      "Adaptive compression: algorithms like LZ77 switch between literal and match modes based on local entropy, similar to switching between fixed and variable field extraction",
+      "JIT compilation tiering: V8/HotSpot's adaptive optimization promotes hot code paths to optimized tiers based on runtime profiles, analogous to promoting low-entropy columns to fast paths",
+      "Radar adaptive processing: CFAR (Constant False Alarm Rate) detectors adapt thresholds to local signal statistics, like our entropy-based threshold adaptation"
+    ],
+    "implementation_hypothesis": "During the first N rows (e.g., 1024), profile field widths per column. Compute entropy per column. For columns with H < 0.5, record the mode width and skip SIMD scanning for those columns (use direct offset + length extraction). Re-evaluate entropy every M rows to handle regime changes. Store per-column metadata: {is_fixed: bool, width: usize, entropy: f64}.",
+    "experiment_seed": "Test on CSV files with: (1) all fixed-width columns (pure numeric), (2) mixed fixed/variable, (3) all variable-width. Measure per-column entropy and correlation with parsing speedup. Compare entropy-adaptive parser vs. uniform SIMD-scan parser. Target: 2x speedup on fixed-width-heavy files.",
+    "folder_plan": {
+      "files": ["src/entropy_profiler.rs", "src/adaptive_extractor.rs", "benches/entropy_adaptive.rs"],
+      "folders": []
+    }
+  },
+  {
+    "symbolic_name": "simd_utf8_validation_fusion",
+    "description": "Fuse UTF-8 validation into the SIMD structural character detection pass, validating multi-byte sequences while simultaneously scanning for delimiters. This avoids a separate validation pass and exploits the fact that CSV structural characters (comma, quote, newline) are all single-byte ASCII, meaning any byte >= 0x80 is guaranteed to be non-structural and part of a multi-byte UTF-8 sequence.",
+    "domains": ["character encoding (Unicode)", "SIMD/vectorized computing", "compiler optimization (pass fusion)"],
+    "mathematical_formalization": "UTF-8 invariant for CSV structural chars: For any byte b in {0x2C, 0x22, 0x0A, 0x0D}, b < 0x80, so it cannot appear as a continuation byte in valid UTF-8. Therefore: structural_mask & utf8_continuation_mask == 0 (always true in valid UTF-8). Validation cost when fused: C_fused = max(C_structural, C_utf8_validate) vs. C_separate = C_structural + C_utf8_validate. Fused throughput >= separate throughput since both operate on same loaded data.",
+    "analogical_connections": [
+      "Lemire's simdutf library: validates and transcodes UTF-8 at gigabytes/second using the same SIMD infrastructure we use for CSV parsing",
+      "Compiler loop fusion: merging two loops over the same data into one is a standard compiler optimization; here we fuse two SIMD passes",
+      "Multimedia codec optimization: video decoders fuse entropy decoding with inverse transform in a single pass for cache efficiency"
+    ],
+    "implementation_hypothesis": "In the classify stage, after computing delimiter bitmasks, add UTF-8 validation logic: (1) identify bytes >= 0x80, (2) check continuation byte patterns (10xxxxxx), (3) verify leading byte length indicators match actual continuation count. Reuse the same SIMD register loads. Report validation errors with byte-precise positions. Cost: ~2 additional SIMD instructions per 32-byte block.",
+    "experiment_seed": "Benchmark fused vs. separate UTF-8 validation + structural detection on: (1) pure ASCII CSV, (2) 10% non-ASCII (European text), (3) 80% non-ASCII (CJK text). Measure throughput and validate that fused version detects all malformed UTF-8 that a standalone validator would catch.",
+    "folder_plan": {
+      "files": ["src/utf8_validate.rs", "src/fused_classify_validate.rs", "tests/utf8_edge_cases.rs"],
+      "folders": []
+    }
+  },
+  {
+    "symbolic_name": "two_phase_parsing_architecture",
+    "description": "Split CSV parsing into two distinct phases: Phase 1 (structural indexing) scans the entire input to build a complete structural index (array of field boundary offsets), and Phase 2 (field extraction) reads the index to extract and convert individual field values. This decouples the I/O-bound scanning from the compute-bound extraction, enabling different optimization strategies for each phase and allowing Phase 2 to be parallelized across columns.",
+    "domains": ["database systems (query execution models)", "compiler design (multi-pass compilation)", "operating systems (two-phase commit)"],
+    "mathematical_formalization": "Phase 1: scan N bytes, produce index I = [(offset, length, column_id, row_id), ...] of size O(F) where F = total field count. Phase 1 is memory-bandwidth bound: T_1 = N / BW_mem. Phase 2: for each column c, extract fields from index: T_2(c) = F_c * C_extract. Phase 2 is parallelizable: T_2 = max_c(T_2(c)) with C threads. Total: T = T_1 + T_2. Amdahl: speedup = (T_1 + T_2_serial) / (T_1 + T_2_serial / C).",
+    "analogical_connections": [
+      "simdjson's Stage 1 + Stage 2 architecture: Stage 1 builds structural indices, Stage 2 builds the DOM — directly analogous to our Phase 1 + Phase 2",
+      "Compiler front-end/back-end split: lexing + parsing (Phase 1) produces AST, code generation (Phase 2) emits machine code from AST",
+      "MapReduce: Phase 1 is the Map (scan and classify), Phase 2 is the Reduce (aggregate into columns)"
+    ],
+    "implementation_hypothesis": "Phase 1: SIMD-scan input in 64-byte chunks, produce a flat array of u32 offsets marking every field start. Store as (row_boundary_offsets[], field_boundary_offsets[]). Phase 2: for each column, iterate field_boundary_offsets with stride = column_count to extract that column's values. Phase 2 can spawn one thread per column-group for parallel extraction. For numeric columns, use SIMD-accelerated integer/float parsing (e.g., Lemire's fast_float).",
+    "experiment_seed": "Measure Phase 1 vs. Phase 2 time breakdown on a 10GB CSV with 20 columns. Determine if the parser is Phase-1-bound (memory bandwidth) or Phase-2-bound (extraction). Vary column types: all-string vs. all-numeric vs. mixed. Test Phase 2 parallelism scaling from 1 to 16 threads.",
+    "folder_plan": {
+      "files": ["src/phase1_indexer.rs", "src/phase2_extractor.rs", "src/index_format.rs", "benches/two_phase_bench.rs"],
+      "folders": ["src/phase1/", "src/phase2/"]
+    }
+  },
+  {
+    "symbolic_name": "adaptive_chunk_sizing",
+    "description": "Dynamically adjust the SIMD processing chunk size based on runtime conditions: use larger chunks (512-bit AVX-512) for long stretches of unquoted data and smaller chunks (128-bit SSE/NEON) near quote-heavy regions where the overhead of managing quote state across large chunks outweighs the throughput benefit. Inspired by adaptive mesh refinement in computational fluid dynamics.",
+    "domains": ["computational fluid dynamics (adaptive mesh refinement)", "SIMD/vectorized computing", "adaptive algorithms"],
+    "mathematical_formalization": "Let Q_density(block) = popcount(quote_bitmask) / W be the quote density in a W-byte block. Chunk policy: if Q_density < threshold_low, use W_max (e.g., 64 bytes); if Q_density > threshold_high, use W_min (e.g., 16 bytes). Expected throughput: T = sum_blocks W_block / C(W_block) where C(W) = base_cost + quote_overhead * Q_density * W. Optimization: minimize total cycles sum C(W_block) subject to covering all input.",
+    "analogical_connections": [
+      "Adaptive mesh refinement (AMR): CFD simulations use fine grids near boundaries and coarse grids in smooth regions, analogous to small chunks near quotes and large chunks in clean data",
+      "Variable-rate audio/video encoding: codecs allocate more bits to complex segments and fewer to simple ones, like our variable chunk sizing",
+      "Operating system page sizes: huge pages (2MB) for sequential access, regular pages (4KB) for random access — same principle of matching granularity to access pattern"
+    ],
+    "implementation_hypothesis": "After Phase 1 structural detection with maximum chunk size, compute quote density per 64-byte block. If a region of consecutive blocks has quote density > 0.1, re-process that region with a careful 16-byte chunk path that tracks quote state more precisely. Cache the 'region type' bitmap for use in Phase 2 extraction optimization.",
+    "experiment_seed": "Compare fixed-64-byte-chunk vs. adaptive-chunk parser on CSV files with: (1) 0% quotes, (2) clustered quotes (some columns always quoted, others never), (3) random 50% quoting. Measure throughput and correctness. Determine if adaptivity overhead is worth the per-chunk benefit.",
+    "folder_plan": {
+      "files": ["src/adaptive_chunker.rs", "src/quote_density.rs", "benches/adaptive_vs_fixed.rs"],
+      "folders": []
+    }
+  },
+  {
+    "symbolic_name": "zero_copy_field_extraction",
+    "description": "For string-type columns, avoid copying field data entirely by producing offset-length pairs that point directly into the memory-mapped input buffer. Fields that don't require unescaping (no embedded quotes) can be served as zero-copy slices, while only the ~5-10% of fields requiring unescape get copied into a separate buffer. This leverages the observation that most CSV fields are simple unquoted values.",
+    "domains": ["operating systems (zero-copy I/O, mmap)", "database systems (late materialization)", "network protocol parsing (zero-copy buffers)"],
+    "mathematical_formalization": "Let F_total = total fields, F_escape = fields requiring unescape. Copy cost: C_full = F_total * avg_field_len * C_memcpy. Zero-copy cost: C_zero = F_escape * avg_escaped_field_len * C_memcpy + F_total * C_offset_store. Speedup: C_full / C_zero = F_total * avg_len / (F_escape * avg_escaped_len + F_total * sizeof(offset)). When F_escape / F_total < 10%, speedup approaches avg_len / sizeof(offset) ~ 10-50x for field extraction.",
+    "analogical_connections": [
+      "Linux sendfile / splice: zero-copy network I/O avoids kernel-userspace copies, same principle of avoiding unnecessary data movement",
+      "Database late materialization: only materialize column values when actually needed by the query, minimizing data movement",
+      "Memory-mapped file I/O: mmap lets the OS manage page caching while the parser operates directly on virtual memory addresses"
+    ],
+    "implementation_hypothesis": "mmap the input file. Phase 1 produces an index of (offset, length, needs_unescape) tuples. For fields where needs_unescape=false, return &input[offset..offset+length] directly. For escaped fields, copy to an escape buffer while removing doubled quotes. Use the 'needs_unescape' flag from the quote-pairing stage (a field needs unescaping only if it contains '\"\"' inside quotes).",
+    "experiment_seed": "Profile memory bandwidth and throughput on a 5GB CSV file with 5%, 20%, 50% fields requiring unescape. Measure: (1) memory copy bytes saved, (2) parsing throughput improvement, (3) RSS memory usage. Compare mmap vs. read-based I/O for Phase 1 scanning.",
+    "folder_plan": {
+      "files": ["src/zero_copy.rs", "src/escape_buffer.rs", "src/mmap_reader.rs", "benches/zero_copy_bench.rs"],
+      "folders": []
+    }
+  }
+]

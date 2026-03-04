@@ -1,0 +1,31 @@
+{
+  "symbolic_name": "finite_automaton_to_dataflow",
+  "description": "Replace the traditional finite-state-machine (FSM) approach to CSV parsing\u2014which is inherently sequential due to state dependencies\u2014with a data-flow graph where structural indices (bitmasks) flow through transformation stages. This decouples the parsing pipeline into independent stages (classify, quote-pair, mask, extract) that can be software-pipelined and parallelized, eliminating branch-heavy control flow.",
+  "domains": [
+    "compiler design (dataflow analysis)",
+    "hardware design (pipeline architecture)",
+    "streaming systems"
+  ],
+  "mathematical_formalization": "Traditional FSM: state_{i+1} = delta(state_i, input_i), sequential dependency chain of length N. Dataflow pipeline: Stage1(classify) -> Stage2(quote_pair) -> Stage3(mask_structural) -> Stage4(extract_fields). Each stage processes W bytes independently. Pipeline throughput: T = min(T_stage_k) for k in {1..4}. Latency: L = sum(L_stage_k). Throughput improvement over FSM: W / C_fsm_per_byte.",
+  "analogical_connections": [
+    "CPU instruction pipeline: the 5-stage RISC pipeline (IF/ID/EX/MEM/WB) is analogous to the parsing pipeline stages, with structural index bitmasks as the data flowing between stages",
+    "Stream processing (Kafka/Flink): each parsing stage is a stream operator with bounded buffers, enabling backpressure-based flow control",
+    "Signal processing filter chains: cascaded FIR/IIR filters process samples in a pipeline, similar to how parsing stages process byte chunks"
+  ],
+  "implementation_hypothesis": "Implement 4 pipeline stages as separate functions operating on 64-byte block descriptors: (1) classify_block -> character bitmasks, (2) resolve_quotes -> in_string mask, (3) apply_mask -> effective delimiter positions, (4) extract_fields -> column data. Software-pipeline by processing block N+1's stage 1 while block N is in stage 2. Use circular buffer of block descriptors.",
+  "experiment_seed": "Compare single-pass FSM parser vs. pipelined dataflow parser on various CSV files. Measure instruction-level parallelism (ILP) via perf counters (instructions per cycle). Profile pipeline stage balance to identify bottleneck stage. Target: IPC > 3.0 on modern OoO cores.",
+  "folder_plan": {
+    "files": [
+      "src/pipeline.rs",
+      "src/stages/classify.rs",
+      "src/stages/quote_resolve.rs",
+      "src/stages/mask.rs",
+      "src/stages/extract.rs"
+    ],
+    "folders": [
+      "src/stages/"
+    ]
+  },
+  "generated_at": "2026-03-04T08:04:49.924738+00:00",
+  "project_folder": "concept_evolve/tree/006_finite-automaton-to-dataflow"
+}

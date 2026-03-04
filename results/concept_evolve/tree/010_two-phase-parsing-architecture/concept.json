@@ -1,0 +1,31 @@
+{
+  "symbolic_name": "two_phase_parsing_architecture",
+  "description": "Split CSV parsing into two distinct phases: Phase 1 (structural indexing) scans the entire input to build a complete structural index (array of field boundary offsets), and Phase 2 (field extraction) reads the index to extract and convert individual field values. This decouples the I/O-bound scanning from the compute-bound extraction, enabling different optimization strategies for each phase and allowing Phase 2 to be parallelized across columns.",
+  "domains": [
+    "database systems (query execution models)",
+    "compiler design (multi-pass compilation)",
+    "operating systems (two-phase commit)"
+  ],
+  "mathematical_formalization": "Phase 1: scan N bytes, produce index I = [(offset, length, column_id, row_id), ...] of size O(F) where F = total field count. Phase 1 is memory-bandwidth bound: T_1 = N / BW_mem. Phase 2: for each column c, extract fields from index: T_2(c) = F_c * C_extract. Phase 2 is parallelizable: T_2 = max_c(T_2(c)) with C threads. Total: T = T_1 + T_2. Amdahl: speedup = (T_1 + T_2_serial) / (T_1 + T_2_serial / C).",
+  "analogical_connections": [
+    "simdjson's Stage 1 + Stage 2 architecture: Stage 1 builds structural indices, Stage 2 builds the DOM \u2014 directly analogous to our Phase 1 + Phase 2",
+    "Compiler front-end/back-end split: lexing + parsing (Phase 1) produces AST, code generation (Phase 2) emits machine code from AST",
+    "MapReduce: Phase 1 is the Map (scan and classify), Phase 2 is the Reduce (aggregate into columns)"
+  ],
+  "implementation_hypothesis": "Phase 1: SIMD-scan input in 64-byte chunks, produce a flat array of u32 offsets marking every field start. Store as (row_boundary_offsets[], field_boundary_offsets[]). Phase 2: for each column, iterate field_boundary_offsets with stride = column_count to extract that column's values. Phase 2 can spawn one thread per column-group for parallel extraction. For numeric columns, use SIMD-accelerated integer/float parsing (e.g., Lemire's fast_float).",
+  "experiment_seed": "Measure Phase 1 vs. Phase 2 time breakdown on a 10GB CSV with 20 columns. Determine if the parser is Phase-1-bound (memory bandwidth) or Phase-2-bound (extraction). Vary column types: all-string vs. all-numeric vs. mixed. Test Phase 2 parallelism scaling from 1 to 16 threads.",
+  "folder_plan": {
+    "files": [
+      "src/phase1_indexer.rs",
+      "src/phase2_extractor.rs",
+      "src/index_format.rs",
+      "benches/two_phase_bench.rs"
+    ],
+    "folders": [
+      "src/phase1/",
+      "src/phase2/"
+    ]
+  },
+  "generated_at": "2026-03-04T08:04:49.926430+00:00",
+  "project_folder": "concept_evolve/tree/010_two-phase-parsing-architecture"
+}

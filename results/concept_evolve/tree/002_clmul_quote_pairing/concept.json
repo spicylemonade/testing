@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "clmul_quote_pairing",
+  "description": "Use carry-less multiplication (PCLMULQDQ on x86, PMULL on ARM) to identify which regions of the CSV input are inside quoted fields, transforming the quote-character bitmask into an 'in-string' bitmask in O(1) operations per 64-bit word. This eliminates the need for sequential state tracking of open/close quotes, which is the primary serialization bottleneck in RFC 4180 parsing.",
+  "domains": ["finite field arithmetic (GF(2))", "SIMD/vectorized computing", "formal language theory"],
+  "mathematical_formalization": "Let Q be the quote bitmask (u64). Compute in_string = CLMUL(Q, 0xFFFFFFFFFFFFFFFF) XOR carry_from_prev_block. In GF(2)[x]: multiplication by all-ones polynomial computes prefix-XOR (cumulative parity). Bit i of result = parity of bits 0..i in Q.",
+  "analogical_connections": [
+    "CRC computation: CLMUL was designed for Galois field operations in CRC/AES-GCM",
+    "Prefix-sum in parallel computing: cumulative XOR is a GF(2) prefix sum",
+    "Bracket matching in compilers: quote-pairing is isomorphic to balanced parenthesis checking"
+  ],
+  "implementation_hypothesis": "For each 64-byte chunk: compute quote bitmask Q via SIMD comparison, CLMUL Q with all-ones constant to get cumulative XOR, XOR with previous block's carry bit. The in_string mask then suppresses structural characters inside quotes.",
+  "experiment_seed": "Test on CSV files with varying quote density: 0%, 25%, 50%, 100%. Measure latency vs. sequential state machine. Verify RFC 4180 edge cases."
+}

@@ -1,0 +1,13 @@
+{
+  "symbolic_name": "parallel_bit_stream_structural_indexing",
+  "description": "Transform byte-at-a-time delimiter scanning into parallel bit-stream operations by transposing the input into bitplanes and computing structural character bitmasks (comma, quote, newline) across 64-byte chunks simultaneously. This is the foundational technique from simdjson adapted to CSV's simpler grammar, where each structural character class becomes a u64 bitmask that can be processed with population count, leading-zero, and carry-propagation operations.",
+  "domains": ["SIMD/vectorized computing", "compiler theory (lexical analysis)", "information retrieval"],
+  "mathematical_formalization": "Given input block B[0..63], compute bitmasks: M_comma = OR_{i=0}^{63} (B[i] == ',') << i, M_quote = OR (B[i] == '\"') << i, M_newline = OR (B[i] == '\\n') << i. Field boundaries at positions: P = {p : bit p set in (M_comma | M_newline) & ~in_quoted_region}. Throughput model: T = (N / W) * C_simd where W = SIMD width in bytes, C_simd = cycles per SIMD classify op.",
+  "analogical_connections": [
+    "simdjson's stage-1 structural indexing",
+    "DNA sequence motif scanning with SIMD k-mer matching",
+    "Network packet classification via TCAM-style parallel matching"
+  ],
+  "implementation_hypothesis": "Use _mm256_cmpeq_epi8 (AVX2) or vceqq_u8 (NEON) to compare 32/16 bytes against each target character simultaneously, then _mm256_movemask_epi8 / vshrn to collapse byte-match results into a bitmask. Process 64 bytes per iteration by concatenating two 32-byte results.",
+  "experiment_seed": "Benchmark raw structural character detection throughput on a 1GB CSV file with varying field counts (5, 20, 100 fields) on x86-64 (AVX2, AVX-512) and ARM64 (NEON). Target: >10GB/s on AVX-512."
+}

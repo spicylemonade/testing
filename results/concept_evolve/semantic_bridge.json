@@ -1,0 +1,140 @@
+{
+  "nodes": [
+    {"id": "parallel_bit_stream_structural_indexing", "domain": "SIMD/vectorized computing"},
+    {"id": "clmul_quote_pairing", "domain": "finite field arithmetic (GF(2))"},
+    {"id": "speculative_row_length_prediction", "domain": "CPU architecture / speculation"},
+    {"id": "cache_friendly_columnar_materialization", "domain": "database systems (columnar storage)"},
+    {"id": "vectorized_character_classification", "domain": "SIMD/vectorized computing"},
+    {"id": "finite_automaton_to_dataflow", "domain": "compiler design"},
+    {"id": "branchless_state_machine_encoding", "domain": "CPU microarchitecture"},
+    {"id": "entropy_guided_field_width_prediction", "domain": "information theory"},
+    {"id": "simd_utf8_validation_fusion", "domain": "character encoding (Unicode)"},
+    {"id": "two_phase_parsing_architecture", "domain": "database systems (query execution)"},
+    {"id": "adaptive_chunk_sizing", "domain": "computational fluid dynamics (AMR)"},
+    {"id": "zero_copy_field_extraction", "domain": "operating systems (zero-copy I/O)"}
+  ],
+  "edges": [
+    {
+      "source": "parallel_bit_stream_structural_indexing",
+      "target": "vectorized_character_classification",
+      "relation": "Classification is the first step of structural indexing — produces the bitmasks that structural indexing operates on"
+    },
+    {
+      "source": "parallel_bit_stream_structural_indexing",
+      "target": "clmul_quote_pairing",
+      "relation": "Quote bitmask from structural indexing feeds into CLMUL to determine in-string regions"
+    },
+    {
+      "source": "clmul_quote_pairing",
+      "target": "branchless_state_machine_encoding",
+      "relation": "Both eliminate branches: CLMUL replaces sequential quote tracking, branchless encoding replaces conditional state transitions"
+    },
+    {
+      "source": "clmul_quote_pairing",
+      "target": "adaptive_chunk_sizing",
+      "relation": "Quote density computed during pairing drives chunk size adaptation decisions"
+    },
+    {
+      "source": "vectorized_character_classification",
+      "target": "simd_utf8_validation_fusion",
+      "relation": "UTF-8 validation is fused into the classification pass, sharing SIMD register loads"
+    },
+    {
+      "source": "parallel_bit_stream_structural_indexing",
+      "target": "two_phase_parsing_architecture",
+      "relation": "Structural indexing IS Phase 1 of the two-phase architecture"
+    },
+    {
+      "source": "two_phase_parsing_architecture",
+      "target": "cache_friendly_columnar_materialization",
+      "relation": "Phase 2 uses the structural index to materialize data in columnar format"
+    },
+    {
+      "source": "two_phase_parsing_architecture",
+      "target": "zero_copy_field_extraction",
+      "relation": "Phase 2 can use zero-copy extraction for string fields instead of full materialization"
+    },
+    {
+      "source": "speculative_row_length_prediction",
+      "target": "two_phase_parsing_architecture",
+      "relation": "Speculation enables parallel processing within Phase 1 by predicting row boundaries ahead"
+    },
+    {
+      "source": "speculative_row_length_prediction",
+      "target": "cache_friendly_columnar_materialization",
+      "relation": "Predicted row lengths enable pre-allocation of column buffers with correct sizes, avoiding reallocation"
+    },
+    {
+      "source": "entropy_guided_field_width_prediction",
+      "target": "speculative_row_length_prediction",
+      "relation": "Field-width entropy directly determines row-length predictability — low entropy columns yield accurate row predictions"
+    },
+    {
+      "source": "entropy_guided_field_width_prediction",
+      "target": "zero_copy_field_extraction",
+      "relation": "Low-entropy (fixed-width) fields benefit most from zero-copy since their offsets are predictable"
+    },
+    {
+      "source": "finite_automaton_to_dataflow",
+      "target": "two_phase_parsing_architecture",
+      "relation": "The dataflow graph architecture enables the two-phase split by decoupling scanning from extraction"
+    },
+    {
+      "source": "finite_automaton_to_dataflow",
+      "target": "parallel_bit_stream_structural_indexing",
+      "relation": "Dataflow replaces the FSM with bitmask stages; structural indexing is the concrete implementation of the first dataflow stage"
+    },
+    {
+      "source": "branchless_state_machine_encoding",
+      "target": "finite_automaton_to_dataflow",
+      "relation": "Branchless encoding is the scalar fallback when SIMD dataflow is unavailable (tail bytes, narrow platforms)"
+    },
+    {
+      "source": "cache_friendly_columnar_materialization",
+      "target": "zero_copy_field_extraction",
+      "relation": "Zero-copy is an optimization within columnar materialization — avoids the copy step for eligible fields"
+    },
+    {
+      "source": "adaptive_chunk_sizing",
+      "target": "parallel_bit_stream_structural_indexing",
+      "relation": "Chunk sizing determines the SIMD register width used for structural indexing at each input region"
+    },
+    {
+      "source": "simd_utf8_validation_fusion",
+      "target": "two_phase_parsing_architecture",
+      "relation": "Fused validation happens during Phase 1, eliminating the need for a separate validation pass"
+    }
+  ],
+  "bridge_chains": [
+    {
+      "name": "Cryptography -> Text Parsing -> Database Storage",
+      "path": ["clmul_quote_pairing", "parallel_bit_stream_structural_indexing", "two_phase_parsing_architecture", "cache_friendly_columnar_materialization"],
+      "description": "A Galois field operation from cryptography (CLMUL) enables branchless quote detection, which feeds into SIMD structural indexing (from text processing), through a two-phase architecture (from compiler design), to produce columnar output (from database systems). This chain crosses 4 domains."
+    },
+    {
+      "name": "Information Theory -> Prediction -> CPU Architecture -> Memory Hierarchy",
+      "path": ["entropy_guided_field_width_prediction", "speculative_row_length_prediction", "cache_friendly_columnar_materialization"],
+      "description": "Shannon entropy from information theory guides field-width profiling, which enables speculative prediction (from CPU architecture), which drives cache-friendly pre-allocation (from memory hierarchy optimization). Crosses information theory, hardware speculation, and systems programming."
+    },
+    {
+      "name": "CFD Adaptive Refinement -> SIMD Width Selection -> Parsing Throughput",
+      "path": ["adaptive_chunk_sizing", "parallel_bit_stream_structural_indexing", "clmul_quote_pairing"],
+      "description": "Adaptive mesh refinement from computational physics inspires variable-width SIMD chunk processing, which adjusts the granularity of bit-stream structural indexing based on quote density, connecting fluid dynamics to finite field arithmetic."
+    },
+    {
+      "name": "Unicode Standards -> Compiler Optimization -> SIMD Hardware",
+      "path": ["simd_utf8_validation_fusion", "vectorized_character_classification", "parallel_bit_stream_structural_indexing"],
+      "description": "UTF-8 encoding rules from Unicode standards are validated using the same SIMD classify infrastructure used for delimiter detection, exploiting the compiler optimization technique of loop fusion. Connects character encoding, optimization theory, and hardware architecture."
+    },
+    {
+      "name": "Constant-Time Crypto -> Branchless Parsing -> Dataflow Architecture -> Columnar DBs",
+      "path": ["branchless_state_machine_encoding", "finite_automaton_to_dataflow", "two_phase_parsing_architecture", "cache_friendly_columnar_materialization"],
+      "description": "Constant-time programming from cryptographic engineering eliminates branches, enabling the FSM-to-dataflow transformation from compiler theory, structured as a two-phase pipeline from database execution models, outputting to columnar storage from analytics systems."
+    },
+    {
+      "name": "OS Zero-Copy -> Late Materialization -> Entropy-Guided Selection",
+      "path": ["zero_copy_field_extraction", "entropy_guided_field_width_prediction", "speculative_row_length_prediction"],
+      "description": "Zero-copy I/O from operating systems design combines with information-theoretic field profiling to decide which fields to materialize vs. reference in-place, with speculative prediction enabling ahead-of-time allocation decisions."
+    }
+  ]
+}

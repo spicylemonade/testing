@@ -1,0 +1,28 @@
+{
+  "symbolic_name": "zero_copy_field_extraction",
+  "description": "For string-type columns, avoid copying field data entirely by producing offset-length pairs that point directly into the memory-mapped input buffer. Fields that don't require unescaping (no embedded quotes) can be served as zero-copy slices, while only the ~5-10% of fields requiring unescape get copied into a separate buffer. This leverages the observation that most CSV fields are simple unquoted values.",
+  "domains": [
+    "operating systems (zero-copy I/O, mmap)",
+    "database systems (late materialization)",
+    "network protocol parsing (zero-copy buffers)"
+  ],
+  "mathematical_formalization": "Let F_total = total fields, F_escape = fields requiring unescape. Copy cost: C_full = F_total * avg_field_len * C_memcpy. Zero-copy cost: C_zero = F_escape * avg_escaped_field_len * C_memcpy + F_total * C_offset_store. Speedup: C_full / C_zero = F_total * avg_len / (F_escape * avg_escaped_len + F_total * sizeof(offset)). When F_escape / F_total < 10%, speedup approaches avg_len / sizeof(offset) ~ 10-50x for field extraction.",
+  "analogical_connections": [
+    "Linux sendfile / splice: zero-copy network I/O avoids kernel-userspace copies, same principle of avoiding unnecessary data movement",
+    "Database late materialization: only materialize column values when actually needed by the query, minimizing data movement",
+    "Memory-mapped file I/O: mmap lets the OS manage page caching while the parser operates directly on virtual memory addresses"
+  ],
+  "implementation_hypothesis": "mmap the input file. Phase 1 produces an index of (offset, length, needs_unescape) tuples. For fields where needs_unescape=false, return &input[offset..offset+length] directly. For escaped fields, copy to an escape buffer while removing doubled quotes. Use the 'needs_unescape' flag from the quote-pairing stage (a field needs unescaping only if it contains '\"\"' inside quotes).",
+  "experiment_seed": "Profile memory bandwidth and throughput on a 5GB CSV file with 5%, 20%, 50% fields requiring unescape. Measure: (1) memory copy bytes saved, (2) parsing throughput improvement, (3) RSS memory usage. Compare mmap vs. read-based I/O for Phase 1 scanning.",
+  "folder_plan": {
+    "files": [
+      "src/zero_copy.rs",
+      "src/escape_buffer.rs",
+      "src/mmap_reader.rs",
+      "benches/zero_copy_bench.rs"
+    ],
+    "folders": []
+  },
+  "generated_at": "2026-03-04T08:04:49.927320+00:00",
+  "project_folder": "concept_evolve/tree/012_zero-copy-field-extraction"
+}

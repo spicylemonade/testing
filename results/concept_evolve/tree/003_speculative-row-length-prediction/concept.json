@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "speculative_row_length_prediction",
+  "description": "Exploit the statistical regularity of real-world CSV files (where consecutive rows often have similar byte lengths) to speculatively predict the start offset of the next N rows, enabling prefetching and parallel parsing of predicted row boundaries. When prediction fails (mismatch detected), fall back to exact scanning from the last confirmed boundary. Inspired by Mison's speculative JSON field-location prediction.",
+  "domains": [
+    "branch prediction / speculative execution (CPU architecture)",
+    "time-series forecasting",
+    "database query optimization"
+  ],
+  "mathematical_formalization": "Let L_i = byte length of row i. Predictor: L_hat_{i+1} = alpha * L_i + (1 - alpha) * L_bar (exponential moving average). Predicted start of row i+k: S_hat_{i+k} = S_i + sum_{j=1}^{k} L_hat_{i+j}. Prediction error: E = |S_actual - S_hat|. If E > 0 for any row in batch, re-scan from last confirmed. Expected speedup: (1 - P_miss) * k * T_scalar / T_verify where P_miss = probability of misprediction.",
+  "analogical_connections": [
+    "CPU branch prediction: the two-level adaptive predictor (global history + local pattern) is analogous to using recent row lengths + file-level statistics",
+    "Video codec motion estimation: predicting next-row offsets is like predicting motion vectors from neighboring macroblocks",
+    "Database cardinality estimation: predicting row counts per page uses similar histogram-based statistical models"
+  ],
+  "implementation_hypothesis": "Maintain a rolling window of last 8 row lengths. Use median or EMA to predict next row length. Issue prefetch instructions (PREFETCHNTA) for predicted row starts. Parse 8 predicted rows in parallel using SIMD structural detection. Verify predictions by checking that predicted newline positions actually contain newline characters. On misprediction, revert to confirmed-boundary + sequential scan.",
+  "experiment_seed": "Measure prediction accuracy and throughput on: (1) uniform-width CSV (e.g., fixed-width numeric), (2) moderately variable CSV (mixed types), (3) highly variable CSV (text fields with large variance). Report P_miss and net throughput impact. Compare EMA, median, and mode predictors.",
+  "folder_plan": {
+    "files": [
+      "src/row_predictor.rs",
+      "src/prefetch.rs",
+      "benches/prediction_accuracy.rs"
+    ],
+    "folders": []
+  },
+  "generated_at": "2026-03-04T08:04:49.923439+00:00",
+  "project_folder": "concept_evolve/tree/003_speculative-row-length-prediction"
+}

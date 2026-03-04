@@ -1,0 +1,29 @@
+{
+  "symbolic_name": "cache_friendly_columnar_materialization",
+  "description": "After identifying field boundaries via SIMD, materialize parsed output in columnar (column-major) format rather than row-major, writing each field to its corresponding column buffer. This converts the row-oriented scatter pattern into sequential column writes, dramatically improving cache utilization for downstream analytics (which typically process one column at a time). Directly produces Apache Arrow-compatible columnar batches.",
+  "domains": [
+    "database systems (columnar storage)",
+    "cache optimization / memory hierarchy",
+    "data serialization"
+  ],
+  "mathematical_formalization": "For a CSV with C columns and R rows in a batch: Row-major materialization generates C*R random writes. Columnar materialization generates C sequential write streams. Cache miss model: row-major = O(C * R / L) misses (L = cache line size) when C > cache ways; columnar = O(R * C / L) with spatial locality. For C > cache associativity, columnar is O(C/assoc) times fewer misses.",
+  "analogical_connections": [
+    "Array-of-Structures vs Structure-of-Arrays (AoS vs SoA): classic game engine optimization where SoA layout enables SIMD vectorization of physics/rendering",
+    "Matrix transposition: the row-to-column conversion is a streaming transpose, amenable to cache-oblivious or tiled algorithms",
+    "ETL pipeline design: the 'extract-then-pivot' pattern mirrors data warehouse loading strategies"
+  ],
+  "implementation_hypothesis": "Allocate C column buffers (one per CSV column). During field extraction, maintain C write cursors. For each row, write field[j] to column_buffer[j][write_cursor[j]++]. Use batch sizes aligned to cache line boundaries (e.g., 1024 rows). For variable-length string columns, use an offsets array + contiguous data buffer (Arrow StringArray layout). For numeric columns, parse-and-convert inline to avoid double-materialization.",
+  "experiment_seed": "Compare columnar vs. row-major materialization on a 1GB CSV with 20 columns. Measure: (1) L1/L2/L3 cache miss rates via perf counters, (2) total parsing+materialization throughput, (3) downstream query speed (sum of one numeric column). Use Intel VTune or perf stat.",
+  "folder_plan": {
+    "files": [
+      "src/columnar_writer.rs",
+      "src/arrow_bridge.rs",
+      "benches/materialization_bench.rs"
+    ],
+    "folders": [
+      "src/output/"
+    ]
+  },
+  "generated_at": "2026-03-04T08:04:49.923873+00:00",
+  "project_folder": "concept_evolve/tree/004_cache-friendly-columnar-materialization"
+}

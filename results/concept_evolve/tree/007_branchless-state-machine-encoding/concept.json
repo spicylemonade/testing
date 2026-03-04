@@ -1,0 +1,27 @@
+{
+  "symbolic_name": "branchless_state_machine_encoding",
+  "description": "Encode the CSV parser's state machine transitions as arithmetic/bitwise operations instead of conditional branches, ensuring the CPU pipeline never stalls on mispredictions. The key insight is that CSV has only ~4 states (normal, in-quote, escaped-quote, after-CR), and transitions can be computed as lookup-table indexed operations, completely eliminating if/switch branches in the hot loop.",
+  "domains": [
+    "CPU microarchitecture (branch prediction)",
+    "cryptography (constant-time programming)",
+    "game development (branchless optimization)"
+  ],
+  "mathematical_formalization": "State encoding: NORMAL=0, IN_QUOTE=1, ESCAPE=2. Transition: next_state = T[current_state][char_class] where T is a 3x5 table. Branchless: next_state = (state & quote_mask) ^ (char_class & transition_bits). Output actions encoded as: emit_field = (char_class == COMMA) & (state == NORMAL), emit_row = (char_class == NEWLINE) & (state == NORMAL). All computed with AND/OR/XOR, zero branches.",
+  "analogical_connections": [
+    "Constant-time cryptography: avoiding branches to prevent timing side-channels uses identical techniques (CMOV, bitwise select)",
+    "GPU shader programming: GPUs execute both branches of a conditional (predicated execution), making branchless code the natural paradigm",
+    "Digital circuit design: combinational logic implements state machines without 'branches' \u2014 purely through gate-level Boolean functions"
+  ],
+  "implementation_hypothesis": "For scalar fallback path: encode state as integer 0-2, char class as integer 0-4. Compute next_state = LOOKUP[state * 5 + char_class] using a 15-entry u8 array. Use CMOV or arithmetic to compute field/row emit signals. For SIMD path, this is unnecessary since bitmask operations replace the FSM entirely. Benchmark the scalar branchless fallback vs. branchy FSM for the non-SIMD tail bytes.",
+  "experiment_seed": "Measure branch misprediction rates on CSV data with varying quote patterns (0%, 10%, 50% quoted fields). Compare branchy vs. branchless scalar parsers using perf stat. Expect branchless to show <0.1% misprediction rate vs. 5-20% for branchy on mixed data.",
+  "folder_plan": {
+    "files": [
+      "src/scalar_parser.rs",
+      "src/branchless.rs",
+      "benches/branch_prediction.rs"
+    ],
+    "folders": []
+  },
+  "generated_at": "2026-03-04T08:04:49.925158+00:00",
+  "project_folder": "concept_evolve/tree/007_branchless-state-machine-encoding"
+}
