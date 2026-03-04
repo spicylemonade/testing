@@ -1,0 +1,282 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T12:00:00Z",
+  "updated_at": "2026-03-04T09:34:58.747356+00:00",
+  "current_agent": "orchestrator",
+  "research_problem": {
+    "title": "Improving the Lower Bound of BB(6): Searching for Long-Running 6-State Turing Machines",
+    "elevator_pitch": "The Busy Beaver function BB(n) asks: what is the maximum number of 1s a halting n-state Turing machine can write? BB(5) was proven in 2024 after decades of effort. BB(6) remains wide open with the current record at ~10^36,534. We aim to find new 6-state Turing machines that halt after writing more 1s or running more steps than any known candidate, producing a new verified lower bound. Verification is trivial: simulate the machine in Python and count.",
+    "why_hype": "BB(5) proof was front-page HN/Twitter in 2024. A new BB(6) lower bound candidate is instantly verifiable, mathematically profound, and accessible to anyone who understands 'how long can the simplest computer run before stopping?'",
+    "verification_method": "Deterministic Turing machine simulation in Python. Given a transition table, simulate until halt, count steps and 1s on tape. No probabilistic or approximate methods needed."
+  },
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T12:00:00Z",
+      "completed_at": "2026-03-04T09:34:58.747343+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and document all modules, tools, and agent configurations",
+          "acceptance_criteria": "A file results/repo_analysis.md exists listing: (1) all .archivara/ scripts and their purposes, (2) all .opencode/ agent definitions and tool wrappers, (3) the multi-agent pipeline (orchestrator->researcher->writer->reviewer), (4) the ConceptEvolve system and how it spawns sub-agents. Minimum 500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive web search for BB(6) state-of-the-art and Busy Beaver history",
+          "acceptance_criteria": "Using websearch and webfetch, retrieve and document: (1) the current best known BB(6) lower bound and which Turing machine achieves it, (2) the BB(5) proof timeline and methods used (Coq proof by bbchallenge.org team), (3) at least 5 active researchers/groups working on Busy Beaver problems, (4) key algorithmic approaches (TNF enumeration, tree normal form, deciders, acceleration techniques). Results saved to results/literature_review.md with at least 2000 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Search Semantic Scholar and web for at least 10 relevant academic papers on Busy Beaver, Turing machine enumeration, and halting problem approaches",
+          "acceptance_criteria": "sources.bib exists in repo root with valid BibTeX entries for at least 10 papers. Must include: Rado 1962 (original BB), Brady 1983, Marxen & Buntrock 1990, Ligocki family results, the bbchallenge.org collaboration paper, and at least 5 more relevant works. Each entry must have author, title, year, and venue/URL.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Search for existing code repositories and tools for Busy Beaver search (bbchallenge, Skelet, Shawn Ligocki, etc.)",
+          "acceptance_criteria": "Document at least 5 open-source BB search tools/repos with their URLs, languages, approaches, and limitations. Saved to results/existing_tools.md. Must cover bbchallenge seed database, any known BB(6) search codebases, and TM simulation/acceleration libraries.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Run ConceptEvolve to explore cross-domain approaches to combinatorial search and Turing machine analysis",
+          "acceptance_criteria": "ConceptEvolve 'evolve' command executed with topic 'Busy Beaver BB(6) lower bound search via Turing machine enumeration acceleration and halting detection'. results/concept_evolve/tree/ contains at least 8 concept folders, each with concept.json and README.md. results/concept_evolve/concept_cards.json exists with at least 8 cards.",
+          "status": "pending",
+          "notes": "This is the subagent delegation item for Phase 1",
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Classify known BB(6) champion machines and document their structure",
+          "acceptance_criteria": "File results/known_champions.json exists containing an array of the top 5+ known BB(6) candidate machines with fields: transition_table (as structured object), num_ones (sigma score), num_steps, discoverer, year_discovered, source_url. At least the current record holder must be fully documented with its complete transition table.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement a correct, well-tested Turing machine simulator in Python",
+          "acceptance_criteria": "File src/tm_simulator.py exists with: (1) TuringMachine class that takes a transition table and simulates step-by-step, (2) returns (num_steps, num_ones, final_tape, halted) tuple, (3) supports configurable step limit (default 10^8), (4) unit tests in tests/test_simulator.py that verify against known BB(2)=4, BB(3)=6, BB(4)=13 values. All tests pass.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement an accelerated Turing machine simulator using macro-steps and tape compression",
+          "acceptance_criteria": "File src/tm_accelerated.py exists with: (1) run-length encoded tape representation, (2) macro-step detection (repeated patterns collapsed into single operations), (3) at least 100x speedup over naive simulation on known BB(5) champion. Benchmark results saved to results/benchmarks/simulator_comparison.json comparing naive vs accelerated on BB(4) and BB(5) champions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement Tree Normal Form (TNF) enumeration for 6-state 2-symbol Turing machines",
+          "acceptance_criteria": "File src/tnf_enumerator.py exists that generates 6-state 2-symbol TMs in Tree Normal Form, avoiding redundant machines. Must correctly enumerate and count: (1) all TNF machines for 2-state case (matching known count), (2) generate first 10,000 TNF 6-state machines deterministically. File results/benchmarks/tnf_counts.json documents the enumeration counts for 2,3,4-state cases compared to literature values.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement basic halting deciders: CTL (Closed Tape Language) and simple loop detection",
+          "acceptance_criteria": "File src/deciders.py exists with at least 2 decider classes: (1) LoopDecider that detects simple periodic behavior, (2) CTLDecider implementing basic Closed Tape Language analysis. Each decider has a decide(tm) -> 'halts'|'non_halting'|'unknown' interface. Tests verify deciders correctly classify at least 20 known halting and 20 known non-halting machines from literature. Results in tests/test_deciders.py, all passing.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Reproduce known BB(6) lower bound by simulating the current champion machine",
+          "acceptance_criteria": "Script results/baselines/reproduce_champion.py successfully simulates the current best known BB(6) candidate (from item_006) using the accelerated simulator and produces results/baselines/champion_verification.json containing: machine transition table, final sigma (1s count), total steps, simulation wall-clock time, and confirmation it matches the published record. This is the critical baseline that any new result must beat.",
+          "status": "pending",
+          "notes": "Subagent delegation: use literature-graph-miner to verify champion details from multiple sources before simulation",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Design and implement a guided search strategy using structural features of champion machines",
+          "acceptance_criteria": "File src/guided_search.py exists implementing a search that: (1) analyzes structural features of known high-scoring machines (transition graph topology, counter patterns, state connectivity), (2) uses these features to bias enumeration toward promising regions of the 6-state TM space, (3) documents the feature extraction and scoring heuristic in docstrings. Results of feature analysis on known champions saved to results/feature_analysis.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Implement mutation-based search: systematic perturbation of known high-scoring machines",
+          "acceptance_criteria": "File src/mutation_search.py exists that: (1) takes a known champion TM as seed, (2) applies all single-transition mutations (change one entry in transition table), (3) applies double-transition mutations on promising singles, (4) filters non-halting machines using deciders from item_010, (5) simulates remaining candidates with accelerated simulator. Must explore at least 10,000 mutants per seed machine. Intermediate results logged to results/mutation_search/.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Explore concept tree for novel search strategies from cross-domain ideas",
+          "acceptance_criteria": "At least 3 concept folders in results/concept_evolve/tree/ have been explored with experiment files. Each must contain: (1) experiment.py or experiment_notes.md documenting the cross-domain idea applied, (2) results.json with measurable outcomes. At least one concept from a non-CS domain (e.g., genetic algorithms from biology, simulated annealing from physics, or algebraic structure from mathematics) must be implemented as a search variant in src/.",
+          "status": "pending",
+          "notes": "Subagent delegation: use concept-tree-explorer to identify highest-value concept paths before implementation",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement a Turing machine 'breeding' approach combining substructures from multiple high-scoring machines",
+          "acceptance_criteria": "File src/tm_breeding.py exists that: (1) decomposes TM transition tables into functional sub-components (counter modules, sweep modules, shift modules), (2) recombines sub-components from different high-scoring machines, (3) validates resulting machines are well-formed, (4) includes at least 3 different recombination strategies. Document the decomposition scheme in results/breeding_design.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement parallel search infrastructure to maximize exploration throughput",
+          "acceptance_criteria": "File src/parallel_search.py exists using Python multiprocessing to: (1) distribute TM simulation across all available CPU cores, (2) implement a work-stealing queue for load balancing, (3) aggregate results with deduplication, (4) checkpoint progress to disk every N minutes for crash recovery. Demonstrate at least 4x speedup over single-core on a 4+ core machine. Benchmark in results/benchmarks/parallel_speedup.json.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_017",
+          "description": "Execute full search campaign: run all search strategies for minimum 4 hours combined compute",
+          "acceptance_criteria": "Results directory results/search_campaigns/ contains timestamped result files from at least 3 different search strategies (TNF enumeration, mutation search, breeding/recombination). Each result file contains: strategy name, machines explored, time elapsed, top 10 candidates found (transition table + score). Total machines evaluated across all strategies >= 1,000,000.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Verify all candidate machines: deterministic simulation to confirm scores",
+          "acceptance_criteria": "File results/verified_candidates.json contains all machines scoring above the current BB(6) record OR the top 100 machines found (whichever is more), each with: (1) full transition table, (2) verified step count from independent simulation, (3) verified sigma (1s) count, (4) halting confirmation (machine reaches halt state), (5) simulation wall-clock time. Verification script at src/verify_candidates.py is deterministic and reproducible.",
+          "status": "pending",
+          "notes": "Subagent delegation: use a separate verification agent to independently re-simulate top candidates as a cross-check",
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Compare all results against prior work from literature review",
+          "acceptance_criteria": "File results/comparison_with_prior_work.md exists with: (1) table comparing our best candidates against all known BB(6) champions from sources.bib, (2) analysis of which search strategy produced the best results, (3) comparison of our search throughput against published rates from bbchallenge and other projects, (4) honest assessment of whether we achieved a new record or not. Must reference at least 5 papers from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Create a standalone verification script that anyone can run to confirm results",
+          "acceptance_criteria": "File verify.py in repo root is a self-contained Python script (no external dependencies beyond standard library + gmpy2 optional) that: (1) takes no arguments and verifies the best candidate found, (2) prints the transition table, simulates it step by step, (3) outputs final tape contents, step count, and sigma score, (4) completes in under 60 seconds for candidates with reasonable step counts, (5) exits 0 if verified, 1 if not. README.md updated with verification instructions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Analyze search strategy effectiveness with statistical rigor",
+          "acceptance_criteria": "File results/strategy_analysis.json contains: (1) for each strategy: number of machines explored, number of halting machines found, score distribution (min/median/max/p95), wall-clock time, machines-per-second throughput, (2) correlation analysis between structural features and high scores, (3) diminishing returns analysis (score vs compute time curve). At least one visualization in figures/ (PNG or SVG).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_022",
+          "description": "Write a comprehensive research report documenting the entire investigation",
+          "acceptance_criteria": "File results/research_report.md exists with sections: Abstract, Introduction, Background (citing sources.bib), Methods, Results, Discussion, Conclusion. Minimum 3000 words. Must include: (1) clear statement of whether a new record was achieved, (2) the exact transition table of the best machine found, (3) comparison with prior work, (4) lessons learned about search strategy design for BB problems. References section cites all entries in sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Create a hype-ready summary suitable for a Twitter/X thread",
+          "acceptance_criteria": "File results/twitter_thread.md contains a 5-10 tweet thread draft that: (1) opens with the key result in accessible language, (2) explains what Busy Beaver is for non-experts, (3) includes the specific numbers (states, steps, 1s written), (4) mentions verification method, (5) is genuinely exciting and accurate (no overclaiming). Also include a one-sentence 'hype tweet' version at the top.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Generate visualizations of the best Turing machine's behavior",
+          "acceptance_criteria": "Directory figures/ contains at least 3 visualizations: (1) space-time diagram of the champion machine's tape evolution (first N steps), (2) state transition diagram as a directed graph, (3) tape length over time plot showing growth pattern. All saved as PNG or SVG. Generated by scripts in src/ that are reproducible.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Final concept tree synthesis: document which cross-domain ideas were most valuable",
+          "acceptance_criteria": "File results/concept_evolve/synthesis.md exists documenting: (1) which concept cards from the initial evolve led to actual implemented experiments, (2) ranking of concepts by impact on search results, (3) which cross-domain analogies were fruitful vs dead ends, (4) recommendations for future BB(6) researchers. At least 3 concept folders in tree/ updated with final status.",
+          "status": "pending",
+          "notes": "Subagent delegation: use concept-tree-explorer for final walk and synthesis of concept paths",
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 25,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 25
+  }
+}
