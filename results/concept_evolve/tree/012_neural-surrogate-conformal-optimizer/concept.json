@@ -1,0 +1,30 @@
+{
+  "id": "012",
+  "symbolic_name": "neural_surrogate_conformal_optimizer",
+  "description": "Train a neural network to approximate the conformal map f: D -> Omega for parameterized domains Omega, then use the differentiable surrogate to optimize the Bloch radius via gradient descent. Physics-informed neural networks (PINNs) can enforce the Cauchy-Riemann equations as soft constraints. This provides a modern machine learning approach to an old analysis problem.",
+  "domains": [
+    "machine_learning",
+    "numerical_analysis",
+    "conformal_mapping",
+    "optimization"
+  ],
+  "mathematical_formalization": "Train NN f_theta: D -> C to minimize L = ||partial_{z_bar} f_theta||^2 + lambda * boundary_loss(f_theta, partial Omega). Then optimize B(Omega) = sup_z |f'_theta(z)|(1-|z|^2)/2 over domain parameters. Gradient: nabla_Omega B ~ nabla_theta B * (partial theta / partial Omega).",
+  "analogical_connections": [
+    "Neural surrogate for conformal map ~ neural operator for PDE solutions (DeepONet, FNO)",
+    "PINN for Cauchy-Riemann ~ physics-informed loss in fluid dynamics",
+    "Domain parameterization ~ latent space in generative models",
+    "Gradient-based shape optimization ~ neural architecture search"
+  ],
+  "implementation_hypothesis": "Use a complex-valued neural network with holomorphic activation functions (or split real/imaginary parts). Train on boundary conditions for specific domains. Use automatic differentiation to compute f'(z) and the Bloch radius. Parameterize domain boundaries using B-splines and optimize the spline control points via backpropagation through the neural conformal map.",
+  "experiment_seed": "Train a PINN to learn the conformal map from D to the strip. Verify that it recovers the known map. Then parameterize domains as disks with B-spline perturbations. Train the PINN for each domain, compute B_f, and use Adam optimizer on domain parameters. Compare with classical results.",
+  "folder_plan": {
+    "root": "012_neural_surrogate_conformal_optimizer",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T00:29:09.140387+00:00",
+  "project_folder": "concept_evolve/tree/012_neural-surrogate-conformal-optimizer"
+}

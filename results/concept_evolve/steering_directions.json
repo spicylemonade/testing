@@ -1,0 +1,32 @@
+[
+  {
+    "direction": "Verified Computation Pipeline for B_u Bounds",
+    "rationale": "The gap between the best known lower bound (0.5708858, Skinner 2009) and upper bound (0.6564, Carroll-Ortega-Cerda 2009) is about 0.086. No progress has been made on either side in over 15 years. A computer-assisted proof using interval arithmetic — similar to Tucker's proof of the Lorenz attractor or Hales' proof of the Kepler conjecture — could systematically tighten both bounds. The key bottleneck is implementing rigorous conformal mapping with guaranteed error bounds.",
+    "first_step": "Implement Schwarz-Christoffel mapping with interval arithmetic in Julia (using IntervalArithmetic.jl and ArbNumerics.jl). Start by rigorously computing the conformal map from D to the infinite strip and verifying the known inradius pi/4 to 100 digits. Then extend to slit domains with 3-fold symmetry and verify Carroll-Ortega-Cerda's upper bound.",
+    "expected_signal": "If the interval-arithmetic SC mapping can reproduce the known B_u < 0.6564 with certified bounds, and if the rigorous computation time is under 1 hour, then the pipeline is ready for optimization over larger domain families. A positive signal is achieving 10+ correct digits with rigorous bounds for the strip case."
+  },
+  {
+    "direction": "Shape Optimization via Conformal Welding + Level Sets",
+    "rationale": "Current upper bounds come from hand-constructed domains (Goodman 1935, Carroll-Ortega-Cerda 2009) with specific symmetries. An automated shape optimizer could discover better extremal domains that human intuition misses. The combination of conformal welding (for domain construction) with level-set methods (for shape evolution) provides a principled gradient-based search. The key insight is that the space of simply connected domains is infinite-dimensional, but conformal welding parameterizes it efficiently.",
+    "first_step": "Implement a conformal welding solver using the integral equation approach (solve a Fredholm integral equation for the welding function). Verify against known cases (welding two half-disks gives a disk). Then implement a shape derivative computation for the Bloch radius as a function of the welding homeomorphism, and use gradient descent on the Fourier coefficients of h.",
+    "expected_signal": "If the optimizer converges to a domain with B_u < 0.655 (improving on Carroll-Ortega-Cerda), this is a strong signal. Even if it only reproduces the known bound, the automated discovery validates the approach and can be scaled to more complex parameterizations."
+  },
+  {
+    "direction": "SDP/Convex Relaxation via Grunsky Matrix Constraints",
+    "rationale": "The univalence condition for f in the schlicht class S is equivalent to the Grunsky inequality ||G_f|| <= 1, where G_f is a bilinear form on the coefficients. This is a semidefinite constraint. The Bloch radius B_f can be bounded using the coefficients and their relationship to the image domain's inradius. By truncating to N coefficients, the problem becomes a finite-dimensional SDP that can be solved with standard solvers (SDPA, MOSEK, SCS). As N grows, the SDP bound should converge to B_u.",
+    "first_step": "Formulate the truncated Bloch constant problem as an SDP: minimize B_f subject to the N-truncated Grunsky matrix being positive semidefinite. Start with N=5 (a 5x5 Grunsky matrix) and verify that the SDP gives a reasonable lower bound. Then scale to N=20, N=50.",
+    "expected_signal": "If the SDP lower bound at N=20 exceeds 0.57 (close to Skinner's 0.5709), the approach is promising. If the bound increases monotonically with N and shows a clear convergence trend, this could eventually prove a new lower bound on B_u."
+  },
+  {
+    "direction": "Brownian Motion Monte Carlo with Domain Discovery",
+    "rationale": "The duality between the Bloch-Landau constant and Brownian exit times (Banuelos-Carroll) provides a probabilistic reformulation: B_u corresponds to the domain maximizing normalized expected exit time. Monte Carlo simulation of Brownian motion is embarrassingly parallelizable and can explore domain shapes stochastically. By using reinforcement learning to evolve the domain shape while simulating Brownian paths, one can co-optimize the domain and the exit time estimate.",
+    "first_step": "Implement a 2D Brownian motion simulator with reflecting/absorbing boundary conditions. For a domain parameterized by N Fourier modes, simulate 10^5 paths and estimate E_z[tau_D]. Use a simple evolutionary strategy (CMA-ES) to optimize domain parameters. Start with the strip (as a baseline) and search for domains with longer normalized exit times.",
+    "expected_signal": "If the optimizer discovers domains with normalized exit time significantly larger than the strip's, these are candidates for improving B_u bounds. The domain shapes should resemble slit domains or branched structures. Convergence of the Monte Carlo estimate within 1% is needed for meaningful optimization."
+  },
+  {
+    "direction": "Polya-Chebotarev Extension with Asymmetric Point Configurations",
+    "rationale": "Carroll-Ortega-Cerda's upper bound used Fedorov's Polya-Chebotarev solution for 4 symmetrically placed points (giving 3-fold symmetric arcs). But there is no theorem requiring the extremal configuration to have any symmetry. Solving the Polya-Chebotarev problem for 5, 6, or more points with optimized (possibly asymmetric) positions could yield continua with lower capacity and hence tighter upper bounds on B_u.",
+    "first_step": "Implement a numerical solver for the generalized Polya-Chebotarev problem: given n points, trace the critical trajectories of the associated quadratic differential using numerical ODE integration. Start with n=5 points: 4 symmetrically placed plus 1 additional point. Optimize the additional point's position to minimize the continuum's capacity.",
+    "expected_signal": "If the n=5 configuration gives a capacity lower than the n=4 symmetric case, the resulting upper bound B_u < 0.656 would be an improvement. Plot the extremal continuum for different configurations to build geometric intuition about what makes a good configuration."
+  }
+]
