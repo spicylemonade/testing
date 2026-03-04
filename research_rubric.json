@@ -1,0 +1,292 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T00:00:00Z",
+  "updated_at": "2026-03-04T09:18:28.965559+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T00:00:00Z",
+      "completed_at": "2026-03-04T09:18:28.965537+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and tooling infrastructure",
+          "acceptance_criteria": "Written document at results/phase1/repo_analysis.md listing: (a) all modules in .archivara/ and .opencode/ with their purposes, (b) available agent roles (orchestrator, researcher, writer, reviewer, concept_worker) and their tool permissions, (c) ConceptEvolve capabilities and how to invoke them, (d) Semantic Scholar API client features. Document must be at least 200 lines.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct web-based literature review on protein stability prediction models (ESM-2, ProteinMPNN, RaSP, ThermoMPNN)",
+          "acceptance_criteria": "Use websearch and webfetch to find and summarize at least 15 papers on: (a) ESM-2 for mutation effect prediction (Lin et al. 2023, Brandes et al. 2023), (b) ProteinMPNN and inverse folding for stability (Dauparas et al. 2022), (c) RaSP rapid stability prediction (Blaabjerg et al. 2023), (d) ThermoMPNN/ThermoMPNN-D (Dieckhaus et al. 2024), (e) Mutate Everything parallel decoding (Ouyang-Zhang et al. NeurIPS 2023), (f) SPURS (Li & Luo 2026). Write summary to results/phase1/lit_review_models.md with paper title, authors, year, venue, and key findings for each.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Conduct web-based literature review on combinatorial optimization for protein engineering",
+          "acceptance_criteria": "Use websearch and webfetch to find and summarize at least 10 papers on: (a) epistasis and genetic architecture of protein stability (Faure et al. Nature 2024), (b) Bayesian optimization for protein design (GAMEOPT, Bal et al. ICLR 2025), (c) ML-assisted directed evolution (Wittmann et al. 2021, Li et al. 2025), (d) continuous relaxation / gradient-based sequence optimization (RSO, mosaic), (e) existing tools (MLDE, mosaic, Caliby, OSPREY). Write summary to results/phase1/lit_review_optimization.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "File sources.bib exists at repo root containing valid BibTeX entries for at least 20 relevant papers. Must include entries for: Lin2023 (ESM-2), Dauparas2022 (ProteinMPNN), Blaabjerg2023 (RaSP), Tsuboyama2023 (Mega-scale), Stourac2021 (FireProtDB), Faure2024 (genetic architecture), OuyangZhang2023 (MutateEverything), Dieckhaus2024 (ThermoMPNN), WittmannArnold2021 (MLDE), Bal2025 (GAMEOPT). Use semantic_scholar tool for accurate metadata.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Delegate concept-tree exploration: cross-domain analogies for combinatorial stability optimization",
+          "acceptance_criteria": "Run ConceptEvolve evolve command on topic 'fast combinatorial optimization of protein thermostability using neural network scoring functions'. Verify results/concept_evolve/tree/ contains at least 5 concept folders each with concept.json and README.md. Write results/phase1/concept_synthesis.md summarizing top 3 transferable ideas from the concept tree (e.g., analogies from chip design, drug cocktail optimization, materials science) with citations to relevant literature.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Characterize the Mega-scale dataset and FireProtDB for validation planning",
+          "acceptance_criteria": "Document at results/phase1/datasets.md containing: (a) Mega-scale dataset schema, size (~750K variants), protein coverage, measurement methodology (cDNA display proteolysis), and download/access instructions, (b) FireProtDB schema, size, REST API endpoints, bulk download formats, (c) overlap analysis plan between the two datasets, (d) proposed train/validation/test splits, (e) specific multi-mutant subsets available for combinatorial validation. At least 150 lines.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Set up Python package scaffolding with pip-installable structure",
+          "acceptance_criteria": "Create package directory structure: stabopt/ with __init__.py, cli.py, scoring/, optimization/, data/, utils/. Include pyproject.toml with build system, dependencies (torch, transformers, biopython, numpy, scipy), and CLI entry point 'stabopt'. Running 'pip install -e .' succeeds. Running 'stabopt --help' prints usage showing '--pdb' input flag and '--output' for ranked mutation sets.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement single-mutation scoring baselines using ESM-2 and ProteinMPNN log-likelihoods",
+          "acceptance_criteria": "Module stabopt/scoring/esm2.py computes log-likelihood ratios for all N\u00d719 single mutations in a protein given a PDB file, using ESM-2 650M on GPU, in under 60 seconds for a 300-residue protein. Module stabopt/scoring/proteinmpnn.py computes ProteinMPNN log-likelihoods for the same. Both produce pandas DataFrames with columns [position, wildtype, mutant, score]. Unit tests pass for a test PDB (1BNI or similar small protein).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement brute-force enumeration baseline for small combinatorial spaces",
+          "acceptance_criteria": "Module stabopt/optimization/brute_force.py enumerates all k-combinations (k=3..8) from top-N single mutations, scores each combination under an additive model, and returns ranked list. Must include wall-clock timing. For N=20 and k=4, enumerate all C(20,4)=4845 combinations in under 5 seconds. For N=50 and k=6, must report estimated time and confirm it exceeds 15-minute budget (demonstrating the need for smarter search).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Implement naive greedy search baseline",
+          "acceptance_criteria": "Module stabopt/optimization/greedy.py implements iterative greedy addition: start with best single mutation, add the next mutation that maximally improves the score, repeat until k mutations selected. Must log each step's score and timing. Test on a reference protein shows greedy finds a solution in under 30 seconds for k=6. Compare solution quality against brute-force (for cases where brute-force is tractable) and document suboptimality gap.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Define evaluation metrics and benchmark protocol",
+          "acceptance_criteria": "Document at results/phase2/metrics.md defining: (a) primary metric: predicted ddG of best multi-mutant combination found, (b) secondary metrics: Spearman correlation with experimental ddG on Mega-scale multi-mutants, enrichment of experimentally stabilizing variants in top-10 predictions, (c) efficiency metrics: wall-clock time, GPU memory usage, number of model forward passes, (d) comparison protocol against brute-force and greedy baselines. Include formulas for all metrics. Delegate to concept-tree-explorer subagent to verify no important metrics are missing by examining analogous optimization benchmarks.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Download and preprocess validation datasets",
+          "acceptance_criteria": "Script stabopt/data/download.py fetches: (a) Mega-scale dataset supplementary tables, (b) FireProtDB bulk export via REST API. Script stabopt/data/preprocess.py produces: (a) results/data/megascale_processed.parquet with columns [pdb_id, chain, mutations, ddG, num_mutations], (b) results/data/fireprotdb_processed.parquet with similar schema, (c) results/data/multimutant_subset.parquet filtered to entries with >=2 simultaneous mutations. Print summary statistics: total variants, proteins covered, multi-mutant count.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_013",
+          "description": "Implement pairwise epistasis scoring module leveraging structural proximity",
+          "acceptance_criteria": "Module stabopt/scoring/epistasis.py computes pairwise epistasis corrections for all pairs among top-K candidate mutations. Uses one of: (a) ThermoMPNN-D Siamese network for double-mutant ddG, (b) ESM-2 conditional log-likelihood shift (mask position j, score position i conditioned on mutation at j), or (c) structure-based coupling model (Faure et al. 2024 approach: only pairs with C\u03b1 distance < 10\u00c5). Must output a K\u00d7K symmetric epistasis matrix. For K=50 on a 300-residue protein, completes in under 3 minutes on A100. Cite Faure2024 and Dieckhaus2024 from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement additive-plus-pairwise energy model for multi-mutant scoring",
+          "acceptance_criteria": "Module stabopt/scoring/energy_model.py implements: ddG(S) = sum_i(ddG_i) + sum_{i<j}(epsilon_{ij}) where ddG_i are single-mutation effects and epsilon_{ij} are pairwise epistasis terms. Must handle arbitrary mutation sets of size 3-8. Include options for: (a) additive-only mode, (b) additive + distance-filtered pairwise, (c) full pairwise. Validate that for known double mutants in Mega-scale, the additive+pairwise model improves Spearman rho by at least 0.05 over additive-only. Reference Faure2024 justification.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Implement beam search combinatorial optimizer with epistasis-aware scoring",
+          "acceptance_criteria": "Module stabopt/optimization/beam_search.py implements beam search over mutation combinations: maintain top-B partial solutions at each depth, expand by adding candidate mutations, prune using the additive+pairwise energy model. Parameters: beam_width (default 100), max_depth (3-8), candidate_pool_size. For a 300-residue protein with K=50 candidates and beam_width=100, finds k=6 combination in under 5 minutes on A100. Solution quality within 5% of brute-force optimal (for cases where brute-force is tractable at k=4).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Implement genetic algorithm / evolutionary search as alternative optimizer",
+          "acceptance_criteria": "Module stabopt/optimization/evolutionary.py implements an evolutionary search: population of mutation sets, crossover (swap mutations between sets), mutation (add/remove/replace single mutations), selection by energy model score. Parameters: population_size (default 200), generations (default 100), mutation_rate, crossover_rate. Convergence within 3 minutes on A100 for k=6 from K=50 candidates. Include elitism (preserve top 10%). Compare against beam search on solution quality and speed for at least 3 test proteins.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Delegate concept-tree exploration: novel search heuristics from adjacent domains",
+          "acceptance_criteria": "Run ConceptEvolve probe command on problem 'efficiently searching combinatorial space of 3-8 mutations from pool of 50 candidates with pairwise interaction terms, under 5-minute GPU budget'. Results in results/concept_evolve/tree/ must include at least 3 new concept folders exploring analogies (e.g., SAT solvers, portfolio optimization, feature selection, network design). Write results/phase3/novel_heuristics.md synthesizing the top insight into a concrete algorithmic improvement to integrate into beam_search or evolutionary optimizer.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_018",
+          "description": "Implement consensus re-ranking with ProteinMPNN structural consistency filter",
+          "acceptance_criteria": "Module stabopt/scoring/consensus.py takes top-N multi-mutant candidates from the optimizer and re-scores each by: (a) constructing the mutant sequence, (b) computing ProteinMPNN log-likelihood of the full mutant sequence given the wild-type backbone, (c) combining original energy model score with ProteinMPNN score via weighted sum (tunable alpha parameter). Demonstrate that re-ranking changes the top-1 prediction in at least 30% of test cases compared to energy model alone. Re-ranking of 100 candidates completes in under 2 minutes.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_019",
+          "description": "Benchmark against Mega-scale multi-mutant experimental data",
+          "acceptance_criteria": "Script experiments/benchmark_megascale.py evaluates the full pipeline on all multi-mutant entries (>=2 mutations) in the Mega-scale dataset. Report: (a) Spearman correlation between predicted and experimental ddG for double mutants (target: rho >= 0.5), (b) Spearman correlation for 3+ mutants (target: rho >= 0.4), (c) precision@10 for identifying stabilizing variants (ddG < -1 kcal/mol), (d) comparison table against additive-only baseline, greedy baseline, and prior published results from Mutate Everything (Ouyang-Zhang et al. 2023) and ThermoMPNN-D (Dieckhaus et al. 2024). Results saved to results/phase4/megascale_benchmark.json and results/phase4/megascale_benchmark.md.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Benchmark against FireProtDB stabilizing variants",
+          "acceptance_criteria": "Script experiments/benchmark_fireprotdb.py evaluates predictions on FireProtDB entries with known stabilizing mutations (ddG < 0 or ddTm > 0). Report: (a) fraction of known stabilizing mutations recovered in top-20 predictions per protein, (b) average rank of best known stabilizing mutation, (c) comparison with ESM-2 zero-shot and RaSP baselines. Results saved to results/phase4/fireprotdb_benchmark.json and results/phase4/fireprotdb_benchmark.md. Cite Stourac2021 and Musil2025 from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "End-to-end timing benchmark: full pipeline under 15 minutes on A100",
+          "acceptance_criteria": "Script experiments/timing_benchmark.py runs the full pipeline (PDB input -> ranked mutation sets output) on 5 proteins of varying size (100, 200, 300, 400, 500 residues). For each protein and each k in {3, 4, 5, 6, 8}, record: total wall-clock time, peak GPU memory, breakdown by stage (single scoring, epistasis scoring, optimization, re-ranking). All runs for k<=6 on proteins <=400 residues must complete in under 15 minutes. Results table saved to results/phase4/timing_benchmark.md. GPU memory must not exceed 40GB (A100 limit).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Ablation study: contribution of each pipeline component",
+          "acceptance_criteria": "Script experiments/ablation.py runs ablations on 10 representative proteins: (a) additive-only vs additive+pairwise, (b) greedy vs beam search vs evolutionary, (c) with vs without ProteinMPNN re-ranking, (d) ESM-2 scoring vs ProteinMPNN scoring as base model, (e) varying beam width (10, 50, 100, 500). For each ablation, report change in Spearman rho on held-out multi-mutants and change in best-found ddG. Results saved to results/phase4/ablation_study.md with figures saved to figures/ablation_*.png. Delegate to concept-tree-explorer subagent to identify any missed ablation dimensions.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Case study: identify multi-mutant combinations exceeding top experimentally observed stabilizing variants",
+          "acceptance_criteria": "Select 3 well-characterized proteins from Mega-scale/FireProtDB with known top stabilizing single mutations. Run full pipeline with k=4,6,8. Report: (a) predicted ddG of best multi-mutant combination vs best experimentally observed single mutation, (b) whether any predicted combination exceeds the most stabilizing experimentally known variant by > 1 kcal/mol, (c) structural rationalization of predicted mutations (distance map, secondary structure context). Results at results/phase4/case_studies.md with figures at figures/case_study_*.png.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Write comprehensive technical report with comparison to prior work",
+          "acceptance_criteria": "File results/technical_report.md contains: (a) Abstract (200 words), (b) Introduction with problem statement and motivation citing at least 10 papers from sources.bib, (c) Methods section describing scoring models, epistasis model (citing Faure2024), optimization algorithms, and re-ranking, (d) Results section with all benchmark tables and figures from Phase 4, (e) Discussion comparing against MutateEverything, ThermoMPNN-D, MLDE, and mosaic approaches (citing each), (f) Limitations and future work, (g) References. At least 1500 words. All claims supported by experimental results from Phase 4.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Finalize pip-installable package with README, tests, and usage examples",
+          "acceptance_criteria": "Package passes: (a) 'pip install -e .' without errors, (b) 'pytest tests/ -v' with at least 20 tests passing covering scoring, optimization, and CLI modules, (c) README.md updated with: installation instructions, quick-start example (stabopt --pdb example.pdb --k 4 --output results.csv), API documentation for main classes, benchmark results summary, citation information. (d) 'stabopt --pdb tests/fixtures/1BNI.pdb --k 4 --output /tmp/test_output.csv' completes successfully and produces valid CSV output with columns [rank, mutations, predicted_ddG, confidence].",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Delegate final concept-tree synthesis and identify future research directions",
+          "acceptance_criteria": "Run ConceptEvolve walk command with seed from the most promising concept in results/concept_evolve/tree/ and depth=3. Write results/phase5/future_directions.md synthesizing: (a) 3 concrete extensions suggested by the concept tree (e.g., active learning loop, structure-aware optimization, multi-objective stability+activity), (b) comparison of concept-tree insights vs actually implemented approach, (c) lessons learned about which cross-domain analogies proved useful. Reference at least 5 papers from sources.bib. At least 500 words.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Validate sources.bib completeness and accuracy",
+          "acceptance_criteria": "File sources.bib contains at least 25 valid BibTeX entries. Use semantic_scholar tool to verify: (a) all author names match, (b) all years are correct, (c) all venues/journals are accurately recorded, (d) DOIs are present where available. No duplicate entries. Every paper cited in technical_report.md has a corresponding entry in sources.bib. Run bibtex validation (or manual check) confirming no syntax errors.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
