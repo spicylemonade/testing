@@ -60,7 +60,6 @@
 #define TYPE_LENGTH       1
 #define TYPE_EOB          2
 #define TYPE_SUBTABLE     3
-#define TYPE_DOUBLE_LIT   4
 
 /* Construct a table entry */
 static inline uint32_t make_entry(int sym, int len, int type) {
@@ -75,12 +74,7 @@ static inline uint32_t make_subtable_entry(int offset, int sub_bits) {
          | ((uint32_t)sub_bits << ENTRY_SUB_SHIFT);
 }
 
-static inline uint32_t make_double_entry(int sym1, int sym2, int total_len) {
-    return (uint32_t)(sym1 & 0xFF)
-         | ((uint32_t)(sym2 & 0xFF) << 8)
-         | ((uint32_t)total_len << ENTRY_LEN_SHIFT)
-         | ((uint32_t)TYPE_DOUBLE_LIT << ENTRY_TYPE_SHIFT);
-}
+static inline uint32_t make_double_entry(int s1, int s2, int l) { (void)s1; (void)s2; (void)l; return 0; }
 
 /* Extract fields */
 static inline int entry_sym(uint32_t e)      { return (int)(e & ENTRY_SYM_MASK); }
@@ -387,6 +381,7 @@ static int decode_dynamic_tables(fast_bitreader_t *br,
  * Uses 11-bit primary Huffman table, 64-bit branchless bit reader,
  * multi-symbol decode, and word-at-a-time copy.
  */
+__attribute__((flatten))
 int fd_inflate_fast(const uint8_t *src, size_t src_len,
                     uint8_t *dst, size_t dst_len,
                     size_t *out_len) {
