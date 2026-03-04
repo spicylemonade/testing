@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "created_at": "2026-03-04T12:00:00Z",
-  "updated_at": "2026-03-04T21:20:29.547894+00:00",
-  "current_agent": "reviewer",
+  "updated_at": "2026-03-04T23:45:00.000000+00:00",
+  "current_agent": "deepening",
   "agent_status": {
     "orchestrator": {
       "status": "completed",
@@ -24,10 +24,10 @@
       "notes": "Produced research_paper.tex (12 pages, 11 sections). Clean compile with pdflatex+bibtex. All citations resolved. 6 figures included. No fabricated results. All claims aligned with artifacts in results/ and figures/."
     },
     "reviewer": {
-      "status": "in_progress",
+      "status": "completed",
       "started_at": "2026-03-04T21:20:29.547881+00:00",
-      "completed_at": null,
-      "error": null
+      "completed_at": "2026-03-04T21:27:28.461126+00:00",
+      "error": "Paper not accepted after 2 rounds"
     }
   },
   "phases": [
@@ -282,12 +282,76 @@
         }
       ]
     }
+    ,
+    {
+      "id": "phase_6",
+      "name": "Novelty Deepening",
+      "order": 6,
+      "items": [
+        {
+          "id": "item_028",
+          "description": "Faithful Kiwi-Soto feasible triplet computation for ℓ ∈ {7, 8, 9, 10}",
+          "acceptance_criteria": "Implement the actual Kiwi-Soto/Lueker lower bound algorithm (NOT an online matching proxy) in C with Python wrapper. For σ=2, d=2: (a) construct the vector w_n of dimension 4^ℓ indexed by all pairs of binary strings of length ℓ, (b) implement the recurrence F(w_{n-1}, w_{n-2}) using the exact Kiwi-Soto Equations 2.2-2.4 (head matching + F_z function), (c) iterate from initial vectors until convergence to find the feasible triplet (u, r, ε) satisfying F(u+(d-1)r·1, u) ≥ u+(dr-ε)·1, (d) compute the rigorous lower bound γ₂ ≥ d(r-ε). For ℓ=8 (65536 entries): must produce a verified lower bound. For ℓ=9 (262144 entries) and ℓ=10 (1048576 entries): attempt if memory permits. The bound at ℓ=8 must exceed 0.770 (matching at least Dančík 1994's result at comparable ℓ). If ℓ ≥ 10 produces a bound > 0.788071 (Lueker's published ℓ≈12 result), document in results/novel/kiwi_soto_lower_bound.json. Must include: exploit complement symmetry (w[a1,a2] = w[ā1,ā2]) to halve effective storage, and reversal symmetry to halve again. Runtime limit: 4 hours for ℓ=10.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_029",
+          "description": "Lueker dual potential upper bound avoiding absorbing-state degeneracy",
+          "acceptance_criteria": "Implement Lueker's dual upper bound formulation (Section 4 of Lueker 2009) which works with potential functions rather than raw column-difference stationary distributions. The key insight: instead of computing the stationary distribution of the column-difference chain (which concentrates on the absorbing all-ones state), define a dual certificate φ: {0,1}^s → R satisfying E[φ(d')] ≤ φ(d) - (1 - γ_ub)·(number of 0→1 transitions), then γ₂ ≤ γ_ub. (a) Implement for strip widths s ∈ {4, 6, 8, 10, 12, 14, 16}, (b) use LP solver (scipy.optimize.linprog or a dedicated LP solver) to find the optimal dual certificate, (c) for each s, report the upper bound. At s=16, must produce a non-trivial upper bound (< 0.95). If any bound < 0.826280 is achieved, this is a paper-worthy result. Save to results/novel/lueker_dual_upper_bound.json with verification of dual feasibility. Must demonstrate that the absorbing-state issue is resolved (i.e., the dual formulation gives bounds that decrease with s, unlike the primal which always gave 1.0).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_030",
+          "description": "Periodic-word-seeded feasible triplet search: hybrid frog-DFA lower bound",
+          "acceptance_criteria": "Create a novel hybrid approach that no prior paper has demonstrated: use the optimal periodic words from frog dynamics (W='100110', γ(W)≈0.800) to construct informed initial vectors for the Kiwi-Soto iteration, rather than starting from zeros. Specifically: (a) for a periodic word W of period p, construct the 'periodic' vector u_W[a1,a2] = γ(W)·ℓ + correction(a1,a2,W) where correction measures how much the prefix pair (a1,a2) is 'aligned' with the periodic structure of W, (b) use this as the initial u in the feasible triplet search with r₀ = γ(W)/d, (c) compare convergence speed and final bound against the standard zero-initialization for ℓ ∈ {7, 8, 9}. Acceptance: (i) demonstrate that periodic-word seeding converges in fewer iterations (at least 20% fewer) than zero-initialization, OR (ii) produces a tighter final bound (even by 0.0001). Save to results/novel/hybrid_frog_dfa.json documenting: seeding method, convergence curves, final bounds for both approaches. This is the first known attempt to combine frog dynamics insights with DFA certificate search.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_031",
+          "description": "Exhaustive periodic word search at periods 8–14 with exact Markov chain verification",
+          "acceptance_criteria": "Extend the frog dynamics search to longer periods where truly competitive lower bounds may emerge. (a) For period p ∈ {8, 9, 10, 11, 12}: enumerate all 2^p / (2p) distinct binary necklaces (up to rotation and complement), (b) for each necklace, estimate γ(W) via MC with n=5000, trials=200, (c) identify the top-5 words per period, (d) for the overall best word W*, refine the estimate using n=20000, trials=1000, and rigorously verify via exact Markov chain analysis: construct the transition matrix of the frog process on the periodic word (state space is O(p·2^p)), compute its stationary distribution exactly, and derive γ(W*) as a rational number (or to 10+ decimal places). For periods 13-14: use a genetic algorithm to search the 2^p word space (too large for exhaustive enumeration). The best γ(W*) must exceed 0.800 (our current best from period 6). If γ(W*) > 0.792666, this is a new SOTA lower bound — document rigorously. Save to results/novel/extended_frog_search.json with exact Markov chain verification for the best word.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_032",
+          "description": "Optimal transport relaxation hierarchy for LCS upper bounds",
+          "acceptance_criteria": "Implement the entirely novel optimal-transport-based upper bound on γ₂ identified in the concept tree (missing_link #3) but never implemented. (a) Formulate LCS as a maximum-weight monotone partial coupling: γ₂ = lim E[max_{π monotone} (1/n)∑ 1_{X_{i}=Y_{π(i)}}], (b) derive the Kantorovich dual: γ₂ ≤ inf_{φ,ψ} E[(1/n)∑_j max_i {1_{X_i=Y_j} - φ(i) - ψ(j)}] where φ,ψ enforce monotonicity, (c) implement a hierarchy of relaxations at levels k=1,2,3,4 where level k constrains k consecutive monotonicity conditions, (d) solve each relaxation level using the Sinkhorn algorithm with monotonicity constraints (or LP for small instances). For n=100,200,500: compute the OT upper bound at each relaxation level. The level-1 relaxation should recover the Dančík-Paterson bound (≈0.854). Level-4 relaxation should produce a bound < 0.854. If any bound < 0.826280, this rivals Lueker — document rigorously. Save to results/novel/ot_upper_bounds.json with all relaxation levels, bounds, and runtime. Must include mathematical proof that each relaxation level is a valid upper bound on γ₂.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_033",
+          "description": "Concentration-based rigorous lower bound from MC simulations via Efron-Stein and bounded differences",
+          "acceptance_criteria": "Derive and compute a novel rigorous lower bound on γ₂ by combining MC simulation data with concentration inequalities, converting non-rigorous estimates into one-sided rigorous bounds. Approach: (a) Use the Efron-Stein inequality: Var[LCS(X,Y)] ≤ Σ E[(LCS - LCS_i)²] where LCS_i replaces X_i with X_i'. Since each character change affects LCS by at most 1, we get Var[LCS] ≤ 2n, (b) Apply the bounded-differences inequality of McDiarmid: P(LCS/n - E[LCS]/n > t) ≤ exp(-nt²), which gives P(E[LCS]/n > LCS_obs/n + t) ≤ exp(-nt²). Inverting: γ₂ ≥ γ_n - c·n^{-1/3+ε} ≥ E[LCS(n,n)]/n - c·n^{-1/3+ε}, (c) Use Alexander's result that |E[LCS(n,n)]/n - γ₂| ≤ C·n^{-1/3+ε} with explicit constant extraction, (d) Combine with our MC estimate E[LCS(50000,50000)]/50000 = 0.8117 ± 0.0001 to produce: γ₂ ≥ 0.8117 - C·50000^{-1/3+ε}. Compute the best such rigorous bound. Even γ₂ ≥ 0.795 from this method (weaker than Heineman's 0.793) would be a valid result if derived by an entirely new technique. Save derivation to results/novel/concentration_lower_bound.md and numerical bound to results/novel/concentration_bound.json. Must include: explicit constant C, the value of ε used, and a complete mathematical proof that the bound is rigorous.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_034",
+          "description": "Tracy-Widom fluctuation test and KPZ universality proof-of-concept for binary LCS",
+          "acceptance_criteria": "Perform the first comprehensive test of whether binary LCS fluctuations follow the Tracy-Widom GUE distribution predicted by KPZ universality — an open question in the literature with no prior numerical investigation at this precision. (a) For n ∈ {1000, 5000, 10000, 20000}: generate at least 50,000 LCS samples, (b) compute the standardized fluctuation Z_n = (LCS - E[LCS]) / (Var[LCS])^{1/2}, (c) perform Kolmogorov-Smirnov and Anderson-Darling tests against the Tracy-Widom F₂ distribution (tabulated values from Bornemann 2010), (d) compute skewness and kurtosis of Z_n and compare against TW-GUE values (skewness ≈ 0.2935, kurtosis ≈ 0.1652), (e) test the measured variance scaling exponent 2χ against the KPZ prediction 2/3. If TW-GUE hypothesis is supported (KS p-value > 0.05 for n ≥ 5000), this is the first numerical evidence for KPZ universality in binary LCS — a genuinely surprising and publishable finding. If rejected, document which distribution better fits (Gaussian? different TW class?). Save to results/novel/tracy_widom_test.json with all test statistics, p-values, and moment comparisons. Plot the empirical CDF against TW-GUE in figures/tracy_widom_comparison.png.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
   ],
   "summary": {
-    "total_items": 27,
+    "total_items": 34,
     "completed": 27,
     "in_progress": 0,
     "failed": 0,
-    "pending": 0
+    "pending": 7
   }
 }
