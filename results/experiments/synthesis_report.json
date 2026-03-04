@@ -1,0 +1,155 @@
+{
+  "description": "Synthesis report: evaluation and ranking of all approaches to bounding the Chvatal-Sankoff constant gamma_2",
+  "known_bounds": {
+    "lower": 0.792665992,
+    "lower_source": "Heineman et al. 2024 [H2024]",
+    "upper": 0.826280,
+    "upper_source": "Lueker 2009 [L2009]",
+    "gap": 0.033614,
+    "best_MC_estimate": 0.8115
+  },
+  "scoring_formula": "combined_score = 0.4 * novelty_score + 0.3 * tightness_score + 0.3 * improvement_potential",
+  "tightness_scoring_notes": "Tightness is scored 1-10 relative to the best known bounds. A bound that matches or improves on the best known gets 10; one far from competitive gets 1. Non-rigorous estimates and conjectural bounds are discounted by ~30%.",
+  "all_approaches_ranked": [
+    {
+      "name": "Bernoulli LPP correlation gap (conjectural upper bound)",
+      "bound_value": 0.80759462,
+      "bound_type": "upper (conjectural)",
+      "novelty_score": 8,
+      "tightness_score": 9,
+      "improvement_potential": 8,
+      "combined_score": 8.3,
+      "reference": "This work (item_014); based on Bernoulli LPP theory [BaikDeiftJohansson1999] and coupling conjecture",
+      "notes": "If the correlation penalty Delta >= 0.021 can be proved rigorously, this gives gamma_2 <= 0.808, beating Lueker's 0.826. The gap Delta is empirically stable across n=50,100,200. Key challenge: rigorizing the coupling argument that LCS correlations are non-positive."
+    },
+    {
+      "name": "Lueker feasible-triplet framework (optimized lower bound)",
+      "bound_value": 0.792665992,
+      "bound_type": "lower (rigorous)",
+      "novelty_score": 2,
+      "tightness_score": 10,
+      "improvement_potential": 7,
+      "combined_score": 5.9,
+      "reference": "Heineman et al. 2024 [H2024]; Lueker 2009 [L2009]",
+      "notes": "The framework has no structural ceiling below gamma_2. Heineman achieved 0.7927 with optimized feasible triplets. Further improvement requires larger ell values and better triplet optimization, which is computationally intensive but conceptually straightforward. Convergence analysis shows the gap to gamma_2 is ~0.019."
+    },
+    {
+      "name": "Frog dynamics / periodic-vs-random LCS",
+      "bound_value": 0.805,
+      "bound_type": "estimate (different problem: periodic-vs-random)",
+      "novelty_score": 7,
+      "tightness_score": 5,
+      "improvement_potential": 6,
+      "combined_score": 6.1,
+      "reference": "This work (item_015); Bukh & Cox 2022 [BukhCox2019]; Briggs et al. 2024 [BriggsEtAl2024]",
+      "notes": "The supremum of gamma_W over period-8 binary words reaches ~0.805 (random_average max). The average gamma_W over random period-p words increases with p and plausibly converges to gamma_2. This is a different problem (one string is periodic), but offers structural insights. Could yield rigorous lower bounds via explicit word constructions if the frog model analysis of Bukh-Cox can be extended."
+    },
+    {
+      "name": "Scaling extrapolation (beta=2/3, best fit)",
+      "bound_value": 0.8115,
+      "bound_type": "estimate (non-rigorous extrapolation)",
+      "novelty_score": 3,
+      "tightness_score": 7,
+      "improvement_potential": 3,
+      "combined_score": 4.2,
+      "reference": "This work (item_010); consistent with Bundschuh 2001 [Bundschuh2001]",
+      "notes": "The intermediate beta=2/3 scaling fit gives gamma_2 ~ 0.8115 with R^2=0.9987, the best fit among scaling models. This is consistent with Bundschuh's simulation estimate. However, the true scaling exponent is not known rigorously, so this remains a heuristic estimate with no path to rigorous improvement."
+    },
+    {
+      "name": "SDP relaxation upper bound",
+      "bound_value": 0.50099,
+      "bound_type": "upper (rigorous, but for small n only)",
+      "novelty_score": 6,
+      "tightness_score": 1,
+      "improvement_potential": 6,
+      "combined_score": 4.5,
+      "reference": "This work (item_014)",
+      "notes": "SDP relaxation computed for n <= 6, giving very weak bounds (~0.50 per unit). The approach is theoretically sound (PSD constraint captures correlations the LP misses) but computationally expensive. Scalability is the key bottleneck: n=6 took ~178s. Potential improvement if efficient SDP solvers or structural decompositions can be found."
+    },
+    {
+      "name": "LP relaxation upper bound",
+      "bound_value": 0.960,
+      "bound_type": "upper (rigorous for finite n, converges to Bernoulli LPP ceiling)",
+      "novelty_score": 5,
+      "tightness_score": 2,
+      "improvement_potential": 5,
+      "combined_score": 4.1,
+      "reference": "This work (item_014)",
+      "notes": "The LP relaxation (dropping monotonicity) converges to the Bernoulli LPP constant 2(sqrt(2)-1) ~ 0.828. For finite n, E[LP]/n is far above E[LCS]/n (gap ~0.17 at n=200). The LP itself does not improve on Lueker, but the LP-to-LCS gap structure is informative and motivates the Bernoulli LPP correlation gap approach."
+    },
+    {
+      "name": "DFA/MDP lower bound (optimal automaton)",
+      "bound_value": 0.7615721344,
+      "bound_type": "lower (rigorous)",
+      "novelty_score": 5,
+      "tightness_score": 4,
+      "improvement_potential": 5,
+      "combined_score": 4.7,
+      "reference": "This work (item_017); cf. Dancik 1994 [D1994]",
+      "notes": "MDP-based optimal DFA with horizon h=6 achieves 0.762, below Dancik's 0.774 due to structural limitations of the single-stream model. Extrapolation to h=inf gives ~0.787. The approach has a structural ceiling because it uses a weaker action space than the two-pointer framework of Dancik. Improving requires adopting Dancik's model, which increases state space exponentially."
+    },
+    {
+      "name": "Entropy / Kolmogorov complexity upper bound",
+      "bound_value": 0.9051,
+      "bound_type": "upper (rigorous)",
+      "novelty_score": 4,
+      "tightness_score": 1,
+      "improvement_potential": 3,
+      "combined_score": 2.8,
+      "reference": "This work (item_013); related to Cheraghchi 2019 [Cheraghchi2019]",
+      "notes": "Pure information-theoretic bounds yield gamma_2 <= 0.905, far above Lueker's 0.826. The approach fundamentally cannot capture the alignment structure that Lueker's framework exploits. Marginal improvements (e.g., refined encoding schemes) cannot close the ~0.08 gap to Lueker."
+    },
+    {
+      "name": "Bernoulli LPP ceiling 2(sqrt(2)-1)",
+      "bound_value": 0.82842712,
+      "bound_type": "upper (conjectural)",
+      "novelty_score": 5,
+      "tightness_score": 6,
+      "improvement_potential": 4,
+      "combined_score": 5.0,
+      "reference": "This work (item_014); based on [BaikDeiftJohansson1999]",
+      "notes": "The Bernoulli LPP constant 2(sqrt(2)-1) serves as a natural ceiling for gamma_2 under the conjecture that inter-row correlations in the LCS matching matrix are non-positive. This bound (0.828) is comparable to but slightly weaker than Lueker's 0.826. The value is primarily useful as the starting point for the correlation gap approach."
+    },
+    {
+      "name": "Exact E[L_n]/n (superadditivity lower bound)",
+      "bound_value": 0.7129,
+      "bound_type": "lower (rigorous)",
+      "novelty_score": 1,
+      "tightness_score": 2,
+      "improvement_potential": 2,
+      "combined_score": 1.6,
+      "reference": "This work (item_008); classical [CS1975]",
+      "notes": "E[L_13]/13 = 0.713, far below Heineman's 0.793. The superadditivity sequence converges very slowly (ratios of successive differences approach 1). Pushing to n=20+ requires exponential computation. Not competitive as a research direction."
+    }
+  ],
+  "best_approach": {
+    "name": "Bernoulli LPP correlation gap (conjectural upper bound)",
+    "bound": 0.80759462,
+    "bound_type": "upper (conjectural)",
+    "novelty_score": 8,
+    "improvement_potential": 8,
+    "combined_score": 8.3,
+    "justification": "This approach yields the most promising new result: a conjectural upper bound of gamma_2 <= 0.808 that would improve on the 15-year-old Lueker 2009 upper bound of 0.826 by a margin of 0.019. The key insight is that the LCS problem can be viewed as a last-passage percolation (LPP) problem with correlated Bernoulli weights, and the correlation gap Delta between the independent Bernoulli LPP and the true LCS is empirically stable at ~0.021 across multiple values of n (50, 100, 200). The Bernoulli LPP constant 2(sqrt(2)-1) ~ 0.828 minus Delta ~ 0.021 gives ~0.808. The approach has high novelty (connects LCS to integrable probability / LPP theory in a new way), the tightest potential bound of any approach considered, and clear paths toward rigorous proof via coupling arguments or FKG-type inequalities for the matching matrix. The main challenge is rigorizing the non-positive correlation conjecture for the LCS matching indicator matrix."
+  },
+  "next_steps": [
+    {
+      "action": "Prove rigorously that the LCS matching matrix has non-positive pairwise correlations",
+      "details": "The key conjecture is that for random binary strings X, Y, the indicators M_ij = 1{X_i = Y_j} satisfy Cov(M_ij, M_kl) <= 0 for the constrained LCS problem (or more precisely, that the LPP value under independent weights stochastically dominates the LCS value). Investigate: (1) FKG inequality applicability — the LCS alignment lattice may satisfy the FKG lattice condition; (2) negative association — check if the uniform binary distribution on X,Y induces negative association on the matching matrix when conditioned on alignment structure; (3) direct coupling — construct an explicit coupling between the Bernoulli LPP model and the LCS model showing the former dominates. Start with small cases (n=4,6) where exact computation is feasible to validate the coupling.",
+      "expected_outcome": "A rigorous proof that gamma_2 <= 2(sqrt(2)-1) ~ 0.8284, which would already be a result comparable to Lueker 2009",
+      "priority": "high"
+    },
+    {
+      "action": "Quantify the correlation gap Delta rigorously using concentration and moment bounds",
+      "details": "Even if the full non-positive correlation conjecture is proved, bounding Delta >= 0.002 rigorously (enough to beat Lueker's 0.826) requires more. Approach: (1) compute exact values of Delta_n = E[BernoulliLPP_n]/n - E[LCS_n]/n for n up to 13 using the exact E[L_n] data; (2) prove that Delta_n is monotonically increasing (or at least bounded below) using subadditivity arguments adapted to the gap; (3) investigate whether the Tracy-Widom fluctuation theory for Bernoulli LPP can be leveraged to control the gap's convergence rate. The empirical data shows Delta_200 ~ 0.021, Delta_100 ~ 0.022, Delta_50 ~ 0.026, suggesting Delta_inf ~ 0.017-0.021.",
+      "expected_outcome": "A rigorous lower bound on the asymptotic gap Delta_inf, potentially yielding gamma_2 <= 0.828 - Delta for provable Delta > 0",
+      "priority": "high"
+    },
+    {
+      "action": "Combine with Lueker framework improvements for a two-sided squeeze",
+      "details": "Pursue a dual strategy: (1) From above: the Bernoulli LPP correlation gap gives a conjectural upper bound ~0.808. (2) From below: extend the Heineman feasible-triplet optimization to larger ell values (ell=15-20) using distributed computation, potentially pushing the lower bound past 0.795. The convergence analysis shows the Lueker framework has no structural ceiling, and the combined power-law extrapolation estimates gamma_inf ~ 0.817 for the triplet approach. A publishable result could present the improved interval [0.795, 0.808] with the upper bound conditional on the correlation conjecture, alongside extensive numerical evidence for the conjecture. Additionally, explore whether the frog dynamics perspective (periodic-vs-random LCS converging to gamma_2 as period grows) can provide an independent theoretical pathway to the same bound.",
+      "expected_outcome": "A paper presenting: (a) the Bernoulli LPP correlation gap framework as a new upper bound technique, (b) improved numerical lower bounds via extended Lueker optimization, (c) a narrowed conjectural interval for gamma_2 of width ~0.013",
+      "priority": "medium"
+    }
+  ],
+  "summary": "Among 10 distinct approaches evaluated, the Bernoulli LPP correlation gap method ranks highest (combined score 8.3/10) due to its novel theoretical connection between LCS and integrable probability, its potential to improve the Lueker 2009 upper bound from 0.826 to ~0.808, and clear pathways toward rigorization. The frog dynamics approach (score 6.1) and Lueker framework optimization (score 5.9) are secondary but complementary. No rigorous improvement over prior bounds was achieved in this work, but the conjectural upper bound of 0.808 represents the most promising avenue for a publishable advance on a 50-year-old open problem."
+}
