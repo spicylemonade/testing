@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "sdp_relaxation_alignment",
+  "description": "Semidefinite programming (SDP) relaxations provide systematic upper bounds for combinatorial optimization problems. The LCS problem can be formulated as an integer program over binary alignment matrices. An SDP relaxation of this IP would yield a provable upper bound on E[LCS], potentially tighter than existing automata-based upper bounds.",
+  "domains": [
+    "optimization",
+    "semidefinite_programming",
+    "combinatorics"
+  ],
+  "mathematical_formalization": "Let $A_{ij} \\in \\{0,1\\}$ indicate position $i$ in string $x$ is matched to position $j$ in string $y$. LCS = max $\\sum_{i,j} A_{ij}$ subject to: $A_{ij} = 0$ if $x_i \\neq y_j$, and monotonicity constraints. Relax $A_{ij} \\in [0,1]$ and add PSD constraint $A \\succeq 0$ plus Lasserre/SOS hierarchy constraints. The SDP value averaged over random $(x,y)$ upper bounds $\\gamma_2 n$.",
+  "analogical_connections": [
+    "Goemans-Williamson MAX-CUT SDP (optimization)",
+    "Lovasz theta function for graph capacity (information theory)",
+    "Lasserre hierarchy for polynomial optimization"
+  ],
+  "implementation_hypothesis": "Formulate the LCS IP for fixed n. Write the first-level Lasserre relaxation. For small n (5-10), solve the SDP exactly using CVXPY/Mosek. Average the SDP values over all 2^(2n) pairs of binary strings. Divide by n. This gives an upper bound on gamma_2 that should converge to a value <= 0.826280 as n grows.",
+  "experiment_seed": "Implement LCS as IP for n=5. Write Lasserre-1 SDP relaxation. Solve for all 2^10 string pairs. Average. The ratio E[SDP_value]/n gives an upper bound candidate. Increase n to 8,10 to observe convergence.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T08:26:03.118658+00:00",
+  "project_folder": "concept_evolve/tree/004_sdp-relaxation-alignment"
+}

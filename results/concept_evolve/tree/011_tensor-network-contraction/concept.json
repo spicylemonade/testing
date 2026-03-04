@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "tensor_network_contraction",
+  "description": "The LCS DP table can be viewed as a 2D tensor network where each cell is a local tensor encoding the recurrence. Contracting this tensor network computes the partition function of the LCS problem. Techniques from quantum information (MPS, DMRG) can contract such networks approximately, potentially enabling computation of E[LCS] for much larger n than exact methods allow.",
+  "domains": [
+    "quantum_information",
+    "tensor_networks",
+    "statistical_mechanics"
+  ],
+  "mathematical_formalization": "Define local tensor $T^{(i,j)}_{a,b,c,d}$ at grid point $(i,j)$ encoding the max-plus recurrence with incoming states $(a,b)$ and outgoing states $(c,d)$. The full LCS value is obtained by contracting all tensors. Approximate the contraction using matrix product states (MPS) of bond dimension $\\chi$. The approximation error is $O(e^{-c\\chi})$.",
+  "analogical_connections": [
+    "DMRG for 1D quantum systems (condensed matter)",
+    "Belief propagation on factor graphs (machine learning)",
+    "Transfer matrix method (statistical mechanics)"
+  ],
+  "implementation_hypothesis": "Encode the LCS DP as a 2D tensor network. Use the boundary MPS method (contracting row by row). For each random string pair, contract with bond dimension chi=32,64,128. Average over many random instances. This should give very accurate E[LCS(n)]/n for n up to ~1000, enabling precise estimation of gamma_2.",
+  "experiment_seed": "Implement the tensor network for n=50 binary LCS. Contract using ITensor or similar library with chi=32. Average over 1000 random pairs. Compare E[LCS]/n with known values. Then scale up n.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T08:26:03.125666+00:00",
+  "project_folder": "concept_evolve/tree/011_tensor-network-contraction"
+}

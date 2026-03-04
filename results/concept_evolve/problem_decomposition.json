@@ -1,0 +1,95 @@
+{
+  "generated_at": "2026-03-04T13:10:00Z",
+  "problem": "Derive new tighter nontrivial bounds on the Chvátal-Sankoff constant gamma_2 for binary alphabet",
+  "current_gap": {
+    "best_lower": 0.792665992,
+    "best_lower_ref": "H2024",
+    "best_upper": 0.826280,
+    "best_upper_ref": "L2009",
+    "gap_width": 0.033614
+  },
+  "attack_vectors": [
+    {
+      "id": "AV1",
+      "name": "Lower bound improvement via scaled-up Lueker/Heineman computation",
+      "type": "lower_bound",
+      "current_best": 0.792665992,
+      "theoretical_ceiling": "Unknown, but numerical estimates suggest gamma_2 ≈ 0.8117, so substantial room for improvement (~0.019)",
+      "key_bottleneck": "State space grows as 2^(2*ell) for the feasible-triplet framework at window size ell. Heineman et al. achieved h=15 with 32-bit half-precision and massive parallelization. The Lueker framework uses a different parametrization but faces similar exponential scaling.",
+      "estimated_feasibility": "medium",
+      "sub_approaches": [
+        {
+          "name": "Symmetry-exploited Lueker iteration",
+          "description": "Exploit 0<->1 bit-flip symmetry and string-swap symmetry to reduce state space by factor 4. Use sparse matrix representation and iterative methods (power iteration / Perron-Frobenius) to handle larger ell.",
+          "target": "ell=10 (state space ~65K after symmetry), potentially ell=12",
+          "expected_bound": ">0.78 (matching Lueker 2009 with our independent implementation)",
+          "references": ["L2009", "H2024"]
+        },
+        {
+          "name": "Exact enumeration for small n with superadditivity",
+          "description": "Compute exact E[L_n] for n=1..16 by brute force enumeration over all 2^n x 2^n string pairs. By superadditivity of the LCS function, max_{n} E[L_n]/n is a rigorous lower bound on gamma_2.",
+          "target": "n=16 (4 billion pairs, feasible with multi-spin coding)",
+          "expected_bound": "~0.76-0.78 (moderate but rigorous)",
+          "references": ["CS1975", "Steele1997"]
+        }
+      ]
+    },
+    {
+      "id": "AV2",
+      "name": "Upper bound improvement via information-theoretic or LP arguments",
+      "type": "upper_bound",
+      "current_best": 0.826280,
+      "theoretical_ceiling": "The Bernoulli matching model gives 2(sqrt(2)-1) ≈ 0.8284 as an absolute ceiling for LP-based methods in one parametrization. Information-theoretic arguments could potentially go lower.",
+      "key_bottleneck": "The 0.826280 upper bound has stood since 2009. Lueker's dual LP framework requires finding good dual certificates, which is computationally intensive. Novel approaches (entropy, SDP, deletion channel) are needed but may face their own barriers.",
+      "estimated_feasibility": "low",
+      "sub_approaches": [
+        {
+          "name": "Entropy upper bound via DP boundary process",
+          "description": "Model the anti-diagonal boundary of the LCS DP table as a stochastic process. Bound the expected growth using conditional entropy arguments. Formulate as a finite LP where the stationary distribution over boundary shapes is the variable.",
+          "target": "Any improvement over 0.826280 would be significant",
+          "expected_bound": "Conjectural, possibly ~0.82-0.825",
+          "references": ["L2009", "Lueker2008"]
+        },
+        {
+          "name": "SDP relaxation of the LCS matching problem",
+          "description": "Formulate LCS as integer program over alignment matrices. Relax to SDP via Lasserre hierarchy. For small n (5-10), solve exactly and average over all string pairs.",
+          "target": "SDP bound for n=8-10, extrapolate",
+          "expected_bound": "Potentially tighter than LP for small n, but scaling unclear",
+          "references": ["L2009", "DP1995"]
+        }
+      ]
+    },
+    {
+      "id": "AV3",
+      "name": "Novel approaches from cross-domain transfer",
+      "type": "both",
+      "current_best": "N/A (exploratory)",
+      "theoretical_ceiling": "gamma_2 itself (≈0.8117 from MC estimates)",
+      "key_bottleneck": "Most cross-domain approaches (particle systems, KPZ, deletion channel) provide estimates or relate gamma_2 to other unknown constants rather than giving direct rigorous bounds.",
+      "estimated_feasibility": "medium",
+      "sub_approaches": [
+        {
+          "name": "Frog dynamics for periodic words approaching random",
+          "description": "Use Bukh-Cox frog dynamics to compute gamma_W for periodic binary words W of increasing period. As the period grows, gamma_W may approach gamma_2 from below (if the periodic word is chosen to be 'most random-like'). This gives a lower bound framework complementary to Lueker/Heineman.",
+          "target": "gamma_W for period-16 and period-32 words",
+          "expected_bound": "Likely lower than Heineman's 0.7927, but provides independent verification and potentially novel insights",
+          "references": ["BukhCox2019", "BriggsEtAl2024"]
+        },
+        {
+          "name": "Deletion channel capacity connection for upper bounds",
+          "description": "Formalize the connection between gamma_2 and the binary deletion channel capacity C_del(1/2). If gamma_2 > c for some c, this implies a code construction for the deletion channel with rate related to c. Contrapositive: upper bounds on C_del(1/2) ≤ 0.4943 may yield upper bounds on gamma_2.",
+          "target": "Derive the precise inequality gamma_2 <= f(C_del(1/2))",
+          "expected_bound": "If f(0.4943) < 0.826, this is a new upper bound",
+          "references": ["Cheraghchi2019", "CheraghchiSTOC2018", "GuruswamiHeLi2021"]
+        },
+        {
+          "name": "DFA-based lower bound with learned automata",
+          "description": "Instead of hand-designing DFA transition rules, use systematic enumeration or optimization (RL/evolutionary) to find the DFA that maximizes the steady-state matching rate. This generalizes Dancik's approach.",
+          "target": "DFA with h=4-6 lookahead, exhaustive search",
+          "expected_bound": ">0.76, potentially matching Dancik's 0.7739",
+          "references": ["D1994", "DP1995"]
+        }
+      ]
+    }
+  ]
+}

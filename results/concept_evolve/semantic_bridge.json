@@ -1,0 +1,61 @@
+{
+  "nodes": [
+    {"id": "stochastic_particle_duality", "domain": "statistical_mechanics"},
+    {"id": "replica_free_energy", "domain": "spin_glass_theory"},
+    {"id": "tropical_lcs_geometry", "domain": "tropical_geometry"},
+    {"id": "sdp_relaxation_alignment", "domain": "optimization"},
+    {"id": "information_bottleneck_lcs", "domain": "information_theory"},
+    {"id": "last_passage_percolation_bridge", "domain": "random_matrix_theory"},
+    {"id": "kolmogorov_incompressibility", "domain": "algorithmic_information_theory"},
+    {"id": "markov_chain_automaton_refinement", "domain": "automata_theory"},
+    {"id": "multi_string_extrapolation", "domain": "asymptotic_analysis"},
+    {"id": "hammersley_process_coupling", "domain": "integrable_systems"},
+    {"id": "tensor_network_contraction", "domain": "quantum_information"},
+    {"id": "convex_relaxation_hierarchy", "domain": "optimization"}
+  ],
+  "edges": [
+    {"source": "stochastic_particle_duality", "target": "last_passage_percolation_bridge", "relation": "Both model LCS as particle/path processes on a 2D grid; the particle density profile encodes the same information as LPP path statistics"},
+    {"source": "stochastic_particle_duality", "target": "hammersley_process_coupling", "relation": "The Tiskin particle process is a variant of the Hammersley process; both describe LCS via interacting particles"},
+    {"source": "replica_free_energy", "target": "stochastic_particle_duality", "relation": "The replica method computes the free energy of the particle system; the RS saddle point corresponds to the hydrodynamic limit density profile"},
+    {"source": "replica_free_energy", "target": "tensor_network_contraction", "relation": "Both compute partition functions of the LCS model; tensor networks provide a non-perturbative alternative to replica calculations"},
+    {"source": "tropical_lcs_geometry", "target": "sdp_relaxation_alignment", "relation": "Tropical eigenvalues (Lyapunov exponents) of max-plus matrices bound LCS growth rate; SDP relaxes the integer structure that tropical algebra captures exactly"},
+    {"source": "tropical_lcs_geometry", "target": "convex_relaxation_hierarchy", "relation": "The tropical polytope of feasible LCS paths is the exact feasible region; LP/SDP hierarchies approximate this polytope from outside"},
+    {"source": "sdp_relaxation_alignment", "target": "convex_relaxation_hierarchy", "relation": "SDP is a stronger relaxation in the same hierarchy; both provide systematic upper bounds via duality"},
+    {"source": "information_bottleneck_lcs", "target": "kolmogorov_incompressibility", "relation": "Both use information-theoretic limits on compressibility to bound LCS; Kolmogorov complexity is the pointwise version of Shannon entropy"},
+    {"source": "information_bottleneck_lcs", "target": "replica_free_energy", "relation": "The entropy of the LCS distribution relates to the free energy; both quantify the 'information content' of the alignment"},
+    {"source": "last_passage_percolation_bridge", "target": "hammersley_process_coupling", "relation": "LPP and the Hammersley process are two perspectives on the same integrable probability model; the Bernoulli model is their common exactly-solvable specialization"},
+    {"source": "last_passage_percolation_bridge", "target": "tropical_lcs_geometry", "relation": "LPP geodesics are optimal paths through the tropical variety; the LPP constant is the tropical eigenvalue of the random weight matrix"},
+    {"source": "kolmogorov_incompressibility", "target": "convex_relaxation_hierarchy", "relation": "Incompressibility arguments provide information-theoretic upper bounds that can be strengthened by adding structural constraints, analogous to hierarchy tightening"},
+    {"source": "markov_chain_automaton_refinement", "target": "convex_relaxation_hierarchy", "relation": "The automaton lower bound and the dual upper bound are primal-dual pairs of the same LP; refining one tightens both"},
+    {"source": "markov_chain_automaton_refinement", "target": "multi_string_extrapolation", "relation": "The automaton method applies to d strings; computing bounds for multiple d values enables extrapolation to d=2"},
+    {"source": "multi_string_extrapolation", "target": "last_passage_percolation_bridge", "relation": "The d-string LCS relates to multi-layer LPP; the d->infinity asymptotics connect to mean-field limits"},
+    {"source": "tensor_network_contraction", "target": "markov_chain_automaton_refinement", "relation": "The transfer matrix in the tensor network is the transition matrix of the Markov chain; bond dimension corresponds to state space size"},
+    {"source": "tensor_network_contraction", "target": "tropical_lcs_geometry", "relation": "Contracting the tensor network in the zero-temperature (tropical) limit computes the exact LCS; finite temperature gives the partition function"}
+  ],
+  "bridge_chains": [
+    {
+      "name": "physics_to_algorithms",
+      "path": ["replica_free_energy", "stochastic_particle_duality", "hammersley_process_coupling", "last_passage_percolation_bridge"],
+      "description": "Starts from statistical mechanics (replica method), flows through stochastic processes, connects to integrable systems and random matrix theory. This chain transfers exact solvability from the Bernoulli model to bound the true LCS.",
+      "domains_crossed": ["spin_glass_theory", "statistical_mechanics", "integrable_systems", "random_matrix_theory"]
+    },
+    {
+      "name": "information_to_optimization",
+      "path": ["information_bottleneck_lcs", "kolmogorov_incompressibility", "convex_relaxation_hierarchy", "sdp_relaxation_alignment"],
+      "description": "Starts from information-theoretic bounds, strengthens via algorithmic information theory, and culminates in systematic optimization hierarchies. Each step tightens the upper bound by adding more structural constraints.",
+      "domains_crossed": ["information_theory", "algorithmic_information_theory", "optimization", "semidefinite_programming"]
+    },
+    {
+      "name": "algebra_to_computation",
+      "path": ["tropical_lcs_geometry", "tensor_network_contraction", "markov_chain_automaton_refinement", "multi_string_extrapolation"],
+      "description": "Starts from algebraic structure (tropical geometry), uses tensor networks for efficient computation, connects to automaton-based bounds, and enables extrapolation across parameters. This chain leverages algebraic structure for computational speedups.",
+      "domains_crossed": ["tropical_geometry", "quantum_information", "automata_theory", "asymptotic_analysis"]
+    },
+    {
+      "name": "duality_chain",
+      "path": ["markov_chain_automaton_refinement", "convex_relaxation_hierarchy", "tropical_lcs_geometry", "last_passage_percolation_bridge", "stochastic_particle_duality"],
+      "description": "Explores the primal-dual structure: automaton lower bounds are LP primal, hierarchy upper bounds are LP dual, tropical geometry gives the exact polytope, LPP provides the probabilistic interpretation, and particle duality closes the loop.",
+      "domains_crossed": ["automata_theory", "optimization", "tropical_geometry", "random_matrix_theory", "statistical_mechanics"]
+    }
+  ]
+}

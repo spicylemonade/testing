@@ -1,0 +1,24 @@
+{
+  "symbolic_name": "markov_chain_automaton_refinement",
+  "description": "Dancik (1994) and Lueker (2009) used DFA-based Markov chains to produce both lower and upper bounds on gamma_2. The state tracks a buffer of recent characters from both strings. Heineman et al. (2024) improved this with parallelization and memory optimization. The key opportunity is to design new automata with richer state spaces that exploit structural properties of optimal LCS alignments.",
+  "domains": [
+    "automata_theory",
+    "Markov_chains",
+    "algorithm_engineering"
+  ],
+  "mathematical_formalization": "Define a DFA $M$ with state space $Q$, reading pairs $(x_i, y_j)$ from two input streams. At each step $M$ either outputs a matched character or advances one stream. The stationary distribution $\\pi$ of the induced Markov chain gives rate $r(M) = \\sum_q \\pi(q) \\cdot p_{\\text{match}}(q)$. Then $\\gamma_2 \\ge r(M)$ (lower bound) and a dual automaton gives upper bounds.",
+  "analogical_connections": [
+    "Hidden Markov models (machine learning)",
+    "Markov chain Monte Carlo (statistics)",
+    "Finite-state transducers (formal language theory)"
+  ],
+  "implementation_hypothesis": "Design an automaton with state = (buffer of h chars from X, buffer of h chars from Y, position offset mod k). For h=16 and k=4, the state space is 2^16 * 2^16 * 4 ~ 10^10, needing distributed computation. Use Heineman et al.'s memory scheme. Target a lower bound > 0.7927.",
+  "experiment_seed": "Reproduce Heineman et al.'s h=15 result (0.792665992). Then try h=16 with their optimized code. Estimate runtime. Even a marginal improvement (e.g., 0.79267+) would be a new record lower bound.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T08:26:03.123132+00:00",
+  "project_folder": "concept_evolve/tree/008_markov-chain-automaton-refinement"
+}

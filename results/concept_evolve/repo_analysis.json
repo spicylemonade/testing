@@ -1,0 +1,119 @@
+{
+  "generated_at": "2026-03-04T12:00:00Z",
+  "archivara_modules": {
+    "concept_evolve.py": {
+      "purpose": "Cross-domain concept-tree exploration pipeline. Launches OpenCode sub-agents to generate concept cards, build semantic bridge graphs, and manage a tree of concept folders on disk.",
+      "commands": {
+        "evolve": "Full pipeline: research a topic, generate 10+ concept cards, build semantic bridge graph, produce introspection and steering directions. Writes concept_cards.json, semantic_bridge.json, introspection.json, steering_directions.json plus per-concept tree folders.",
+        "probe": "Deep-dive into a specific bottleneck. Generates forced bridges to distant domains, anomaly analysis, steering directions, and validation checks. Writes probe_result.json.",
+        "reframe": "Reframes a problem across 8+ distinct domains with key insights, suggested techniques, and mapping back. Writes reframings.json.",
+        "walk": "Traverses the concept graph built by evolve. Filters by seed, limits depth (1-8). Writes walk_session.json."
+      },
+      "output_schemas": {
+        "concept_cards.json": "Array of {symbolic_name, description, domains, mathematical_formalization, analogical_connections, implementation_hypothesis, experiment_seed, folder_plan}",
+        "semantic_bridge.json": "{nodes: [{id, domain}], edges: [{source, target, relation}], bridge_chains}",
+        "introspection.json": "{associations, blind_spots, anomaly_results}",
+        "steering_directions.json": "Array of {direction, rationale, first_step, expected_signal}",
+        "tree/index.json": "Index listing all concept folders",
+        "tree/adjacency.json": "Graph adjacency for concept relationships",
+        "tree/walk_paths.json": "Pre-computed walk paths through concept tree"
+      }
+    },
+    "semantic_scholar.py": {
+      "purpose": "Robust Semantic Scholar API client for literature search, citation graph traversal, recommendations, and BibTeX export. Includes exponential backoff with 6 retries.",
+      "commands": {
+        "search": "Keyword search for papers, returns array of paper objects with paperId, title, year, authors, venue, abstract, etc.",
+        "citations": "Get papers that cite a given paper by paperId",
+        "references": "Get papers referenced by a given paper",
+        "recommend": "Get recommendations based on positive paper IDs (POST to recommendations endpoint)",
+        "graph": "Build citation graph: search for root papers then expand with references and citations. Returns {seed_query, root_count, node_count, edge_count, nodes, edges}",
+        "bibtex": "Generate BibTeX @article entry for a paper, resolving ArXiv/DOI URLs"
+      }
+    },
+    "opencode.json": {
+      "purpose": "OpenCode platform configuration defining model (claude-opus-4-6), providers, global permissions, and agent roles with tool permissions."
+    },
+    "logs/": {
+      "purpose": "Execution logs directory containing orchestrator.log and researcher attempt logs in structured JSON format."
+    }
+  },
+  "opencode_modules": {
+    "agents/concept-tree-explorer.md": {
+      "purpose": "Subagent for traversing concept trees and identifying high-value concept paths. Read-only (no write/edit permissions).",
+      "mode": "subagent",
+      "permitted_tools": ["webfetch", "websearch", "todoread", "todowrite"],
+      "denied_tools": ["write", "edit"]
+    },
+    "agents/literature-graph-miner.md": {
+      "purpose": "Subagent for mining citation graphs for transferable ideas and supporting evidence. Read-only.",
+      "mode": "subagent",
+      "permitted_tools": ["webfetch", "websearch", "todoread", "todowrite"],
+      "denied_tools": ["write", "edit"]
+    },
+    "tools/concept_evolve.ts": {
+      "purpose": "OpenCode tool wrapper calling .archivara/concept_evolve.py via execFileSync. Commands: evolve/probe/reframe/walk. Timeout: 20 min.",
+      "parameters": ["command (enum)", "topic (optional)", "seed (optional)", "depth (optional)"]
+    },
+    "tools/semantic_scholar.ts": {
+      "purpose": "OpenCode tool wrapper calling .archivara/semantic_scholar.py via execFileSync. Appends --json for non-bibtex commands.",
+      "parameters": ["command (enum)", "query (optional)", "limit (optional)"]
+    }
+  },
+  "concept_evolve_pipeline": {
+    "evolve": {
+      "input": "topic string",
+      "outputs": ["concept_cards.json", "semantic_bridge.json", "introspection.json", "steering_directions.json", "tree/index.json", "tree/adjacency.json", "tree/walk_paths.json", "tree/NNN_slug/concept.json", "tree/NNN_slug/README.md"],
+      "caching": "2-hour TTL with file locking"
+    },
+    "probe": {
+      "input": "problem string",
+      "outputs": ["probe_result.json"],
+      "schema": "{associations, forced_bridges: [{from, to, mechanism}], anomaly_results, steering_directions, validation_checks, sub_problem, timestamp}"
+    },
+    "reframe": {
+      "input": "problem string",
+      "outputs": ["reframings.json"],
+      "schema": "{problem, framings: [{domain, reframing, key_insight, suggested_technique, mapping_back, candidate_folder_name}], timestamp}"
+    },
+    "walk": {
+      "input": "optional seed and depth",
+      "outputs": ["walk_session.json"],
+      "schema": "{timestamp, seed, depth, total_paths, selected_paths, paths, concept_index_size}"
+    }
+  },
+  "semantic_scholar_api": {
+    "capabilities": ["keyword_search", "citation_traversal", "reference_traversal", "paper_recommendations", "citation_graph_building", "bibtex_export"],
+    "paper_object_schema": "{paperId, title, year, citationCount, authors, venue, abstract, externalIds, url}",
+    "resilience": "Exponential backoff, 6 retries, 20s timeout per request"
+  },
+  "agent_roles": {
+    "orchestrator": {
+      "description": "Planning-only rubric author",
+      "concept_evolve": "denied",
+      "semantic_scholar": "inherited/allowed",
+      "special_restrictions": "bash pattern *concept_evolve* denied"
+    },
+    "researcher": {
+      "description": "Execution-heavy research worker with full toolset",
+      "concept_evolve": "enabled",
+      "semantic_scholar": "enabled",
+      "special_permissions": "All tools available"
+    },
+    "writer": {
+      "description": "Paper writing and synthesis",
+      "concept_evolve": "denied",
+      "semantic_scholar": "enabled"
+    },
+    "reviewer": {
+      "description": "Peer review and quality control",
+      "concept_evolve": "denied",
+      "semantic_scholar": "enabled"
+    },
+    "concept_worker": {
+      "description": "ConceptEvolve sub-worker spawned by concept_evolve.py (no recursion)",
+      "concept_evolve": "denied",
+      "semantic_scholar": "enabled",
+      "tools": ["websearch", "webfetch", "bash", "read", "write", "edit"]
+    }
+  }
+}

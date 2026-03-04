@@ -1,0 +1,122 @@
+[
+  {
+    "symbolic_name": "stochastic_particle_duality",
+    "description": "Tiskin (2022) linked the Chvatal-Sankoff constant to parameters of a stochastic particle process, connecting LCS to interacting particle systems. Amsalu-Matzinger-Vachkovskaia (2008) showed an equivalent interacting particle model in random media. This card proposes exploiting the particle process duality to derive new bounds by analyzing particle density and speed in the hydrodynamic limit.",
+    "domains": ["statistical_mechanics", "probability_theory", "combinatorics"],
+    "mathematical_formalization": "Let $\\{X_i(t)\\}_{i \\ge 1}$ be particles on $\\mathbb{Z}$ with density $\\rho(x,t)$ solving $\\partial_t \\rho + \\partial_x [v(\\rho) \\rho] = 0$. The Chvatal-Sankoff constant satisfies $\\gamma_2 = \\int_0^1 v(\\rho(x)) dx$ at stationarity. Bound $\\gamma_2$ by bounding $v(\\rho)$ via convexity of the flux function $f(\\rho) = \\rho \\cdot v(\\rho)$.",
+    "analogical_connections": ["Burgers equation for particle density (fluid mechanics)", "TASEP (totally asymmetric simple exclusion process) as exactly solvable reference model", "Hydrodynamic limits of interacting particle systems (PDE theory)"],
+    "implementation_hypothesis": "Simulate the Tiskin particle process for binary LCS with large system sizes (N=10000+). Measure the empirical flux function f(rho) and fit a convex/concave envelope. Use the envelope to derive rigorous upper/lower bounds on gamma_2 by solving the resulting variational problem.",
+    "experiment_seed": "Implement the particle process from Tiskin (2022) Section 3. Run 10^6 Monte Carlo steps. Estimate v(rho) for rho in [0,1] at 100 grid points. Check if the resulting integral matches known bounds.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "replica_free_energy",
+    "description": "The replica method from spin glass theory has been applied to sequence alignment by Bundschuh, Hwa, and Lassig. By treating the LCS problem as finding the ground state energy of a disordered system, one can use replica-symmetric and replica-symmetry-breaking Ansatze to estimate gamma_2. The key insight is that the LCS length maps to a free energy at zero temperature.",
+    "domains": ["statistical_mechanics", "spin_glass_theory", "information_theory"],
+    "mathematical_formalization": "Define the partition function $Z_n(\\beta) = \\sum_{\\text{common subseq } s} e^{\\beta |s|}$. Then $\\gamma_2 = \\lim_{n \\to \\infty} \\frac{1}{n} \\lim_{\\beta \\to \\infty} \\frac{1}{\\beta} \\overline{\\ln Z_n(\\beta)}$. The replica trick gives $\\overline{\\ln Z} = \\lim_{m \\to 0} \\frac{\\overline{Z^m} - 1}{m}$. Compute $\\overline{Z^m}$ for integer $m$ and analytically continue.",
+    "analogical_connections": ["Sherrington-Kirkpatrick model (mean-field spin glass)", "Random energy model (Derrida)", "Free energy landscapes in protein folding"],
+    "implementation_hypothesis": "Compute the annealed approximation (m=1 replica) as an upper bound. For the RS (replica-symmetric) Ansatz, solve the resulting saddle-point equations numerically. Compare with the known bounds to check if RS gives a tighter upper bound than 0.826280.",
+    "experiment_seed": "Write the saddle-point equations for the RS Ansatz of the LCS partition function. Solve numerically using Newton's method. The annealed bound is E[Z]/Z_typical which should yield an upper bound. Check against Lueker's 0.826280.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "tropical_lcs_geometry",
+    "description": "The LCS problem has a natural tropical (min-plus/max-plus) algebraic formulation: the DP recurrence is a max-plus matrix product. Tropical geometry studies the combinatorial structure of solutions to such optimization problems. By analyzing the tropical variety of the LCS problem, one may extract structural constraints that tighten bounds.",
+    "domains": ["tropical_geometry", "algebraic_combinatorics", "computer_science"],
+    "mathematical_formalization": "The LCS DP table $L(i,j) = \\max(L(i-1,j), L(i,j-1), L(i-1,j-1) + \\mathbf{1}[x_i = y_j])$ is a tropical polynomial. The anti-diagonal $D_k = \\{(i,j) : i+j=k\\}$ evolution is a max-plus matrix-vector product. The tropical rank of the transition matrix bounds the number of distinct LCS path types.",
+    "analogical_connections": ["Max-plus linear algebra and shortest path problems", "Newton polytopes and mixed volumes", "Tropical convexity and optimal assignment"],
+    "implementation_hypothesis": "Compute the max-plus transition matrices for the LCS DP on binary strings of length n. Analyze the tropical eigenvalue (Lyapunov exponent) of the random product of these matrices. The Lyapunov exponent equals gamma_2. Use Oseledec's theorem to bound the convergence rate and derive finite-n corrections.",
+    "experiment_seed": "For n=1..30, compute the exact distribution of max-plus matrix products for binary LCS. Extract the Lyapunov exponent and compare with E[lambda_{n,2}]/n. Measure convergence rate to assess how tight finite-n approximations can be.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "sdp_relaxation_alignment",
+    "description": "Semidefinite programming (SDP) relaxations provide systematic upper bounds for combinatorial optimization problems. The LCS problem can be formulated as an integer program over binary alignment matrices. An SDP relaxation of this IP would yield a provable upper bound on E[LCS], potentially tighter than existing automata-based upper bounds.",
+    "domains": ["optimization", "semidefinite_programming", "combinatorics"],
+    "mathematical_formalization": "Let $A_{ij} \\in \\{0,1\\}$ indicate position $i$ in string $x$ is matched to position $j$ in string $y$. LCS = max $\\sum_{i,j} A_{ij}$ subject to: $A_{ij} = 0$ if $x_i \\neq y_j$, and monotonicity constraints. Relax $A_{ij} \\in [0,1]$ and add PSD constraint $A \\succeq 0$ plus Lasserre/SOS hierarchy constraints. The SDP value averaged over random $(x,y)$ upper bounds $\\gamma_2 n$.",
+    "analogical_connections": ["Goemans-Williamson MAX-CUT SDP (optimization)", "Lovasz theta function for graph capacity (information theory)", "Lasserre hierarchy for polynomial optimization"],
+    "implementation_hypothesis": "Formulate the LCS IP for fixed n. Write the first-level Lasserre relaxation. For small n (5-10), solve the SDP exactly using CVXPY/Mosek. Average the SDP values over all 2^(2n) pairs of binary strings. Divide by n. This gives an upper bound on gamma_2 that should converge to a value <= 0.826280 as n grows.",
+    "experiment_seed": "Implement LCS as IP for n=5. Write Lasserre-1 SDP relaxation. Solve for all 2^10 string pairs. Average. The ratio E[SDP_value]/n gives an upper bound candidate. Increase n to 8,10 to observe convergence.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "information_bottleneck_lcs",
+    "description": "The information bottleneck method compresses a random variable while preserving information about another. The LCS problem can be viewed through this lens: the common subsequence is a compressed representation that preserves maximal structural information shared between two random strings. Rate-distortion theory gives fundamental limits on such compression, potentially yielding new bounds.",
+    "domains": ["information_theory", "rate_distortion_theory", "combinatorics"],
+    "mathematical_formalization": "Let $X, Y$ be i.i.d. uniform binary strings of length $n$. Define a 'channel' that maps $(X,Y)$ to their LCS $S$. By the data processing inequality, $I(X;Y) \\ge I(X;S) \\ge H(S) - H(S|X)$. Since $H(S) \\approx \\gamma_2 n \\log(n/\\gamma_2 n)$ and $I(X;Y) = 0$ (independent strings), we get constraints on the entropy of $S$. More refined mutual information bounds using the edit distance channel give: $\\gamma_2 \\le 1 - \\delta$ where $\\delta$ comes from the capacity of the binary deletion channel.",
+    "analogical_connections": ["Binary deletion channel capacity (coding theory)", "Information bottleneck (machine learning)", "Rate-distortion function for binary source"],
+    "implementation_hypothesis": "Compute the mutual information I(X; LCS(X,Y)) for small n by exact enumeration. Use the relationship between LCS and the deletion channel to derive an upper bound on gamma_2 from the known upper bounds on deletion channel capacity (~0.4943 for deletion probability 1/2).",
+    "experiment_seed": "For n=1..12, enumerate all binary string pairs. Compute LCS distribution. Calculate H(LCS), H(LCS|X), I(X;LCS). Plot I(X;LCS)/n vs n. Relate to deletion channel capacity bounds.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "last_passage_percolation_bridge",
+    "description": "The LCS of two random strings is equivalent to a last passage percolation (LPP) problem on a grid with Bernoulli weights. For the 'Bernoulli matching model' (independent random matches), the Tracy-Widom distribution governs fluctuations, as shown by Majumdar-Nechaev (2005). Bridging from the exactly solvable Bernoulli model to the true LCS (with correlated matches) could yield new bounds.",
+    "domains": ["probability_theory", "random_matrix_theory", "KPZ_universality"],
+    "mathematical_formalization": "In the Bernoulli model, $w_{ij} \\sim \\text{Bernoulli}(1/k)$ independently. LPP value $T = \\max_{\\text{up-right paths}} \\sum w_{ij}$. For $k=2$: $E[T]/n \\to 2(\\sqrt{2}-1) \\approx 0.8284$ (exactly solvable). In the true LCS, $w_{ij} = \\mathbf{1}[x_i = y_j]$ has correlations along rows and columns. The gap $0.8284 - \\gamma_2 \\approx 0.017$ measures the effect of correlations. Bounding this gap tightens upper bounds.",
+    "analogical_connections": ["Corner growth model (integrable probability)", "Tracy-Widom distribution (random matrix theory)", "KPZ universality class (statistical physics)"],
+    "implementation_hypothesis": "Compute the exact LPP constant for the Bernoulli model (known: 2(sqrt(2)-1)). Develop a coupling between the Bernoulli model and the true LCS model. The coupling inequality gives gamma_2 <= LPP_Bernoulli - correction. Estimate the correction term by measuring the covariance structure of 1[x_i=y_j] along rows/columns.",
+    "experiment_seed": "Simulate both models (Bernoulli LPP and true LCS) for n=100,500,1000,5000. Compare means and variances. The difference in means (scaled by n) estimates the correlation penalty. Check if this yields a tighter upper bound than 0.826280.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "kolmogorov_incompressibility",
+    "description": "Baeza-Yates et al. (1999) used Kolmogorov complexity to derive upper bounds on the expected LCS. The idea: a common subsequence of two random strings provides a compressed description of one string given the other. Since random strings are incompressible, this limits LCS length. Tighter incompressibility arguments with refined conditional complexity could improve the upper bound.",
+    "domains": ["algorithmic_information_theory", "combinatorics", "coding_theory"],
+    "mathematical_formalization": "For random binary strings $x,y$ of length $n$: $K(x|y) \\ge n - O(\\log n)$ (incompressibility). An LCS of length $\\ell$ allows encoding $x$ given $y$ and the LCS in $n - \\ell + O(\\ell \\log(n/\\ell))$ bits. Therefore $n \\le (n - \\ell) + \\ell H(\\ell/n) + O(\\log n)$, giving $\\ell/n \\le c$ where $c$ satisfies $c \\log(1/c) + (1-c)\\log(1/(1-c)) \\ge c$. This yields $\\gamma_2 \\le 0.8325...$",
+    "analogical_connections": ["Source coding theorem (information theory)", "Lempel-Ziv compression (data compression)", "Kolmogorov structure function"],
+    "implementation_hypothesis": "Refine the encoding scheme: given y and the LCS, encode x by specifying (1) which positions in y participate in the LCS, (2) which positions in x participate, (3) the remaining bits of x. Optimize over all ways to describe the alignment. Each improvement in the encoding scheme tightens the upper bound.",
+    "experiment_seed": "Implement the encoding/decoding scheme for n=20. For each pair of binary strings, compute the description length. Average over random pairs. The average description length gives an upper bound via the incompressibility method. Compare with 0.826280.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "markov_chain_automaton_refinement",
+    "description": "Dancik (1994) and Lueker (2009) used DFA-based Markov chains to produce both lower and upper bounds on gamma_2. The state tracks a buffer of recent characters from both strings. Heineman et al. (2024) improved this with parallelization and memory optimization. The key opportunity is to design new automata with richer state spaces that exploit structural properties of optimal LCS alignments.",
+    "domains": ["automata_theory", "Markov_chains", "algorithm_engineering"],
+    "mathematical_formalization": "Define a DFA $M$ with state space $Q$, reading pairs $(x_i, y_j)$ from two input streams. At each step $M$ either outputs a matched character or advances one stream. The stationary distribution $\\pi$ of the induced Markov chain gives rate $r(M) = \\sum_q \\pi(q) \\cdot p_{\\text{match}}(q)$. Then $\\gamma_2 \\ge r(M)$ (lower bound) and a dual automaton gives upper bounds.",
+    "analogical_connections": ["Hidden Markov models (machine learning)", "Markov chain Monte Carlo (statistics)", "Finite-state transducers (formal language theory)"],
+    "implementation_hypothesis": "Design an automaton with state = (buffer of h chars from X, buffer of h chars from Y, position offset mod k). For h=16 and k=4, the state space is 2^16 * 2^16 * 4 ~ 10^10, needing distributed computation. Use Heineman et al.'s memory scheme. Target a lower bound > 0.7927.",
+    "experiment_seed": "Reproduce Heineman et al.'s h=15 result (0.792665992). Then try h=16 with their optimized code. Estimate runtime. Even a marginal improvement (e.g., 0.79267+) would be a new record lower bound.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "multi_string_extrapolation",
+    "description": "Li-Ren-Wen (2025) proved that gamma_{2,d} = 1/2 + Theta(1/sqrt(d)) for d random binary strings. For d=2, this gives gamma_2 = gamma_{2,2}. By computing gamma_{2,d} for many values of d and fitting the function gamma_{2,d} vs d, one can extrapolate more precisely to d=2. The known asymptotic form constrains the function shape, enabling tighter extrapolation.",
+    "domains": ["combinatorics", "asymptotic_analysis", "numerical_analysis"],
+    "mathematical_formalization": "Known: $\\gamma_{2,d} = \\frac{1}{2} + \\frac{c}{\\sqrt{d}} + O(d^{-1})$ for large $d$. We also know $\\gamma_{2,d}$ exactly for small $d$ (bounds). Fit $\\gamma_{2,d} = \\frac{1}{2} + \\frac{c_1}{\\sqrt{d}} + \\frac{c_2}{d} + \\frac{c_3}{d^{3/2}}$ using known bounds for $d = 2, 3, 4, 5, \\ldots, 20$. Evaluate at $d=2$ to get an estimate of $\\gamma_2$.",
+    "analogical_connections": ["Richardson extrapolation (numerical analysis)", "Pade approximants (complex analysis)", "Series acceleration (computational mathematics)"],
+    "implementation_hypothesis": "Collect all known lower and upper bounds for gamma_{2,d} for d=2..20 from the literature (Heineman 2024, Lueker 2009, etc.). Fit the asymptotic expansion with 3-4 parameters. The fitted value at d=2 gives a non-rigorous but potentially very accurate estimate. If it's within the known interval [0.7927, 0.8263], it narrows the plausible range.",
+    "experiment_seed": "Compile a table of gamma_{2,d} bounds from literature. Fit asymptotic formula. Predict gamma_{2,2}. Cross-validate by leaving out d=3 and predicting it. If prediction accuracy is good, the d=2 prediction is credible.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "hammersley_process_coupling",
+    "description": "The Hammersley process is a particle system related to longest increasing subsequences (LIS). The LCS of two binary strings can be mapped to a variant of the Hammersley process with an 'exploration penalty'. Georgiou-Ortmann (2018) studied the discrete Hammersley process and obtained Tracy-Widom fluctuations at zero penalty. Coupling the LCS to this process at nonzero penalty could yield new bounds.",
+    "domains": ["probability_theory", "integrable_systems", "combinatorial_optimization"],
+    "mathematical_formalization": "The discrete Hammersley process on an $n \\times n$ grid with Bernoulli($p$) points: the LPP time $T_n$ satisfies $E[T_n]/n \\to c(p)$ where $c(1/2) = 2(\\sqrt{2}-1)$ (Bernoulli model). For the true LCS model, introduce a penalty $\\lambda$ for row/column correlations. Then $\\gamma_2 = c(1/2) - \\Delta(\\lambda^*)$ where $\\Delta$ is the correlation penalty at the optimal coupling $\\lambda^*$.",
+    "analogical_connections": ["Hammersley process (longest increasing subsequences)", "Patience sorting (algorithm)", "Ulam's problem (random permutations)"],
+    "implementation_hypothesis": "Implement the discrete Hammersley process with exploration penalty. Vary the penalty parameter and measure the LPP time. At zero penalty, verify we get the Bernoulli constant. Then tune penalty to match the true LCS correlation structure. The resulting estimate gives a rigorous bound if the coupling is valid.",
+    "experiment_seed": "Simulate discrete Hammersley process for n=1000 with penalty parameters lambda=0, 0.01, 0.05, 0.1. Plot E[T_n]/n vs lambda. Compare lambda=0 result with 2(sqrt(2)-1). Extrapolate to find lambda* matching true LCS statistics.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "tensor_network_contraction",
+    "description": "The LCS DP table can be viewed as a 2D tensor network where each cell is a local tensor encoding the recurrence. Contracting this tensor network computes the partition function of the LCS problem. Techniques from quantum information (MPS, DMRG) can contract such networks approximately, potentially enabling computation of E[LCS] for much larger n than exact methods allow.",
+    "domains": ["quantum_information", "tensor_networks", "statistical_mechanics"],
+    "mathematical_formalization": "Define local tensor $T^{(i,j)}_{a,b,c,d}$ at grid point $(i,j)$ encoding the max-plus recurrence with incoming states $(a,b)$ and outgoing states $(c,d)$. The full LCS value is obtained by contracting all tensors. Approximate the contraction using matrix product states (MPS) of bond dimension $\\chi$. The approximation error is $O(e^{-c\\chi})$.",
+    "analogical_connections": ["DMRG for 1D quantum systems (condensed matter)", "Belief propagation on factor graphs (machine learning)", "Transfer matrix method (statistical mechanics)"],
+    "implementation_hypothesis": "Encode the LCS DP as a 2D tensor network. Use the boundary MPS method (contracting row by row). For each random string pair, contract with bond dimension chi=32,64,128. Average over many random instances. This should give very accurate E[LCS(n)]/n for n up to ~1000, enabling precise estimation of gamma_2.",
+    "experiment_seed": "Implement the tensor network for n=50 binary LCS. Contract using ITensor or similar library with chi=32. Average over 1000 random pairs. Compare E[LCS]/n with known values. Then scale up n.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "convex_relaxation_hierarchy",
+    "description": "The Dancik-Paterson upper bound method uses a dual automaton whose Markov chain steady state gives an upper bound on gamma_2. This is essentially a linear programming dual. By strengthening the LP with additional valid inequalities derived from the structure of optimal LCS alignments (e.g., the monotone lattice path structure), one can systematically tighten the upper bound through a hierarchy of relaxations.",
+    "domains": ["optimization", "linear_programming", "formal_languages"],
+    "mathematical_formalization": "The upper bound LP: minimize $c^T \\pi$ subject to $\\pi \\ge 0$, $\\pi^T P = \\pi^T$ (stationarity), $\\sum \\pi_q = 1$. The Dancik-Paterson dual adds constraints from local consistency of the automaton. Adding $k$-step look-ahead constraints gives a hierarchy: LP_1 \\ge LP_2 \\ge ... \\ge \\gamma_2$. Each level is a tighter LP whose value converges to $\\gamma_2$.",
+    "analogical_connections": ["Sherali-Adams hierarchy (LP)", "Lasserre hierarchy (SDP)", "Belief propagation hierarchies (message passing)"],
+    "implementation_hypothesis": "Start with Lueker's upper bound LP for buffer size h. Add 2-step look-ahead constraints: for every pair of consecutive transitions, the joint probability must be consistent with the Markov chain. Solve the augmented LP. The new optimum should be <= 0.826280.",
+    "experiment_seed": "Implement Lueker's upper bound method for h=10. Solve base LP. Then add all 2-step consistency constraints. Re-solve. Measure the improvement in the upper bound. Even 10^-4 improvement demonstrates the method's potential.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  }
+]

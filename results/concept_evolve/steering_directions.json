@@ -1,0 +1,32 @@
+[
+  {
+    "direction": "Bernoulli-to-LCS coupling for tighter upper bounds",
+    "rationale": "The Bernoulli matching model has an exactly solvable LPP constant of 2(sqrt(2)-1) = 0.8284... The true LCS model has correlations that can only reduce this value. Quantifying the correlation penalty via a rigorous coupling would give an upper bound gamma_2 <= 0.8284 - delta, which for delta > 0.002 would improve on Lueker's 0.826280. The Georgiou-Ortmann (2018) framework for the discrete Hammersley process with exploration penalty provides the mathematical machinery.",
+    "first_step": "Construct an explicit coupling between the Bernoulli matching model (independent 1[x_i=y_j]) and the true LCS model (correlated 1[x_i=y_j]). Use the FKG inequality or Harris inequality to show the coupling is monotone. Compute the expected penalty term for n=100 by simulation.",
+    "expected_signal": "If the simulation shows E[LCS_Bernoulli - LCS_true]/n converges to a positive constant > 0.002, then gamma_2 < 0.8263 is provable via this coupling. The convergence rate of the penalty term would indicate how large n needs to be for rigorous bounds."
+  },
+  {
+    "direction": "Deletion channel capacity connection for upper bounds",
+    "rationale": "There is a deep connection between LCS of random strings and the capacity of the binary deletion channel. When each bit of a binary string is independently deleted with probability 1/2, the capacity C_{del}(1/2) bounds how much information survives. Since the LCS is the longest surviving 'message', gamma_2 is related to C_{del}(1/2). Recent bounds on deletion channel capacity (Cheraghchi 2020: C_{del}(1/2) <= 0.4943 bits) could be translated to Chvatal-Sankoff upper bounds.",
+    "first_step": "Formalize the precise relationship between gamma_2 and C_{del}(1/2). The key is: a common subsequence of length gamma_2*n of two random binary strings corresponds to a message that survives deletion with probability 1/2 in both strings. The capacity constraint limits the rate of such messages. Derive the explicit bound gamma_2 <= f(C_{del}(1/2)).",
+    "expected_signal": "If f(0.4943) < 0.826280, we have a new tighter upper bound from deletion channel capacity. Even if f(0.4943) > 0.826280, the connection illuminates the structure and future deletion channel improvements would automatically improve the CS bound."
+  },
+  {
+    "direction": "Tensor network / transfer matrix computation for precise numerical estimation",
+    "rationale": "Current best numerical estimates of gamma_2 ~ 0.8117 (Bundschuh 2001) use Monte Carlo simulation with finite-size corrections. Tensor network methods (MPS/DMRG) can compute expected values of 2D lattice models to much higher precision by working directly with the transfer matrix. For the LCS model, the transfer matrix has dimension 2^n but can be compressed to bond dimension chi << 2^n. This could give gamma_2 to 6+ decimal places.",
+    "first_step": "Encode the LCS DP as a transfer matrix acting on the anti-diagonal of the DP table. Represent the distribution over anti-diagonal states as an MPS. Iterate the transfer matrix (contract rows) using MPS truncation at bond dimension chi=64. Measure E[LCS]/n for n=100,200,500. Extrapolate.",
+    "expected_signal": "If the MPS truncation error at chi=64 is < 10^-6 for n=100, we get E[LCS(100)]/100 to high precision. Combined with known finite-size scaling (Bundschuh's sqrt(n) correction), this gives gamma_2 to ~5 decimal places, narrowing the gap [0.7927, 0.8263] to a much smaller interval around ~0.8117."
+  },
+  {
+    "direction": "Hybrid automaton + ML for improved lower bounds",
+    "rationale": "The Dancik/Lueker/Heineman automaton method for lower bounds is limited by human-designed state spaces. The state space design problem itself can be formulated as an optimization problem: find the DFA that maximizes the steady-state matching rate. Reinforcement learning or evolutionary search over DFA topologies could discover non-obvious designs that outperform hand-crafted ones.",
+    "first_step": "Define the search space: DFAs with state space size S, reading binary symbol pairs, producing match/no-match outputs. Use policy gradient methods (REINFORCE) to optimize the transition function and output function simultaneously. Start with S=16 states and train for 10^5 episodes on random binary strings of length 1000.",
+    "expected_signal": "If the learned automaton achieves a higher matching rate than the best hand-designed automaton of the same size, this validates the approach. Scaling up to S=256 or S=1024 could potentially beat the h=15 bound of 0.792665992."
+  },
+  {
+    "direction": "Refined Kolmogorov complexity upper bound via structured encodings",
+    "rationale": "The Baeza-Yates et al. Kolmogorov complexity upper bound works by showing that a long LCS would allow too-efficient compression of random strings. The existing bound uses a naive encoding of the alignment. By designing a more sophisticated encoding that exploits the monotone lattice path structure of optimal alignments (which form a restricted class), the upper bound can be tightened.",
+    "first_step": "Enumerate all possible LCS alignments for n=15 binary strings. Measure the entropy of the alignment distribution (not just the LCS length distribution). Use this to design an optimal encoding. Compute the resulting upper bound on gamma_2.",
+    "expected_signal": "If the alignment entropy per position is < log2(3) (the naive bound for 3 choices: match, skip-x, skip-y), the refined encoding gives a tighter upper bound. For n=15, if the empirical upper bound is < 0.826, the method is promising for larger n."
+  }
+]

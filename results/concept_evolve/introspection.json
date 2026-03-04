@@ -1,0 +1,119 @@
+{
+  "associations": [
+    {
+      "trigger": "longest common subsequence",
+      "expansions": [
+        "Edit distance dual (LCS + deletions = n)",
+        "Sequence alignment in bioinformatics (Needleman-Wunsch)",
+        "Patience sorting and longest increasing subsequences",
+        "Directed polymer in random environment",
+        "Corner growth model on Z^2",
+        "Binary deletion channel capacity"
+      ]
+    },
+    {
+      "trigger": "random binary strings",
+      "expansions": [
+        "Bernoulli percolation",
+        "Random matrices (Bernoulli entries)",
+        "Boolean circuits and threshold functions",
+        "Coin-flipping protocols",
+        "Binary symmetric channel"
+      ]
+    },
+    {
+      "trigger": "subadditive limit",
+      "expansions": [
+        "Kingman's subadditive ergodic theorem",
+        "Lyapunov exponents of random matrix products",
+        "First passage percolation shape theorems",
+        "Free energy per site in statistical mechanics",
+        "Growth rates of random walks in random environments"
+      ]
+    },
+    {
+      "trigger": "automaton-based bounds",
+      "expansions": [
+        "Regular language intersection (both strings as DFA paths)",
+        "Weighted finite automata and tropical semirings",
+        "Perron-Frobenius eigenvalue as growth rate",
+        "Symbolic dynamics and shift spaces",
+        "Markov chain mixing time and convergence"
+      ]
+    },
+    {
+      "trigger": "constant approximately 0.81",
+      "expansions": [
+        "Close to 2/(1+sqrt(2)) = 0.8284 (Steele's disproven conjecture)",
+        "Close to binary deletion channel capacity upper bound",
+        "Golden ratio connection? phi/(1+phi) = 0.618 (no, too low)",
+        "Near 4/5 = 0.8 (possibly related to k=2 structure)",
+        "Bundschuh simulation estimate ~0.8117"
+      ]
+    }
+  ],
+  "blind_spots": [
+    {
+      "area": "Non-binary alphabet interpolation",
+      "description": "Most effort focuses on k=2 or k=infinity. The behavior at intermediate k (especially the rate of convergence gamma_k * sqrt(k) -> 2) might reveal structural properties that constrain gamma_2 more tightly.",
+      "severity": "medium"
+    },
+    {
+      "area": "Fluctuation exponents for the true LCS model",
+      "description": "While the Bernoulli matching model has Tracy-Widom fluctuations, the fluctuation behavior of the true LCS model is poorly understood. If the fluctuation exponent differs from 1/3 (KPZ), this would indicate the true model is NOT in the KPZ universality class, which would invalidate some conjectured approaches.",
+      "severity": "high"
+    },
+    {
+      "area": "Exact computation for moderate n",
+      "description": "The exact value of E[lambda_{n,2}]/n is known only for small n (up to ~25-30). High-precision computation for n=50-100 using clever algorithms (not brute force over all 2^{2n} pairs) could dramatically improve finite-n estimates.",
+      "severity": "medium"
+    },
+    {
+      "area": "Non-uniform letter distributions",
+      "description": "All bounds are for the uniform distribution on {0,1}. Studying how gamma_2(p) varies with the Bernoulli parameter p (where p is the probability of '1') could reveal convexity/concavity properties that constrain the uniform case p=1/2.",
+      "severity": "medium"
+    },
+    {
+      "area": "Connection to coding theory",
+      "description": "The LCS of random strings is closely related to the capacity of the binary deletion channel (where each bit is deleted independently with probability 1/2). Recent breakthroughs in deletion channel capacity bounds (Cheraghchi, Guruswami-Li) have not been systematically translated to Chvatal-Sankoff bounds.",
+      "severity": "high"
+    },
+    {
+      "area": "Algebraic structure of the LCS DP",
+      "description": "The LCS recurrence has a rich algebraic structure (max-plus semiring). Whether there are hidden symmetries or conservation laws that constrain gamma_2 has not been fully explored. The tropical geometry angle is underexplored.",
+      "severity": "medium"
+    },
+    {
+      "area": "Machine learning approaches",
+      "description": "Neural networks or reinforcement learning could be used to discover better automata/strategies for the lower bound, potentially finding non-obvious state space designs that humans haven't considered.",
+      "severity": "low"
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "What if gamma_2 is irrational?",
+      "analysis": "If gamma_2 is irrational (and transcendental), it cannot be expressed as a simple closed form. The failure of Steele's conjecture gamma_2 = 2/(1+sqrt(2)) suggests the constant may indeed be transcendental, meaning any bound improvement must be computational rather than formula-based.",
+      "implication": "Focus on computational methods (automata, SDP, tensor networks) rather than closed-form approaches."
+    },
+    {
+      "constraint": "What if the LCS model is NOT in the KPZ universality class?",
+      "analysis": "If the correlation structure of 1[x_i = y_j] pushes the model out of KPZ universality, then Tracy-Widom-based estimates are misleading. The fluctuation exponent might be different from 1/3, and the shape function might have different regularity.",
+      "implication": "Measure the fluctuation exponent numerically. If it differs from 1/3, the Bernoulli model analogy breaks down and the LPP bridge concept needs revision."
+    },
+    {
+      "constraint": "What if we restrict to palindromic or periodic strings?",
+      "analysis": "For periodic binary strings of period p, the LCS can be computed exactly. As p -> infinity, we recover the random case. The rate of convergence in p gives information about the role of long-range correlations in determining gamma_2.",
+      "implication": "Compute LCS for periodic strings analytically. Use as a sanity check for general bounds."
+    },
+    {
+      "constraint": "What if we allow a small fraction of errors in the subsequence?",
+      "analysis": "If we allow epsilon*n mismatches, the 'approximate LCS' has value approaching n as epsilon -> 1/2. The derivative of the approximate LCS value at epsilon=0 encodes information about the 'sensitivity' of gamma_2 to perturbations, which constrains the constant.",
+      "implication": "Study the approximate LCS (with hamming distance tolerance). The derivative at epsilon=0 is a new quantity that bounds gamma_2."
+    },
+    {
+      "constraint": "What if we consider the LCS on a torus (cyclic strings)?",
+      "analysis": "Cyclic LCS has additional symmetry. The expected cyclic LCS is >= the linear LCS (more alignment options). The gap between cyclic and linear LCS gives a correction term that may be computable.",
+      "implication": "Compute cyclic LCS for small n. The cyclic-vs-linear gap constrains boundary effects and may improve finite-n estimates."
+    }
+  ]
+}
