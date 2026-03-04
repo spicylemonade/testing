@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "created_at": "2026-03-04T00:00:00Z",
-  "updated_at": "2026-03-04T04:46:16.645303+00:00",
-  "current_agent": "researcher",
+  "updated_at": "2026-03-04T07:25:07.430949+00:00",
+  "current_agent": "writer",
   "agent_status": {
     "orchestrator": {
       "status": "completed",
@@ -13,14 +13,15 @@
     "researcher": {
       "status": "completed",
       "started_at": "2026-03-04T04:46:16.645285+00:00",
-      "completed_at": "2026-03-04T07:30:00.000000+00:00",
+      "completed_at": "2026-03-04T07:18:18.956807+00:00",
       "error": null
     },
     "writer": {
       "status": "completed",
       "started_at": "2026-03-04T07:00:00.000000+00:00",
-      "completed_at": "2026-03-04T07:15:00.000000+00:00",
-      "error": null
+      "completed_at": "2026-03-04T07:25:07.430926+00:00",
+      "error": null,
+      "notes": "research_paper.tex written with all 11 required sections. Addresses reviewer feedback: corrected geomean labeling (all-level 2307 MB/s vs level-6 2414 MB/s now clearly distinguished in Table 2). All 24 sources.bib entries cited. 4 figures referenced (throughput_comparison, speedup_heatmap, throughput_by_level, ablation_chart). Full pdflatex->bibtex->pdflatex->pdflatex pipeline with 0 warnings, 0 undefined citations. 16 pages, 945 test cases documented."
     },
     "reviewer": {
       "status": "completed",
@@ -158,7 +159,7 @@
           "description": "Design and implement speculative multi-stream or look-ahead Huffman decoding",
           "acceptance_criteria": "Research and implement at least one novel approach to break the serial Huffman dependency. Options include: (a) speculative decode of the next N symbols assuming the most probable bit-lengths, with rollback on misprediction, (b) parallel decode of interleaved sub-streams (if format allows block-level parallelism), (c) precomputed 'fast path' tables for common Huffman code distributions. Implementation in src/speculative_decode.c. Must include: a design document in results/concept_evolve/tree/speculative_decoding/concept.json explaining the chosen approach, its theoretical speedup bound, and comparison to approaches from the literature review (item_003). Correctness tests pass. Demonstrate any measurable throughput delta vs. item_012.",
           "status": "completed",
-          "notes": "Completed: Extensive investigation of 4 micro-optimizations (branchless extra-bits, single-refill, 4-literal unroll, inline short-copy) — all marginal or negative. Evaluated 5 novel approaches (multi-stream ILP, speculative rollback, convergence-based parallel, mega-table, parallel blocks). Key finding: serial Huffman dependency is fundamental; multi-stream requires format change; speculative rollback risk/reward is poor. Design document in speculative_decoding/concept.json with full analysis. Implemented remaining vector: 12-bit primary table upgrade for 3-8% gain on codes >11 bits. ConceptEvolve probe confirmed no viable standard-DEFLATE-compatible approach to break the serial chain.",
+          "notes": "Completed: Extensive investigation of 4 micro-optimizations (branchless extra-bits, single-refill, 4-literal unroll, inline short-copy) \u2014 all marginal or negative. Evaluated 5 novel approaches (multi-stream ILP, speculative rollback, convergence-based parallel, mega-table, parallel blocks). Key finding: serial Huffman dependency is fundamental; multi-stream requires format change; speculative rollback risk/reward is poor. Design document in speculative_decoding/concept.json with full analysis. Implemented remaining vector: 12-bit primary table upgrade for 3-8% gain on codes >11 bits. ConceptEvolve probe confirmed no viable standard-DEFLATE-compatible approach to break the serial chain.",
           "error": null
         },
         {
@@ -182,7 +183,7 @@
           "description": "Concept-tree exploration: evaluate parallel block decoding and block-boundary detection",
           "acceptance_criteria": "Create results/concept_evolve/tree/parallel_blocks/concept.json evaluating: (a) whether DEFLATE block boundaries can be detected in parallel (scan for BFINAL bits, fixed Huffman signatures, or stored block headers), (b) the feasibility and expected speedup of decoding multiple blocks on separate threads, (c) analysis of how block sizes distribute in real-world ZIP files (measure on the benchmark corpus), (d) comparison to GDeflate's approach of splitting into independently decodable chunks. Must reference at least 3 papers from sources.bib. Conclude with a go/no-go recommendation for pursuing parallel block decode.",
           "status": "completed",
-          "notes": "Completed: NO-GO recommendation. Empirical analysis of 20 corpus files × 3 levels shows 50% have 1 block, 75% have ≤2. Block boundaries require serial parsing. Inter-block LZ77 deps prevent independent decode. Compared GDeflate, pugz, ISA-L approaches — all require format modification or special compressor output. concept.json with full analysis and 5 references.",
+          "notes": "Completed: NO-GO recommendation. Empirical analysis of 20 corpus files \u00d7 3 levels shows 50% have 1 block, 75% have \u22642. Block boundaries require serial parsing. Inter-block LZ77 deps prevent independent decode. Compared GDeflate, pugz, ISA-L approaches \u2014 all require format modification or special compressor output. concept.json with full analysis and 5 references.",
           "error": null
         },
         {
@@ -205,7 +206,7 @@
           "description": "Full benchmark comparison: our decoder vs. zlib, zlib-ng, libdeflate, ISA-L",
           "acceptance_criteria": "Run the benchmarking harness (item_010) with the unified fast decoder (item_018) against all baselines on the full corpus. Produce results/benchmark_final.json with per-file throughput (MB/s) for each decoder. Generate figures/throughput_comparison.png (bar chart) and figures/speedup_heatmap.png (heatmap of speedup by file type and decoder). Report the geometric mean speedup over zlib-ng across all corpus files. Target: >=2x geometric mean speedup over zlib-ng.",
           "status": "completed",
-          "notes": "Completed: 100-iteration benchmark with 5 decoders × 20 files × 3 levels = 300 results. Generated 3 figures (throughput bar chart, speedup heatmap, throughput by level) in PNG+PDF. Geomean: fast=2307 MB/s (1.62x zlib, 0.81x zlib-ng). Target 2x over zlib-ng NOT met — fundamental serial Huffman bottleneck limits single-stream approach. Gap analysis: weakest on backref-heavy text (0.73-0.78x zlib-ng) and small files (text_1k: 0.36x due to setup overhead). Strong on binary/stored (1.0-1.04x zlib-ng) and web assets (0.95x).",
+          "notes": "Completed: 100-iteration benchmark with 5 decoders \u00d7 20 files \u00d7 3 levels = 300 results. Generated 3 figures (throughput bar chart, speedup heatmap, throughput by level) in PNG+PDF. Geomean: fast=2307 MB/s (1.62x zlib, 0.81x zlib-ng). Target 2x over zlib-ng NOT met \u2014 fundamental serial Huffman bottleneck limits single-stream approach. Gap analysis: weakest on backref-heavy text (0.73-0.78x zlib-ng) and small files (text_1k: 0.36x due to setup overhead). Strong on binary/stored (1.0-1.04x zlib-ng) and web assets (0.95x).",
           "error": null
         },
         {
@@ -213,7 +214,7 @@
           "description": "Ablation study: measure contribution of each optimization independently",
           "acceptance_criteria": "Run benchmarks with each optimization enabled/disabled independently: (a) multi-symbol decode only, (b) SIMD copy only, (c) optimized bit reader only, (d) speculative decode only (if applicable), (e) fast table build only, (f) all combined. Produce results/ablation_study.json and figures/ablation_chart.png showing the marginal contribution of each optimization on 5 representative corpus files. Document interactions (e.g., does multi-symbol decode + SIMD copy yield super-linear or sub-linear gains?).",
           "status": "completed",
-          "notes": "Completed: Cumulative ablation across 6 stages (naive→v1→v2→v3→v5→v5+PGO). Key findings: 11-bit table + 64-bit bitreader = 4.9x over naive (largest single jump), multi-literal = +5%, packed entries = +32%, PGO = +8%. Total: 7.5x over naive, 1.89x over zlib. Generated ablation_chart.png/pdf and ablation_study.json.",
+          "notes": "Completed: Cumulative ablation across 6 stages (naive\u2192v1\u2192v2\u2192v3\u2192v5\u2192v5+PGO). Key findings: 11-bit table + 64-bit bitreader = 4.9x over naive (largest single jump), multi-literal = +5%, packed entries = +32%, PGO = +8%. Total: 7.5x over naive, 1.89x over zlib. Generated ablation_chart.png/pdf and ablation_study.json.",
           "error": null
         },
         {
@@ -221,7 +222,7 @@
           "description": "Stress test correctness on adversarial and edge-case inputs",
           "acceptance_criteria": "Create tests/test_adversarial.c that tests: (a) empty DEFLATE streams, (b) streams with only stored blocks, (c) streams with maximum back-reference distance (32768), (d) streams with all 286 literal/length codes used, (e) streams with maximum code length (15 bits), (f) at least 100 randomly generated valid DEFLATE streams (via a fuzzer or generator script), (g) all known zlib test vectors. All tests must pass with zero byte-level differences from zlib's output. Run under Valgrind or ASan/UBSan with zero errors.",
           "status": "completed",
-          "notes": "Completed: 685 adversarial tests covering all required categories (a-g) plus boundary sizes, all strategies, fixed Huffman, mixed block types, incompressible data, distance edge cases, buffer sizing, and large data (1MB). All 685/685 pass, ASAN/UBSAN clean. Fixed a stored block bug: empty stored blocks (from Z_SYNC_FLUSH) were incorrectly resetting the bit buffer, losing next-block bits. Also fixed test_adversarial.c memcpy→memmove for overlapping distance-1 test data.",
+          "notes": "Completed: 685 adversarial tests covering all required categories (a-g) plus boundary sizes, all strategies, fixed Huffman, mixed block types, incompressible data, distance edge cases, buffer sizing, and large data (1MB). All 685/685 pass, ASAN/UBSAN clean. Fixed a stored block bug: empty stored blocks (from Z_SYNC_FLUSH) were incorrectly resetting the bit buffer, losing next-block bits. Also fixed test_adversarial.c memcpy\u2192memmove for overlapping distance-1 test data.",
           "error": null
         },
         {
