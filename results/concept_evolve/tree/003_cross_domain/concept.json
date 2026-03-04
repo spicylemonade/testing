@@ -1,0 +1,46 @@
+{
+  "cross_domain_concepts": [
+    {
+      "name": "sieve_of_eratosthenes_adaptation",
+      "domains": ["number_theory", "collatz_computation"],
+      "description": "Adapt prime sieve methodology: precompute which residue classes mod 2^k have guaranteed short trajectories, eliminating them from full computation.",
+      "implementation_hypothesis": "Build a 2^20 sieve table mapping each residue to its minimum guaranteed trajectory length. Numbers with residue in the bottom 99% are skipped."
+    },
+    {
+      "name": "parallel_prefix_scan",
+      "domains": ["gpu_computing", "collatz_verification"],
+      "description": "Use parallel prefix scan (Blelloch scan) to batch-process Collatz steps across many numbers simultaneously using SIMD-like operations on numpy arrays.",
+      "implementation_hypothesis": "Represent N numbers as a numpy int64 array. Apply vectorized even/odd masks and bulk operations for each step until all converge below threshold."
+    },
+    {
+      "name": "random_walk_stopping_time",
+      "domains": ["probability_theory", "collatz_analysis"],
+      "description": "Model Collatz iteration as biased random walk: each step multiplies by 3/2 (prob ~log2/log3) or 1/2 (prob ~1 - log2/log3). Expected stopping time ~ C * log(n) where C ≈ log(4/3)/log(2).",
+      "implementation_hypothesis": "Compute expected delay for each bit-length using the Kontorovich-Miller model. Flag numbers whose actual delay exceeds 3 standard deviations as interesting outliers."
+    },
+    {
+      "name": "finite_state_transducer",
+      "domains": ["automata_theory", "collatz_computation"],
+      "description": "Model k Collatz steps as a finite state transducer operating on the binary representation of n. The state encodes carry propagation, and the output is the transformed number.",
+      "implementation_hypothesis": "For k=32, build a transducer with 2^32 states. Each state maps (residue mod 2^32) to (multiplier a, offset b) such that after 32 steps: result = (a*n + b) >> 32."
+    },
+    {
+      "name": "entropy_guided_candidate_selection",
+      "domains": ["information_theory", "collatz_search"],
+      "description": "Compute Shannon entropy of the parity sequence for the first k steps (determined by n mod 2^k). High-entropy parity sequences correlate with long trajectories.",
+      "implementation_hypothesis": "For k=20, compute parity sequences for all 2^20 residues. Rank by entropy. Verify that known delay records cluster in top 0.1% of entropy ranking."
+    },
+    {
+      "name": "trajectory_compression",
+      "domains": ["data_compression", "collatz_storage"],
+      "description": "Encode Collatz trajectories as binary parity sequences (0=even step, 1=odd step). These compress well with run-length encoding due to the bias toward even steps.",
+      "implementation_hypothesis": "Store only the parity sequence and starting value. Trajectory can be reconstructed deterministically. Enables compact storage of millions of trajectories for analysis."
+    },
+    {
+      "name": "extreme_value_theory_prediction",
+      "domains": ["statistics", "collatz_records"],
+      "description": "Model the distribution of delay record values using Generalized Extreme Value (GEV) theory. Predict where the next delay record should appear.",
+      "implementation_hypothesis": "Fit GEV distribution to the 18 known a(n) values from A284668. Extrapolate to predict a(19) range and expected delay."
+    }
+  ]
+}

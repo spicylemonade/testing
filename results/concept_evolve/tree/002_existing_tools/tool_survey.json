@@ -1,0 +1,60 @@
+{
+  "survey_date": "2026-03-04",
+  "tools": [
+    {
+      "name": "Barina GPU Collatz Verifier",
+      "url": "https://github.com/xbarin02/collatz",
+      "language": "C/CUDA",
+      "approach": "GPU-accelerated sieve with modular arithmetic shortcuts. Uses 2^32 lookup table for sieve acceleration. Distributed across supercomputers.",
+      "performance": "Verified up to 2^71. Total acceleration 1335x over naive CPU. Processes ~1.31 × 10^12 numbers/sec on GPU.",
+      "limitations": "Requires NVIDIA GPU. Focused on convergence verification, not delay record search.",
+      "paper": "barina2025"
+    },
+    {
+      "name": "Roosendaal Distributed Project",
+      "url": "https://www.ericr.nl/wondrous/",
+      "language": "Unknown (distributed client)",
+      "approach": "Distributed computing project for class records, delay records, path records. Uses NVIDIA GPU workers.",
+      "performance": "35,900 blocks completed (each 10^12 numbers). Takes 5-10 days per block of 10,000 units on NVIDIA GPU.",
+      "limitations": "Closed-source distributed client. Not available for independent use.",
+      "paper": "roosendaal2026"
+    },
+    {
+      "name": "rogerdahl/cuda-collatz",
+      "url": "https://github.com/rogerdahl/cuda-collatz",
+      "language": "CUDA/C++",
+      "approach": "CUDA-based delay record calculator. Claims to be 'world's fastest Collatz Delay Record calculator'.",
+      "performance": "Focused specifically on delay records. Uses GPU parallelism.",
+      "limitations": "Requires NVIDIA GPU. MIT licensed.",
+      "paper": null
+    },
+    {
+      "name": "Honda et al. GPU Verifier",
+      "url": "https://doi.org/10.15803/ijnc.7.1_69",
+      "language": "CUDA/C",
+      "approach": "GPU exhaustive verification. GeForce GTX TITAN X. Batch processing of 64-bit numbers.",
+      "performance": "1.31 × 10^12 64-bit numbers/sec on GPU. 249x speedup over CPU.",
+      "limitations": "2017 era hardware. Not optimized for delay search.",
+      "paper": "honda2017"
+    },
+    {
+      "name": "yoyo@home Collatz Project",
+      "url": "http://www.rechenkraft.net/yoyo/",
+      "language": "C/BOINC",
+      "approach": "BOINC distributed computing. Checked all numbers up to 87 × 2^60 for convergence.",
+      "performance": "Found 4 new path records during 2017 search. Crowdsourced computation.",
+      "limitations": "BOINC infrastructure required. No longer actively running Collatz tasks.",
+      "paper": null
+    },
+    {
+      "name": "Wei Ren extremely large integer verifier",
+      "url": "https://doi.org/10.1109/SmartWorld.2018.00099",
+      "language": "C",
+      "approach": "Bit-level computation for extremely large numbers (up to 2^100000 - 1). Converts numerical computation to bit operations.",
+      "performance": "Verified 2^100000 - 1 reaches 1. Uses hard disk for intermediate values.",
+      "limitations": "Single-number verification, not range scanning. Very slow for systematic search.",
+      "paper": "ren2018"
+    }
+  ],
+  "performance_gap_targeted": "No existing tool specifically targets OEIS A284668 computation. The gap is: efficiently finding the number with maximum stopping time within a decade [10^(n-1), 10^n). This requires a hybrid approach: sieve to eliminate low-delay candidates, then full computation on survivors. Our approach will use Python with gmpy2 for arbitrary precision, multiprocessing for 20-core parallelism, and a k-step shortcut engine to achieve competitive speed without GPU."
+}

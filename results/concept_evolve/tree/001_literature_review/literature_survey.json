@@ -1,0 +1,66 @@
+{
+  "survey_date": "2026-03-04",
+  "topic": "Collatz conjecture computational records",
+  "delay_records": {
+    "current_state": "Roosendaal maintains the authoritative database of all confirmed delay records at ericr.nl/wondrous/delrecs.html. As of March 2026, records are confirmed up to the range being computed by the distributed project.",
+    "key_observation": "Approximately 7-8 delay records per decade (power of 10) are found, implying that on average a delay record is 1.36 times larger than its predecessor.",
+    "known_benchmark_records": [
+      {"n": 9, "delay": 19, "note": "a(1) of A284668"},
+      {"n": 97, "delay": 118, "note": "a(2) of A284668"},
+      {"n": 871, "delay": 178, "note": "a(3) of A284668"},
+      {"n": 6171, "delay": 261, "note": "a(4) of A284668"},
+      {"n": 77031, "delay": 350, "note": "a(5) of A284668"},
+      {"n": 837799, "delay": 524, "note": "a(6) of A284668"},
+      {"n": 8400511, "delay": 685, "note": "a(7) of A284668"},
+      {"n": 63728127, "delay": 949, "note": "a(8) of A284668 - the classic benchmark"},
+      {"n": 670617279, "delay": 986, "note": "a(9) of A284668"},
+      {"n": 9780657630, "delay": 1132, "note": "a(10) of A284668, tied with 9780657631"},
+      {"n": 75128138247, "delay": 1228, "note": "a(11) of A284668"},
+      {"n": 989345275647, "delay": 1348, "note": "a(12) of A284668"},
+      {"n": 7887663552367, "delay": 1563, "note": "a(13) of A284668"},
+      {"n": 80867137596217, "delay": 1662, "note": "a(14) of A284668"},
+      {"n": 942488749153153, "delay": 1862, "note": "a(15) of A284668"},
+      {"n": 7579309213675935, "delay": 1958, "note": "a(16) of A284668"},
+      {"n": 93571393692802302, "delay": 2091, "note": "a(17) of A284668"},
+      {"n": 931386509544713451, "delay": 2283, "note": "a(18) of A284668 - CURRENT FRONTIER"}
+    ],
+    "target": "Compute a(19) of OEIS A284668: the number below 10^19 with the highest Collatz total stopping time"
+  },
+  "verification_frontier": {
+    "current_best": "2^71 (Barina 2025, published in Journal of Supercomputing)",
+    "previous_best": "2^68 (Barina 2021)",
+    "wikipedia_claim": "verified up to 2.36 × 10^21",
+    "barina_technique": "GPU-accelerated sieve with 1335x total acceleration over naive CPU. Distributed across European supercomputers. Also found 4 new path records during verification.",
+    "roosendaal_distributed": "Active distributed project checking ranges in units of 10^12 numbers per block. As of March 2, 2026, all blocks up to 35,900 (35.9 × 10^15) completed for class records."
+  },
+  "algorithmic_techniques": {
+    "sieve_methods": {
+      "description": "Use modular arithmetic to precompute which residue classes mod 2^k converge quickly. For k=32, can skip ~99% of numbers.",
+      "key_sources": ["barina2021", "barina2025", "oliveira2010"]
+    },
+    "shortcut_tables": {
+      "description": "For residue class r mod 2^k, precompute the symbolic result of k Collatz steps: n -> (a*n + b) / 2^k. Allows processing k bits in one arithmetic operation.",
+      "key_sources": ["crandall1978", "barina2025"]
+    },
+    "combined_step": {
+      "description": "Since 3n+1 is always even when n is odd, combine into (3n+1)/2 in one step. Reduces step count by ~37%.",
+      "key_sources": ["lagarias1985"]
+    },
+    "tail_optimization": {
+      "description": "Once trajectory drops below known-verified threshold, stop. All numbers below 2^71 are verified (Barina 2025).",
+      "key_sources": ["barina2025"]
+    },
+    "binary_tricks": {
+      "description": "Process trailing zeros with bit shift. Count trailing zeros with CPU instruction (ctz). Use arbitrary precision only when needed.",
+      "key_sources": ["honda2017"]
+    }
+  },
+  "oeis_a284668_analysis": {
+    "current_terms": 18,
+    "frontier": "a(18) covers numbers below 10^18 (~60 bits)",
+    "target_a19": "Numbers below 10^19 (~63 bits). Need to scan ~9 × 10^18 numbers (those between 10^18 and 10^19) and compare against a(18)'s delay of 2283.",
+    "feasibility_analysis": "Using Barina's reported rate of 1.31 × 10^12 numbers/sec on GPU, scanning 9 × 10^18 numbers would take ~79 days on a single GPU. However, with aggressive sieve (99%+ skip rate), CPU multicore with 20 cores and shortcut tables could potentially do this in hours to days.",
+    "key_insight": "We don't need to compute full trajectories for most numbers. The sieve eliminates numbers whose trajectory is guaranteed to be short. We only need full computation for the ~0.01% that survive the sieve."
+  },
+  "sources_cited": 17
+}
