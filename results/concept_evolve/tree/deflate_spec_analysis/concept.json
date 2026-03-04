@@ -1,0 +1,172 @@
+{
+  "id": "deflate_spec_analysis",
+  "symbolic_name": "deflate_spec_analysis",
+  "description": "Complete analysis of RFC 1951 DEFLATE specification with focus on identifying serial bottlenecks in Huffman decoding that limit decompression throughput.",
+  "generated_at": "2026-03-04T05:30:00Z",
+
+  "block_types": {
+    "type_00_uncompressed": {
+      "btype": "00",
+      "name": "Non-compressed (stored) blocks",
+      "structure": "3-bit header (BFINAL + BTYPE=00) -> skip to next byte boundary -> 2-byte LEN -> 2-byte NLEN (one's complement of LEN) -> LEN literal bytes",
+      "max_size": 65535,
+      "decoding_complexity": "O(n) trivial memcpy, no Huffman overhead",
+      "serial_dependencies": "None. Byte-aligned, length-prefixed. Fully parallelizable.",
+      "optimization_opportunity": "SIMD memcpy. Can detect these blocks by scanning for the header pattern."
+    },
+    "type_01_fixed_huffman": {
+      "btype": "01",
+      "name": "Compressed with fixed Huffman codes",
+      "structure": "3-bit header -> compressed data using predefined Huffman tables -> end-of-block symbol (256)",
+      "literal_length_codes": {
+        "0_to_143": {"bits": 8, "codes": "00110000 - 10111111"},
+        "144_to_255": {"bits": 9, "codes": "110010000 - 111111111"},
+        "256_to_279": {"bits": 7, "codes": "0000000 - 0010111"},
+        "280_to_287": {"bits": 8, "codes": "11000000 - 11000111"}
+      },
+      "distance_codes": "Fixed 5-bit codes (0-31) with extra bits per table",
+      "decoding_complexity": "Table lookup per symbol, no table construction overhead",
+      "serial_dependencies": "Full serial Huffman chain: each symbol's start position depends on previous symbol's bit length",
+      "optimization_opportunity": "Fixed tables can be precomputed at compile time. Known code distribution enables specialized multi-symbol tables."
+    },
+    "type_10_dynamic_huffman": {
+      "btype": "10",
+      "name": "Compressed with dynamic Huffman codes",
+      "structure": "3-bit header -> HLIT(5b) -> HDIST(5b) -> HCLEN(4b) -> code-length Huffman table -> literal/length code lengths -> distance code lengths -> compressed data -> end-of-block",
+      "header_decoding": {
+        "step_1": "Read HLIT (5 bits): number of literal/length codes - 257 (range 257-286)",
+        "step_2": "Read HDIST (5 bits): number of distance codes - 1 (range 1-32)",
+        "step_3": "Read HCLEN (4 bits): number of code-length codes - 4 (range 4-19)",
+        "step_4": "Read (HCLEN+4) x 3-bit values for code-length alphabet in order: 16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15",
+        "step_5": "Build code-length Huffman table from the 3-bit lengths",
+        "step_6": "Decode HLIT+257 literal/length code lengths using code-length table (codes 0-15 = literal lengths, 16=repeat prev, 17=repeat 0 for 3-10, 18=repeat 0 for 11-138)",
+        "step_7": "Decode HDIST+1 distance code lengths using same code-length table",
+        "step_8": "Build literal/length and distance Huffman tables from decoded lengths"
+      },
+      "decoding_complexity": "Three nested Huffman decode stages (code-lengths, then data). Most complex block type.",
+      "serial_dependencies": "Triple serial chain: code-length table -> lit/len+dist code lengths -> data decoding",
+      "optimization_opportunity": "Table caching across blocks with same trees. Fast 2-pass table construction. Code-length alphabet is small (19 symbols, max 7-bit codes) so decoding is fast."
+    }
+  },
+
+  "serial_dependency_graph": {
+    "description": "The fundamental serial dependency chain in DEFLATE Huffman decoding that prevents parallelization",
+    "chain": [
+      {
+        "node": "bit_position[N]",
+        "depends_on": "bit_position[N-1] + bit_length(symbol[N-1])",
+        "explanation": "To know where symbol N starts in the bitstream, you must know where symbol N-1 started AND how many bits symbol N-1 consumed. The bit length of symbol N-1 is only known after looking it up in the Huffman table, which requires knowing its starting position."
+      },
+      {
+        "node": "symbol[N]",
+        "depends_on": "bit_position[N]",
+        "explanation": "The Huffman lookup for symbol N requires knowing the exact bit offset to peek at."
+      },
+      {
+        "node": "output_position[N]",
+        "depends_on": "symbol[N] AND output_position[N-1]",
+        "explanation": "If symbol[N] is a literal (0-255), output advances by 1 byte. If it's a back-reference (257-285), output advances by the match length. This creates a SECOND serial dependency in the output stream."
+      },
+      {
+        "node": "back_reference_resolution[N]",
+        "depends_on": "output_position[N] AND output[0..output_position[N]-1]",
+        "explanation": "If symbol N is a match, the match data comes from the previously-written output. This means the output buffer state must be fully resolved before executing a back-reference — the LZ77 dependency is separate from and in addition to the Huffman serial chain."
+      }
+    ],
+    "critical_path_per_symbol": "peek_bits -> table_lookup -> consume_bits -> (if literal: write_byte | if match: read_extra_bits -> lookup_distance -> read_extra_bits -> copy_from_output)",
+    "cycles_per_symbol_estimate": {
+      "huffman_lookup": "4-8 cycles (table access + possible L1 cache miss)",
+      "bit_buffer_refill": "1-3 cycles (branch on buffer level)",
+      "extra_bits_read": "1-3 cycles (for length/distance codes)",
+      "output_write": "1 cycle (store)",
+      "match_copy": "variable, 3-258 bytes",
+      "total_typical": "6-12 cycles per symbol (excluding match copies)"
+    }
+  },
+
+  "pipeline_stalls": [
+    {
+      "id": "stall_1",
+      "name": "Huffman bit-length data dependency",
+      "description": "The core serial bottleneck: symbol N's bit position = symbol N-1's bit position + symbol N-1's code length. The code length is only known after the table lookup completes, creating a loop-carried dependency of ~4-8 cycles per iteration.",
+      "impact": "Limits throughput to ~1 symbol per 4-8 clock cycles regardless of execution width",
+      "location": "Inner decode loop, every symbol"
+    },
+    {
+      "id": "stall_2",
+      "name": "Bit-buffer refill branch",
+      "description": "The bit buffer must be refilled when it drops below the maximum code length (15 bits). Traditional implementations check 'if (bits_left < MAXBITS) refill()' which introduces a branch. If the branch predictor guesses wrong, a 15-20 cycle penalty occurs.",
+      "impact": "~5-10% throughput loss from branch mispredictions; more frequent on short-code-dominated streams where refills are needed every few symbols",
+      "location": "Bit reader, every 2-8 symbols depending on average code length"
+    },
+    {
+      "id": "stall_3",
+      "name": "Literal vs. match dispatch branch",
+      "description": "After decoding each literal/length symbol, the decoder must branch on whether it's a literal (0-255), end-of-block (256), or a match (257-285). This 3-way branch has poor prediction when literal and match symbols are interleaved, which is common in moderately compressible data.",
+      "impact": "Branch misprediction rate of 5-20% depending on data, costing 15-20 cycles per misprediction",
+      "location": "Inner decode loop, every symbol"
+    },
+    {
+      "id": "stall_4",
+      "name": "LZ77 output dependency for overlapping matches",
+      "description": "When a back-reference has distance < length (overlapping match), the copy cannot be done as a simple memcpy because later bytes depend on earlier bytes written in the same copy operation. Example: distance=1, length=100 fills 100 bytes with the same value. This forces byte-by-byte copying for short-distance matches.",
+      "impact": "Severe throughput penalty for highly repetitive data (run-length-like patterns). Can reduce throughput by 3-5x on affected blocks.",
+      "location": "Match copy routine, when distance < length"
+    },
+    {
+      "id": "stall_5",
+      "name": "Dynamic Huffman table construction latency",
+      "description": "For each block with BTYPE=10, the decoder must parse the code-length header, build the code-length Huffman table, decode all literal/length and distance code lengths, and build two more Huffman tables — all before decoding a single data symbol. This involves 3 sequential stages.",
+      "impact": "Fixed overhead of 2-10 microseconds per dynamic block. For small blocks (common in HTTP chunked transfer, small ZIP entries), this can dominate decoding time.",
+      "location": "Block header parsing, once per dynamic block"
+    },
+    {
+      "id": "stall_6",
+      "name": "Cross-block LZ77 window dependency",
+      "description": "Back-references can span block boundaries (the 32KB window extends across blocks). This means block N's output may depend on block N-1's output, preventing fully independent block decoding. The decoder must maintain a 32KB sliding window across the entire stream.",
+      "impact": "Prevents trivial parallel block decoding. Any block-parallel strategy must either (a) guarantee blocks don't cross-reference, or (b) serialize the output merge.",
+      "location": "Block transition points"
+    },
+    {
+      "id": "stall_7",
+      "name": "Variable-width code fetch and alignment",
+      "description": "DEFLATE codes range from 1-15 bits and are NOT byte-aligned. The bit reader must extract codes that span byte boundaries, requiring shift-and-mask operations on every symbol. This prevents the use of simple byte-aligned table lookups.",
+      "impact": "2-4 additional ALU operations per symbol for bit manipulation",
+      "location": "Bit reader, every symbol"
+    }
+  ],
+
+  "lz77_overhead_analysis": {
+    "length_decoding": {
+      "description": "After a literal/length code 257-285 is decoded, 0-5 extra bits must be read to determine the exact length (3-258). Length codes 257-264 and 285 need 0 extra bits; 265-268 need 1 extra bit; up to 281-284 needing 5 extra bits.",
+      "extra_bits_range": "0-5 bits",
+      "total_codes": 29,
+      "overhead": "1 additional table lookup + 0-5 bit reads per match"
+    },
+    "distance_decoding": {
+      "description": "After the length is determined, a distance code (0-29) is decoded from a separate Huffman table, followed by 0-13 extra bits for the exact distance (1-32768). Distance codes 0-3 need 0 extra bits; up to 28-29 needing 13 extra bits.",
+      "extra_bits_range": "0-13 bits",
+      "total_codes": 30,
+      "overhead": "1 Huffman table lookup + 0-13 bit reads per match. The distance Huffman tree is typically much smaller than the lit/len tree."
+    },
+    "match_copy": {
+      "description": "The actual byte-copying from the output history. Lengths 3-258, distances 1-32768.",
+      "short_matches": "Length 3-4 matches are very common (~40% of all matches). For these, the copy overhead (setup + 3-4 byte copies) may exceed the Huffman decode cost.",
+      "long_matches": "Length >16 matches can use SIMD-accelerated copies for significant speedup.",
+      "overlapping": "Distance < length requires care. Distance=1 is RLE, Distance < 8 prevents 64-bit copy optimization."
+    },
+    "total_per_match_overhead": "2 Huffman lookups (lit/len + distance) + 0-18 extra bits + copy loop. Total: 15-30+ cycles per match vs. 6-12 cycles per literal."
+  },
+
+  "key_insights_for_optimization": [
+    "The bit-position serial dependency is the hardest bottleneck: it cannot be broken without either (a) speculative execution, (b) known symbol boundaries (sync points), or (c) multiple independent bitstreams.",
+    "Fixed Huffman blocks (BTYPE=01) have a known code distribution, enabling precomputed multi-symbol tables that decode 2-3 symbols in one lookup.",
+    "The literal/match dispatch branch can be eliminated by having the table lookup directly encode whether the symbol is a literal or match, avoiding a separate comparison.",
+    "Short matches (length 3-4) are more expensive per output byte than literals because they require 2 Huffman lookups + extra bits. An optimizer should be aware that match-heavy streams have lower per-byte throughput.",
+    "Dynamic block table construction can be cached: consecutive blocks often use identical or very similar Huffman trees, especially in data with consistent statistical properties.",
+    "The 32KB window constraint means the working set fits in L1 cache on modern CPUs, which is favorable for match copies.",
+    "Overlapping match copy (distance < length) is a significant edge case that prevents vectorized copy in general, but can be special-cased for common distances (1, 2, 4, 8)."
+  ],
+
+  "citations": ["rfc1951"]
+}

@@ -1,0 +1,14 @@
+{
+  "id": 12,
+  "symbolic_name": "hierarchical_block_prediction",
+  "description": "Use statistical properties of DEFLATE blocks to predict block boundaries, sizes, and Huffman table similarity across blocks. Most real-world DEFLATE streams use similar Huffman tables in consecutive blocks. By predicting the next block's table, we can begin speculative decoding of the next block before the current block finishes, or even reuse the current table if it matches.",
+  "domains": ["machine_learning", "compression", "signal_processing"],
+  "mathematical_formalization": "Let H_k = Huffman table of block k. Define similarity S(H_k, H_{k+1}) = sum over symbols s of |len_k(s) - len_{k+1}(s)|. If S < threshold tau, tables are 'similar' and H_k can be reused speculatively. Probability of table reuse P(S < tau) depends on data homogeneity.",
+  "analogical_connections": [
+    "Motion vector prediction in video coding",
+    "Branch target buffer in CPUs",
+    "Weather forecasting: tomorrow's weather is most likely similar to today's"
+  ],
+  "implementation_hypothesis": "Maintain a 'previous block table' cache. When a new block header is parsed, quickly compare code lengths to cached table. If they match, skip table build and reuse cached decode tables.",
+  "experiment_seed": "Analyze DEFLATE blocks across Silesia corpus files: measure Huffman table similarity between consecutive blocks. Compute hit rate of table prediction. Implement table caching and measure speedup."
+}
