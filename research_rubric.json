@@ -1,0 +1,292 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T12:00:00Z",
+  "updated_at": "2026-03-04T07:48:05.619677+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T12:00:00Z",
+      "completed_at": "2026-03-04T07:48:05.619662+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and document all modules, tools, agents, and their interconnections",
+          "acceptance_criteria": "Produce results/concept_evolve/repo_analysis.json listing every directory, file purpose, agent roles (orchestrator/researcher/writer/reviewer), tool bindings (concept_evolve.ts, semantic_scholar.ts), and data flow between .archivara/ scripts and results/ output paths",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct web search for SIMD-based text parsing papers and high-performance CSV parser implementations",
+          "acceptance_criteria": "Search the web for at least 5 distinct queries covering: simdjson structural character classification, SIMD CSV parsing, vectorized text parsing, RFC 4180 parser benchmarks, and speculative execution in parsers. Document all findings in results/concept_evolve/literature_search_log.json with query, source URL, and key takeaway for each result",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Build citation graph via Semantic Scholar for SIMD parsing and high-throughput data ingestion",
+          "acceptance_criteria": "Use semantic_scholar tool to search for 'SIMD JSON parsing', 'vectorized CSV parsing', 'speculative parsing', and 'branch-free text processing'. Build a citation graph with at least 5 root papers and fanout of 5. Save raw graph to results/concept_evolve/citation_graph.json",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted prior work",
+          "acceptance_criteria": "sources.bib in repo root contains at least 10 valid BibTeX entries covering: (1) Langdale & Lemire simdjson paper, (2) at least 2 papers on SIMD text processing, (3) RFC 4180 specification, (4) at least 2 high-performance CSV parser papers or technical reports (arrow-csv, xsv, etc.), (5) at least 2 papers on speculative/predictive parsing or branch prediction optimization, (6) at least 1 paper on cache-oblivious or cache-friendly algorithms",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Delegate concept-tree exploration via literature-graph-miner subagent to identify cross-domain transferable techniques",
+          "acceptance_criteria": "Launch literature-graph-miner subagent with the topic 'SIMD structural character detection for delimited text parsing'. Subagent produces results/concept_evolve/tree/ with at least 5 concept folders (e.g., 001_simd_classify/, 002_speculative_row_length/, etc.), each containing concept.json and README.md. Tree index.json and adjacency.json are populated",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Characterize the RFC 4180 CSV grammar and enumerate all structural character classes and state transitions",
+          "acceptance_criteria": "Document in results/concept_evolve/rfc4180_analysis.md: (1) complete grammar rules with ABNF, (2) enumeration of structural characters (comma, DQUOTE, CR, LF), (3) full state machine with states (field_start, unquoted_field, quoted_field, quote_in_quoted, record_end) and all transitions, (4) identification of exactly which transitions create ambiguity requiring lookahead, (5) analysis of how embedded newlines in quoted fields break naive line-splitting parallelism",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Curate or generate benchmark CSV datasets covering all RFC 4180 edge cases",
+          "acceptance_criteria": "Create at least 5 benchmark datasets saved in results/benchmarks/data/: (1) simple_uniform.csv (1M rows, 10 fixed-width numeric columns, no quoting), (2) mixed_quoting.csv (500K rows with 30% quoted fields containing commas), (3) embedded_newlines.csv (100K rows with 10% fields containing embedded CR/LF), (4) wide_table.csv (100K rows, 200 columns, variable widths), (5) utf8_heavy.csv (500K rows with CJK/emoji content and mixed quoting). Each file must be at least 50MB. Document dataset characteristics in results/benchmarks/data/manifest.json",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement scalar baseline CSV parser with instrumented performance counters",
+          "acceptance_criteria": "Working C implementation in src/baseline/scalar_parser.c that: (1) correctly parses all 5 benchmark datasets, (2) passes RFC 4180 compliance test suite (at least 20 test cases covering quoting, escaping, embedded newlines, empty fields, trailing CRLF), (3) reports bytes/sec, rows/sec, branch misprediction rate (via perf stat), and L1/L2/L3 cache miss rates. Baseline throughput numbers recorded in results/benchmarks/baseline_metrics.json",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Benchmark existing parsers: Python csv, pandas read_csv, arrow-csv (PyArrow), xsv, and libcsv",
+          "acceptance_criteria": "Run each of the 5 existing parsers on all 5 benchmark datasets. Record wall-clock time, peak RSS memory, and throughput (MB/s) in results/benchmarks/existing_parsers.json. Include exact version strings for each parser. Pandas and arrow-csv must be measured in both single-threaded and default-parallel modes. All measurements are median of 3 runs with warm filesystem cache",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Profile scalar parser to identify specific bottlenecks via perf and VTune-style analysis",
+          "acceptance_criteria": "Produce results/benchmarks/profile_report.md containing: (1) top 10 hotspot functions/loops with percentage of cycles, (2) branch misprediction hotspots with exact source lines, (3) cache miss analysis showing which data access patterns cause L1d misses, (4) IPC (instructions per cycle) measurement, (5) quantified breakdown showing what percentage of time is spent in structural character scanning vs. field materialization vs. memory allocation. This analysis directly informs which bottlenecks the SIMD approach must target",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Delegate concept-tree-explorer subagent to map bottleneck-to-technique connections from profiling results",
+          "acceptance_criteria": "Launch concept-tree-explorer subagent with profiling results as context. Subagent identifies at least 3 high-value concept paths linking identified bottlenecks (branch misprediction in quote-state tracking, cache misses in field output, memory allocation overhead) to specific SIMD techniques. Results written to results/concept_evolve/tree/ with updated adjacency.json showing bottleneck->technique edges",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Implement SIMD structural character classification stage using SSE4.2/AVX2 (x86-64) and NEON (ARM64)",
+          "acceptance_criteria": "Working implementation in src/simd/ with: (1) simd_classify_x86.c using _mm256_cmpeq_epi8 to produce 32-bit bitmasks for comma, quote, CR, LF positions in 32-byte chunks, (2) simd_classify_arm.c using NEON vceqq_u8 for 16-byte chunks, (3) runtime dispatch selecting best available instruction set, (4) unit tests proving identical bitmask output to scalar reference on all 5 benchmark datasets, (5) measured throughput of classification stage alone exceeds 8 GB/s on target hardware",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Design and implement the quote-state finite automaton operating on structural bitmasks (simdjson-style)",
+          "acceptance_criteria": "Implementation in src/simd/quote_state.c that: (1) uses carry-less multiplication or prefix-XOR to compute quote parity across a 64-byte chunk from the quote bitmask, (2) correctly masks out structural characters (commas, newlines) that appear inside quoted fields, (3) handles escaped quotes (double-quote sequences) via adjacent-bit detection, (4) passes all embedded-newline and escaped-quote test cases from Phase 2 compliance suite, (5) maintains running quote-parity state across chunk boundaries with zero branches in the hot path",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Implement speculative row-length prediction for cache-friendly output buffer pre-allocation",
+          "acceptance_criteria": "Implementation in src/speculative/row_predictor.c that: (1) maintains an exponentially-weighted moving average of row byte-lengths and field counts, (2) pre-allocates output string pointer arrays using predicted row shape, (3) detects misprediction (actual != predicted field count) and falls back to realloc path, (4) achieves >95% prediction hit rate on simple_uniform.csv and >80% on mixed_quoting.csv, (5) reduces memory allocation calls by at least 10x compared to per-field malloc baseline. Prediction accuracy stats recorded in results/experiments/prediction_accuracy.json",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Integrate SIMD classification, quote-state tracking, and speculative materialization into unified parser pipeline",
+          "acceptance_criteria": "Single-threaded integrated parser in src/simd_csv_parser.c that: (1) pipelines classify -> quote-state -> extract stages, (2) processes input in 64KB blocks to stay L2-friendly, (3) passes complete RFC 4180 compliance suite, (4) produces identical output to scalar baseline on all 5 benchmark datasets (verified by diff of extracted fields), (5) achieves at least 3x throughput over the scalar baseline from item_008 on simple_uniform.csv",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Design parallel chunk processing with speculative quote-state resolution for multi-threaded parsing",
+          "acceptance_criteria": "Design document in results/concept_evolve/parallel_design.md covering: (1) chunk boundary selection strategy (split on 64KB boundaries, speculatively assume even quote parity at each boundary), (2) validation/correction protocol when speculation fails (re-parse from last known-good boundary), (3) work-stealing thread pool architecture, (4) lock-free output assembly maintaining row order. Implementation in src/parallel/ with at least 2-thread correctness tests passing on embedded_newlines.csv. Cite at least 2 papers from sources.bib on speculative parallel parsing",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Delegate concept-tree-explorer subagent to explore cross-domain analogies for speculative field detection",
+          "acceptance_criteria": "Subagent explores connections between speculative CSV parsing and at least 3 analogous domains: (1) speculative execution in CPUs (branch prediction recovery), (2) speculative parsing in network protocol dissectors, (3) optimistic concurrency control in databases. Produces at least 2 new concept folders in results/concept_evolve/tree/ with concrete technique-transfer proposals. Each proposal includes a falsifiable hypothesis about whether the transferred technique improves throughput or prediction accuracy",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Run throughput benchmarks: SIMD parser vs. all baselines on all 5 datasets",
+          "acceptance_criteria": "results/experiments/throughput_matrix.json contains a dataset x parser matrix with columns: [scalar_baseline, python_csv, pandas_st, pandas_mt, arrow_csv_st, arrow_csv_mt, xsv, libcsv, simd_parser_st, simd_parser_mt]. Each cell contains median MB/s over 5 runs. SIMD single-threaded parser achieves >= 5x throughput over pandas single-threaded on at least 3 of 5 datasets. Results include 95% confidence intervals",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Measure SIMD parser hardware counter profiles and compare against scalar baseline and arrow-csv",
+          "acceptance_criteria": "results/experiments/hardware_counters.json contains for each of [scalar_baseline, arrow_csv, simd_parser]: IPC, branch mispredictions/1000 instructions, L1d cache miss rate, L2 cache miss rate, and bytes processed per cycle. SIMD parser must show at least 5x reduction in branch mispredictions compared to scalar baseline. Include perf stat raw output as appendix",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Evaluate speculative row prediction accuracy across all datasets and measure its throughput impact",
+          "acceptance_criteria": "results/experiments/speculation_analysis.json contains per-dataset: (1) prediction hit rate (%), (2) average misprediction recovery cost in cycles, (3) throughput with speculation enabled vs. disabled, (4) memory allocation count with vs. without speculation. Speculation must provide measurable throughput benefit (>10% improvement) on at least 3 of 5 datasets. Include analysis of which dataset characteristics cause mispredictions",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Test RFC 4180 compliance exhaustively including adversarial edge cases",
+          "acceptance_criteria": "Compliance test suite in tests/ with at least 30 test cases covering: empty files, single-field rows, fields with only quotes, CR-only vs LF-only vs CRLF line endings, maximum field length (>1MB single field), null bytes in content, BOM handling, trailing newline vs. no trailing newline, fields that are just a pair of quotes (\"\"), consecutive delimiters, and mixed quoting styles within a row. All tests pass for SIMD parser. Results in results/experiments/compliance_report.json",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Scalability experiment: measure throughput vs. thread count (1-16 threads) and vs. file size (1MB-10GB)",
+          "acceptance_criteria": "results/experiments/scalability.json contains: (1) throughput at 1,2,4,8,16 threads on mixed_quoting.csv scaled to 1GB, showing at least 3x speedup at 8 threads over single-threaded, (2) throughput vs. file size at 1MB, 10MB, 100MB, 1GB, 10GB showing that per-byte cost is constant (within 15%) for files >= 10MB, (3) analysis of scaling bottlenecks (memory bandwidth saturation point, lock contention if any). Generate corresponding figures in figures/scalability_threads.png and figures/scalability_filesize.png",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Delegate literature-graph-miner subagent to compare experimental results against prior work claims",
+          "acceptance_criteria": "Subagent searches for reported throughput numbers from simdjson, simdcsv (if published), arrow-csv benchmarks, and xsv benchmarks. Produces results/concept_evolve/prior_work_comparison.json mapping each cited paper/tool from sources.bib to: their reported throughput, our measured throughput on comparable data, and delta analysis. At least 5 prior work comparisons documented with specific citations",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Write comprehensive technical report analyzing all experimental results with figures and citations",
+          "acceptance_criteria": "results/report.md contains: (1) Abstract summarizing key results (target throughput achieved or not, and by what margin), (2) Introduction citing at least 5 papers from sources.bib establishing context, (3) Approach section with architecture diagrams (referenced from figures/), (4) Results section with embedded references to all JSON data files from Phase 4, (5) Discussion section analyzing where SIMD approach wins/loses vs. baselines and why, (6) Limitations section identifying at least 3 scenarios where the approach underperforms, (7) at least 4 figures in figures/ directory (throughput comparison bar chart, hardware counter comparison, scalability curves, speculation accuracy plot). Report is at least 3000 words",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Synthesize concept-tree findings into a transferability analysis for SIMD techniques beyond CSV",
+          "acceptance_criteria": "results/concept_evolve/transferability_analysis.md documents: (1) which concept-tree paths from results/concept_evolve/tree/ proved most valuable and why, (2) at least 3 concrete applications of the SIMD structural classification technique to other delimited formats (TSV, JSON Lines, log files, FASTA), (3) assessment of which techniques are ISA-specific vs. portable, (4) a ranked list of 'next research directions' derived from the concept tree with estimated effort and expected impact",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Delegate concept-tree-explorer subagent for final concept-tree audit and gap identification",
+          "acceptance_criteria": "Subagent traverses all concept folders in results/concept_evolve/tree/, verifies each has concept.json and README.md, identifies at least 2 'blind spot' concepts that were missing from the original exploration but are suggested by the experimental results. Produces results/concept_evolve/tree_audit.json with: folder_count, complete_folders, incomplete_folders, missing_links (edges that should exist in adjacency.json but don't), and blind_spot_concepts (new concept proposals)",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Final sources.bib audit and completeness verification",
+          "acceptance_criteria": "sources.bib contains at least 15 valid BibTeX entries. Every citation referenced in results/report.md has a corresponding entry. No duplicate keys. At least 3 entries have DOI fields. BibTeX validates without errors using a standard checker. A cross-reference document results/citation_map.json maps each sources.bib key to the specific report section(s) and experiment(s) where it is cited",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
