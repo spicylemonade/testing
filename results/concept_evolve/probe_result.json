@@ -1,0 +1,186 @@
+{
+  "bottleneck": "Bridge between Bukh-Cox frog dynamics lower bounds and Lueker LP feasible-triplet framework for Chvatal-Sankoff constant",
+  "context": {
+    "chvatal_sankoff_constant": "The limit gamma_{k,d} = lim_{n->inf} E[LCS(X_1,...,X_d)]/n for d random strings of length n over alphabet size k. For binary (k=2, d=2), best known bounds are 0.792666 <= gamma <= 0.82628.",
+    "bukh_cox_frog_dynamics": "Bukh-Cox (2022) introduced 'frog dynamics', an interacting particle system where labeled particles hop over one another. For periodic word W^(n) vs random R_n, LCS expectation is gamma_W * n - O(sqrt(n)). The frog dynamics reduces (without labels) to a PushTASEP variant. When all symbols of W are distinct, the stationary distribution has a closed form. The system lives on a ring of |W| sites. Key insight: the LCS constant gamma_W is determined by the stationary measure's current of the associated particle system.",
+    "lueker_lp_feasible_triplet": "Lueker (2003/2009) and Kiwi-Soto (2009) developed a framework for bounding gamma_{sigma,d} using a recurrence on vectors w_n indexed by all d-tuples of strings of length ell. The function F is monotone and translation-invariant. A 'feasible triplet' (u, r, epsilon) satisfying F(u+(d-1)r*1, ..., u) >= u+(dr-epsilon)*1 yields the bound gamma >= d(r-epsilon). The method iterates F from initial conditions until approximate convergence, then extracts (u, r, epsilon). This is essentially an LP relaxation: finding the best feasible triplet maximizes r-epsilon subject to the feasibility inequality.",
+    "current_gap": "The Bukh-Cox approach gives sharp constants for periodic-vs-random LCS via particle system stationarity, while Lueker/Kiwi-Soto gives rigorous numerical bounds for random-vs-random LCS via LP feasible triplets. The bottleneck is: these two frameworks have not been unified. The frog dynamics captures microscopic structure (particle configurations, currents) while the LP framework operates on aggregate string-pair statistics. No one has shown how to extract feasible triplets from frog dynamics stationary distributions or vice versa."
+  },
+  "associations": [
+    "Markov chain stationary distribution as LP fixed point - the frog dynamics stationary measure could be recast as the solution to a linear program whose dual yields feasible triplets",
+    "PushTASEP particle current as a Lyapunov function - the 'r' parameter in feasible triplets corresponds to the particle current in the stationary state of the frog dynamics",
+    "Robinson-Schensted-Knuth correspondence - RSK maps LCS to longest increasing subsequences, and the Bukh-Cox PushTASEP has known connections to RSK via geometric lifting",
+    "Hydrodynamic limits of interacting particle systems - the macroscopic density profile of frog dynamics should encode the same information as Lueker's vector w_n in the large-ell limit",
+    "Subadditivity and superadditivity - both frameworks exploit the superadditivity of LCS length; the frog dynamics makes this explicit via concatenation of periodic segments",
+    "Transfer matrix method - Dancik-Paterson used linear recurrences (transfer matrices) for upper bounds; the frog dynamics transition matrix is a stochastic analog of the same object",
+    "Yang-Baxter equation and queue vertex models - Aggarwal-Nicoletti-Petrov (2023) showed PushTASEP stationary measures arise from Yang-Baxter equations; this algebraic structure might yield exact feasible triplets",
+    "Free energy in directed polymers - the Chvatal-Sankoff constant is the free energy of a directed polymer model; frog dynamics captures the microscopic path, LP captures the macroscopic free energy",
+    "Tropical semiring and max-plus algebra - LCS computation is a max-plus matrix product; both frog dynamics and LP feasible triplets operate in this algebraic framework",
+    "Ergodic theory of skew products - the frog dynamics on the ring is a skew product over the periodic word shift; the feasible triplet condition is an ergodic-theoretic statement about growth rates",
+    "Semi-infinite optimization and moment problems - the Lueker LP has exponentially many constraints (one per string tuple); the frog dynamics stationary distribution is a low-dimensional sufficient statistic",
+    "Duality in interacting particle systems - TASEP has well-known duality relations; dual processes might correspond to upper vs lower bound mechanisms in the LP framework",
+    "KPZ universality class - both LCS fluctuations (Tracy-Widom) and TASEP fluctuations belong to KPZ class; the feasible triplet epsilon captures deviation from the KPZ scaling",
+    "Coupling and monotonicity - the monotonicity of F in Kiwi-Soto mirrors the attractiveness property of the frog dynamics as a particle system"
+  ],
+  "forced_bridges": [
+    {
+      "from": "Frog dynamics stationary measure on ring of size k",
+      "to": "Lueker feasible triplet (u, r, epsilon) for string length ell = k",
+      "mechanism": "Encode the stationary distribution pi of the frog dynamics as a vector u where u[a_1,...,a_d] = sum over frog configurations compatible with string tuple (a_1,...,a_d) weighted by pi. The particle current J of the frog dynamics equals r. The deviation epsilon comes from the mixing time correction: epsilon ~ C/k where C depends on the spectral gap of the frog dynamics Markov chain. This would yield gamma >= d*(J - C/k), which for large k should approach the true constant."
+    },
+    {
+      "from": "Yang-Baxter integrability of multispecies PushTASEP (Aggarwal-Nicoletti-Petrov 2023)",
+      "to": "Closed-form feasible triplets via Macdonald polynomial specializations",
+      "mechanism": "The stationary measure of colored PushTASEP is proportional to ASEP polynomials at q=1, with partition function given by Macdonald polynomials P_lambda(x;q,t) at q=1. Specializing to the frog dynamics case (specific lambda encoding the periodic word), evaluate the Macdonald polynomial to get an explicit formula for the vector u in the feasible triplet. The translation-invariance of F corresponds to the shift symmetry of the ring, and r is determined by the principal specialization of P_lambda."
+    },
+    {
+      "from": "Last passage percolation (LPP) in random environment",
+      "to": "LP relaxation hierarchy for Chvatal-Sankoff bounds",
+      "mechanism": "LCS of two random strings is equivalent to LPP on a 2D grid with Bernoulli weights (1 if characters match, 0 otherwise). The Lueker LP feasible triplet at string length ell corresponds to a coarse-graining of the LPP at scale ell. The frog dynamics describes the microscopic boundary of the LPP region. Bridge: use the hydrodynamic limit of the frog dynamics (which gives a deterministic shape function) to construct optimal feasible triplets. The shape function phi(x,y) satisfies a Hamilton-Jacobi equation whose solution gives r = phi(1,1)/2 and epsilon is the discretization error at scale ell."
+    },
+    {
+      "from": "Tropical geometry of max-plus eigenvalue problems",
+      "to": "Spectral theory of the Lueker recurrence operator F",
+      "mechanism": "The operator F in Kiwi-Soto involves max and averaging operations - a combination of tropical (max-plus) and ordinary algebra. The feasible triplet condition F(u+(d-1)r,...,u) >= u+dr-epsilon is a 'perturbed max-plus eigenvector' equation. In tropical geometry, the max-plus eigenvalue of the transition kernel of the frog dynamics equals the growth rate r. Tropical Perron-Frobenius theory guarantees existence and uniqueness of the tropical eigenvalue, providing a principled way to compute optimal r."
+    },
+    {
+      "from": "Optimal transport between empirical measures of string pairs",
+      "to": "Frog dynamics as a gradient flow in Wasserstein space",
+      "mechanism": "The LCS alignment between two strings defines a coupling (transport plan) between the character positions. The frog dynamics evolves this coupling as new random characters arrive. Interpret the stationary distribution as a fixed point of a Wasserstein gradient flow. The feasible triplet parameter r is the optimal transport cost at stationarity, and epsilon is the displacement from the minimizer. This connects to the semi-discrete optimal transport literature and could yield new computational methods."
+    },
+    {
+      "from": "Concentration inequalities for Markov chains (Kloeckner 2019, referenced by Bukh-Cox)",
+      "to": "Tightness of Lueker upper bounds via spectral gap analysis",
+      "mechanism": "Bukh-Cox use concentration bounds (spectral gap of frog dynamics Markov chain) to control deviations of LCS from its mean. The same spectral gap governs the convergence rate of the Lueker iteration to the feasible triplet. Specifically, epsilon in the feasible triplet decays as O(exp(-gap * ell)) where gap is the spectral gap of the frog dynamics. This provides a theoretical prediction for how fast the LP bounds converge and how large ell needs to be."
+    },
+    {
+      "from": "Symbolic dynamics and subshifts of finite type (Tiskin 2023)",
+      "to": "Automata-theoretic lower bounds (Dancik-Paterson / Baeza-Yates)",
+      "mechanism": "Tiskin (2023) recast the Chvatal-Sankoff problem in terms of symbolic dynamics. The frog dynamics on a periodic word defines a subshift of finite type. The Dancik-Paterson automata for upper bounds and the Lueker LP for lower bounds both operate on finite automata over string pairs. Bridge: the symbolic dynamics of the frog dynamics provides a canonical construction of the automata used in both upper and lower bound methods, unifying them as different projections of the same subshift."
+    },
+    {
+      "from": "Replica method in statistical mechanics (Bundschuh 2001, Boutet de Monvel 1999)",
+      "to": "Convex relaxation of the feasible triplet LP",
+      "mechanism": "The replica method gives non-rigorous estimates of gamma via saddle-point equations for the free energy. The Lueker LP feasible triplet is a rigorous convex relaxation. Bridge: the replica saddle-point equations should be dual to the LP feasible triplet constraints in the ell -> infinity limit. The frog dynamics provides the physical interpretation: replicas correspond to independent copies of the particle system, and the saddle point is the stationary measure."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "What if the alphabet size sigma -> infinity while string length ell in the LP is fixed?",
+      "result": "In this regime, Kiwi-Loebl-Matousek showed gamma_{sigma,2} ~ 2/sqrt(sigma). The LP feasible triplet becomes trivial because each character appears at most once, making all string pairs 'mismatched'. The frog dynamics degenerates to independent particles (no interactions). The bridge collapses: neither framework has leverage when characters never repeat. This suggests the bridge is most productive for small alphabets where character collisions drive both the particle interactions and the LP constraints."
+    },
+    {
+      "constraint": "What if we restrict to periodic words with period 1 (all identical characters)?",
+      "result": "For W = 'aaa...a', gamma_W = 1/sigma (fraction of random characters matching 'a'). The frog dynamics has a single site and trivial stationary distribution. The Lueker LP with ell=1 gives exactly the same bound. This is the unique case where both frameworks collapse to the same trivial computation, confirming they measure the same quantity. The gap between the frameworks grows with the complexity of the periodic structure."
+    },
+    {
+      "constraint": "What if the feasible triplet search is restricted to vectors u that arise from frog dynamics stationary distributions?",
+      "result": "This would create a 'structured LP' where instead of searching over all u in R^{sigma^{d*ell}}, we search only over images of frog dynamics stationary measures for all possible periodic words of length ell. The search space collapses from exponential to polynomial dimension (number of distinct periodic words up to cyclic equivalence). Anomaly: this restricted LP might give worse bounds than the unrestricted version, since optimal feasible triplets may not correspond to any periodic word. But it would be vastly more computationally tractable."
+    },
+    {
+      "constraint": "What if we apply the LP framework to the periodic-vs-random case (where frog dynamics gives exact answers)?",
+      "result": "The LP feasible triplet should converge to the exact frog dynamics constant gamma_W as ell -> infinity. The convergence rate would measure the 'information loss' of the LP coarse-graining. If convergence is fast (polynomial in 1/ell), then the LP is efficient for this special case and the bridge is tight. If convergence is slow (logarithmic), then the frog dynamics carries fundamentally more information than the LP can capture at any fixed ell. Computational experiments comparing known gamma_W values to LP bounds at various ell would quantify this."
+    },
+    {
+      "constraint": "What happens if we run frog dynamics on a random (non-periodic) word?",
+      "result": "The frog dynamics is defined for periodic words where the system can reach a stationary distribution on a finite ring. For a random word, the 'ring' would need to grow with n, and there is no finite stationary distribution. This is exactly the random-vs-random case that the LP handles but frog dynamics does not directly address. The anomaly reveals the core bottleneck: frog dynamics exploits periodicity (finite state space), while the LP works for arbitrary strings (exponential state space). Bridging requires extending frog dynamics to quasi-periodic or almost-periodic words."
+    },
+    {
+      "constraint": "What if we use the Tiskin polynomial system (gamma as root of integer-coefficient polynomials) as an algebraic constraint in the LP?",
+      "result": "Tiskin (2022) showed gamma is a root of a polynomial system with integer coefficients derived from the stochastic particle process. Adding this algebraic constraint to the Lueker LP would create a semialgebraic optimization problem (LP + polynomial constraints). This hybrid could potentially pinpoint gamma exactly, but the polynomial system is intractably large. The anomaly: even knowing gamma is algebraic does not help computationally unless we can bound the degree and height of the minimal polynomial."
+    },
+    {
+      "constraint": "What if the Lueker iteration is seeded with frog dynamics stationary vectors instead of zero vectors?",
+      "result": "The standard Lueker/Kiwi-Soto algorithm starts from arbitrary initial vectors and iterates F until convergence. If seeded with vectors derived from frog dynamics stationary distributions for all periodic words of length ell, the iteration should converge faster (fewer iterations needed) because the initial condition is already close to the fixed point. This is a practical computational bridge: use frog dynamics as a warm start for the LP computation. The expected speedup depends on how close the frog dynamics vectors are to the LP optimal - testing this empirically would be a direct validation of the bridge."
+    }
+  ],
+  "steering_directions": [
+    {
+      "direction": "Extract feasible triplets directly from frog dynamics stationary measures",
+      "rationale": "The Bukh-Cox frog dynamics for periodic words gives explicit stationary distributions (especially when all symbols are distinct). These distributions encode information about LCS growth rates. If we can map these distributions to feasible triplets in the Lueker framework, we would have an analytic (rather than computational) source of lower bounds. For the random-vs-random case, we would average over all periodic words.",
+      "first_step": "For the simplest non-trivial case (W = '01' over binary alphabet, so ell=2), compute the frog dynamics stationary distribution explicitly. Then construct the 4x4 (or 16-dimensional for d=2) vector u from this distribution and compute F(u+r, u) to find the best r and epsilon. Compare to Lueker's published bound at ell=2.",
+      "expected_signal": "If the frog-dynamics-derived feasible triplet gives a bound within 1% of Lueker's computational bound at ell=2, this validates the bridge. If it gives a strictly better bound, this is a breakthrough. If worse by >5%, the bridge needs additional structure beyond raw stationary distributions."
+    },
+    {
+      "direction": "Use Yang-Baxter integrability to derive closed-form feasible triplets",
+      "rationale": "Aggarwal-Nicoletti-Petrov (2023) showed that PushTASEP stationary measures come from Yang-Baxter equations and are expressed via Macdonald polynomials. Since frog dynamics is a PushTASEP variant, its stationary measure should have explicit algebraic expressions. These could yield closed-form feasible triplets, bypassing the need for numerical iteration entirely.",
+      "first_step": "Identify the precise specialization of the multispecies PushTASEP that corresponds to Bukh-Cox frog dynamics. Write down the queue vertex model partition function for this specialization. Evaluate it for small ring sizes (k=2,3) and extract the corresponding Macdonald polynomial.",
+      "expected_signal": "The Macdonald polynomial evaluation should give a rational function of the alphabet size sigma. If this function, when plugged into the feasible triplet framework, reproduces known bounds, the integrability-LP bridge is established. Look for the partition function to factor in a way that separates r (the current) from the correction terms."
+    },
+    {
+      "direction": "Develop hydrodynamic theory for the LP iteration as a discretized PDE",
+      "rationale": "The Lueker iteration v_{n+d} = F(v_{n+d-1}, ..., v_n) is a discrete dynamical system on high-dimensional vectors. As ell -> infinity, this should have a hydrodynamic limit described by a Hamilton-Jacobi PDE (similar to how TASEP has Burgers equation as its hydrodynamic limit). The frog dynamics and LP iteration should share the same hydrodynamic limit, providing a macroscopic bridge.",
+      "first_step": "Study the Lueker iteration at string lengths ell = 2, 4, 8, 16 for the binary case. Track how the normalized vector (v_n - nr*1)/sqrt(n) evolves. Fit the resulting profiles to candidate PDE solutions (Burgers equation, Hamilton-Jacobi with specific Hamiltonians).",
+      "expected_signal": "The rescaled vectors should converge to a deterministic profile satisfying a nonlinear PDE. If this PDE matches the hydrodynamic equation of the PushTASEP/frog dynamics (known to be a Burgers-type equation), the macroscopic bridge is confirmed."
+    },
+    {
+      "direction": "Construct a tropical-algebraic bridge via max-plus spectral theory",
+      "rationale": "The LCS computation is fundamentally a max-plus (tropical) operation. The Lueker recurrence F involves both max and averaging - a de-tropicalization. The frog dynamics operates in the probabilistic (averaging) regime. Tropical spectral theory (max-plus eigenvalues of transition matrices) provides a natural meeting point: the tropical eigenvalue of the LCS transition kernel should equal gamma.",
+      "first_step": "Formulate the LCS dynamic programming recurrence as a max-plus matrix multiplication. Compute the max-plus eigenvalue of the resulting transition matrix for small string lengths. Compare to the Lueker feasible triplet parameter r and the frog dynamics current.",
+      "expected_signal": "All three quantities (max-plus eigenvalue, LP parameter r, frog dynamics current) should converge to gamma as the system size grows. Discrepancies at finite size would quantify the different approximation errors of each framework."
+    },
+    {
+      "direction": "Use the Briggs-Parker-Schwieder-Wells 'frogs with hats' extension to reach random-vs-random",
+      "rationale": "Briggs et al. (2024) extended frog dynamics to palindromic periodic words using 'frogs with hats' - a correlated-clock exclusion process. This suggests a path to generalizing frog dynamics beyond simple periodic words. If frog dynamics can handle increasingly complex periodic words, the random-vs-random case might be approached as a limit over all periodic structures.",
+      "first_step": "Catalog the known explicit gamma_W values from frog dynamics for all binary words W with |W| <= 8. Compute the average (1/2^k) * sum_{|W|=k} gamma_W for k = 1,...,8. Compare this average to the Chvatal-Sankoff constant gamma_{2,2}.",
+      "expected_signal": "If the average of periodic-word constants converges to gamma_{2,2} as k grows, this validates the 'average over periodicities' bridge. The rate of convergence indicates how many periodic structures are needed to approximate the random case. A positive signal here would be a major conceptual advance."
+    },
+    {
+      "direction": "Formulate a semidefinite programming (SDP) relaxation combining both frameworks",
+      "rationale": "The Lueker LP is a linear program. The frog dynamics stationary measure satisfies quadratic constraints (detailed balance or stationarity equations). Combining both yields a problem with linear and quadratic constraints - an SDP. SDP hierarchies (Lasserre/sum-of-squares) could systematically tighten the bounds.",
+      "first_step": "Write the stationarity equations for the frog dynamics as polynomial equalities in the stationary probabilities. Combine with the LP feasible triplet inequalities. Formulate the resulting problem as a semidefinite program using the Lasserre hierarchy at order 1.",
+      "expected_signal": "The SDP bound should be at least as tight as the LP bound alone. If strictly tighter, the frog dynamics constraints add real information. The improvement magnitude indicates how much the particle system perspective contributes beyond the pure LP approach."
+    },
+    {
+      "direction": "Investigate the spectral gap of frog dynamics as the rate of LP convergence",
+      "rationale": "The spectral gap of the frog dynamics Markov chain controls how fast the system reaches stationarity. The same gap should control how fast the Lueker iteration converges to the optimal feasible triplet (since both are driven by the same underlying mixing). This would give a theoretical prediction for computational complexity of the LP method.",
+      "first_step": "For binary alphabet and small periodic words (|W| = 2,3,4), compute the spectral gap of the frog dynamics transition matrix. Then run the Lueker iteration and measure the convergence rate. Plot convergence rate vs spectral gap.",
+      "expected_signal": "A linear or near-linear relationship between spectral gap and LP convergence rate would confirm the bridge at the quantitative level. If the relationship is superlinear, the LP iteration has additional acceleration beyond what the spectral gap provides."
+    }
+  ],
+  "validation_checks": [
+    {
+      "direction": "Extract feasible triplets from frog dynamics",
+      "validation": "For W='01', compute gamma_W via frog dynamics (known to be computable). Construct feasible triplet from stationary distribution. Verify F(u+r, u) >= u + (2r-epsilon) coordinate-wise. The check passes if all coordinates satisfy the inequality and d*(r-epsilon) is within 5% of gamma_W.",
+      "falsification_criterion": "If the frog-dynamics-derived vector u fails to satisfy the feasible triplet inequality for ANY value of r, then the naive mapping from stationary distributions to feasible triplets is incorrect and a more sophisticated encoding is needed."
+    },
+    {
+      "direction": "Yang-Baxter integrability for closed-form triplets",
+      "validation": "Verify that the Bukh-Cox frog dynamics for W='12...k' (distinct symbols) is a special case of the multispecies PushTASEP studied by Aggarwal-Nicoletti-Petrov. Check that the known closed-form stationary distribution (Bukh-Cox Theorem 1.5) matches the Macdonald polynomial formula at the correct specialization.",
+      "falsification_criterion": "If the frog dynamics is NOT a specialization of the integrable PushTASEP (e.g., due to different boundary conditions or clock distributions), the Yang-Baxter bridge fails. Check by comparing transition rates."
+    },
+    {
+      "direction": "Hydrodynamic PDE bridge",
+      "validation": "Run the Lueker iteration for sigma=2, d=2 at ell = 4, 8, 16, 32. At each ell, record the converged vector profile v*(a,b) for all binary string pairs (a,b) of length ell. Rescale and check if the profile converges to a smooth function. Compute the Burgers equation solution for the corresponding frog dynamics and compare.",
+      "falsification_criterion": "If the rescaled LP profile does NOT converge to any smooth limit (e.g., develops fractal structure or depends on ell in an oscillatory way), the hydrodynamic bridge fails. This would indicate the LP operates at a fundamentally different scale than the particle system."
+    },
+    {
+      "direction": "Tropical-algebraic bridge",
+      "validation": "For sigma=2, d=2, ell=4: compute (a) the max-plus eigenvalue of the LCS transition matrix, (b) the Lueker parameter r at ell=4, (c) the frog dynamics current for all binary words of length 4. All three should be in the interval [0.78, 0.83]. Check pairwise differences.",
+      "falsification_criterion": "If max-plus eigenvalue differs from r by more than 0.01 at ell=4, the tropical and probabilistic frameworks are capturing different aspects of the LCS at this scale. The max operation (tropical) and averaging (probabilistic) may not commute at finite ell."
+    },
+    {
+      "direction": "Average over periodicities bridge",
+      "validation": "Compute gamma_W for all binary words W with |W| <= 6 using Bukh-Cox frog dynamics. Compute weighted average with uniform weights. Compare to the best known bounds on gamma_{2,2} (0.7927 lower, 0.8263 upper).",
+      "falsification_criterion": "If the average falls outside the known bounds [0.7927, 0.8263], there is an error in the computation or the averaging procedure. If the average is within bounds but far from the estimated value ~0.8123, the uniform average over periodicities is not the correct bridge and different weighting (perhaps by entropy or mixing time) is needed."
+    },
+    {
+      "direction": "SDP relaxation combining frameworks",
+      "validation": "Implement the Lasserre order-1 SDP for sigma=2, d=2, ell=2 (small enough to be tractable). Compare the SDP bound to the LP-only bound at ell=2. The SDP should be >= LP bound.",
+      "falsification_criterion": "If SDP bound equals LP bound exactly, the frog dynamics stationarity constraints are redundant given the LP constraints (at this ell). This would mean the bridge adds no information at small scales, and one must go to larger ell to see the benefit."
+    },
+    {
+      "direction": "Spectral gap as convergence rate predictor",
+      "validation": "For |W| = 2,3,4,5 over binary alphabet, measure both the frog dynamics spectral gap and the Lueker iteration convergence rate (number of iterations to reach epsilon < 10^{-6}). Compute Pearson correlation between log(spectral_gap) and log(convergence_rate).",
+      "falsification_criterion": "If Pearson correlation < 0.5, the spectral gap does not predict LP convergence and the bridge at this level is weak. The LP iteration may have its own convergence dynamics independent of the particle system mixing."
+    }
+  ],
+  "meta_analysis": {
+    "bottleneck_nature": "The fundamental bottleneck is a representational mismatch. Bukh-Cox frog dynamics operates on CONFIGURATIONS of particles on a ring (microscopic, finite state space, Markovian), while Lueker's LP operates on STATISTICS of string tuples (macroscopic, exponential state space, algebraic). The frog dynamics is exact for periodic-vs-random but undefined for random-vs-random. The LP is general but approximate at any finite ell. Bridging requires either: (1) extending frog dynamics to handle non-periodic words, or (2) projecting the LP onto the space of configurations reachable by particle systems, or (3) finding a shared representation (hydrodynamic limit, tropical eigenvalue) where both frameworks agree.",
+    "most_promising_direction": "The Yang-Baxter / Macdonald polynomial route (steering direction 2) is most promising because it provides EXACT algebraic formulas for the stationary distributions, which can be evaluated at any specialization. The Aggarwal-Nicoletti-Petrov (2023) paper already unifies PushTASEP with queue vertex models and Yang-Baxter equations. Connecting this to the Lueker LP would translate integrability results into rigorous bounds.",
+    "key_obstacle": "The key obstacle is that the random-vs-random case corresponds to an INFINITE family of periodic words (or equivalently, to taking the ring size to infinity), and the frog dynamics stationary distribution in this limit is unknown. The LP bypasses this by working at finite ell, but loses the particle system structure. The bridge must handle this infinite-dimensional limit.",
+    "estimated_difficulty": "8/10 - This requires deep expertise spanning interacting particle systems, linear/tropical programming, algebraic combinatorics (Macdonald polynomials), and computational experiments. A full resolution would likely merit a major journal publication."
+  },
+  "sub_problem": "Bridge between Bukh-Cox frog dynamics lower bounds and Lueker LP feasible-triplet framework for Chvatal-Sankoff constant",
+  "timestamp": "2026-03-04T09:47:12.078529+00:00"
+}

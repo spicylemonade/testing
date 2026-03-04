@@ -1,0 +1,26 @@
+{
+  "description": "Information-theoretic upper bounds on gamma_2",
+  "bounds": {
+    "kolmogorov_basic": {
+      "bound": 0.9051179198,
+      "method": "Solve c = 2*H(c) for the largest c. Given an LCS of length c*n, the alignment can encode c*n bits but requires 2*H(c)*n bits to describe alignment positions. So c <= 2*H(c).",
+      "rigorous": true,
+      "comparison_to_lueker": "weaker (0.905 > 0.826)"
+    },
+    "kolmogorov_refined": {
+      "bound": 0.9067838300,
+      "method": "Use monotone alignment encoding: walk of length (2-c)*n with 3 move types. Encoding rate = (2-c)*H_3(c/(2-c), (1-c)/(2-c), (1-c)/(2-c)).",
+      "rigorous": true,
+      "comparison_to_lueker": "weaker (0.907 > 0.826)"
+    },
+    "bernoulli_lpp_ceiling": {
+      "bound": 0.8284271247,
+      "method": "The Bernoulli matching model (independent weights w_ij ~ Bernoulli(1/2)) gives LPP constant 2*(sqrt(2)-1). Since the true LCS has correlated weights, gamma_2 <= 2*(sqrt(2)-1).",
+      "rigorous": false,
+      "note": "This is NOT rigorous because the correlation could go either way in general. However, for the LCS model, the correlation is negative (matching one pair constrains others), so gamma_2 <= 2*(sqrt(2)-1) is plausible but unproven.",
+      "comparison_to_lueker": "comparable (0.8284 > 0.8263, so slightly weaker)"
+    }
+  },
+  "key_finding": "Pure information-theoretic bounds (0.905-0.907) are much weaker than LP-based bounds (0.826). The Lueker framework exploits the specific structure of the LCS recurrence, not just information content.",
+  "novel_direction": "A promising hybrid approach: combine the Bernoulli LPP ceiling (0.8284) with a rigorous coupling argument showing the correlation penalty is >= delta for some delta > 0. If delta > 0.002, this would improve on Lueker's 0.826280."
+}
