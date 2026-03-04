@@ -1,0 +1,297 @@
+{
+  "bottleneck": "Speculative Huffman decoding: breaking serial dependency chain in DEFLATE variable-length code decode by predicting next symbol boundaries before knowing previous symbol length",
+  "associations": [
+    {
+      "concept": "CPU branch prediction",
+      "connection": "CPUs face the same fundamental problem: they cannot know the outcome of a branch before executing it, yet must keep the pipeline full. They speculatively execute down the predicted path and roll back on misprediction. Huffman decoding faces an analogous pipeline stall: the next codeword boundary is unknown until the current codeword length is resolved."
+    },
+    {
+      "concept": "LLM speculative decoding",
+      "connection": "In LLM inference, a small draft model speculatively generates multiple tokens that a large verifier model checks in parallel. This is structurally identical to speculative Huffman: a cheap predictor guesses symbol boundaries, multiple symbols are decoded in parallel, and a verification step confirms or rejects. Papers like PEARL (ICLR 2025) and SpecExec show 2-5x speedups."
+    },
+    {
+      "concept": "GDeflate bit-swizzling (NVIDIA)",
+      "connection": "Rather than speculatively predicting boundaries, GDeflate reformats the DEFLATE bitstream at compression time into 32 interleaved sub-streams. Each SIMD lane processes one sub-stream independently, completely eliminating the serial dependency at the cost of requiring a modified bitstream format. This is the 'change the problem' approach rather than the 'solve the problem' approach."
+    },
+    {
+      "concept": "pugz/rapidgzip two-pass decompression",
+      "connection": "pugz splits the gzip file at speculated block boundaries and decompresses chunks in parallel with unknown 32KB contexts filled with unique tracking symbols. A second pass resolves back-references. The speculation is on block boundaries and LZ77 context, not Huffman codeword boundaries. Achieves 16.5x over gunzip with 32 threads."
+    },
+    {
+      "concept": "Self-synchronizing prefix codes",
+      "connection": "A self-synchronizing code has the property that if you start decoding at an arbitrary bit position, you will eventually re-synchronize to the correct codeword boundaries. Almost all complete binary prefix codes have a self-synchronizing string (IEEE 2003). The 'synchronization distance' determines how many bits you waste before converging."
+    },
+    {
+      "concept": "ANS interleaved entropy coders",
+      "connection": "Fabian Giesen (2014) showed that rANS coders can be interleaved into the same bitstream without metadata because encoder and decoder states are perfectly symmetric. Multiple ANS decoders running in parallel on interleaved streams achieve SIMD-friendly throughput. This sidesteps the Huffman serial dependency entirely by using a different coding scheme."
+    },
+    {
+      "concept": "Finite automaton state convergence",
+      "connection": "When starting Huffman decoding at an arbitrary bit offset, the decoder enters an unknown state in the code tree. For typical Huffman trees, after processing O(max_code_length) bits from any starting state, all possible decoder states converge to a small set. This is the automaton-theoretic basis for speculative parallel Huffman."
+    },
+    {
+      "concept": "Weissenberger-Schmidt parallel Huffman on GPUs",
+      "connection": "Their 2018 paper proposes starting Huffman decoding at every bit position in the compressed stream, then using a subsequence-matching phase to find which starting positions produce valid decodings that align with neighbors. This brute-force approach converts the serial problem into a massively parallel search with O(n) work but O(1) depth."
+    },
+    {
+      "concept": "Johnston-McCreath parallel Huffman algorithm",
+      "connection": "Their 2017 algorithm decodes from every position in the bit sequence, then concurrently combines valid partial decodings. They prove that for typical codes, speculative decodings from arbitrary offsets converge to the correct boundary within a bounded number of bits."
+    },
+    {
+      "concept": "Jang et al. speculative parallelization of VLC decompression",
+      "connection": "Their 2013 PLDI paper presents practical speculative parallelization specifically for variable-length decompression. They partition the bitstream, speculatively decode each partition from multiple possible starting states, then select the correct result based on boundary matching. Achieves near-linear speedup on multicores."
+    },
+    {
+      "concept": "FPGA/ASIC pipelined Huffman decoders",
+      "connection": "Hardware implementations often use multi-symbol decode per cycle by building lookup tables indexed by the next N bits. By reading ahead speculatively (e.g., 15 bits = max Huffman code length in DEFLATE), the decoder resolves one symbol per cycle. This is single-stream speculation at the hardware level."
+    },
+    {
+      "concept": "Speculative reconvergence in SIMT (GPU warps)",
+      "connection": "Damani et al.'s work on speculative reconvergence for SIMT efficiency is conceptually parallel: GPU threads that diverge at a branch point are expected to eventually reconverge. The hardware speculatively promotes convergence. Similarly, Huffman decoders starting at different offsets are expected to reconverge to correct boundaries."
+    },
+    {
+      "concept": "Table-driven multi-symbol Huffman decode",
+      "connection": "Cyan's FSE/huff0 decoder and zlib's inflate use large lookup tables to decode multiple symbols per table access. By fetching enough bits speculatively, you can sometimes resolve 2-3 short symbols in a single lookup, partially breaking the one-symbol-at-a-time serial chain."
+    }
+  ],
+  "forced_bridges": [
+    {
+      "from": "Speculative Huffman decoding",
+      "to": "Quantum error correction syndrome decoding",
+      "mechanism": "In quantum error correction, syndrome measurements are noisy and must be decoded in real-time to keep up with the quantum computer's cycle time. The decoder faces a serial dependency: each round of syndrome data depends on prior corrections. Speculative decoding techniques (Union-Find decoders, sliding-window approaches) predict corrections before full syndrome is available, exactly paralleling speculative Huffman boundary prediction. Both require rollback mechanisms and both benefit from the observation that local decisions are usually correct."
+    },
+    {
+      "from": "Speculative Huffman decoding",
+      "to": "GPS signal acquisition (code phase search)",
+      "mechanism": "GPS receivers must find the code phase of satellite signals by correlating against all possible offsets of a known PRN code. This is equivalent to trying all bit offsets for Huffman synchronization. Modern GPS uses FFT-based parallel correlation to test all offsets simultaneously, analogous to the Weissenberger-Schmidt approach of decoding from all positions in parallel on a GPU."
+    },
+    {
+      "from": "Speculative Huffman decoding",
+      "to": "Protein folding secondary structure prediction",
+      "mechanism": "In protein structure prediction, the 'folding' of later residues depends on the already-folded structure (serial dependency). AlphaFold breaks this by predicting the entire structure in parallel using learned attention over all residues simultaneously. A neural Huffman predictor could similarly learn to predict all codeword boundaries simultaneously from the raw bitstream, using a lightweight transformer-like architecture."
+    },
+    {
+      "from": "Speculative Huffman decoding",
+      "to": "Musical beat tracking in audio signals",
+      "mechanism": "Beat tracking must segment a continuous audio stream into discrete rhythmic units of variable length (like variable-length codes). The beat period is unknown and changes. Beat trackers use speculative multiple-hypothesis tracking with periodic re-synchronization. Applying multi-hypothesis Huffman decode (running K candidate decodings in parallel, each starting at different hypothesized boundaries) would directly leverage this technique."
+    },
+    {
+      "from": "Speculative Huffman decoding",
+      "to": "Optical character recognition line segmentation",
+      "mechanism": "OCR must segment a line of text into characters of varying widths before recognition. The width of each character is unknown until recognized, creating a serial dependency identical to Huffman symbol boundaries. Connectionist Temporal Classification (CTC) in neural OCR solves this by marginalizing over all possible segmentations in parallel. A CTC-like dynamic programming approach could marginalize over all possible Huffman symbol boundaries."
+    },
+    {
+      "from": "Speculative Huffman decoding",
+      "to": "Packet framing in network protocols",
+      "mechanism": "Network protocols face the same framing problem: variable-length packets in a byte stream require finding frame boundaries. HDLC uses bit-stuffing (a self-synchronizing delimiter), PPP uses escape sequences, and COBS uses deterministic encoding to guarantee synchronization. Designing a 'Huffman-friendly' variant of DEFLATE that embeds synchronization markers at regular intervals (like GDeflate's approach) directly imports this network framing wisdom."
+    },
+    {
+      "from": "Speculative Huffman decoding",
+      "to": "Speculative execution in out-of-order CPUs (Tomasulo's algorithm)",
+      "mechanism": "Tomasulo's algorithm renames registers and speculatively executes instructions out of order, committing results only when all prior instructions have committed (reorder buffer). A speculative Huffman decoder could similarly decode symbols out of order from speculated boundaries, placing results in a reorder buffer, and committing only when the preceding boundary is confirmed. Mispredicted boundaries trigger a re-decode from the correct offset."
+    },
+    {
+      "from": "Speculative Huffman decoding",
+      "to": "Epidemic contact tracing (chain of transmission)",
+      "mechanism": "In contact tracing, you want to parallelize the serial chain of infection detection. Forward tracing (predicting who will get infected next) is speculative and may be wrong. Backward tracing (finding the source) is analogous to validating speculative decode results. Both benefit from a 'fan-out then prune' approach where multiple hypotheses are explored in parallel and incorrect ones are discarded."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "Maximum Huffman code length equals 1 (all symbols same length)",
+      "result": "The serial dependency disappears entirely. If all codewords are the same length (fixed-length code), symbol boundaries are trivially predictable: boundary_n = n * code_length. Parallel decode becomes embarrassingly parallel. This is the degenerate case that GDeflate exploits for non-compressed blocks (fixed 8-bit codes). It suggests that constraining Huffman tree depth aggressively (e.g., to 8 bits) trades compression ratio for parallelizability."
+    },
+    {
+      "constraint": "Huffman code has only two distinct codeword lengths (e.g., 7 and 8 bits)",
+      "result": "The prediction problem becomes a binary classification. For each potential boundary, you only need to determine 'is this a 7-bit or 8-bit code?' This can be resolved with a 1-bit lookahead. Two-length codes are common in practice (DEFLATE static Huffman uses 7, 8, and 9 bit codes). Near-optimal parallel decode is achievable with very cheap speculation."
+    },
+    {
+      "constraint": "Input data is maximally incompressible (uniform random bytes)",
+      "result": "The Huffman tree becomes nearly balanced with all codewords close to 8 bits. This means boundaries are almost perfectly predictable (approximately every 8 bits). Speculation accuracy approaches 100%. Paradoxically, the worst case for compression is the best case for parallel decode, suggesting an inherent tension between compression ratio and decode parallelism."
+    },
+    {
+      "constraint": "Input data is maximally compressible (single repeated symbol)",
+      "result": "One symbol gets a 1-bit code, all others get very long codes. The bitstream is almost entirely 1-bit codes, making boundaries trivially predictable (every single bit). But if the data switches to a different pattern mid-stream, the predictor fails catastrophically. This shows that speculation accuracy depends on data stationarity."
+    },
+    {
+      "constraint": "Extreme latency constraint: must decode in exactly 1 cycle on an FPGA at 1GHz",
+      "result": "You have approximately 1ns. A single table lookup of 15 bits (max DEFLATE code length) can resolve one symbol in one cycle. But you cannot decode the NEXT symbol in the same cycle because its start position depends on the first symbol's length. Solution: build a 30-bit lookup table that decodes TWO symbols simultaneously. At 2^30 = 1 billion entries, this is impractical for general Huffman but feasible for the limited DEFLATE alphabet (288 literal/length codes). FPGA block RAM makes this viable."
+    },
+    {
+      "constraint": "Zero-tolerance for wasted work (no speculation allowed)",
+      "result": "Without speculation, you are limited to single-symbol-per-step sequential decode. The only parallelism available is across independent DEFLATE blocks or across independent streams (like GDeflate's 32 sub-streams). This is the current state of production decompressors like zlib. Throughput ceiling is approximately 500-800 MB/s on modern CPUs."
+    },
+    {
+      "constraint": "Adversarial input designed to maximize misprediction",
+      "result": "An adversary could craft a bitstream where codeword lengths alternate between 1 and 15 bits in an unpredictable pattern. Any fixed predictor would achieve near-0% accuracy. However, the Huffman tree structure constrains what patterns are possible: if one codeword is 1 bit, at most one other codeword can be 1 bit (binary tree property). Truly adversarial sequences are information-theoretically constrained by the code structure."
+    },
+    {
+      "constraint": "Decoder must handle arbitrary mid-stream Huffman table changes (dynamic blocks)",
+      "result": "DEFLATE allows different Huffman tables per block. A speculative decoder that crosses a block boundary will use the wrong table, producing garbage. Detection: the end-of-block symbol (256) signals table change. A multi-hypothesis decoder must include 'this might be an end-of-block' as one hypothesis. If block boundaries are frequent (small blocks), speculation windows must be short, reducing parallel benefit."
+    },
+    {
+      "constraint": "Memory bandwidth limited (embedded system with slow RAM)",
+      "result": "Speculation requires reading ahead in the bitstream and potentially re-reading on misprediction. If memory bandwidth is the bottleneck (not compute), speculation adds bandwidth pressure without benefit. On memory-limited systems, the optimal strategy flips: use compute to minimize memory access (e.g., deep decode tables in registers/cache, not wide parallel speculation)."
+    }
+  ],
+  "steering_directions": [
+    {
+      "direction": "Convergence-based parallel Huffman with bounded synchronization distance",
+      "rationale": "For any Huffman code tree, there exists a provable bound on how many bits a speculative decoder starting at an arbitrary offset must process before its state converges to the correct state. If this bound is small (e.g., 2x max code length = 30 bits for DEFLATE), then a parallel decoder can: (1) partition the bitstream into chunks, (2) decode each chunk starting from K=30 speculative offsets, (3) use boundary matching to select the correct offset. This leverages the Johnston-McCreath 2017 and Weissenberger-Schmidt 2018 results.",
+      "first_step": "Empirically measure the convergence distance for typical DEFLATE Huffman trees across a corpus of real-world compressed data (HTML, JSON, executables, images). Instrument a modified zlib to track how many bits after an arbitrary start offset a speculative decoder takes to produce output matching the reference decoder.",
+      "expected_signal": "For typical DEFLATE static Huffman codes (7-9 bit range), convergence should occur within 20-40 bits (2-4 symbols). For dynamic Huffman codes with extreme skew, convergence might take 60-90 bits. If convergence distance is under 128 bits consistently, a 128-byte chunk-based parallel decoder is practical."
+    },
+    {
+      "direction": "Compression-time reformatting (GDeflate-style sub-stream interleaving) as a pragmatic solution",
+      "rationale": "Instead of solving the hard problem of speculative decode, change the bitstream format at compression time to eliminate the serial dependency entirely. GDeflate (NVIDIA, 2024 IETF draft) splits the symbol stream into 32 sub-streams, one per SIMD lane, and interleaves their bits. Each sub-stream is independently decodable. This achieves massive GPU parallelism at zero decode-time speculation cost. The tradeoff is requiring a modified format.",
+      "first_step": "Implement a GDeflate-compatible compressor that takes standard DEFLATE and re-encodes into GDeflate format. Measure compression ratio delta and decode throughput on GPU vs. CPU for representative workloads. Determine if the format can be adopted for storage-bound use cases (e.g., compressed filesystem pages, texture compression).",
+      "expected_signal": "Compression ratio should be identical to DEFLATE (GDeflate is bit-for-bit equivalent modulo reordering). GPU decode throughput should be 10-50x higher than single-core CPU zlib. If adopted in DirectStorage/Vulkan pipelines, this becomes the dominant path for GPU-accessible compressed data."
+    },
+    {
+      "direction": "Neural codeword boundary predictor trained on bitstream statistics",
+      "rationale": "A small neural network (or even a statistical model) could predict codeword boundaries from local bit patterns. The Huffman table itself is available (it's in the DEFLATE block header), so the predictor has perfect knowledge of the code structure. Given the current 15-bit window, it can compute the probability distribution over possible codeword lengths. If the predictor is >90% accurate, speculation waste is <10%, and parallel speedup approaches the theoretical maximum.",
+      "first_step": "Build a dataset: for a large corpus of DEFLATE-compressed data, log each codeword's bit offset, length, and the surrounding 64-bit context. Train a lightweight model (decision tree or small lookup table) to predict next codeword length from the current Huffman table + the next 15 bits. Measure prediction accuracy.",
+      "expected_signal": "Given that DEFLATE Huffman codes are prefix-free and the table is known, the predictor should achieve >95% accuracy by simply doing a table lookup of the next 15 bits (which directly tells you the current symbol's length). The real challenge is predicting the NEXT symbol's length, which requires knowing the current symbol first. A 2-deep speculative table (30-bit lookup) should achieve >85% accuracy on the second symbol."
+    },
+    {
+      "direction": "Exploit LZ77 backreference structure for block-level parallelism",
+      "rationale": "The Huffman serial dependency is only part of the problem. Even if Huffman decode is parallelized, LZ77 backreferences create another serial dependency (output depends on previously decoded output). However, rapidgzip showed that the LZ77 context converges: undetermined characters decay exponentially with distance. A practical approach parallelizes at the DEFLATE block level, using pugz's two-pass technique, which sidesteps both the Huffman and LZ77 serial dependencies.",
+      "first_step": "Profile the overhead of pugz/rapidgzip's two-pass approach on diverse data types (not just DNA sequences). Measure: (1) block boundary detection time, (2) context resolution time, (3) scaling efficiency from 2 to 64 cores. Identify which component is the bottleneck.",
+      "expected_signal": "For well-structured data (text, structured binary), undetermined context characters should decay within 1-3 blocks (32-96 KB). For high-entropy data (encrypted, random), back-references are short and context converges fast. Block boundary detection (trying every bit offset) should take <100ms per boundary. Scaling should be near-linear up to the point where memory bandwidth saturates."
+    },
+    {
+      "direction": "Hybrid approach: fixed-length escape codes as synchronization markers in Huffman stream",
+      "rationale": "Borrow from network protocol framing: periodically insert a known synchronization pattern into the Huffman bitstream at compression time. This creates guaranteed 'safe start' points for parallel decoders at regular intervals. The synchronization markers act like DEFLATE block boundaries but at a finer granularity (e.g., every 256 or 1024 symbols). Compression overhead is minimal (a few bits per marker) but the parallelism gain is large.",
+      "first_step": "Design a DEFLATE-compatible extension that inserts end-of-block + new-block-header pairs at regular symbol intervals. Each new block uses the same Huffman table (via dynamic block headers that reference the same code). Measure the compression ratio overhead of frequent block splits (every 256 vs 1024 vs 4096 symbols).",
+      "expected_signal": "DEFLATE dynamic block headers are approximately 80-200 bits. At 1024-symbol intervals (roughly 8192 bits of compressed data), the overhead is ~1-2.5%. At 256-symbol intervals, overhead rises to ~4-10%. If the parallelism gain (e.g., 8x from 8 cores) exceeds the compression penalty, this is a net win for throughput-sensitive applications."
+    },
+    {
+      "direction": "Exploit SIMD bit-manipulation for multi-hypothesis speculative decode on CPU",
+      "rationale": "Modern x86 CPUs have AVX-512 with 512-bit registers. A single register can hold 32 different 16-bit speculative decode states. Use PEXT/PDEP/VPSHUFB to speculatively decode from multiple hypothesized bit offsets simultaneously within a single core. When one hypothesis is confirmed, the others are discarded. This brings GPU-style parallelism to CPU decode without requiring format changes.",
+      "first_step": "Prototype a SIMD Huffman decoder that maintains 8-16 speculative decode states in AVX-512 registers. Each state represents a different hypothesized bit offset. Use the known Huffman table to build a SIMD-friendly lookup. Benchmark against scalar zlib inflate.",
+      "expected_signal": "If 8 hypotheses can be evaluated per cycle vs. 1 in scalar code, and misprediction rate is <50%, effective throughput should be 4-6x higher. The key metric is whether the SIMD overhead (wider data path, more complex control) is offset by the hypothesis-parallelism gain. Target: >1.5 GB/s single-core decode throughput (vs. ~500 MB/s for optimized scalar)."
+    },
+    {
+      "direction": "Transfer ANS interleaving to Huffman: redesign the entropy coder for native parallelism",
+      "rationale": "ANS (Asymmetric Numeral Systems) by Jarek Duda has a unique property: encoder and decoder state are perfectly symmetric, allowing multiple ANS streams to be interleaved without metadata (Giesen 2014). This enables trivial SIMD parallelism. If DEFLATE were redesigned to use interleaved rANS instead of Huffman, the serial dependency would vanish. Facebook's Zstandard already uses FSE (a table-based ANS variant). The lesson: the serial dependency is not inherent to entropy coding, only to the specific choice of Huffman.",
+      "first_step": "Benchmark Zstandard's FSE decode throughput vs. DEFLATE Huffman decode throughput on identical data (same compression ratio). Measure per-core decode bandwidth. If FSE is significantly faster due to better parallelism, this validates the direction of moving away from Huffman for new formats.",
+      "expected_signal": "Zstandard decode should be 1.5-3x faster than zlib for comparable compression ratios, due to FSE's more SIMD-friendly structure and the ability to interleave streams. The Recoil paper (2023) demonstrates parallel rANS decoding with decoder-adaptive scalability. If the throughput advantage is confirmed, new compression formats should adopt ANS over Huffman."
+    }
+  ],
+  "validation_checks": [
+    {
+      "direction": "Convergence-based parallel Huffman",
+      "check": "Measure convergence distance across >1000 DEFLATE blocks from diverse data sources. Plot CDF of convergence distance. If 99th percentile convergence distance is under 128 bits, the approach is practical. If >10% of blocks require >256 bits, the approach has limited applicability.",
+      "falsification": "If convergence distance has heavy tails (some blocks never converge due to pathological Huffman tree structures or very skewed distributions), the approach fails for general-purpose use. Check specifically for cases where a single very short code (1-2 bits) dominates, as this maximizes decode ambiguity."
+    },
+    {
+      "direction": "GDeflate-style reformatting",
+      "check": "Verify compression ratio equivalence by round-tripping: compress with standard DEFLATE, convert to GDeflate, convert back, check byte-for-byte equivalence. Measure GPU decode throughput using NVIDIA nvcomp library's GDeflate implementation. Compare against cuGzip (if available) and CPU zlib.",
+      "falsification": "If GDeflate format adds >1% compression ratio overhead for any data type, or if the GPU decode throughput is not at least 5x faster than single-core CPU decode, the format change is not justified. Also check that conversion from standard DEFLATE to GDeflate can be done without full re-compression (i.e., only bit reordering, not re-running LZ77)."
+    },
+    {
+      "direction": "Neural codeword boundary predictor",
+      "check": "Implement the predictor and measure: (1) prediction accuracy for next-codeword-length given current 15-bit window and Huffman table, (2) amortized prediction cost (cycles per prediction), (3) end-to-end decode throughput including misprediction recovery. The predictor must be faster than the serial decode it replaces.",
+      "falsification": "If prediction accuracy is below 80% (meaning >20% misprediction requiring rollback), the speculation overhead exceeds the parallelism benefit. If the predictor itself costs more than 2-3 cycles per symbol (e.g., due to table lookup latency), it becomes the new bottleneck. The predictor is useful only if accuracy * parallelism_factor > 1 + misprediction_penalty."
+    },
+    {
+      "direction": "Block-level parallelism (pugz/rapidgzip approach)",
+      "check": "Test on 100+ diverse gzip files covering text, binary, images, databases. Measure: (1) block boundary detection success rate, (2) context convergence distance by data type, (3) scaling from 1 to 64 cores. Compare wall-clock decompression time against pigz (parallel compress, serial decompress) and standard gunzip.",
+      "falsification": "If block boundary detection fails on >5% of non-ASCII files, or if context convergence requires >1MB of decompression for high-entropy data, the approach cannot replace general-purpose gunzip. Also check memory overhead: pugz requires holding the entire decompressed output in memory for the second pass, which may be prohibitive for very large files."
+    },
+    {
+      "direction": "Fixed-length synchronization markers",
+      "check": "Implement a modified DEFLATE compressor that inserts block boundaries at configurable intervals. Measure compression ratio vs. standard DEFLATE across 10 data types. Measure parallel decode speedup (linear scaling expected up to block_count cores). Verify decompressed output matches original byte-for-byte.",
+      "falsification": "If compression ratio degradation exceeds 5% at any practical marker frequency, the approach loses competitiveness against better compressors (zstd, lz4). If block header overhead dominates at small intervals (<256 symbols), the approach is only viable for coarse-grained parallelism where block-level splitting already works."
+    },
+    {
+      "direction": "SIMD multi-hypothesis speculative decode on CPU",
+      "check": "Implement AVX-512 prototype. Measure: (1) hypothesis-parallel decode throughput in MB/s, (2) SIMD utilization (what fraction of lanes produce useful work vs. wasted speculation), (3) comparison against scalar optimized decode (e.g., libdeflate). Must beat scalar by >2x to justify complexity.",
+      "falsification": "If SIMD register pressure forces frequent spills to memory, the throughput advantage evaporates. If hypothesis convergence requires too many iterations (>4-5 rounds) before one hypothesis is confirmed, the effective parallelism is too low. If the Huffman table lookup becomes the bottleneck (cache misses on wide tables), SIMD width doesn't help."
+    },
+    {
+      "direction": "ANS/FSE as Huffman replacement",
+      "check": "Benchmark zstd vs. zlib on the same corpus at matched compression ratios. Isolate the entropy coding stage throughput (subtract LZ77 parsing time). Compare FSE decode throughput to Huffman decode throughput. Measure benefit of interleaved FSE streams (2, 4, 8 interleaved).",
+      "falsification": "If FSE decode throughput is not measurably faster than optimized table-based Huffman decode (e.g., huff0), the benefit of ANS is in compression ratio, not parallelism. If interleaving 4+ streams adds more overhead than benefit (due to increased state tracking), the approach plateaus quickly. Note: this direction requires new format adoption and cannot help with existing DEFLATE data."
+    }
+  ],
+  "meta": {
+    "probe_date": "2026-03-04",
+    "key_references": [
+      {
+        "title": "Massively Parallel Huffman Decoding on GPUs",
+        "authors": "Weissenberger, Schmidt",
+        "year": 2018,
+        "venue": "ICS",
+        "key_insight": "Decode from every bit position in parallel on GPU, then use subsequence matching to identify correct boundaries"
+      },
+      {
+        "title": "Parallel Huffman Decoding: Presenting a Fast and Scalable Algorithm for Increasingly Multicore Devices",
+        "authors": "Johnston, McCreath",
+        "year": 2017,
+        "venue": "IEEE",
+        "key_insight": "Speculative decodings from arbitrary offsets converge to correct boundaries within bounded bits"
+      },
+      {
+        "title": "Practical Speculative Parallelization of Variable-Length Decompression Algorithms",
+        "authors": "Jang, Kim, Lee",
+        "year": 2013,
+        "venue": "PLDI (ACM SIGPLAN Notices)",
+        "key_insight": "Multi-start-state speculation with boundary matching achieves near-linear speedup"
+      },
+      {
+        "title": "GDEFLATE bitstream specification",
+        "authors": "Uralsky (NVIDIA)",
+        "year": 2024,
+        "venue": "IETF Internet-Draft",
+        "key_insight": "Reformatting DEFLATE into 32 SIMD-friendly sub-streams eliminates serial dependency at compression time"
+      },
+      {
+        "title": "Parallel decompression of gzip-compressed files (pugz)",
+        "authors": "Kerbiriou, Chikhi",
+        "year": 2019,
+        "venue": "IPDPSW",
+        "key_insight": "Two-pass decompression with unique tracking symbols resolves LZ77 context dependencies in parallel; 16.5x speedup with 32 threads"
+      },
+      {
+        "title": "Rapidgzip: Parallel Decompression and Seeking in Gzip Files Using Cache Prefetching",
+        "authors": "Knespel, Brunst",
+        "year": 2023,
+        "venue": "HPDC",
+        "key_insight": "Generalizes pugz to arbitrary gzip files (not just ASCII) using cache prefetching for speculative block boundary detection"
+      },
+      {
+        "title": "Interleaved entropy coders",
+        "authors": "Giesen (Fabian)",
+        "year": 2014,
+        "venue": "arXiv",
+        "key_insight": "ANS encoder/decoder state symmetry allows interleaving multiple streams without metadata, enabling SIMD-parallel entropy coding"
+      },
+      {
+        "title": "Recoil: Parallel rANS Decoding with Decoder-Adaptive Scalability",
+        "authors": "Lin, Arunruangsirilert, Sun, Katto",
+        "year": 2023,
+        "venue": "arXiv",
+        "key_insight": "Adaptive parallelism for rANS decoding that scales with available decoder resources"
+      },
+      {
+        "title": "Revisiting Huffman Coding: Toward Extreme Performance on Modern GPU Architectures",
+        "authors": "Tian, Rivera, Di, Chen, Liang, Tao, Cappello",
+        "year": 2020,
+        "venue": "arXiv",
+        "key_insight": "Optimized GPU Huffman for HPC data compression achieving extreme throughput via architectural tuning"
+      },
+      {
+        "title": "Almost all complete binary prefix codes have a self-synchronizing string",
+        "authors": "Various",
+        "year": 2003,
+        "venue": "IEEE Trans. Information Theory",
+        "key_insight": "Theoretical foundation: almost all Huffman codes will self-synchronize, guaranteeing that speculative decoders converge"
+      }
+    ],
+    "core_insight": "The serial dependency in Huffman decoding is NOT fundamental to entropy coding -- it is an artifact of the specific prefix-code design. Three classes of solutions exist: (1) Speculate-and-verify at decode time (convergence-based parallel decode, multi-hypothesis SIMD), (2) Eliminate the dependency at compression time (GDeflate sub-stream interleaving, synchronization markers), (3) Replace the coding scheme entirely (ANS/FSE interleaved streams). The optimal choice depends on whether you control the compression format. For legacy DEFLATE data, approach (1) is the only option. For new formats, approach (2) or (3) are strictly superior.",
+    "starflate_lesson": "The starflate project (garymm/starflate) attempted GPU DEFLATE decompression in C++23 and concluded 'there is no way to efficiently parallelize it.' This reflects the fundamental hardness of approach (1) for arbitrary DEFLATE data. The GDeflate approach (2) succeeds precisely because it changes the problem rather than solving it."
+  },
+  "sub_problem": "speculative Huffman decoding: breaking serial dependency chain in DEFLATE variable-length code decode by predicting next symbol boundaries before knowing previous symbol length",
+  "timestamp": "2026-03-04T06:29:33.478689+00:00"
+}

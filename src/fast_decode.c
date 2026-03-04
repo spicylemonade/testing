@@ -608,6 +608,11 @@ int fd_inflate_fast(const uint8_t *src, size_t src_len,
             if ((len ^ nlen) != 0xFFFF) return FD_ERROR_BAD_DATA;
             if (out_pos + len > dst_len) return FD_ERROR_SHORT_BUF;
 
+            /*
+             * Copy stored block data. Bytes may be in the bit buffer
+             * (from a prior refill) or in the byte stream at br.ptr.
+             * Drain from bit buffer first, then copy from byte stream.
+             */
             while (br.nbits >= 8 && len > 0) {
                 dst[out_pos++] = (uint8_t)(br.bits & 0xFF);
                 br.bits >>= 8;
@@ -619,9 +624,14 @@ int fd_inflate_fast(const uint8_t *src, size_t src_len,
                 memcpy(dst + out_pos, br.ptr, len);
                 br.ptr += len;
                 out_pos += len;
+                /* After direct byte copy, the bit buffer may contain stale
+                 * bits from a refill that loaded bytes now behind br.ptr.
+                 * Reset the bit buffer so next refill starts fresh. */
+                br.bits = 0;
+                br.nbits = 0;
             }
-            br.bits = 0;
-            br.nbits = 0;
+            /* If len was 0 or fully drained from bit buffer, don't reset —
+             * the bit buffer may contain valid bits from the next block. */
             continue;
         }
 
