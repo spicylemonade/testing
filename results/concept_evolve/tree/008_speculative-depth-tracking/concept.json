@@ -1,0 +1,25 @@
+{
+  "id": 8,
+  "symbolic_name": "speculative_depth_tracking",
+  "description": "Track JSON nesting depth speculatively across parallel chunks by assuming each chunk starts at depth 0, then reconciling depths at chunk boundaries in a parallel prefix-sum. This transforms the sequential depth-tracking dependency into a parallel-prefix operation, borrowing from parallel scan algorithms in GPU computing and from simdjson's own insight that structural characters encode depth changes as +1/-1 increments.",
+  "domains": [
+    "parallel algorithms / prefix-sum",
+    "GPU computing / parallel scan",
+    "compiler optimization / dependence breaking"
+  ],
+  "mathematical_formalization": "For each chunk C_i, compute delta_depth(C_i) = count('{','[' in C_i) - count('}',']' in C_i) and min_relative_depth(C_i) = min over prefixes of C_i of relative_depth. Parallel prefix-sum over delta_depth gives absolute depth at each chunk boundary: D_i = sum_{j<i} delta_depth(C_j). Validation: D_i + min_relative_depth(C_i) >= 0 for all i (no underflow). Total parallel depth computation: O(n/P + log(P)) for P processors.",
+  "analogical_connections": [
+    "Blelloch's parallel prefix-sum: the foundational parallel algorithm; depth tracking is a direct application with (+) as the associative operator",
+    "XML depth tracking in parallel SAX parsers: same problem structure with different syntax",
+    "Pison (Jiang et al. 2020): demonstrated intra-record parallelism for structural index construction with depth awareness"
+  ],
+  "implementation_hypothesis": "In the speculative structural indexing phase, alongside building structural bitmaps, compute per-chunk metadata: (delta_depth, min_depth, max_depth). Use AVX-512 VPOPCNTDQ to count opening/closing brackets in the structural bitmap. Run a work-efficient parallel prefix-sum (Hillis-Steele or Blelloch) over the chunk metadata array. The prefix-sum output gives absolute depth at every chunk boundary. For skip_value() in on-demand parsing, use the precomputed depth map to binary-search for the matching close bracket.",
+  "experiment_seed": "Implement parallel depth tracking on the structural index and benchmark against sequential depth tracking in simdjson. Measure: (1) latency for depth computation as a function of input size, (2) parallel speedup with 2/4/8/16 threads, (3) accuracy of binary-search skip_value() vs. linear scan. Test on deeply nested vs. flat JSON to characterize best/worst cases.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.915789+00:00",
+  "project_folder": "concept_evolve/tree/008_speculative-depth-tracking"
+}

@@ -1,0 +1,15 @@
+{
+  "id": 6,
+  "symbolic_name": "bitwise_structural_index_cascade",
+  "description": "Cascade bitwise operations to build a complete structural index in a single pass using only bitwise primitives: XOR for string-state tracking, carry-less multiplication for prefix operations, AND/OR for structural character classification, and popcount + prefix-sum for position computation. Creates an 'index cascade' where each operation's output feeds the next, all operating on 64-bit bitmaps corresponding to 64 input bytes.",
+  "domains": ["digital circuit design / combinational logic", "SIMD parallel algorithms / bit-parallel techniques", "coding theory / prefix codes"],
+  "mathematical_formalization": "For 64 input bytes, define bitmaps: Q = quote_bitmap, B = backslash_bitmap, S = structural_char_bitmap. Escaped quotes: E = B & (Q >> 1). String regions: R = prefix_xor(Q & ~E). Structural indices: I = S & ~R. Positions: P[i] = prefix_popcount(I). Total: ~12 instructions for 64 bytes = 0.1875 instructions/byte.",
+  "analogical_connections": [
+    "Hardware adder carry chains: prefix-XOR for string state analogous to carry-lookahead",
+    "Mison structural indices: converting control flow to data flow",
+    "FPGA bitstream processing: combinational logic cascades for pattern matching"
+  ],
+  "implementation_hypothesis": "Implement using AVX-512: vpcmpeqb for detection, vpclmulqdq for prefix-xor, KAND for masking, popcnt for positions. All intermediates in registers. Process 64 bytes per iteration with no memory stores until final position array.",
+  "experiment_seed": "Count instructions per byte via perf. Build standalone structural indexer. Profile with VTune for zero cache pollution. Target: <0.25 instructions/byte.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

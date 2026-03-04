@@ -1,0 +1,15 @@
+{
+  "id": 12,
+  "symbolic_name": "simd_gather_scatter_token_routing",
+  "description": "Use AVX-512 gather/scatter instructions to implement a 'token router' that reads tokens from scattered input positions and writes parsed results to scattered output positions in a single vectorized operation. Eliminates the sequential pointer-chasing of one-at-a-time structural index traversal by processing 8-16 entries in parallel.",
+  "domains": ["SIMD architecture / gather-scatter", "network switching / packet routing", "database systems / vectorized execution"],
+  "mathematical_formalization": "Structural index entries P[0..15]. VPGATHERDQ loads 8-byte values at each position: V[i] = input[P[i]..P[i]+7]. Classify in parallel: class[i] = lookup[V[i][0]]. VPSCATTERDQ stores results. Total: 3 instructions for 16 tokens vs. ~80 scalar instructions. Speedup: ~26x for token classification.",
+  "analogical_connections": [
+    "Network packet routing: packets arrive/depart at scattered ports",
+    "Vectorized database execution (MonetDB/X100): process column batches through vectorized primitives",
+    "Ko et al. speculative DFA: SIMD gather for indexed memory loads in vectorized DFA matching"
+  ],
+  "implementation_hypothesis": "Load 16 structural index entries into zmm. VPGATHERDQ loads first 8 bytes at each position. Classify via VPSHUFB on first byte. For number/boolean/null tokens, attempt SIMD inline parsing. For strings, record start positions. Scatter results to columnar output. Process in batches of 16.",
+  "experiment_seed": "Benchmark gather-scatter token router vs. sequential traversal. Measure tokens/second, gather latency vs. sequential loads, efficiency on different JSON shapes. Test on 1M-integer JSON array. Target: >2x throughput for value-dense JSON.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

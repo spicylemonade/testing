@@ -1,0 +1,15 @@
+{
+  "id": 3,
+  "symbolic_name": "vbmi2_compress_expand_parsing",
+  "description": "Exploit AVX-512 VBMI2's VPCOMPRESSB/VPEXPANDB instructions to implement zero-copy token extraction. Instead of copying matched tokens to a separate buffer, use VPCOMPRESSB with a mask to densely pack only structural characters or only string content directly from the input register, enabling branchless extraction of variable-length fields without memory allocation or data movement.",
+  "domains": ["ISA design / AVX-512 VBMI2", "data parsing / token extraction", "database systems / columnar compression"],
+  "mathematical_formalization": "Given input register R[0..63] and mask M identifying relevant bytes, VPCOMPRESSB(R, M) produces R'[0..popcount(M)-1] in a single instruction. Traditional extraction: O(popcount(M)) scalar stores. VPCOMPRESSB: O(1) instruction, O(popcount(M)/64) stores. Speedup ~ 64 for sparse structural characters.",
+  "analogical_connections": [
+    "Column-store compression (BitWeaving): bit-parallel operations on compressed data in-place",
+    "FPGA stream processing: hardware-level compress/expand native to stream architectures",
+    "SingleStore VBMI2 usage: demonstrated compress/expand for high-throughput byte shuffling in database operations"
+  ],
+  "implementation_hypothesis": "In structural indexing, after identifying structural characters via SIMD comparison, use VPCOMPRESSB to extract only structural bytes into a dense buffer. For string extraction during on-demand parsing, use VPCOMPRESSB with inverted mask to pack string content. For Unicode escape handling, use VPEXPANDB to scatter decoded codepoints.",
+  "experiment_seed": "Implement token extraction microbenchmarks comparing scalar loop, VPCOMPRESSB-based, and PSHUFB-based extraction. Measure on Ice Lake / Sapphire Rapids with varying token densities (1%, 5%, 25%).",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

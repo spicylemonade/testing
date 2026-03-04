@@ -1,0 +1,25 @@
+{
+  "id": 3,
+  "symbolic_name": "vbmi2_compress_expand_parsing",
+  "description": "Exploit AVX-512 VBMI2's VPCOMPRESSB/VPEXPANDB instructions to implement zero-copy token extraction. Instead of copying matched tokens to a separate buffer, use VPCOMPRESSB with a mask to densely pack only structural characters or only string content directly from the input register, enabling branchless extraction of variable-length fields without memory allocation or data movement.",
+  "domains": [
+    "ISA design / AVX-512 VBMI2",
+    "data parsing / token extraction",
+    "database systems / columnar compression"
+  ],
+  "mathematical_formalization": "Given input register R[0..63] and mask M identifying relevant bytes, VPCOMPRESSB(R, M) produces R'[0..popcount(M)-1] in a single instruction. Traditional extraction: O(popcount(M)) scalar stores. VPCOMPRESSB: O(1) instruction, O(popcount(M)/64) stores. Speedup for token extraction: S = popcount(M) / ceil(popcount(M)/64) ~ 64 for sparse structural characters.",
+  "analogical_connections": [
+    "Column-store compression (BitWeaving): use bit-parallel operations to process compressed data in-place without decompression",
+    "FPGA stream processing: hardware-level compress/expand operations are native to stream architectures",
+    "SingleStore VBMI2 usage (Krassovsky 2021): demonstrated VBMI2 compress/expand for high-throughput byte shuffling in database operations"
+  ],
+  "implementation_hypothesis": "In the structural indexing phase, after identifying structural characters via SIMD comparison, use VPCOMPRESSB to extract only the structural bytes into a dense buffer. Simultaneously use kmov to store the corresponding positions. For string extraction during on-demand parsing, use VPCOMPRESSB with the 'not-in-string' inverted mask to pack string content. For Unicode escape handling, use VPEXPANDB to scatter decoded codepoints back to their correct positions.",
+  "experiment_seed": "Implement token extraction microbenchmarks comparing: (1) scalar loop with conditional stores, (2) VPCOMPRESSB-based extraction, (3) PSHUFB-based extraction. Measure on Ice Lake / Sapphire Rapids. Metrics: throughput (bytes/cycle), instruction count, port utilization. Test with varying token densities (1%, 5%, 25% structural characters).",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.911734+00:00",
+  "project_folder": "concept_evolve/tree/003_vbmi2-compress-expand-parsing"
+}

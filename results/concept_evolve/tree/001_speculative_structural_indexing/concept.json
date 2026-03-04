@@ -1,0 +1,15 @@
+{
+  "id": 1,
+  "symbolic_name": "speculative_structural_indexing",
+  "description": "Apply CPU-style speculative execution to JSON structural indexing: partition the input into chunks, speculatively assume all chunks start in the 'outside-string' state, build per-chunk structural bitmaps in parallel, then fixup the few chunks where the speculation was wrong. This converts the sequential string-state dependency into a speculative parallel operation analogous to how CPUs handle branch prediction in pipelines.",
+  "domains": ["CPU architecture / speculative execution", "SIMD data parsing", "compiler theory / speculative parallelization"],
+  "mathematical_formalization": "Let S = s_1 s_2 ... s_n be the input partitioned into k chunks C_i of size n/k. For each C_i, speculatively compute structural_bitmap(C_i | state_guess = OUTSIDE_STRING). Define convergence probability P_conv = Pr[actual_state(C_i) = state_guess] ~ 1 - (avg_string_density). Amortized cost = O(n/k) per core + O(k * (1 - P_conv) * n/k) fixup. When P_conv > 1 - 1/k, speculation yields net speedup S = k / (1 + k*(1-P_conv)).",
+  "analogical_connections": [
+    "CPU branch prediction: guess the taken/not-taken path and roll back on misprediction",
+    "Speculative parallel DFA (Ko et al. 2012): partition input for parallel DFA matching with failure-free speculation",
+    "GPU warp divergence: speculative structural indexing reduces 'parsing divergence' across parallel lanes"
+  ],
+  "implementation_hypothesis": "Split input into 64KB chunks aligned to cache lines. For each chunk, run simdjson's Stage 1 assuming the chunk starts outside a string. After all chunks complete, scan the string-toggle parity bits at chunk boundaries. For any chunk where the string parity was wrong, re-run its Stage 1 with the corrected initial state. Use AVX-512 vpternlog to merge the speculative bitmaps. Expected re-run rate < 5% for typical JSON.",
+  "experiment_seed": "Benchmark against baseline simdjson on twitter.json, citm_catalog.json, and synthetic deeply-nested JSON. Measure structural indexing throughput in GB/s, speculation miss rate, and scaling with 2/4/8 parallel chunks.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

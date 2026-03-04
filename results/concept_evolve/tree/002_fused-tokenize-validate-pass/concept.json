@@ -1,0 +1,25 @@
+{
+  "id": 2,
+  "symbolic_name": "fused_tokenize_validate_pass",
+  "description": "Fuse tokenization, UTF-8 validation, structural character identification, and string-escape processing into a single SIMD pass over the data, eliminating the multi-pass architecture of simdjson's Stage 1. Analogous to kernel fusion in GPU computing, where multiple operations are combined into a single kernel to reduce memory bandwidth pressure and exploit register-level data reuse.",
+  "domains": [
+    "GPU kernel fusion",
+    "SIMD data parsing",
+    "compiler optimization / loop fusion"
+  ],
+  "mathematical_formalization": "Given operations T (tokenize), V (validate), I (index), E (escape-process), the multi-pass cost is C_multi = 4 * n * (1/BW_cache). The fused cost is C_fused = n * (1/BW_mem) + 4 * n * (1/BW_reg). Since BW_reg >> BW_cache >> BW_mem, the ratio C_fused/C_multi ~ BW_cache / (BW_mem + 4*BW_cache * BW_mem/BW_reg) << 1 for register-rich architectures like AVX-512 (32 zmm registers).",
+  "analogical_connections": [
+    "GPU kernel fusion (Qiao et al. 2019): fuse loop nests to keep intermediate results in shared memory/registers instead of going to global memory",
+    "CPU superscalar execution: out-of-order cores already interleave independent micro-ops; fused-pass makes this explicit at the algorithm level",
+    "Database query operator fusion: push-based query execution (like Hyper/Umbra) fuses operators to avoid materializing intermediate results"
+  ],
+  "implementation_hypothesis": "Process 64 bytes per iteration using a single zmm register load. In the same iteration: (1) compare bytes against structural chars ({, }, [, ], :, ,) to produce structural_bitmap via vpcmpeqb + vpternlog, (2) check for backslash-quote sequences for escape handling, (3) validate UTF-8 continuation bytes via vpshufb lookup table, (4) track string state via running prefix-xor on quote bits (vpclmulqdq). All four operations use independent register sets. Output: a unified structural index + validation flag per 64-byte block.",
+  "experiment_seed": "Implement a fused Stage 1 in C++ with AVX-512 intrinsics. Compare against simdjson's existing separate-pass Stage 1. Measure: (1) instructions retired per byte, (2) cache misses per byte, (3) throughput in GB/s. Use hardware perf counters (perf stat). Target: >30% throughput improvement, >50% reduction in L1 cache misses.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.910834+00:00",
+  "project_folder": "concept_evolve/tree/002_fused-tokenize-validate-pass"
+}

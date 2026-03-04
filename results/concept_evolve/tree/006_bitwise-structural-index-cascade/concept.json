@@ -1,0 +1,25 @@
+{
+  "id": 6,
+  "symbolic_name": "bitwise_structural_index_cascade",
+  "description": "Cascade bitwise operations to build a complete structural index in a single pass using only bitwise primitives: XOR for string-state tracking, carry-less multiplication for prefix operations, AND/OR for structural character classification, and popcount + prefix-sum for position computation. This creates an 'index cascade' where each operation's output feeds the next, all operating on 64-bit bitmaps that correspond to 64 input bytes.",
+  "domains": [
+    "digital circuit design / combinational logic",
+    "SIMD parallel algorithms / bit-parallel techniques",
+    "coding theory / prefix codes"
+  ],
+  "mathematical_formalization": "For 64 input bytes, define bitmaps: Q = quote_bitmap, B = backslash_bitmap, S = structural_char_bitmap. Compute escaped quotes: E = B & (Q >> 1), accounting for \\\\\" sequences via carry-less multiply. String regions: R = prefix_xor(Q & ~E). Structural indices: I = S & ~R. Positions: P[i] = prefix_popcount(I)[0..i]. The entire cascade: Load(64B) -> 3 comparisons -> 2 bitwise ops -> 1 clmul -> 1 AND -> 1 popcount-prefix. Total: ~12 instructions for 64 bytes = 0.1875 instructions/byte.",
+  "analogical_connections": [
+    "Hardware adder carry chains: prefix-XOR for string state is analogous to carry-lookahead in adders",
+    "Mison (Li et al. 2017): introduced structural indices for JSON, converting control flow to data flow",
+    "FPGA bitstream processing: hardware implementations process structural patterns as combinational logic cascades"
+  ],
+  "implementation_hypothesis": "Implement the cascade using AVX-512 intrinsics in a tight loop: (1) _mm512_cmpeq_epi8_mask for structural char detection, (2) _mm512_cmpeq_epi8_mask for quote detection, (3) _mm_clmulqdq_si128 for prefix-xor of quote bits, (4) KAND for masking structural chars outside strings, (5) _mm_popcnt_u64 + prefix sum for position array. Keep all intermediates in registers. Process 64 bytes per iteration with no memory stores until the final position array.",
+  "experiment_seed": "Count instructions per byte via perf and compare against simdjson Stage 1. Build a standalone structural indexer that outputs only the position array. Profile with VTune to verify zero cache pollution from intermediate bitmaps. Target: <0.25 instructions/byte for structural index construction.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.914208+00:00",
+  "project_folder": "concept_evolve/tree/006_bitwise-structural-index-cascade"
+}

@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "symbolic_name": "speculative_structural_indexing",
+    "description": "Apply CPU-style speculative execution to JSON structural indexing: partition the input into chunks, speculatively assume all chunks start in the 'outside-string' state, build per-chunk structural bitmaps in parallel, then fixup the few chunks where the speculation was wrong. This converts the sequential string-state dependency into a speculative parallel operation analogous to how CPUs handle branch prediction in pipelines.",
+    "domains": ["CPU architecture / speculative execution", "SIMD data parsing", "compiler theory / speculative parallelization"],
+    "mathematical_formalization": "Let S = s_1 s_2 ... s_n be the input partitioned into k chunks C_i of size n/k. For each C_i, speculatively compute structural_bitmap(C_i | state_guess = OUTSIDE_STRING). Define convergence probability P_conv = Pr[actual_state(C_i) = state_guess] ~ 1 - (avg_string_density). Amortized cost = O(n/k) per core + O(k * (1 - P_conv) * n/k) fixup. When P_conv > 1 - 1/k, speculation yields net speedup S = k / (1 + k*(1-P_conv)).",
+    "analogical_connections": [
+      "CPU branch prediction: guess the taken/not-taken path and roll back on misprediction; here guess the string state and fixup on mis-speculation",
+      "Speculative parallel DFA (Ko et al. 2012): partition input for parallel DFA matching with failure-free speculation exploiting DFA state convergence",
+      "GPU warp divergence: speculative structural indexing reduces the equivalent of 'parsing divergence' across parallel lanes"
+    ],
+    "implementation_hypothesis": "Split input into 64KB chunks aligned to cache lines. For each chunk, run simdjson's Stage 1 (structural character classification + string detection via SIMD) assuming the chunk starts outside a string. After all chunks complete, scan the string-toggle parity bits at chunk boundaries. For any chunk where the string parity was wrong, re-run its Stage 1 with the corrected initial state. Use AVX-512 vpternlog to merge the speculative bitmaps. Expected re-run rate < 5% for typical JSON.",
+    "experiment_seed": "Benchmark against baseline simdjson on twitter.json (630KB), citm_catalog.json (1.7MB), and a synthetic deeply-nested JSON. Measure: (1) structural indexing throughput in GB/s, (2) speculation miss rate, (3) scaling with 2/4/8 parallel chunks on a multi-core machine. Success criterion: >1.5x speedup on structural indexing phase for inputs > 256KB.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 2,
+    "symbolic_name": "fused_tokenize_validate_pass",
+    "description": "Fuse tokenization, UTF-8 validation, structural character identification, and string-escape processing into a single SIMD pass over the data, eliminating the multi-pass architecture of simdjson's Stage 1. Analogous to kernel fusion in GPU computing, where multiple operations are combined into a single kernel to reduce memory bandwidth pressure and exploit register-level data reuse.",
+    "domains": ["GPU kernel fusion", "SIMD data parsing", "compiler optimization / loop fusion"],
+    "mathematical_formalization": "Given operations T (tokenize), V (validate), I (index), E (escape-process), the multi-pass cost is C_multi = 4 * n * (1/BW_cache). The fused cost is C_fused = n * (1/BW_mem) + 4 * n * (1/BW_reg). Since BW_reg >> BW_cache >> BW_mem, the ratio C_fused/C_multi ~ BW_cache / (BW_mem + 4*BW_cache * BW_mem/BW_reg) << 1 for register-rich architectures like AVX-512 (32 zmm registers).",
+    "analogical_connections": [
+      "GPU kernel fusion (Qiao et al. 2019): fuse loop nests to keep intermediate results in shared memory/registers instead of going to global memory",
+      "CPU superscalar execution: out-of-order cores already interleave independent micro-ops; fused-pass makes this explicit at the algorithm level",
+      "Database query operator fusion: push-based query execution (like Hyper/Umbra) fuses operators to avoid materializing intermediate results"
+    ],
+    "implementation_hypothesis": "Process 64 bytes per iteration using a single zmm register load. In the same iteration: (1) compare bytes against structural chars ({, }, [, ], :, ,) to produce structural_bitmap via vpcmpeqb + vpternlog, (2) check for backslash-quote sequences for escape handling, (3) validate UTF-8 continuation bytes via vpshufb lookup table, (4) track string state via running prefix-xor on quote bits (vpclmulqdq). All four operations use independent register sets. Output: a unified structural index + validation flag per 64-byte block.",
+    "experiment_seed": "Implement a fused Stage 1 in C++ with AVX-512 intrinsics. Compare against simdjson's existing separate-pass Stage 1. Measure: (1) instructions retired per byte, (2) cache misses per byte, (3) throughput in GB/s. Use hardware perf counters (perf stat). Target: >30% throughput improvement, >50% reduction in L1 cache misses.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 3,
+    "symbolic_name": "vbmi2_compress_expand_parsing",
+    "description": "Exploit AVX-512 VBMI2's VPCOMPRESSB/VPEXPANDB instructions to implement zero-copy token extraction. Instead of copying matched tokens to a separate buffer, use VPCOMPRESSB with a mask to densely pack only structural characters or only string content directly from the input register, enabling branchless extraction of variable-length fields without memory allocation or data movement.",
+    "domains": ["ISA design / AVX-512 VBMI2", "data parsing / token extraction", "database systems / columnar compression"],
+    "mathematical_formalization": "Given input register R[0..63] and mask M identifying relevant bytes, VPCOMPRESSB(R, M) produces R'[0..popcount(M)-1] in a single instruction. Traditional extraction: O(popcount(M)) scalar stores. VPCOMPRESSB: O(1) instruction, O(popcount(M)/64) stores. Speedup for token extraction: S = popcount(M) / ceil(popcount(M)/64) ~ 64 for sparse structural characters.",
+    "analogical_connections": [
+      "Column-store compression (BitWeaving): use bit-parallel operations to process compressed data in-place without decompression",
+      "FPGA stream processing: hardware-level compress/expand operations are native to stream architectures",
+      "SingleStore VBMI2 usage (Krassovsky 2021): demonstrated VBMI2 compress/expand for high-throughput byte shuffling in database operations"
+    ],
+    "implementation_hypothesis": "In the structural indexing phase, after identifying structural characters via SIMD comparison, use VPCOMPRESSB to extract only the structural bytes into a dense buffer. Simultaneously use kmov to store the corresponding positions. For string extraction during on-demand parsing, use VPCOMPRESSB with the 'not-in-string' inverted mask to pack string content. For Unicode escape handling, use VPEXPANDB to scatter decoded codepoints back to their correct positions.",
+    "experiment_seed": "Implement token extraction microbenchmarks comparing: (1) scalar loop with conditional stores, (2) VPCOMPRESSB-based extraction, (3) PSHUFB-based extraction. Measure on Ice Lake / Sapphire Rapids. Metrics: throughput (bytes/cycle), instruction count, port utilization. Test with varying token densities (1%, 5%, 25% structural characters).",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 4,
+    "symbolic_name": "dfa_state_convergence_speculation",
+    "description": "Leverage the state-convergence property of the JSON parsing DFA to enable failure-free speculative parallelism. JSON's grammar has high convergence: regardless of the initial state assumed for a chunk, the DFA tends to converge to the correct state within a few bytes due to the limited number of states in the JSON state machine. This is directly borrowed from Ko et al.'s speculative parallel DFA matching, adapted specifically for JSON's grammar.",
+    "domains": ["formal language theory / DFA properties", "parallel computing / speculative execution", "information theory / Markov chain mixing"],
+    "mathematical_formalization": "Model JSON parsing as a DFA with state set Q, |Q| ~ 8-12 for the core JSON grammar. The convergence factor gamma = max_q in Q (|reachable(q, sigma*)| / |Q|) for strings of length L. For JSON, gamma < 0.3 after L=4 bytes because structural characters ({, [, etc.) force specific states. Speculative speedup: S = P / (1 + (P-1) * gamma) where P = number of parallel units. For P=8 and gamma=0.2: S ~ 4.7x.",
+    "analogical_connections": [
+      "Markov chain mixing time: the JSON DFA's rapid convergence is analogous to a fast-mixing Markov chain reaching its stationary distribution",
+      "CPU speculative execution with confidence estimation: like a branch predictor with a confidence counter, convergence factor serves as speculation confidence",
+      "Consensus in distributed systems: state convergence is similar to Byzantine agreement where processors converge to the same state despite starting with different assumptions"
+    ],
+    "implementation_hypothesis": "Pre-compute the JSON DFA's convergence table: for each possible (state, byte_sequence) pair of length 4, store whether all starting states converge. At runtime, for each speculative chunk boundary, check the first 4 bytes against the convergence table. If convergence is guaranteed, no fixup is needed. If not, propagate the correct state forward. This reduces fixup cost from O(chunk_size) to O(4) in the common case.",
+    "experiment_seed": "Build the complete JSON DFA and compute its convergence properties empirically. Analyze convergence on real JSON files: for each 64-byte chunk boundary, measure how many bytes are needed for all starting states to converge. Plot the convergence CDF. Target: >95% of boundaries converge within 4 bytes, confirming that speculative parallel parsing is practical for JSON.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 5,
+    "symbolic_name": "lazy_materialization_pointer_machine",
+    "description": "Implement the on-demand parsing model as a 'pointer machine' that walks the structural index tape without materializing any values until explicitly requested. Borrowing from database lazy evaluation and functional programming's thunks, the parser maintains only a position pointer into the pre-computed structural index, converting the parse tree into a flat tape of deferred computations that resolve in O(1) amortized time per access.",
+    "domains": ["database systems / lazy evaluation", "functional programming / thunks and call-by-need", "data parsing / on-demand APIs"],
+    "mathematical_formalization": "Define the on-demand parser state as a triple (tape, pos, depth) where tape is the structural index array, pos is the current position, depth is the nesting level. Navigation operations: next_field() = advance pos to next structural char at same depth, skip O(1). enter_object() = pos++, depth++. Value materialization: materialize(pos) = parse the bytes between tape[pos] and tape[pos+1], cost O(field_length). Total cost for accessing k fields out of n: O(n_structural + k * avg_field_length) vs DOM cost O(total_input_size).",
+    "analogical_connections": [
+      "simdjson On-Demand API (Keiser & Lemire 2024): the production implementation of lazy JSON parsing over structural indices",
+      "Database columnar late materialization: don't decode column values until they pass filter predicates",
+      "Haskell thunks: defer evaluation to a closure that is forced only when the value is needed"
+    ],
+    "implementation_hypothesis": "Represent the parse state as a struct with {const uint32_t* tape; uint32_t pos; int16_t depth; const uint8_t* input;}. Implement skip_value() using a branchless depth-tracking scan over the tape: increment depth on '{'/[', decrement on '}'/']', stop when depth returns to entry level. Use SIMD to scan 16 tape entries at once with vpcmpd for depth changes. This makes skip_value() O(n_structural_in_subtree / 16) instead of O(n_structural_in_subtree).",
+    "experiment_seed": "Implement the pointer-machine parser and benchmark selective field access patterns: (1) access 1 field from 1000-field objects, (2) access 10% of fields, (3) access deeply nested paths. Compare against simdjson On-Demand and DOM APIs. Measure: throughput, memory allocation, cache miss rate. Success: match or beat On-Demand throughput with zero heap allocation.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 6,
+    "symbolic_name": "bitwise_structural_index_cascade",
+    "description": "Cascade bitwise operations to build a complete structural index in a single pass using only bitwise primitives: XOR for string-state tracking, carry-less multiplication for prefix operations, AND/OR for structural character classification, and popcount + prefix-sum for position computation. This creates an 'index cascade' where each operation's output feeds the next, all operating on 64-bit bitmaps that correspond to 64 input bytes.",
+    "domains": ["digital circuit design / combinational logic", "SIMD parallel algorithms / bit-parallel techniques", "coding theory / prefix codes"],
+    "mathematical_formalization": "For 64 input bytes, define bitmaps: Q = quote_bitmap, B = backslash_bitmap, S = structural_char_bitmap. Compute escaped quotes: E = B & (Q >> 1), accounting for \\\\\" sequences via carry-less multiply. String regions: R = prefix_xor(Q & ~E). Structural indices: I = S & ~R. Positions: P[i] = prefix_popcount(I)[0..i]. The entire cascade: Load(64B) -> 3 comparisons -> 2 bitwise ops -> 1 clmul -> 1 AND -> 1 popcount-prefix. Total: ~12 instructions for 64 bytes = 0.1875 instructions/byte.",
+    "analogical_connections": [
+      "Hardware adder carry chains: prefix-XOR for string state is analogous to carry-lookahead in adders",
+      "Mison (Li et al. 2017): introduced structural indices for JSON, converting control flow to data flow",
+      "FPGA bitstream processing: hardware implementations process structural patterns as combinational logic cascades"
+    ],
+    "implementation_hypothesis": "Implement the cascade using AVX-512 intrinsics in a tight loop: (1) _mm512_cmpeq_epi8_mask for structural char detection, (2) _mm512_cmpeq_epi8_mask for quote detection, (3) _mm_clmulqdq_si128 for prefix-xor of quote bits, (4) KAND for masking structural chars outside strings, (5) _mm_popcnt_u64 + prefix sum for position array. Keep all intermediates in registers. Process 64 bytes per iteration with no memory stores until the final position array.",
+    "experiment_seed": "Count instructions per byte via perf and compare against simdjson Stage 1. Build a standalone structural indexer that outputs only the position array. Profile with VTune to verify zero cache pollution from intermediate bitmaps. Target: <0.25 instructions/byte for structural index construction.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 7,
+    "symbolic_name": "branch_free_state_machine",
+    "description": "Replace all conditional branches in the JSON parser state machine with branchless SIMD table lookups, drawing from the principle of converting control flow to data flow. Each state transition becomes a VPSHUFB-based table lookup where the current state and input byte jointly index a precomputed transition table. This eliminates branch misprediction entirely from the parsing hot path.",
+    "domains": ["CPU microarchitecture / branch prediction", "automata theory / table-driven DFA", "cryptography / constant-time algorithms"],
+    "mathematical_formalization": "JSON DFA with |Q| states and alphabet Sigma (256 bytes). Encode as lookup table T: Q x Sigma -> Q x Action. For |Q| <= 16, use VPSHUFB where each register holds transitions for one input class. Partition Sigma into C equivalence classes (C ~ 8 for JSON: whitespace, structural, digit, alpha, quote, backslash, other_printable, control). State transition: new_state = vpshufb(T[input_class], state_vec). Branch misprediction rate: 0% (no branches). Throughput limited only by vpshufb latency (1 cycle on Skylake+).",
+    "analogical_connections": [
+      "Constant-time cryptographic implementations: eliminate all data-dependent branches to prevent timing side channels; here we eliminate branches for performance rather than security",
+      "GPU texture lookups: GPUs use texture units for table lookups with built-in interpolation; VPSHUFB is the CPU analog for small tables",
+      "cuJSON (Gargary et al. 2025): designed minimal-branching parsing specifically for GPU architectures where branching causes warp divergence"
+    ],
+    "implementation_hypothesis": "Precompute a set of 8 VPSHUFB tables, one per input byte equivalence class. Classify each input byte into its class using a cascaded comparison (3 instructions). Use the class to select the table register, then VPSHUFB with the current state vector to get the next state. Process 64 bytes per iteration by applying the lookup in a fully unrolled loop. The state vector starts as a broadcast of the initial state and updates element-wise.",
+    "experiment_seed": "Implement the branchless state machine and measure: (1) branch misprediction rate via perf (target: 0), (2) throughput vs. simdjson's branching Stage 2, (3) sensitivity to input patterns (random vs. structured JSON). Profile with Intel Top-Down Microarchitecture Analysis to confirm zero frontend stalls from branches.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 8,
+    "symbolic_name": "speculative_depth_tracking",
+    "description": "Track JSON nesting depth speculatively across parallel chunks by assuming each chunk starts at depth 0, then reconciling depths at chunk boundaries in a parallel prefix-sum. This transforms the sequential depth-tracking dependency into a parallel-prefix operation, borrowing from parallel scan algorithms in GPU computing and from simdjson's own insight that structural characters encode depth changes as +1/-1 increments.",
+    "domains": ["parallel algorithms / prefix-sum", "GPU computing / parallel scan", "compiler optimization / dependence breaking"],
+    "mathematical_formalization": "For each chunk C_i, compute delta_depth(C_i) = count('{','[' in C_i) - count('}',']' in C_i) and min_relative_depth(C_i) = min over prefixes of C_i of relative_depth. Parallel prefix-sum over delta_depth gives absolute depth at each chunk boundary: D_i = sum_{j<i} delta_depth(C_j). Validation: D_i + min_relative_depth(C_i) >= 0 for all i (no underflow). Total parallel depth computation: O(n/P + log(P)) for P processors.",
+    "analogical_connections": [
+      "Blelloch's parallel prefix-sum: the foundational parallel algorithm; depth tracking is a direct application with (+) as the associative operator",
+      "XML depth tracking in parallel SAX parsers: same problem structure with different syntax",
+      "Pison (Jiang et al. 2020): demonstrated intra-record parallelism for structural index construction with depth awareness"
+    ],
+    "implementation_hypothesis": "In the speculative structural indexing phase, alongside building structural bitmaps, compute per-chunk metadata: (delta_depth, min_depth, max_depth). Use AVX-512 VPOPCNTDQ to count opening/closing brackets in the structural bitmap. Run a work-efficient parallel prefix-sum (Hillis-Steele or Blelloch) over the chunk metadata array. The prefix-sum output gives absolute depth at every chunk boundary. For skip_value() in on-demand parsing, use the precomputed depth map to binary-search for the matching close bracket.",
+    "experiment_seed": "Implement parallel depth tracking on the structural index and benchmark against sequential depth tracking in simdjson. Measure: (1) latency for depth computation as a function of input size, (2) parallel speedup with 2/4/8/16 threads, (3) accuracy of binary-search skip_value() vs. linear scan. Test on deeply nested vs. flat JSON to characterize best/worst cases.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 9,
+    "symbolic_name": "kernel_fusion_parse_query",
+    "description": "Fuse the parsing phase and query evaluation phase into a single pass, inspired by GPU kernel fusion and database push-based query execution. Instead of first building a complete structural index and then querying it, interleave structural indexing with query predicate evaluation so that irrelevant subtrees are skipped during indexing, not after. This is the JSON analog of predicate pushdown into the scan operator.",
+    "domains": ["database systems / predicate pushdown", "GPU computing / kernel fusion", "streaming algorithms / single-pass processing"],
+    "mathematical_formalization": "Given a query Q that accesses fields at paths P_1, ..., P_k, define the 'relevant region' R(Q) = union of byte ranges containing paths P_i and their ancestors. Standard approach: index all n bytes, then query. Cost = n + |result|. Fused approach: only index bytes in R(Q) plus a boundary margin. Cost = |R(Q)| + margin + |result|. For selective queries where |R(Q)| << n, speedup ~ n / |R(Q)|. Analogous to Mison's projection pushdown but extended to arbitrary path queries.",
+    "analogical_connections": [
+      "Mison (Li et al. 2017): pioneered pushing projection into the JSON parser by jumping directly to queried fields",
+      "JSONSki (Jiang & Zhao 2022): bit-parallel fast-forwarding to skip irrelevant regions during streaming JSON queries",
+      "Database push-based execution (Neumann 2011): fuse operators by pushing tuples through a pipeline of tight loops"
+    ],
+    "implementation_hypothesis": "Maintain a query automaton alongside the structural indexer. The query automaton tracks which JSON path prefix is currently being matched. When structural indexing encounters an object key, check it against the query automaton. If no query paths match the current key prefix, skip the entire value subtree using depth tracking. The skip is free because depth tracking is already part of structural indexing. This requires interleaving key matching (byte comparison) with structural indexing.",
+    "experiment_seed": "Implement the fused parse-query engine for JSONPath-like queries. Benchmark on large JSON files with selective queries (e.g., '$.store.book[*].price' on a 10MB store document). Compare against: (1) simdjson On-Demand, (2) JSONSki, (3) jq. Measure: (1) bytes processed, (2) throughput, (3) memory usage. Target: process <30% of input bytes for queries accessing <10% of fields.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 10,
+    "symbolic_name": "entropy_adaptive_chunk_sizing",
+    "description": "Dynamically adjust the chunk size for speculative parallel parsing based on the local entropy of the JSON input. High-entropy regions (dense strings, varied data) benefit from larger chunks to amortize speculation overhead, while low-entropy regions (repeated structure, arrays of similar objects) can use smaller chunks for finer parallelism. Borrowed from adaptive compression algorithms that adjust window sizes based on source entropy.",
+    "domains": ["information theory / entropy estimation", "adaptive algorithms / online optimization", "SIMD data parsing"],
+    "mathematical_formalization": "Estimate local entropy H(C_i) = -sum_b p(b) log p(b) for each chunk C_i using byte frequency counts. Define optimal chunk size: L_opt(H) = L_min * 2^(alpha * H / H_max) where alpha controls the sensitivity. The speculation miss rate for JSON correlates with string density: P_miss ~ f_string * (1 - e^{-L/lambda}) where lambda is the average string length. Minimizing total cost: argmin_L { n/(L*P) * T_chunk + n/L * P_miss(L) * T_fixup }.",
+    "analogical_connections": [
+      "Adaptive Huffman coding: adjusts code tables based on observed symbol frequencies; here we adjust parallelism granularity",
+      "TCP congestion window: dynamically sizes the transmission window based on network conditions; here we size parse chunks based on data conditions",
+      "Adaptive mesh refinement in CFD: refine the grid where the solution has high gradients; here refine parallelism where the data has high structural complexity"
+    ],
+    "implementation_hypothesis": "First pass: scan input at 4KB granularity to compute byte frequency histograms (using VPOPCNT on byte classifications). Compute entropy estimate per 4KB block. Group blocks into variable-sized chunks where chunk boundaries are placed at low-entropy points (e.g., between array elements). Feed the variable-sized chunks to the speculative parallel indexer. The grouping overhead is O(n/4096) and can itself be SIMD-accelerated.",
+    "experiment_seed": "Profile speculation miss rates across different JSON files as a function of chunk size. Fit the P_miss(L) model empirically. Implement the entropy-adaptive chunking and compare against fixed-size chunking. Measure: (1) overall speculation miss rate, (2) throughput variation, (3) load balance across cores. Target: reduce speculation misses by >50% compared to fixed-size chunks on heterogeneous JSON inputs.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 11,
+    "symbolic_name": "runahead_prefetch_parsing",
+    "description": "Apply the runahead execution technique from CPU microarchitecture to JSON parsing: when the parser stalls on a long-latency operation (e.g., number parsing, UTF-8 validation of a large string), continue parsing structurally ahead to prefetch structural indices and prime the cache for subsequent operations. Like runahead execution in CPUs, the structurally-ahead work is speculative and generates prefetch hints, not committed state.",
+    "domains": ["CPU microarchitecture / runahead execution", "data parsing / prefetching", "operating systems / readahead"],
+    "mathematical_formalization": "Model parsing as a sequence of operations with latencies L_i. When operation i has L_i > threshold, initiate runahead for operations i+1, ..., i+R where R = runahead_distance. Runahead generates prefetch requests for input bytes at positions tape[i+1] through tape[i+R]. Cache hit rate improvement: Delta_hit = sum_{j=1}^{R} Pr[byte at tape[i+j] not in cache] * Pr[L_i > prefetch_latency]. For L1 miss penalty ~ 10 cycles and structural index stride ~ 20 bytes, R = 8 prefetches cover ~160 bytes ahead.",
+    "analogical_connections": [
+      "CPU runahead execution (Mutlu et al. 2003): execute instructions past a cache miss to generate prefetches; discard the results and re-execute correctly when the miss resolves",
+      "OS file readahead: when sequential access is detected, prefetch subsequent disk blocks",
+      "Speculative decoding in LLMs (SpecBranch, SwiftSpec): speculatively generate tokens ahead of verification, analogous to generating structural indices ahead of value parsing"
+    ],
+    "implementation_hypothesis": "In the on-demand parser, when materializing a value (e.g., parsing a number or validating a string), issue software prefetch instructions (__builtin_prefetch) for the next N structural index entries and their corresponding input byte ranges. Implement a lightweight 'runahead thread' using a coroutine that walks the structural tape ahead of the main parser, issuing prefetches without modifying parser state. Use _mm_prefetch with T0 hint for data likely to be used soon.",
+    "experiment_seed": "Instrument simdjson On-Demand to measure cache miss rates during value materialization. Add software prefetching and measure the delta in cache misses and throughput. Test on large JSON files where field access patterns cause cache misses (e.g., accessing every Nth field in a large array). Measure with perf: L1/L2/L3 cache miss rates, IPC improvement. Target: >15% throughput improvement on cache-miss-heavy access patterns.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "id": 12,
+    "symbolic_name": "simd_gather_scatter_token_routing",
+    "description": "Use AVX-512 gather/scatter instructions to implement a 'token router' that reads tokens from scattered positions in the input and writes parsed results to scattered positions in the output, all in a single vectorized operation. This eliminates the sequential pointer-chasing pattern typical of parsers that follow the structural index one entry at a time, instead processing 8-16 structural index entries in parallel.",
+    "domains": ["SIMD architecture / gather-scatter", "network switching / packet routing", "database systems / vectorized execution"],
+    "mathematical_formalization": "Given structural index entries P[0..15] (16 positions), a single VPGATHERDQ loads the 8-byte values starting at each position: V[i] = input[P[i]..P[i]+7]. This loads 16 potential tokens in one operation. Each token can be classified in parallel: class[i] = lookup_table[V[i][0]]. Scatter: VPSCATTERDQ stores parsed results to output positions. Total: 1 gather + 1 classify + 1 scatter = 3 instructions for 16 tokens vs. 16 * ~5 = 80 scalar instructions.",
+    "analogical_connections": [
+      "Network packet routing: packets arrive at scattered ports and are routed to scattered destinations; gather-scatter is the SIMD analog",
+      "Vectorized database execution (MonetDB/X100): process column batches through vectorized primitives rather than row-at-a-time interpretation",
+      "Speculative parallel DFA (Ko et al. 2012): used SIMD gather for indexed memory loads in vectorized DFA matching"
+    ],
+    "implementation_hypothesis": "Load 16 structural index entries into a zmm register. Use VPGATHERDQ to load the first 8 bytes at each structural position. Classify each loaded value using VPSHUFB lookup on the first byte. For value tokens (numbers, booleans, null), attempt inline parsing using SIMD (e.g., SIMD number parsing for integers). For string tokens, record the start position for deferred extraction. Scatter results to a columnar output buffer using VPSCATTERDQ. Process structural index entries in batches of 16.",
+    "experiment_seed": "Implement the gather-scatter token router and benchmark against sequential structural index traversal. Measure: (1) throughput in tokens/second, (2) gather latency vs. sequential loads, (3) efficiency on different JSON shapes (many small values vs. few large values). Test on a JSON array of 1M integer values to maximize the benefit of batched number parsing. Target: >2x throughput for value-dense JSON.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  }
+]

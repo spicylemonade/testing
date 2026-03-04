@@ -1,0 +1,15 @@
+{
+  "id": 10,
+  "symbolic_name": "entropy_adaptive_chunk_sizing",
+  "description": "Dynamically adjust chunk size for speculative parallel parsing based on local entropy of the JSON input. High-entropy regions (dense strings) use larger chunks to amortize speculation overhead; low-entropy regions (repeated structure) use smaller chunks for finer parallelism. Borrowed from adaptive compression algorithms that adjust window sizes based on source entropy.",
+  "domains": ["information theory / entropy estimation", "adaptive algorithms / online optimization", "SIMD data parsing"],
+  "mathematical_formalization": "Local entropy: H(C_i) = -sum_b p(b) log p(b). Optimal chunk size: L_opt(H) = L_min * 2^(alpha * H / H_max). Speculation miss rate: P_miss ~ f_string * (1 - e^{-L/lambda}) where lambda = avg string length. Minimize: argmin_L { n/(L*P) * T_chunk + n/L * P_miss(L) * T_fixup }.",
+  "analogical_connections": [
+    "Adaptive Huffman coding: adjust code tables based on symbol frequencies",
+    "TCP congestion window: dynamically size transmission window based on conditions",
+    "Adaptive mesh refinement in CFD: refine grid where solution has high gradients"
+  ],
+  "implementation_hypothesis": "First pass: scan at 4KB granularity computing byte frequency histograms using VPOPCNT. Compute entropy per block. Group blocks into variable-sized chunks with boundaries at low-entropy points. Feed to speculative parallel indexer. Grouping overhead: O(n/4096), SIMD-accelerable.",
+  "experiment_seed": "Profile speculation miss rates as function of chunk size across different JSON files. Fit P_miss(L) model. Implement entropy-adaptive chunking. Compare against fixed-size. Target: >50% reduction in speculation misses on heterogeneous JSON.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

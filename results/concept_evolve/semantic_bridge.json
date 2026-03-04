@@ -1,0 +1,83 @@
+{
+  "nodes": [
+    {"id": "speculative_structural_indexing", "domain": "CPU architecture / speculative execution"},
+    {"id": "fused_tokenize_validate_pass", "domain": "GPU kernel fusion / compiler optimization"},
+    {"id": "vbmi2_compress_expand_parsing", "domain": "ISA design / AVX-512 VBMI2"},
+    {"id": "dfa_state_convergence_speculation", "domain": "formal language theory / DFA properties"},
+    {"id": "lazy_materialization_pointer_machine", "domain": "database systems / lazy evaluation"},
+    {"id": "bitwise_structural_index_cascade", "domain": "digital circuit design / bit-parallel algorithms"},
+    {"id": "branch_free_state_machine", "domain": "CPU microarchitecture / automata theory"},
+    {"id": "speculative_depth_tracking", "domain": "parallel algorithms / prefix-sum"},
+    {"id": "kernel_fusion_parse_query", "domain": "database systems / predicate pushdown"},
+    {"id": "entropy_adaptive_chunk_sizing", "domain": "information theory / adaptive algorithms"},
+    {"id": "runahead_prefetch_parsing", "domain": "CPU microarchitecture / runahead execution"},
+    {"id": "simd_gather_scatter_token_routing", "domain": "SIMD architecture / vectorized execution"},
+    {"id": "simdjson_baseline", "domain": "reference implementation"},
+    {"id": "mison_projection_pushdown", "domain": "database systems / query optimization"},
+    {"id": "jsonski_fast_forwarding", "domain": "streaming algorithms / bit-parallel"},
+    {"id": "gpjson_gpu_parsing", "domain": "GPU computing / parallel parsing"},
+    {"id": "cujson_gpu_parsing", "domain": "GPU computing / minimal-branching parsing"},
+    {"id": "pison_parallel_indexing", "domain": "parallel computing / structural indexing"},
+    {"id": "speculative_parallel_dfa", "domain": "formal language theory / parallel DFA"}
+  ],
+  "edges": [
+    {"source": "speculative_structural_indexing", "target": "dfa_state_convergence_speculation", "relation": "speculation correctness depends on DFA convergence properties"},
+    {"source": "speculative_structural_indexing", "target": "speculative_depth_tracking", "relation": "parallel structural indexing produces metadata consumed by parallel depth tracking"},
+    {"source": "speculative_structural_indexing", "target": "entropy_adaptive_chunk_sizing", "relation": "chunk sizing directly controls speculation miss rate"},
+    {"source": "fused_tokenize_validate_pass", "target": "bitwise_structural_index_cascade", "relation": "fusion is implemented via the bitwise cascade operating in a single iteration"},
+    {"source": "fused_tokenize_validate_pass", "target": "kernel_fusion_parse_query", "relation": "both apply the kernel fusion principle at different granularities — intra-stage vs. inter-stage"},
+    {"source": "vbmi2_compress_expand_parsing", "target": "simd_gather_scatter_token_routing", "relation": "VBMI2 compress feeds the gather-scatter router with densely packed token data"},
+    {"source": "vbmi2_compress_expand_parsing", "target": "fused_tokenize_validate_pass", "relation": "VBMI2 operations enable efficient intra-iteration token extraction within the fused pass"},
+    {"source": "dfa_state_convergence_speculation", "target": "speculative_parallel_dfa", "relation": "direct theoretical foundation: Ko et al.'s convergence analysis generalizes to JSON"},
+    {"source": "dfa_state_convergence_speculation", "target": "branch_free_state_machine", "relation": "convergence properties determine which states can be eliminated from the branchless table"},
+    {"source": "lazy_materialization_pointer_machine", "target": "kernel_fusion_parse_query", "relation": "lazy materialization enables fused parse-query by deferring work until query evaluation time"},
+    {"source": "lazy_materialization_pointer_machine", "target": "runahead_prefetch_parsing", "relation": "the pointer machine's sequential traversal creates prefetch opportunities that runahead exploits"},
+    {"source": "lazy_materialization_pointer_machine", "target": "simdjson_baseline", "relation": "simdjson On-Demand API is the reference implementation of lazy materialization"},
+    {"source": "bitwise_structural_index_cascade", "target": "speculative_structural_indexing", "relation": "the cascade is the per-chunk computation that speculation parallelizes across chunks"},
+    {"source": "branch_free_state_machine", "target": "fused_tokenize_validate_pass", "relation": "branchless state transitions are a component of the fused pass"},
+    {"source": "branch_free_state_machine", "target": "cujson_gpu_parsing", "relation": "both pursue minimal-branching parsing; branchless CPU approach mirrors GPU warp-divergence-free design"},
+    {"source": "speculative_depth_tracking", "target": "lazy_materialization_pointer_machine", "relation": "precomputed depth map enables O(log n) skip_value in the pointer machine"},
+    {"source": "speculative_depth_tracking", "target": "kernel_fusion_parse_query", "relation": "depth tracking enables the fused engine to skip irrelevant subtrees by depth"},
+    {"source": "kernel_fusion_parse_query", "target": "mison_projection_pushdown", "relation": "extends Mison's projection pushdown to arbitrary path queries with predicate evaluation"},
+    {"source": "kernel_fusion_parse_query", "target": "jsonski_fast_forwarding", "relation": "both skip irrelevant regions; fused approach skips during indexing, JSONSki skips during streaming"},
+    {"source": "entropy_adaptive_chunk_sizing", "target": "speculative_structural_indexing", "relation": "provides optimized chunk boundaries for speculation"},
+    {"source": "runahead_prefetch_parsing", "target": "simd_gather_scatter_token_routing", "relation": "runahead prefetches prime the cache for gather operations"},
+    {"source": "simd_gather_scatter_token_routing", "target": "lazy_materialization_pointer_machine", "relation": "gather-scatter batch processes the structural tape that the pointer machine traverses"},
+    {"source": "gpjson_gpu_parsing", "target": "speculative_structural_indexing", "relation": "GpJSON's parallel structural indexing on GPU is the massively-parallel analog of speculative CPU indexing"},
+    {"source": "gpjson_gpu_parsing", "target": "cujson_gpu_parsing", "relation": "cuJSON improves upon GpJSON's approach with optimized nesting recognition"},
+    {"source": "pison_parallel_indexing", "target": "speculative_depth_tracking", "relation": "Pison's intra-record parallelism directly applies to the depth tracking phase"},
+    {"source": "speculative_parallel_dfa", "target": "speculative_structural_indexing", "relation": "theoretical basis: Ko et al.'s speculative DFA matching generalizes to speculative JSON parsing"}
+  ],
+  "bridge_chains": [
+    {
+      "name": "speculation_pipeline",
+      "description": "From formal language theory through CPU architecture to practical SIMD parsing",
+      "path": ["speculative_parallel_dfa", "dfa_state_convergence_speculation", "speculative_structural_indexing", "entropy_adaptive_chunk_sizing", "bitwise_structural_index_cascade"],
+      "domains_crossed": ["formal language theory", "CPU architecture", "SIMD algorithms", "information theory", "digital logic"]
+    },
+    {
+      "name": "fusion_pipeline",
+      "description": "From GPU kernel fusion through database query optimization to single-pass parse-query",
+      "path": ["fused_tokenize_validate_pass", "bitwise_structural_index_cascade", "kernel_fusion_parse_query", "mison_projection_pushdown", "jsonski_fast_forwarding"],
+      "domains_crossed": ["GPU computing", "digital logic", "database systems", "streaming algorithms"]
+    },
+    {
+      "name": "laziness_pipeline",
+      "description": "From functional programming lazy evaluation through database late materialization to hardware prefetching",
+      "path": ["lazy_materialization_pointer_machine", "runahead_prefetch_parsing", "simd_gather_scatter_token_routing", "vbmi2_compress_expand_parsing"],
+      "domains_crossed": ["functional programming", "CPU microarchitecture", "SIMD architecture", "ISA design"]
+    },
+    {
+      "name": "parallelism_pipeline",
+      "description": "From parallel algorithm theory through GPU massively-parallel parsing to CPU speculative parallel parsing",
+      "path": ["speculative_depth_tracking", "pison_parallel_indexing", "gpjson_gpu_parsing", "speculative_structural_indexing", "dfa_state_convergence_speculation"],
+      "domains_crossed": ["parallel algorithms", "GPU computing", "CPU architecture", "formal language theory"]
+    },
+    {
+      "name": "branchless_pipeline",
+      "description": "From cryptographic constant-time techniques through GPU warp-divergence avoidance to branchless CPU parsing",
+      "path": ["branch_free_state_machine", "cujson_gpu_parsing", "fused_tokenize_validate_pass", "vbmi2_compress_expand_parsing"],
+      "domains_crossed": ["cryptography", "GPU computing", "compiler optimization", "ISA design"]
+    }
+  ]
+}

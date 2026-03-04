@@ -1,0 +1,15 @@
+{
+  "id": 8,
+  "symbolic_name": "speculative_depth_tracking",
+  "description": "Track JSON nesting depth speculatively across parallel chunks by assuming each chunk starts at depth 0, then reconciling depths at chunk boundaries in a parallel prefix-sum. This transforms the sequential depth-tracking dependency into a parallel-prefix operation, borrowing from Blelloch's parallel scan algorithms.",
+  "domains": ["parallel algorithms / prefix-sum", "GPU computing / parallel scan", "compiler optimization / dependence breaking"],
+  "mathematical_formalization": "For each chunk C_i, compute delta_depth(C_i) = count(open_brackets) - count(close_brackets) and min_relative_depth(C_i). Parallel prefix-sum over delta_depth gives absolute depth: D_i = sum_{j<i} delta_depth(C_j). Validation: D_i + min_relative_depth(C_i) >= 0. Parallel depth: O(n/P + log(P)).",
+  "analogical_connections": [
+    "Blelloch's parallel prefix-sum: foundational parallel algorithm with (+) as associative operator",
+    "XML depth tracking in parallel SAX parsers: same problem structure, different syntax",
+    "Pison intra-record parallelism: demonstrated parallel depth-aware structural indexing"
+  ],
+  "implementation_hypothesis": "Alongside structural bitmap construction, compute per-chunk metadata: (delta_depth, min_depth, max_depth). Use VPOPCNTDQ to count brackets. Run work-efficient prefix-sum over metadata. Output gives absolute depth at every chunk boundary. For skip_value(), binary-search the depth map.",
+  "experiment_seed": "Benchmark parallel depth tracking against sequential. Measure latency as function of input size, parallel speedup with 2-16 threads, binary-search skip_value() accuracy. Test deeply nested vs. flat JSON.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

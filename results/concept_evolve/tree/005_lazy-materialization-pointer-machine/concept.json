@@ -1,0 +1,25 @@
+{
+  "id": 5,
+  "symbolic_name": "lazy_materialization_pointer_machine",
+  "description": "Implement the on-demand parsing model as a 'pointer machine' that walks the structural index tape without materializing any values until explicitly requested. Borrowing from database lazy evaluation and functional programming's thunks, the parser maintains only a position pointer into the pre-computed structural index, converting the parse tree into a flat tape of deferred computations that resolve in O(1) amortized time per access.",
+  "domains": [
+    "database systems / lazy evaluation",
+    "functional programming / thunks and call-by-need",
+    "data parsing / on-demand APIs"
+  ],
+  "mathematical_formalization": "Define the on-demand parser state as a triple (tape, pos, depth) where tape is the structural index array, pos is the current position, depth is the nesting level. Navigation operations: next_field() = advance pos to next structural char at same depth, skip O(1). enter_object() = pos++, depth++. Value materialization: materialize(pos) = parse the bytes between tape[pos] and tape[pos+1], cost O(field_length). Total cost for accessing k fields out of n: O(n_structural + k * avg_field_length) vs DOM cost O(total_input_size).",
+  "analogical_connections": [
+    "simdjson On-Demand API (Keiser & Lemire 2024): the production implementation of lazy JSON parsing over structural indices",
+    "Database columnar late materialization: don't decode column values until they pass filter predicates",
+    "Haskell thunks: defer evaluation to a closure that is forced only when the value is needed"
+  ],
+  "implementation_hypothesis": "Represent the parse state as a struct with {const uint32_t* tape; uint32_t pos; int16_t depth; const uint8_t* input;}. Implement skip_value() using a branchless depth-tracking scan over the tape: increment depth on '{'/[', decrement on '}'/']', stop when depth returns to entry level. Use SIMD to scan 16 tape entries at once with vpcmpd for depth changes. This makes skip_value() O(n_structural_in_subtree / 16) instead of O(n_structural_in_subtree).",
+  "experiment_seed": "Implement the pointer-machine parser and benchmark selective field access patterns: (1) access 1 field from 1000-field objects, (2) access 10% of fields, (3) access deeply nested paths. Compare against simdjson On-Demand and DOM APIs. Measure: throughput, memory allocation, cache miss rate. Success: match or beat On-Demand throughput with zero heap allocation.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.913341+00:00",
+  "project_folder": "concept_evolve/tree/005_lazy-materialization-pointer-machine"
+}

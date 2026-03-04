@@ -1,0 +1,15 @@
+{
+  "id": 9,
+  "symbolic_name": "kernel_fusion_parse_query",
+  "description": "Fuse the parsing phase and query evaluation phase into a single pass, inspired by GPU kernel fusion and database push-based query execution. Instead of first building a complete structural index and then querying it, interleave structural indexing with query predicate evaluation so that irrelevant subtrees are skipped during indexing, not after. The JSON analog of predicate pushdown into the scan operator.",
+  "domains": ["database systems / predicate pushdown", "GPU computing / kernel fusion", "streaming algorithms / single-pass processing"],
+  "mathematical_formalization": "Given query Q accessing paths P_1..P_k, define relevant region R(Q) = union of byte ranges for P_i and ancestors. Standard: index all n bytes then query, cost = n + |result|. Fused: only index R(Q) + margin, cost = |R(Q)| + margin + |result|. For selective queries |R(Q)| << n, speedup ~ n / |R(Q)|.",
+  "analogical_connections": [
+    "Mison: projection pushdown into JSON parser by jumping to queried fields",
+    "JSONSki: bit-parallel fast-forwarding to skip irrelevant regions",
+    "Database push-based execution (Neumann 2011): fuse operators via push-based tuple pipeline"
+  ],
+  "implementation_hypothesis": "Maintain query automaton alongside structural indexer. When encountering object keys, check against query paths. If no match, skip value subtree using depth tracking. Skip is free because depth tracking is already part of indexing. Requires interleaving key comparison with structural indexing.",
+  "experiment_seed": "Benchmark fused parse-query on large JSON with selective queries (e.g., $.store.book[*].price on 10MB documents). Compare against simdjson On-Demand, JSONSki, jq. Measure bytes processed, throughput, memory. Target: process <30% of bytes for queries accessing <10% of fields.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

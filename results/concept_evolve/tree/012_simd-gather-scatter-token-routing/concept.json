@@ -1,0 +1,25 @@
+{
+  "id": 12,
+  "symbolic_name": "simd_gather_scatter_token_routing",
+  "description": "Use AVX-512 gather/scatter instructions to implement a 'token router' that reads tokens from scattered positions in the input and writes parsed results to scattered positions in the output, all in a single vectorized operation. This eliminates the sequential pointer-chasing pattern typical of parsers that follow the structural index one entry at a time, instead processing 8-16 structural index entries in parallel.",
+  "domains": [
+    "SIMD architecture / gather-scatter",
+    "network switching / packet routing",
+    "database systems / vectorized execution"
+  ],
+  "mathematical_formalization": "Given structural index entries P[0..15] (16 positions), a single VPGATHERDQ loads the 8-byte values starting at each position: V[i] = input[P[i]..P[i]+7]. This loads 16 potential tokens in one operation. Each token can be classified in parallel: class[i] = lookup_table[V[i][0]]. Scatter: VPSCATTERDQ stores parsed results to output positions. Total: 1 gather + 1 classify + 1 scatter = 3 instructions for 16 tokens vs. 16 * ~5 = 80 scalar instructions.",
+  "analogical_connections": [
+    "Network packet routing: packets arrive at scattered ports and are routed to scattered destinations; gather-scatter is the SIMD analog",
+    "Vectorized database execution (MonetDB/X100): process column batches through vectorized primitives rather than row-at-a-time interpretation",
+    "Speculative parallel DFA (Ko et al. 2012): used SIMD gather for indexed memory loads in vectorized DFA matching"
+  ],
+  "implementation_hypothesis": "Load 16 structural index entries into a zmm register. Use VPGATHERDQ to load the first 8 bytes at each structural position. Classify each loaded value using VPSHUFB lookup on the first byte. For value tokens (numbers, booleans, null), attempt inline parsing using SIMD (e.g., SIMD number parsing for integers). For string tokens, record the start position for deferred extraction. Scatter results to a columnar output buffer using VPSCATTERDQ. Process structural index entries in batches of 16.",
+  "experiment_seed": "Implement the gather-scatter token router and benchmark against sequential structural index traversal. Measure: (1) throughput in tokens/second, (2) gather latency vs. sequential loads, (3) efficiency on different JSON shapes (many small values vs. few large values). Test on a JSON array of 1M integer values to maximize the benefit of batched number parsing. Target: >2x throughput for value-dense JSON.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.919068+00:00",
+  "project_folder": "concept_evolve/tree/012_simd-gather-scatter-token-routing"
+}

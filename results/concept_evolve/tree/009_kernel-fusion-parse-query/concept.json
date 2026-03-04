@@ -1,0 +1,25 @@
+{
+  "id": 9,
+  "symbolic_name": "kernel_fusion_parse_query",
+  "description": "Fuse the parsing phase and query evaluation phase into a single pass, inspired by GPU kernel fusion and database push-based query execution. Instead of first building a complete structural index and then querying it, interleave structural indexing with query predicate evaluation so that irrelevant subtrees are skipped during indexing, not after. This is the JSON analog of predicate pushdown into the scan operator.",
+  "domains": [
+    "database systems / predicate pushdown",
+    "GPU computing / kernel fusion",
+    "streaming algorithms / single-pass processing"
+  ],
+  "mathematical_formalization": "Given a query Q that accesses fields at paths P_1, ..., P_k, define the 'relevant region' R(Q) = union of byte ranges containing paths P_i and their ancestors. Standard approach: index all n bytes, then query. Cost = n + |result|. Fused approach: only index bytes in R(Q) plus a boundary margin. Cost = |R(Q)| + margin + |result|. For selective queries where |R(Q)| << n, speedup ~ n / |R(Q)|. Analogous to Mison's projection pushdown but extended to arbitrary path queries.",
+  "analogical_connections": [
+    "Mison (Li et al. 2017): pioneered pushing projection into the JSON parser by jumping directly to queried fields",
+    "JSONSki (Jiang & Zhao 2022): bit-parallel fast-forwarding to skip irrelevant regions during streaming JSON queries",
+    "Database push-based execution (Neumann 2011): fuse operators by pushing tuples through a pipeline of tight loops"
+  ],
+  "implementation_hypothesis": "Maintain a query automaton alongside the structural indexer. The query automaton tracks which JSON path prefix is currently being matched. When structural indexing encounters an object key, check it against the query automaton. If no query paths match the current key prefix, skip the entire value subtree using depth tracking. The skip is free because depth tracking is already part of structural indexing. This requires interleaving key matching (byte comparison) with structural indexing.",
+  "experiment_seed": "Implement the fused parse-query engine for JSONPath-like queries. Benchmark on large JSON files with selective queries (e.g., '$.store.book[*].price' on a 10MB store document). Compare against: (1) simdjson On-Demand, (2) JSONSki, (3) jq. Measure: (1) bytes processed, (2) throughput, (3) memory usage. Target: process <30% of input bytes for queries accessing <10% of fields.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.916635+00:00",
+  "project_folder": "concept_evolve/tree/009_kernel-fusion-parse-query"
+}

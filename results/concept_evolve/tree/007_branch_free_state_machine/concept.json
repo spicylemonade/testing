@@ -1,0 +1,15 @@
+{
+  "id": 7,
+  "symbolic_name": "branch_free_state_machine",
+  "description": "Replace all conditional branches in the JSON parser state machine with branchless SIMD table lookups. Each state transition becomes a VPSHUFB-based table lookup where the current state and input byte jointly index a precomputed transition table. This eliminates branch misprediction entirely from the parsing hot path, drawing from constant-time cryptographic implementations and GPU warp-divergence avoidance.",
+  "domains": ["CPU microarchitecture / branch prediction", "automata theory / table-driven DFA", "cryptography / constant-time algorithms"],
+  "mathematical_formalization": "JSON DFA: |Q| states, alphabet Sigma (256 bytes). Encode as T: Q x Sigma -> Q x Action. For |Q| <= 16, use VPSHUFB. Partition Sigma into C ~ 8 equivalence classes. Transition: new_state = vpshufb(T[input_class], state_vec). Branch misprediction rate: 0%. Throughput limited by vpshufb latency (1 cycle on Skylake+).",
+  "analogical_connections": [
+    "Constant-time crypto: eliminate data-dependent branches for security; here for performance",
+    "GPU texture lookups: GPUs use texture units for table lookups; VPSHUFB is the CPU analog",
+    "cuJSON: minimal-branching parsing for GPU warp-divergence avoidance"
+  ],
+  "implementation_hypothesis": "Precompute 8 VPSHUFB tables, one per input byte equivalence class. Classify input bytes into class (3 instructions). Select table register by class, then VPSHUFB with state vector for next state. Process 64 bytes in fully unrolled loop.",
+  "experiment_seed": "Measure branch misprediction rate (target: 0), throughput vs simdjson Stage 2, and sensitivity to input patterns. Use Intel Top-Down Analysis to confirm zero frontend stalls.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

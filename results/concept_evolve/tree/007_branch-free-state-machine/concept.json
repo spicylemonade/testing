@@ -1,0 +1,25 @@
+{
+  "id": 7,
+  "symbolic_name": "branch_free_state_machine",
+  "description": "Replace all conditional branches in the JSON parser state machine with branchless SIMD table lookups, drawing from the principle of converting control flow to data flow. Each state transition becomes a VPSHUFB-based table lookup where the current state and input byte jointly index a precomputed transition table. This eliminates branch misprediction entirely from the parsing hot path.",
+  "domains": [
+    "CPU microarchitecture / branch prediction",
+    "automata theory / table-driven DFA",
+    "cryptography / constant-time algorithms"
+  ],
+  "mathematical_formalization": "JSON DFA with |Q| states and alphabet Sigma (256 bytes). Encode as lookup table T: Q x Sigma -> Q x Action. For |Q| <= 16, use VPSHUFB where each register holds transitions for one input class. Partition Sigma into C equivalence classes (C ~ 8 for JSON: whitespace, structural, digit, alpha, quote, backslash, other_printable, control). State transition: new_state = vpshufb(T[input_class], state_vec). Branch misprediction rate: 0% (no branches). Throughput limited only by vpshufb latency (1 cycle on Skylake+).",
+  "analogical_connections": [
+    "Constant-time cryptographic implementations: eliminate all data-dependent branches to prevent timing side channels; here we eliminate branches for performance rather than security",
+    "GPU texture lookups: GPUs use texture units for table lookups with built-in interpolation; VPSHUFB is the CPU analog for small tables",
+    "cuJSON (Gargary et al. 2025): designed minimal-branching parsing specifically for GPU architectures where branching causes warp divergence"
+  ],
+  "implementation_hypothesis": "Precompute a set of 8 VPSHUFB tables, one per input byte equivalence class. Classify each input byte into its class using a cascaded comparison (3 instructions). Use the class to select the table register, then VPSHUFB with the current state vector to get the next state. Process 64 bytes per iteration by applying the lookup in a fully unrolled loop. The state vector starts as a broadcast of the initial state and updates element-wise.",
+  "experiment_seed": "Implement the branchless state machine and measure: (1) branch misprediction rate via perf (target: 0), (2) throughput vs. simdjson's branching Stage 2, (3) sensitivity to input patterns (random vs. structured JSON). Profile with Intel Top-Down Microarchitecture Analysis to confirm zero frontend stalls from branches.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.915019+00:00",
+  "project_folder": "concept_evolve/tree/007_branch-free-state-machine"
+}

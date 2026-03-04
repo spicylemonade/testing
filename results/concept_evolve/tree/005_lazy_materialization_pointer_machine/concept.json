@@ -1,0 +1,15 @@
+{
+  "id": 5,
+  "symbolic_name": "lazy_materialization_pointer_machine",
+  "description": "Implement the on-demand parsing model as a 'pointer machine' that walks the structural index tape without materializing any values until explicitly requested. Borrowing from database lazy evaluation and functional programming's thunks, the parser maintains only a position pointer into the pre-computed structural index, converting the parse tree into a flat tape of deferred computations that resolve in O(1) amortized time per access.",
+  "domains": ["database systems / lazy evaluation", "functional programming / thunks and call-by-need", "data parsing / on-demand APIs"],
+  "mathematical_formalization": "On-demand parser state: (tape, pos, depth). Navigation: next_field() = advance pos to next structural char at same depth, O(1). enter_object() = pos++, depth++. Value materialization: materialize(pos) = parse bytes between tape[pos] and tape[pos+1], cost O(field_length). Total cost for k fields out of n: O(n_structural + k * avg_field_length) vs DOM: O(total_input_size).",
+  "analogical_connections": [
+    "simdjson On-Demand API: the production implementation of lazy JSON parsing",
+    "Database columnar late materialization: don't decode values until they pass predicates",
+    "Haskell thunks: defer evaluation to a closure forced only when needed"
+  ],
+  "implementation_hypothesis": "Represent parse state as struct {const uint32_t* tape; uint32_t pos; int16_t depth; const uint8_t* input;}. Implement skip_value() via branchless depth-tracking scan over tape with SIMD acceleration: vpcmpd for depth changes, process 16 tape entries per SIMD iteration.",
+  "experiment_seed": "Benchmark selective field access: 1 field from 1000-field objects, 10% of fields, deeply nested paths. Compare against simdjson On-Demand and DOM. Measure throughput, memory allocation, cache miss rate.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

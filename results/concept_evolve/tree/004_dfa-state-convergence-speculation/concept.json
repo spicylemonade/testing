@@ -1,0 +1,25 @@
+{
+  "id": 4,
+  "symbolic_name": "dfa_state_convergence_speculation",
+  "description": "Leverage the state-convergence property of the JSON parsing DFA to enable failure-free speculative parallelism. JSON's grammar has high convergence: regardless of the initial state assumed for a chunk, the DFA tends to converge to the correct state within a few bytes due to the limited number of states in the JSON state machine. This is directly borrowed from Ko et al.'s speculative parallel DFA matching, adapted specifically for JSON's grammar.",
+  "domains": [
+    "formal language theory / DFA properties",
+    "parallel computing / speculative execution",
+    "information theory / Markov chain mixing"
+  ],
+  "mathematical_formalization": "Model JSON parsing as a DFA with state set Q, |Q| ~ 8-12 for the core JSON grammar. The convergence factor gamma = max_q in Q (|reachable(q, sigma*)| / |Q|) for strings of length L. For JSON, gamma < 0.3 after L=4 bytes because structural characters ({, [, etc.) force specific states. Speculative speedup: S = P / (1 + (P-1) * gamma) where P = number of parallel units. For P=8 and gamma=0.2: S ~ 4.7x.",
+  "analogical_connections": [
+    "Markov chain mixing time: the JSON DFA's rapid convergence is analogous to a fast-mixing Markov chain reaching its stationary distribution",
+    "CPU speculative execution with confidence estimation: like a branch predictor with a confidence counter, convergence factor serves as speculation confidence",
+    "Consensus in distributed systems: state convergence is similar to Byzantine agreement where processors converge to the same state despite starting with different assumptions"
+  ],
+  "implementation_hypothesis": "Pre-compute the JSON DFA's convergence table: for each possible (state, byte_sequence) pair of length 4, store whether all starting states converge. At runtime, for each speculative chunk boundary, check the first 4 bytes against the convergence table. If convergence is guaranteed, no fixup is needed. If not, propagate the correct state forward. This reduces fixup cost from O(chunk_size) to O(4) in the common case.",
+  "experiment_seed": "Build the complete JSON DFA and compute its convergence properties empirically. Analyze convergence on real JSON files: for each 64-byte chunk boundary, measure how many bytes are needed for all starting states to converge. Plot the convergence CDF. Target: >95% of boundaries converge within 4 bytes, confirming that speculative parallel parsing is practical for JSON.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.912542+00:00",
+  "project_folder": "concept_evolve/tree/004_dfa-state-convergence-speculation"
+}

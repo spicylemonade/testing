@@ -1,0 +1,15 @@
+{
+  "id": 11,
+  "symbolic_name": "runahead_prefetch_parsing",
+  "description": "Apply runahead execution from CPU microarchitecture to JSON parsing: when the parser stalls on a long-latency operation (number parsing, UTF-8 validation), continue parsing structurally ahead to prefetch structural indices and prime the cache. Like CPU runahead, the ahead-work generates prefetch hints, not committed state.",
+  "domains": ["CPU microarchitecture / runahead execution", "data parsing / prefetching", "operating systems / readahead"],
+  "mathematical_formalization": "Parsing operations with latencies L_i. When L_i > threshold, runahead for operations i+1..i+R. Cache hit improvement: Delta_hit = sum_{j=1}^R Pr[byte at tape[i+j] not in cache] * Pr[L_i > prefetch_latency]. For L1 miss penalty ~10 cycles, stride ~20 bytes: R=8 prefetches cover ~160 bytes ahead.",
+  "analogical_connections": [
+    "CPU runahead execution (Mutlu 2003): execute past cache miss to generate prefetches, discard and re-execute on miss resolution",
+    "OS file readahead: prefetch subsequent blocks on sequential access detection",
+    "Speculative decoding in LLMs: generate tokens ahead of verification"
+  ],
+  "implementation_hypothesis": "In on-demand parser, when materializing a value, issue _mm_prefetch for next N structural index entries and corresponding input ranges. Implement lightweight runahead coroutine that walks structural tape ahead of main parser, issuing prefetches without modifying state.",
+  "experiment_seed": "Instrument simdjson On-Demand for cache miss rates during materialization. Add software prefetching. Measure delta in cache misses and throughput on large files with cache-miss-heavy access patterns. Target: >15% throughput improvement.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

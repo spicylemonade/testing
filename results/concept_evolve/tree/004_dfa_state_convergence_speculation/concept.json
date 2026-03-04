@@ -1,0 +1,15 @@
+{
+  "id": 4,
+  "symbolic_name": "dfa_state_convergence_speculation",
+  "description": "Leverage the state-convergence property of the JSON parsing DFA to enable failure-free speculative parallelism. JSON's grammar has high convergence: regardless of the initial state assumed for a chunk, the DFA tends to converge to the correct state within a few bytes due to the limited number of states in the JSON state machine. Directly borrowed from Ko et al.'s speculative parallel DFA matching.",
+  "domains": ["formal language theory / DFA properties", "parallel computing / speculative execution", "information theory / Markov chain mixing"],
+  "mathematical_formalization": "Model JSON parsing as DFA with |Q| ~ 8-12 states. Convergence factor gamma = max_q (|reachable(q, sigma*)| / |Q|) for strings of length L. For JSON, gamma < 0.3 after L=4 bytes. Speculative speedup: S = P / (1 + (P-1) * gamma) where P = parallel units.",
+  "analogical_connections": [
+    "Markov chain mixing time: rapid convergence analogous to fast-mixing chains",
+    "CPU branch prediction confidence: convergence factor serves as speculation confidence",
+    "Byzantine consensus: processors converge to same state despite different starting assumptions"
+  ],
+  "implementation_hypothesis": "Pre-compute the JSON DFA's convergence table for each (state, 4-byte-sequence) pair. At runtime, check first 4 bytes of each chunk boundary. If convergence guaranteed, no fixup needed; otherwise propagate correct state forward. Reduces fixup from O(chunk_size) to O(4).",
+  "experiment_seed": "Build complete JSON DFA. For each 64-byte boundary in real JSON files, measure bytes needed for all starting states to converge. Plot convergence CDF. Target: >95% converge within 4 bytes.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

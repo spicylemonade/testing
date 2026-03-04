@@ -1,0 +1,15 @@
+{
+  "id": 2,
+  "symbolic_name": "fused_tokenize_validate_pass",
+  "description": "Fuse tokenization, UTF-8 validation, structural character identification, and string-escape processing into a single SIMD pass over the data, eliminating the multi-pass architecture of simdjson's Stage 1. Analogous to kernel fusion in GPU computing, where multiple operations are combined into a single kernel to reduce memory bandwidth pressure and exploit register-level data reuse.",
+  "domains": ["GPU kernel fusion", "SIMD data parsing", "compiler optimization / loop fusion"],
+  "mathematical_formalization": "Given operations T (tokenize), V (validate), I (index), E (escape-process), the multi-pass cost is C_multi = 4 * n * (1/BW_cache). The fused cost is C_fused = n * (1/BW_mem) + 4 * n * (1/BW_reg). Since BW_reg >> BW_cache >> BW_mem, the ratio C_fused/C_multi << 1 for register-rich architectures like AVX-512 (32 zmm registers).",
+  "analogical_connections": [
+    "GPU kernel fusion: fuse loop nests to keep intermediate results in shared memory/registers",
+    "CPU superscalar execution: out-of-order cores already interleave independent micro-ops; fused-pass makes this explicit",
+    "Database query operator fusion: push-based execution fuses operators to avoid materializing intermediates"
+  ],
+  "implementation_hypothesis": "Process 64 bytes per iteration with a single zmm load. In the same iteration: (1) compare against structural chars via vpcmpeqb + vpternlog, (2) detect backslash-quote escape sequences, (3) validate UTF-8 via vpshufb lookup, (4) track string state via vpclmulqdq prefix-xor on quote bits. Output: unified structural index + validation flag per 64-byte block.",
+  "experiment_seed": "Implement fused Stage 1 in C++ with AVX-512 intrinsics. Compare against simdjson's separate-pass Stage 1. Measure instructions/byte, cache misses/byte, throughput in GB/s.",
+  "folder_plan": ["concept.json", "README.md", "literature.json"]
+}

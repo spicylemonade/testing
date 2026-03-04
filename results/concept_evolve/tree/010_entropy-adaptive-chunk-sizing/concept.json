@@ -1,0 +1,25 @@
+{
+  "id": 10,
+  "symbolic_name": "entropy_adaptive_chunk_sizing",
+  "description": "Dynamically adjust the chunk size for speculative parallel parsing based on the local entropy of the JSON input. High-entropy regions (dense strings, varied data) benefit from larger chunks to amortize speculation overhead, while low-entropy regions (repeated structure, arrays of similar objects) can use smaller chunks for finer parallelism. Borrowed from adaptive compression algorithms that adjust window sizes based on source entropy.",
+  "domains": [
+    "information theory / entropy estimation",
+    "adaptive algorithms / online optimization",
+    "SIMD data parsing"
+  ],
+  "mathematical_formalization": "Estimate local entropy H(C_i) = -sum_b p(b) log p(b) for each chunk C_i using byte frequency counts. Define optimal chunk size: L_opt(H) = L_min * 2^(alpha * H / H_max) where alpha controls the sensitivity. The speculation miss rate for JSON correlates with string density: P_miss ~ f_string * (1 - e^{-L/lambda}) where lambda is the average string length. Minimizing total cost: argmin_L { n/(L*P) * T_chunk + n/L * P_miss(L) * T_fixup }.",
+  "analogical_connections": [
+    "Adaptive Huffman coding: adjusts code tables based on observed symbol frequencies; here we adjust parallelism granularity",
+    "TCP congestion window: dynamically sizes the transmission window based on network conditions; here we size parse chunks based on data conditions",
+    "Adaptive mesh refinement in CFD: refine the grid where the solution has high gradients; here refine parallelism where the data has high structural complexity"
+  ],
+  "implementation_hypothesis": "First pass: scan input at 4KB granularity to compute byte frequency histograms (using VPOPCNT on byte classifications). Compute entropy estimate per 4KB block. Group blocks into variable-sized chunks where chunk boundaries are placed at low-entropy points (e.g., between array elements). Feed the variable-sized chunks to the speculative parallel indexer. The grouping overhead is O(n/4096) and can itself be SIMD-accelerated.",
+  "experiment_seed": "Profile speculation miss rates across different JSON files as a function of chunk size. Fit the P_miss(L) model empirically. Implement the entropy-adaptive chunking and compare against fixed-size chunking. Measure: (1) overall speculation miss rate, (2) throughput variation, (3) load balance across cores. Target: reduce speculation misses by >50% compared to fixed-size chunks on heterogeneous JSON inputs.",
+  "folder_plan": [
+    "concept.json",
+    "README.md",
+    "literature.json"
+  ],
+  "generated_at": "2026-03-04T19:19:43.917409+00:00",
+  "project_folder": "concept_evolve/tree/010_entropy-adaptive-chunk-sizing"
+}
