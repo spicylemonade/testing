@@ -1,0 +1,216 @@
+[
+  {
+    "symbolic_name": "stochastic_particle_lcs",
+    "description": "Tiskin (2022) established a direct correspondence between the Chvátal-Sankoff constant γ₂ and the stationary density of a stochastic particle process derived from the combinatorial structure of LCS. The particle system encodes the evolution of LCS scores as particles moving on a lattice, where γ is determined by the stationary particle density. This bridges statistical mechanics and combinatorial optimization.",
+    "domains": ["statistical_mechanics", "combinatorics", "stochastic_processes"],
+    "mathematical_formalization": "Let ρ(t) be the particle density at time t in the stationary regime. Then γ₂ = 1 - ∫ ρ(x) dx over the stationary measure. The particle dynamics satisfy dρ/dt = F(ρ, ∇ρ) where F encodes the matching rules. In equilibrium, E[v(ρ)] = 1 - 2γ₂ where v is the average particle speed.",
+    "analogical_connections": [
+      "TASEP (Totally Asymmetric Simple Exclusion Process) ↔ LCS particle dynamics",
+      "Burgers equation hydrodynamic limit ↔ macroscopic LCS growth rate",
+      "Ising model phase transitions ↔ potential phase transitions in LCS structure"
+    ],
+    "implementation_hypothesis": "Simulate the Tiskin particle process for increasing system sizes L. Measure stationary density ρ_L via ergodic time averages. Extrapolate ρ_∞ = lim_{L→∞} ρ_L using finite-size scaling ansatz ρ_L = ρ_∞ + c₁/L + c₂/L² + ... to estimate γ₂ = (1 - ρ_∞)/2.",
+    "experiment_seed": "Implement the particle process in C/Rust with L = 10^3 to 10^6 particles. Run 10^8 time steps per size. Fit finite-size scaling corrections. Compare extrapolated γ₂ against best known bounds [0.788072, 0.826280].",
+    "folder_plan": {
+      "root": "001_stochastic_particle_lcs/",
+      "files": ["concept.json", "README.md", "literature.json", "simulate_particles.py", "finite_size_scaling.py"]
+    }
+  },
+  {
+    "symbolic_name": "frog_dynamics_pushtasep",
+    "description": "Bukh and Cox (2022) introduced 'frog dynamics,' an interacting particle system where labeled particles ('frogs') hop over each other, with the unlabeled version reducing to PushTASEP. For periodic words W, LCS(W^(n), R_n) = γ_W·n - O(√n) with γ_W computable from the stationary distribution of frog dynamics. This provides exact formulas for specific word structures.",
+    "domains": ["interacting_particle_systems", "combinatorics", "probability_theory"],
+    "mathematical_formalization": "Frog dynamics on Z/kZ: particles at positions x₁ < x₂ < ... < x_k with labels. When frog i is activated, it hops to the right of frog i+1 (mod k). Stationary distribution π satisfies detailed balance. γ(W) = E_π[speed] for periodic word W. For W = 12...k: γ(12...k) = 1 - Σᵢ₌₁ᵏ 1/(2i-1) · ∏ⱼ₌₁ⁱ⁻¹ (1 - 1/(2j)).",
+    "analogical_connections": [
+      "PushTASEP on a ring ↔ frog dynamics without labels",
+      "Markov chain mixing time ↔ convergence speed to γ_W estimate",
+      "Exclusion processes with correlated clocks ↔ palindromic word analysis (Briggs et al. 2024)"
+    ],
+    "implementation_hypothesis": "Extend frog dynamics to handle random-vs-random case (not just periodic-vs-random). Conjecture: the γ₂ constant can be approximated by γ(W*) where W* is the periodic word whose γ(W) best approximates γ₂. Search over periodic words of increasing period to tighten bounds.",
+    "experiment_seed": "Enumerate all binary periodic words of period p ≤ 20. For each, compute γ(W) via frog dynamics simulation. Track max γ(W) over all W as function of p. Check if these approach the known lower bound 0.792666.",
+    "folder_plan": {
+      "root": "002_frog_dynamics_pushtasep/",
+      "files": ["concept.json", "README.md", "literature.json", "frog_dynamics_sim.py"]
+    }
+  },
+  {
+    "symbolic_name": "last_passage_percolation_bridge",
+    "description": "The LCS of two random strings maps to a last-passage percolation (LPP) problem on a random grid. The LCS length corresponds to the maximum weight path in a directed lattice where cell (i,j) has weight 1 if characters match. This connection to LPP enables importing tools from KPZ universality theory, random matrix theory, and exactly solvable models.",
+    "domains": ["percolation_theory", "random_matrix_theory", "combinatorial_optimization"],
+    "mathematical_formalization": "Define w(i,j) = 1_{a_i = b_j} for random binary strings a,b. LCS(a,b) = max_{π: (0,0)→(n,n)} Σ_{(i,j)∈π} w(i,j), where π is a directed lattice path. This is last-passage percolation with Bernoulli(1/2) weights. The constant γ₂ = lim_{n→∞} E[LPP(n,n)]/n.",
+    "analogical_connections": [
+      "Bernoulli LPP ↔ LCS of binary strings (exact correspondence)",
+      "Exponential/geometric LPP (exactly solvable) ↔ approximate model for bounds",
+      "Hammersley process ↔ LIS (longest increasing subsequence) special case",
+      "Tracy-Widom distribution ↔ fluctuations of LCS around γ₂·n"
+    ],
+    "implementation_hypothesis": "Use the LPP formulation to derive variational bounds. The upper bound comes from relaxing the directed-path constraint; the lower bound from constructing explicit paths. Apply the Busemann function approach from Cator-Pimentel to characterize the competition interface.",
+    "experiment_seed": "Compare Monte Carlo estimates of LCS(n,n)/n for n up to 10^6 with theoretical predictions from LPP models. Measure fluctuation exponents: does Var[LCS(n,n)] scale as n^{2/3} (KPZ class) or differently?",
+    "folder_plan": {
+      "root": "003_last_passage_percolation_bridge/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "kpz_universality_fluctuations",
+    "description": "The KPZ universality class governs fluctuations in many growth models, including LPP and TASEP. If LCS falls in the KPZ class, fluctuations of LCS(n,n) around γ₂·n should be O(n^{1/3}) with Tracy-Widom distributed limiting law. Proving or disproving KPZ membership for binary LCS would constrain the nature of γ₂ and might yield new bounds.",
+    "domains": ["KPZ_universality", "random_matrix_theory", "probability_theory"],
+    "mathematical_formalization": "KPZ prediction: (LCS(n,n) - γ₂·n) / n^{1/3} → F_TW (Tracy-Widom distribution) as n → ∞. The 2-point correlation function should decay as |x-y|^{-2/3}. Shape function: g(t) = lim_{n→∞} E[LCS(⌊tn⌋, n)]/n satisfies the variational formula g(t) = sup_ρ {tρ - h(ρ)} where h is a Legendre-dual free energy.",
+    "analogical_connections": [
+      "Tracy-Widom distribution from random matrix eigenvalues ↔ LCS fluctuations",
+      "Airy process ↔ multi-point LCS statistics",
+      "KPZ fixed point ↔ universal scaling limit of LCS growth",
+      "Directed landscape ↔ scaling limit of LPP/LCS models"
+    ],
+    "implementation_hypothesis": "Numerically test KPZ universality for binary LCS by computing the fluctuation distribution for large n. If confirmed, the KPZ scaling form constrains finite-n corrections to γ₂ estimates, improving extrapolation from simulations.",
+    "experiment_seed": "Generate 10^5 pairs of random binary strings of lengths n = 10^3, 10^4, 10^5. Compute LCS for each pair. Plot the rescaled distribution (LCS - γ₂·n)/n^{1/3} and compare against Tracy-Widom GOE/GUE distributions.",
+    "folder_plan": {
+      "root": "004_kpz_universality_fluctuations/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "information_bottleneck_bounds",
+    "description": "Information-theoretic methods provide both upper and lower bounds on γ₂. The entropy method (Lugosi, Boucheron-Massart) yields concentration inequalities, while Kolmogorov complexity arguments give upper bounds. The key insight is that LCS can be bounded via mutual information between the two strings conditioned on the LCS alignment, creating an information bottleneck constraint.",
+    "domains": ["information_theory", "combinatorics", "Kolmogorov_complexity"],
+    "mathematical_formalization": "Upper bound via Kolmogorov complexity: K(a|b) ≤ n - LCS(a,b) + O(log n), so E[LCS] ≤ n - H(a|b) + o(n). For i.i.d. binary: H(a|b) = n·h(1/2) but conditioning on matching structure refines this. Entropy method: Var[LCS] ≤ Σᵢ E[(E[LCS|Xᵢ] - E[LCS])²] via Efron-Stein, giving concentration LCS ∈ [γ₂n - O(√n), γ₂n + O(√n)].",
+    "analogical_connections": [
+      "Rate-distortion theory ↔ optimal lossy encoding of one string given the other",
+      "Channel coding theorem ↔ maximum reliable information through LCS 'channel'",
+      "Information bottleneck method (Tishby) ↔ compressed representation of alignment",
+      "Kolmogorov complexity bounds ↔ incompressibility arguments for upper bounds"
+    ],
+    "implementation_hypothesis": "Formulate γ₂ as the solution to an information-theoretic optimization: γ₂ = sup_{p(z|x,y)} I(X;Y|Z)/n subject to Z being an LCS-valid alignment. Use the Blahut-Arimoto algorithm to numerically solve this mutual information maximization.",
+    "experiment_seed": "Implement Markov chain upper bound (Baeza-Yates et al.) for increasing chain orders k = 1,...,20. Each k gives an upper bound on γ₂. Track convergence of the upper bound sequence. Compare with Lueker's 0.826280.",
+    "folder_plan": {
+      "root": "005_information_bottleneck_bounds/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "mean_field_cavity_method",
+    "description": "The cavity method from spin glass theory (Boutet de Monvel 1998-2000) approximates LCS via a mean-field model where matches are independent Bernoulli(1/σ) random variables. This Bernoulli matching model admits a cavity-type solution yielding approximate formulas for γ. Corrections to mean-field involve long-range correlations that are non-perturbative in the alphabet size.",
+    "domains": ["statistical_mechanics", "spin_glass_theory", "combinatorial_optimization"],
+    "mathematical_formalization": "Bernoulli matching model: w(i,j) ~ Bernoulli(1/σ) independently. Cavity equation: γ_BM(σ) = 2/(1 + √(1 + 4/σ)). For σ=2: γ_BM(2) ≈ 0.7321 (approximation to true γ₂ ≈ 0.81). Corrections: γ₂ = γ_BM + Σ_{k≥1} c_k · (correlation corrections at scale k). The c_k depend on long-range correlations absent in mean-field.",
+    "analogical_connections": [
+      "Sherrington-Kirkpatrick model ↔ mean-field spin glass analogy for LCS",
+      "Parisi replica symmetry breaking ↔ potential multi-valley structure of LCS alignments",
+      "TAP equations ↔ refined mean-field with Onsager correction terms",
+      "Cavity method (belief propagation) ↔ message-passing algorithm for LCS bounds"
+    ],
+    "implementation_hypothesis": "Develop a systematic cavity expansion: start with Bernoulli matching, then add correlation corrections at increasing ranges. Each correction tightens both upper and lower bounds. Implement as belief propagation on the factor graph of the LCS dynamic programming table.",
+    "experiment_seed": "Compare Bernoulli matching prediction γ_BM with exact LCS simulations for alphabet sizes σ = 2,3,...,26. Quantify the gap γ_σ - γ_BM(σ) as a function of σ. Check if gap decreases with σ, confirming mean-field becomes exact for large alphabets.",
+    "folder_plan": {
+      "root": "006_mean_field_cavity_method/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "optimal_transport_alignment",
+    "description": "Recasting LCS as an optimal transport problem: characters in string X are 'sources' and characters in string Y are 'sinks.' The LCS alignment is a partial transport plan respecting monotonicity constraints. The Wasserstein distance framework and Gromov-Wasserstein formulations can yield relaxations that provide computable bounds on γ₂.",
+    "domains": ["optimal_transport", "sequence_alignment", "mathematical_optimization"],
+    "mathematical_formalization": "Define measures μ = Σᵢ δ_{(i, aᵢ)} on X and ν = Σⱼ δ_{(j, bⱼ)} on Y. LCS corresponds to: max_{π ∈ Π_mono(μ,ν)} ∫ 1_{a=b} dπ((i,a),(j,b)), where Π_mono is the set of monotone partial couplings. Relaxation: drop monotonicity to get OT upper bound. Wasserstein dual: γ₂ ≤ inf_φ E[Σⱼ max_i {1_{aᵢ=bⱼ} - φ(i,j)}].",
+    "analogical_connections": [
+      "Kantorovich duality ↔ dual characterization of LCS bounds",
+      "Sinkhorn algorithm ↔ entropic regularization of LCS relaxation",
+      "Gromov-Wasserstein distance ↔ structure-preserving alignment (preserving order)",
+      "Unbalanced OT ↔ partial matching in LCS (not all characters matched)"
+    ],
+    "implementation_hypothesis": "Formulate the monotone partial OT problem as a linear program. Solve the LP relaxation (drop integrality) using Sinkhorn-type iterations with monotonicity constraints. The LP optimum provides an upper bound on γ₂. Tighten by adding valid inequalities from the LCS structure.",
+    "experiment_seed": "For strings of length n = 100, 200, 500, 1000: solve the LP relaxation of LCS averaged over 10^4 random pairs. Compare LP bound / n with known γ₂ upper bounds. Measure how tight the relaxation is.",
+    "folder_plan": {
+      "root": "007_optimal_transport_alignment/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "lp_relaxation_dual_bounds",
+    "description": "The Heineman et al. (2024) approach for lower bounds constructs feasible solutions to a dual LP. The 'feasible triplet' method defines valid configurations on length-ℓ string pairs whose expected scores lower-bound γ₂. Tightening these LP bounds via better dual solutions (parallelized search, memory-efficient recursion) achieved the current best lower bound of 0.792666.",
+    "domains": ["linear_programming", "combinatorial_optimization", "computer_science"],
+    "mathematical_formalization": "A feasible triplet (A, φ, w) consists of: A ⊆ {0,1}^ℓ × {0,1}^ℓ (alignment set), φ: A → R+ (weight function), w: {0,1}^ℓ × {0,1}^ℓ → R+ (string weight). The bound: γ₂ ≥ (1/ℓ) · Σ_{(a,b)∈A} φ(a,b) · LCS(a,b) / Σ_{(a,b)} w(a,b). Optimization over (A, φ, w) subject to consistency constraints yields tighter bounds as ℓ increases.",
+    "analogical_connections": [
+      "LP duality (strong duality theorem) ↔ upper and lower bound certificates",
+      "Column generation in LP ↔ iteratively adding feasible triplets",
+      "Branch-and-bound ↔ systematic search over feasible triplet space",
+      "Semidefinite relaxation ↔ potential SDP hierarchy for tighter bounds"
+    ],
+    "implementation_hypothesis": "Extend the feasible triplet method with: (1) GPU-accelerated search over triplet space for ℓ ≥ 20; (2) machine-learning-guided selection of promising triplets; (3) SDP relaxation to get upper bounds from the same framework. Target: push lower bound past 0.793.",
+    "experiment_seed": "Reproduce Heineman et al. results for ℓ = 1,...,14. Then extend to ℓ = 15,16 using parallelized code. Measure improvement per unit of ℓ. Extrapolate the convergence rate to estimate achievable bound at ℓ = 20.",
+    "folder_plan": {
+      "root": "008_lp_relaxation_dual_bounds/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "finite_size_scaling_extrapolation",
+    "description": "Bundschuh (2001) developed high-precision Monte Carlo estimates of γ₂ using finite-size scaling with analytically known functional forms. The key insight is that E[LCS(n,n)]/n = γ₂ + c₁/n^{1/3} + c₂/n^{2/3} + ... with the exponents determined by KPZ universality (conjectured). Multi-spin coding enables processing 64 string pairs simultaneously on a single CPU word.",
+    "domains": ["computational_physics", "Monte_Carlo_methods", "finite_size_scaling"],
+    "mathematical_formalization": "Finite-size scaling ansatz: E[LCS(n,n)] = γ₂·n + c₁·n^{2/3} + c₂·n^{1/3} + c₃ + O(n^{-1/3}). Fit parameters (γ₂, c₁, c₂, c₃) from simulation data at multiple n values. Multi-spin coding: encode k = 64 binary strings as k bits of a single 64-bit word; bitwise XOR detects mismatches for all 64 pairs simultaneously.",
+    "analogical_connections": [
+      "Critical phenomena finite-size scaling ↔ LCS finite-n corrections",
+      "Renormalization group ↔ coarse-graining LCS at different scales",
+      "Multi-spin coding in Ising simulations ↔ parallel LCS computation",
+      "Richardson extrapolation ↔ systematic removal of finite-size bias"
+    ],
+    "implementation_hypothesis": "Combine multi-spin coding with GPU parallelism: encode 1024 string pairs in 16 × 64-bit words, process on GPU. Run for n up to 10^7. Apply both polynomial and KPZ-informed scaling ansätze. Compare γ₂ estimates from different extrapolation methods to assess systematic error.",
+    "experiment_seed": "Implement multi-spin coded LCS in CUDA. Generate data for n = 10^3, 10^{3.5}, 10^4, ..., 10^6. For each n, compute 10^6 LCS values. Fit three scaling ansätze: (a) polynomial 1/n, (b) KPZ n^{1/3}, (c) mixed. Report γ₂ estimate with confidence intervals.",
+    "folder_plan": {
+      "root": "009_finite_size_scaling_extrapolation/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "cellular_automata_symbolic_dynamics",
+    "description": "Tiskin (2023) reformulated the Chvátal-Sankoff problem in the language of symbolic dynamics and cellular automata. The LCS computation can be viewed as a deterministic cellular automaton applied to a random initial condition (the pair of input strings). The constant γ₂ corresponds to the Lyapunov exponent of this CA, connecting to ergodic theory and dynamical systems.",
+    "domains": ["symbolic_dynamics", "cellular_automata", "ergodic_theory"],
+    "mathematical_formalization": "Define CA rule F: {0,1}^Z × {0,1}^Z → {0,1}^Z where the state encodes the incremental LCS scores. The spacetime diagram of F on random initial conditions has a well-defined asymptotic slope γ₂. In symbolic dynamics terms: γ₂ = h_top(Σ_F) / log 2 where h_top is the topological entropy of the shift space Σ_F of valid configurations.",
+    "analogical_connections": [
+      "Rule 184 (traffic CA) ↔ TASEP-like dynamics in LCS",
+      "Lyapunov exponents in dynamical systems ↔ growth rate γ₂",
+      "Topological entropy ↔ information content of LCS structure",
+      "Subshift of finite type ↔ local constraints on valid LCS alignments"
+    ],
+    "implementation_hypothesis": "Implement the LCS cellular automaton and compute its spacetime evolution for random initial conditions. Extract γ₂ from the asymptotic slope of the 'height function.' Use transfer matrix methods on the subshift to compute topological entropy and relate to γ₂.",
+    "experiment_seed": "Implement the CA in a bit-parallel fashion. Run for system sizes L = 10^2 to 10^5 and time T = 10·L. Measure the height profile h(x,t) and extract γ₂ from the slope. Compare with transfer matrix eigenvalue computations for small system sizes.",
+    "folder_plan": {
+      "root": "010_cellular_automata_symbolic_dynamics/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "monte_carlo_multi_spin_coding",
+    "description": "Multi-spin coding (Bundschuh 2001) exploits the binary nature of the alphabet to pack 64 independent string comparisons into a single 64-bit machine word. This enables massive parallelism at the bit level, achieving ~64x speedup. Combined with modern SIMD (AVX-512) and GPU architectures, this technique could push Monte Carlo estimates of γ₂ to unprecedented precision.",
+    "domains": ["high_performance_computing", "Monte_Carlo_methods", "bit_parallel_algorithms"],
+    "mathematical_formalization": "For 64 binary string pairs (aᵏ, bᵏ), k=1,...,64: pack aᵏ_i into bit i of word A_k. Match detection: M_ij = A_i XNOR B_j (bitwise). LCS DP update: D[i][j] = max(D[i-1][j], D[i][j-1], D[i-1][j-1] + M_ij). Bit-parallel DP: encode the column differences as bit vectors, update via carry-lookahead logic.",
+    "analogical_connections": [
+      "SIMD/AVX-512 vector processing ↔ multi-spin coding at wider word size",
+      "GPU warp-level parallelism ↔ 32-wide multi-spin coding",
+      "Hyyrö bit-parallel LCS algorithms ↔ foundation for multi-spin extension",
+      "Population-based Monte Carlo ↔ independent samples in parallel"
+    ],
+    "implementation_hypothesis": "Implement AVX-512 multi-spin coded LCS achieving 512 simultaneous comparisons per instruction. Combine with anti-diagonal wavefront parallelism for the DP table. Target: 10^9 LCS computations per hour for n = 10^4, enabling γ₂ estimates with 6-digit precision.",
+    "experiment_seed": "Benchmark: (1) scalar LCS, (2) 64-bit multi-spin, (3) AVX-512 multi-spin, (4) CUDA multi-spin. Measure throughput in LCS/second for n = 10^3, 10^4, 10^5. Use highest-throughput method to accumulate 10^9 samples for γ₂ estimation.",
+    "folder_plan": {
+      "root": "011_monte_carlo_multi_spin_coding/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "symbolic_name": "subadditive_ergodic_convergence",
+    "description": "The existence of γ₂ follows from Kingman's subadditive ergodic theorem: LCS(m+n) ≤ LCS(m) + LCS(n) in expectation (approximate subadditivity). The rate of convergence E[LCS(n,n)]/n → γ₂ is controlled by the variance, which is O(n) by Azuma-Hoeffding. Tighter variance bounds (conjectured O(n^{2/3}) from KPZ) would improve convergence rates and simulation-based estimates.",
+    "domains": ["ergodic_theory", "probability_theory", "concentration_inequalities"],
+    "mathematical_formalization": "Kingman's theorem: Let a_{m,n} = E[LCS of strings of length n-m]. Then a_{0,n}/n → γ₂. Rate: |a_{0,n}/n - γ₂| ≤ C/n^{1/3} (conjectured KPZ). Alexander (1994): |E[LCS(n,n)]/n - γ₂| = O(n^{-1/3+ε}). Variance: Var[LCS(n,n)] = Θ(n^{2χ}) where χ = 1/3 (KPZ conjecture) or could be different.",
+    "analogical_connections": [
+      "Subadditive sequences in number theory ↔ Fekete's lemma for existence of γ₂",
+      "Concentration of measure ↔ LCS deviations from mean",
+      "Large deviations (Hauser-Martínez-Matzinger) ↔ upper bounds on γ₂",
+      "Central limit theorem (Houdré-Işlak) ↔ asymptotic normality of LCS"
+    ],
+    "implementation_hypothesis": "Develop improved concentration bounds by combining the entropy method with the specific structure of LCS. Use the Efron-Stein inequality with a refined exchangeable pairs coupling adapted to the LCS problem. Better concentration → faster convergence → tighter simulation-based bounds.",
+    "experiment_seed": "Estimate Var[LCS(n,n)] for n = 10^2 to 10^5 using 10^6 samples per n. Fit Var ~ n^{2χ} to determine χ. Test χ = 1/3 (KPZ) vs χ = 1/2 (diffusive). Use the variance estimate to construct optimal confidence intervals for γ₂.",
+    "folder_plan": {
+      "root": "012_subadditive_ergodic_convergence/",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  }
+]

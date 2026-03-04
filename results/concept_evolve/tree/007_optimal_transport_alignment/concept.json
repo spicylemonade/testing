@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "optimal_transport_alignment",
+  "description": "Recasting LCS as an optimal transport problem: characters in string X are 'sources' and characters in string Y are 'sinks.' The LCS alignment is a partial transport plan respecting monotonicity constraints. The Wasserstein distance framework and Gromov-Wasserstein formulations can yield relaxations that provide computable bounds on γ₂.",
+  "domains": ["optimal_transport", "sequence_alignment", "mathematical_optimization"],
+  "mathematical_formalization": "Define measures μ = Σᵢ δ_{(i, aᵢ)} on X and ν = Σⱼ δ_{(j, bⱼ)} on Y. LCS corresponds to: max_{π ∈ Π_mono(μ,ν)} ∫ 1_{a=b} dπ((i,a),(j,b)), where Π_mono is the set of monotone partial couplings. Relaxation: drop monotonicity to get OT upper bound. Wasserstein dual: γ₂ ≤ inf_φ E[Σⱼ max_i {1_{aᵢ=bⱼ} - φ(i,j)}].",
+  "analogical_connections": [
+    "Kantorovich duality ↔ dual characterization of LCS bounds",
+    "Sinkhorn algorithm ↔ entropic regularization of LCS relaxation",
+    "Gromov-Wasserstein distance ↔ structure-preserving alignment (preserving order)",
+    "Unbalanced OT ↔ partial matching in LCS (not all characters matched)"
+  ],
+  "implementation_hypothesis": "Formulate the monotone partial OT problem as a linear program. Solve the LP relaxation (drop integrality) using Sinkhorn-type iterations with monotonicity constraints. The LP optimum provides an upper bound on γ₂. Tighten by adding valid inequalities from the LCS structure.",
+  "experiment_seed": "For strings of length n = 100, 200, 500, 1000: solve the LP relaxation of LCS averaged over 10^4 random pairs. Compare LP bound / n with known γ₂ upper bounds. Measure how tight the relaxation is."
+}

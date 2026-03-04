@@ -1,0 +1,32 @@
+[
+  {
+    "direction": "GPU-accelerated multi-spin Monte Carlo with KPZ-informed finite-size scaling",
+    "rationale": "The current best numerical estimate of γ₂ relies on Bundschuh's 2001 multi-spin method with modest computational resources. Modern GPUs offer 10,000x more throughput. Combined with KPZ-predicted scaling exponents (confirmed numerically for related models), we can achieve 2-3 additional digits of precision for γ₂. This would either confirm or rule out simple closed-form expressions via integer relation detection (PSLQ).",
+    "first_step": "Implement CUDA multi-spin coded LCS computation processing 1024 string pairs simultaneously. Validate against known small-n exact values. Then run for n = 10^3 to 10^7 with 10^8 samples per n value.",
+    "expected_signal": "If KPZ scaling holds, the fit γ₂ + c₁·n^{-1/3} + c₂·n^{-2/3} will have χ² per degree of freedom ≈ 1. The resulting γ₂ estimate should have uncertainty < 10^{-7}. PSLQ applied to the estimate will either find a match to known constants or provide strong evidence that γ₂ is transcendental."
+  },
+  {
+    "direction": "Frog dynamics extension: from periodic-vs-random to random-vs-random",
+    "rationale": "Bukh-Cox's frog dynamics exactly computes γ(W) for LCS(W^(n), R_n). The full Chvátal-Sankoff problem is LCS(R_n, R'_n) for two independent random strings. The gap is: can frog dynamics (or a generalization) handle the fully random case? Tiskin's particle process is a candidate, but its stationary distribution is not known analytically. Bridging this gap—finding an exact or high-precision computation of the stationary measure—would directly yield γ₂.",
+    "first_step": "Implement Tiskin's particle process for binary alphabet. Measure the stationary density ρ as a function of system size L. Attempt to characterize the stationary measure: is it product-form? If not, what correlations exist? Compare with Bukh-Cox frog dynamics stationary distributions.",
+    "expected_signal": "If the stationary measure is product-form (like TASEP), we get an exact formula for γ₂. More likely, it has non-trivial correlations, but these might decay exponentially, enabling a cluster expansion. Either way, measuring ρ_L for L up to 10^4 will give γ₂ with new precision."
+  },
+  {
+    "direction": "Optimal transport relaxation hierarchy for systematic upper bounds",
+    "rationale": "Current upper bounds on γ₂ (Lueker 2003: 0.826280) have not been improved in over 20 years. The LP/OT relaxation approach provides a systematic way to generate upper bounds. By formulating LCS as a monotone partial transport problem and solving the Kantorovich dual, we get an upper bound. Adding valid inequalities from the LCS structure (submodularity, monotonicity constraints) creates a hierarchy of increasingly tight relaxations.",
+    "first_step": "Formulate the LCS LP relaxation for strings of length n. Solve the dual LP numerically for n = 10, 20, 50, 100 to establish baseline upper bounds. Identify the most violated constraints and add them as cutting planes. Iterate.",
+    "expected_signal": "If the LP relaxation gap decreases polynomially in n, we can extrapolate to n → ∞ and potentially improve the 0.826280 upper bound. Even a small improvement (e.g., 0.825) would be significant given 20+ years of stagnation. If the gap decreases slowly, this reveals structural constraints on what LP methods can achieve."
+  },
+  {
+    "direction": "Transfer matrix method on the cellular automaton formulation",
+    "rationale": "Tiskin's CA formulation reduces the infinite-system γ₂ problem to the dominant eigenvalue of a transfer matrix operating on finite-width strips. For strip width w, the transfer matrix has size exponential in w, but yields exact values γ₂(w) that converge to γ₂ as w → ∞. Even moderate w (say 15-20) with careful extrapolation could yield competitive bounds. This is analogous to the density matrix renormalization group (DMRG) in condensed matter physics.",
+    "first_step": "Derive the transfer matrix T_w for the LCS cellular automaton on a strip of width w. Compute the dominant eigenvalue λ(w) for w = 1, 2, ..., 12 using sparse matrix methods. Extract γ₂(w) = log λ(w) / w. Extrapolate using w → ∞ scaling theory.",
+    "expected_signal": "The sequence γ₂(w) should converge monotonically (from above or below, depending on boundary conditions). If convergence is geometric (|γ₂(w) - γ₂| ~ c·r^w), then w = 15 suffices for 6-digit accuracy. If algebraic (~w^{-α}), we need larger w but can still extrapolate effectively."
+  },
+  {
+    "direction": "Deletion channel capacity connection for new information-theoretic bounds",
+    "rationale": "The binary deletion channel with deletion probability δ has capacity C(δ) directly related to γ₂. Recent breakthroughs in deletion channel capacity bounds (Mitzenmacher-Drinea, Cheraghchi) provide new information-theoretic constraints on γ₂ that have not been fully exploited. Conversely, tighter γ₂ bounds improve deletion channel capacity estimates, creating a virtuous cycle.",
+    "first_step": "Map the known deletion channel capacity bounds to constraints on γ₂. Specifically: C(δ) ≤ 1-δ and C(δ) ≥ (1-δ)/9 (Mitzenmacher) each translate to γ₂ bounds. Determine if these improve on existing bounds or provide new structural constraints.",
+    "expected_signal": "If the deletion channel connection yields a new upper bound on γ₂ below 0.826, that would be a significant advance. Even if the direct bounds are weak, the information-theoretic framework might suggest new proof strategies (e.g., using polarization, which revolutionized channel capacity computation)."
+  }
+]

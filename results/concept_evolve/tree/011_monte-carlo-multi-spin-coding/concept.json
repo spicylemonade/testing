@@ -1,0 +1,28 @@
+{
+  "symbolic_name": "monte_carlo_multi_spin_coding",
+  "description": "Multi-spin coding (Bundschuh 2001) exploits the binary nature of the alphabet to pack 64 independent string comparisons into a single 64-bit machine word. This enables massive parallelism at the bit level, achieving ~64x speedup. Combined with modern SIMD (AVX-512) and GPU architectures, this technique could push Monte Carlo estimates of \u03b3\u2082 to unprecedented precision.",
+  "domains": [
+    "high_performance_computing",
+    "Monte_Carlo_methods",
+    "bit_parallel_algorithms"
+  ],
+  "mathematical_formalization": "For 64 binary string pairs (a\u1d4f, b\u1d4f), k=1,...,64: pack a\u1d4f_i into bit i of word A_k. Match detection: M_ij = A_i XNOR B_j (bitwise). LCS DP update: D[i][j] = max(D[i-1][j], D[i][j-1], D[i-1][j-1] + M_ij). Bit-parallel DP: encode the column differences as bit vectors, update via carry-lookahead logic.",
+  "analogical_connections": [
+    "SIMD/AVX-512 vector processing \u2194 multi-spin coding at wider word size",
+    "GPU warp-level parallelism \u2194 32-wide multi-spin coding",
+    "Hyyr\u00f6 bit-parallel LCS algorithms \u2194 foundation for multi-spin extension",
+    "Population-based Monte Carlo \u2194 independent samples in parallel"
+  ],
+  "implementation_hypothesis": "Implement AVX-512 multi-spin coded LCS achieving 512 simultaneous comparisons per instruction. Combine with anti-diagonal wavefront parallelism for the DP table. Target: 10^9 LCS computations per hour for n = 10^4, enabling \u03b3\u2082 estimates with 6-digit precision.",
+  "experiment_seed": "Benchmark: (1) scalar LCS, (2) 64-bit multi-spin, (3) AVX-512 multi-spin, (4) CUDA multi-spin. Measure throughput in LCS/second for n = 10^3, 10^4, 10^5. Use highest-throughput method to accumulate 10^9 samples for \u03b3\u2082 estimation.",
+  "folder_plan": {
+    "root": "011_monte_carlo_multi_spin_coding/",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T19:07:33.300215+00:00",
+  "project_folder": "concept_evolve/tree/011_monte-carlo-multi-spin-coding"
+}

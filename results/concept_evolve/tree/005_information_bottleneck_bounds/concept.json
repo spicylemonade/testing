@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "information_bottleneck_bounds",
+  "description": "Information-theoretic methods provide both upper and lower bounds on γ₂. The entropy method (Lugosi, Boucheron-Massart) yields concentration inequalities, while Kolmogorov complexity arguments give upper bounds. The key insight is that LCS can be bounded via mutual information between the two strings conditioned on the LCS alignment, creating an information bottleneck constraint.",
+  "domains": ["information_theory", "combinatorics", "Kolmogorov_complexity"],
+  "mathematical_formalization": "Upper bound via Kolmogorov complexity: K(a|b) ≤ n - LCS(a,b) + O(log n), so E[LCS] ≤ n - H(a|b) + o(n). For i.i.d. binary: H(a|b) = n·h(1/2) but conditioning on matching structure refines this. Entropy method: Var[LCS] ≤ Σᵢ E[(E[LCS|Xᵢ] - E[LCS])²] via Efron-Stein, giving concentration LCS ∈ [γ₂n - O(√n), γ₂n + O(√n)].",
+  "analogical_connections": [
+    "Rate-distortion theory ↔ optimal lossy encoding of one string given the other",
+    "Channel coding theorem ↔ maximum reliable information through LCS 'channel'",
+    "Information bottleneck method (Tishby) ↔ compressed representation of alignment",
+    "Kolmogorov complexity bounds ↔ incompressibility arguments for upper bounds"
+  ],
+  "implementation_hypothesis": "Formulate γ₂ as the solution to an information-theoretic optimization: γ₂ = sup_{p(z|x,y)} I(X;Y|Z)/n subject to Z being an LCS-valid alignment. Use the Blahut-Arimoto algorithm to numerically solve this mutual information maximization.",
+  "experiment_seed": "Implement Markov chain upper bound (Baeza-Yates et al.) for increasing chain orders k = 1,...,20. Each k gives an upper bound on γ₂. Track convergence of the upper bound sequence. Compare with Lueker's 0.826280."
+}

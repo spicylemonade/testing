@@ -1,0 +1,135 @@
+{
+  "nodes": [
+    {"id": "stochastic_particle_lcs", "domain": "statistical_mechanics"},
+    {"id": "frog_dynamics_pushtasep", "domain": "interacting_particle_systems"},
+    {"id": "last_passage_percolation_bridge", "domain": "percolation_theory"},
+    {"id": "kpz_universality_fluctuations", "domain": "KPZ_universality"},
+    {"id": "information_bottleneck_bounds", "domain": "information_theory"},
+    {"id": "mean_field_cavity_method", "domain": "spin_glass_theory"},
+    {"id": "optimal_transport_alignment", "domain": "optimal_transport"},
+    {"id": "lp_relaxation_dual_bounds", "domain": "linear_programming"},
+    {"id": "finite_size_scaling_extrapolation", "domain": "computational_physics"},
+    {"id": "cellular_automata_symbolic_dynamics", "domain": "symbolic_dynamics"},
+    {"id": "monte_carlo_multi_spin_coding", "domain": "high_performance_computing"},
+    {"id": "subadditive_ergodic_convergence", "domain": "ergodic_theory"}
+  ],
+  "edges": [
+    {
+      "source": "stochastic_particle_lcs",
+      "target": "frog_dynamics_pushtasep",
+      "relation": "Both model LCS via interacting particle systems; Tiskin's process is the random-vs-random analogue of Bukh-Cox frog dynamics for periodic-vs-random"
+    },
+    {
+      "source": "stochastic_particle_lcs",
+      "target": "last_passage_percolation_bridge",
+      "relation": "The particle process arises from the microscopic dynamics of the LPP optimal path; stationary density ↔ shape function slope"
+    },
+    {
+      "source": "last_passage_percolation_bridge",
+      "target": "kpz_universality_fluctuations",
+      "relation": "LPP is a canonical KPZ model; if binary LCS-LPP lies in KPZ class, Tracy-Widom fluctuations constrain γ₂ corrections"
+    },
+    {
+      "source": "kpz_universality_fluctuations",
+      "target": "finite_size_scaling_extrapolation",
+      "relation": "KPZ exponents (1/3, 2/3) determine the finite-size scaling ansatz used to extrapolate γ₂ from finite-n simulations"
+    },
+    {
+      "source": "finite_size_scaling_extrapolation",
+      "target": "monte_carlo_multi_spin_coding",
+      "relation": "Multi-spin coding provides the computational throughput needed for high-precision finite-size scaling analysis"
+    },
+    {
+      "source": "information_bottleneck_bounds",
+      "target": "lp_relaxation_dual_bounds",
+      "relation": "Both provide upper bounds on γ₂: info-theoretic via entropy arguments, LP via dual feasible solutions; potentially unifiable via information-geometric LP"
+    },
+    {
+      "source": "mean_field_cavity_method",
+      "target": "stochastic_particle_lcs",
+      "relation": "Mean-field approximation provides a simplified solvable version of the particle process; corrections capture correlation structure"
+    },
+    {
+      "source": "mean_field_cavity_method",
+      "target": "information_bottleneck_bounds",
+      "relation": "Cavity equations can be interpreted as belief propagation, an information-theoretic message-passing scheme on the LCS factor graph"
+    },
+    {
+      "source": "optimal_transport_alignment",
+      "target": "lp_relaxation_dual_bounds",
+      "relation": "OT formulation of LCS is a structured LP; Kantorovich duality gives the same dual bounds in transport language"
+    },
+    {
+      "source": "optimal_transport_alignment",
+      "target": "information_bottleneck_bounds",
+      "relation": "Wasserstein distance between character distributions provides information-theoretic bounds on matching capacity"
+    },
+    {
+      "source": "cellular_automata_symbolic_dynamics",
+      "target": "stochastic_particle_lcs",
+      "relation": "The CA spacetime evolution encodes the particle process; Tiskin explicitly developed both formulations for the same problem"
+    },
+    {
+      "source": "cellular_automata_symbolic_dynamics",
+      "target": "finite_size_scaling_extrapolation",
+      "relation": "Transfer matrix methods on the CA give exact γ₂ for finite widths, enabling systematic extrapolation to infinite width"
+    },
+    {
+      "source": "subadditive_ergodic_convergence",
+      "target": "information_bottleneck_bounds",
+      "relation": "Concentration inequalities from entropy method quantify deviations from the subadditive limit γ₂"
+    },
+    {
+      "source": "subadditive_ergodic_convergence",
+      "target": "finite_size_scaling_extrapolation",
+      "relation": "Rate of convergence in Kingman's theorem determines how quickly simulation estimates approach γ₂"
+    },
+    {
+      "source": "frog_dynamics_pushtasep",
+      "target": "kpz_universality_fluctuations",
+      "relation": "PushTASEP (the unlabeled frog dynamics) is known to lie in the KPZ universality class"
+    },
+    {
+      "source": "lp_relaxation_dual_bounds",
+      "target": "monte_carlo_multi_spin_coding",
+      "relation": "LP bounds improve with string length parameter ℓ; multi-spin coding accelerates the exhaustive search over feasible triplets"
+    },
+    {
+      "source": "mean_field_cavity_method",
+      "target": "last_passage_percolation_bridge",
+      "relation": "Bernoulli matching model (mean-field LCS) is exactly a specific LPP model with independent Bernoulli weights"
+    }
+  ],
+  "bridge_chains": [
+    {
+      "name": "statistical_mechanics_to_computation",
+      "path": ["stochastic_particle_lcs", "last_passage_percolation_bridge", "kpz_universality_fluctuations", "finite_size_scaling_extrapolation", "monte_carlo_multi_spin_coding"],
+      "domains_crossed": ["statistical_mechanics", "percolation_theory", "KPZ_universality", "computational_physics", "high_performance_computing"],
+      "narrative": "Starting from Tiskin's particle process formulation, we map to LPP, import KPZ universality predictions for scaling exponents, use these to design optimal finite-size scaling ansätze, and implement via multi-spin coded Monte Carlo for maximum throughput."
+    },
+    {
+      "name": "information_theory_to_optimization",
+      "path": ["information_bottleneck_bounds", "optimal_transport_alignment", "lp_relaxation_dual_bounds", "monte_carlo_multi_spin_coding"],
+      "domains_crossed": ["information_theory", "optimal_transport", "linear_programming", "high_performance_computing"],
+      "narrative": "Information-theoretic bounds on LCS inspire an optimal transport formulation, which reduces to structured LPs whose dual solutions (feasible triplets) can be searched computationally using bit-parallel methods."
+    },
+    {
+      "name": "dynamical_systems_to_bounds",
+      "path": ["cellular_automata_symbolic_dynamics", "stochastic_particle_lcs", "mean_field_cavity_method", "information_bottleneck_bounds"],
+      "domains_crossed": ["symbolic_dynamics", "statistical_mechanics", "spin_glass_theory", "information_theory"],
+      "narrative": "The CA formulation reveals the dynamical structure, which maps to a particle system amenable to mean-field analysis. The cavity method generates belief-propagation equations that translate to information-theoretic bounds."
+    },
+    {
+      "name": "probability_to_algorithms",
+      "path": ["subadditive_ergodic_convergence", "kpz_universality_fluctuations", "last_passage_percolation_bridge", "optimal_transport_alignment", "lp_relaxation_dual_bounds"],
+      "domains_crossed": ["ergodic_theory", "KPZ_universality", "percolation_theory", "optimal_transport", "linear_programming"],
+      "narrative": "Subadditive ergodic theory guarantees existence of γ₂ and gives convergence rates. KPZ theory predicts the fluctuation structure. The LPP formulation admits an OT relaxation, yielding LP bounds that can be systematically tightened."
+    },
+    {
+      "name": "particle_systems_loop",
+      "path": ["frog_dynamics_pushtasep", "stochastic_particle_lcs", "cellular_automata_symbolic_dynamics", "frog_dynamics_pushtasep"],
+      "domains_crossed": ["interacting_particle_systems", "statistical_mechanics", "symbolic_dynamics"],
+      "narrative": "Frog dynamics for periodic words generalize to Tiskin's particle process for random words, which has an equivalent CA description. The CA on periodic initial conditions recovers frog dynamics, closing the loop."
+    }
+  ]
+}

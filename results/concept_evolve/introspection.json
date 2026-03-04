@@ -1,0 +1,85 @@
+{
+  "associations": [
+    {
+      "trigger": "γ₂ as a physical constant",
+      "expansion": "γ₂ plays a role analogous to a critical exponent or ground-state energy density in statistical mechanics. Just as the ground state energy of the Ising model was computed exactly by Onsager (1944), γ₂ might admit an exact solution through an integrable structure yet to be discovered. The connection to TASEP/PushTASEP (which are integrable) is tantalizing but the binary alphabet breaks exact solvability."
+    },
+    {
+      "trigger": "LCS as a 2D growth model",
+      "expansion": "The DP table for LCS is a corner growth model. Each cell grows by matching characters. This is a variant of the Polynuclear Growth (PNG) model. The height function h(x,t) = LCS of prefixes encodes the entire problem. The shape theorem gives γ₂ as the asymptotic slope. The fluctuations should be governed by the Airy process."
+    },
+    {
+      "trigger": "Alphabet size σ → ∞ limit",
+      "expansion": "As σ → ∞, matches become rare (probability 1/σ) and the Bernoulli matching model becomes exact: γ_σ → 2/√σ. This is the mean-field limit. For σ = 2, we are maximally far from mean-field. The difficulty of computing γ₂ is a 'strong coupling' problem analogous to QCD at low energies."
+    },
+    {
+      "trigger": "Quantum computing analogy",
+      "expansion": "The LCS DP table can be viewed as a quantum circuit where match/mismatch operations are gates. Quantum amplitude estimation could potentially estimate E[LCS] with quadratic speedup. The subadditive structure maps to a tensor network, and γ₂ relates to the dominant eigenvalue of a transfer matrix."
+    },
+    {
+      "trigger": "Coding theory connection",
+      "expansion": "γ₂ bounds the capacity of the deletion channel. If a binary string of length n is transmitted through a channel that deletes each bit independently with probability δ, the capacity C(δ) is related to LCS lengths. Specifically, C(δ) ≥ 1 - h(γ₂(1-δ)) where h is binary entropy. Tighter γ₂ bounds directly improve deletion channel capacity bounds."
+    },
+    {
+      "trigger": "Neural network function approximation",
+      "expansion": "Could a neural network learn to predict LCS(a,b)/n for random binary strings? If trained on pairs up to length n, could it generalize to predict γ₂? This is a question about whether neural nets can learn subadditive limits. The network architecture should respect the sequential structure—perhaps a transformer or RNN."
+    }
+  ],
+  "blind_spots": [
+    {
+      "area": "Non-binary alphabets as indirect evidence",
+      "description": "Most effort focuses on σ=2 directly, but studying the function σ → γ_σ for σ = 2,3,4,... might reveal structural properties (convexity, monotonicity patterns, asymptotic expansions) that constrain γ₂ indirectly. The relationship between γ_{2,d} for different d values (Li-Ren-Wen 2025) could similarly constrain γ_{2,2}."
+    },
+    {
+      "area": "Algebraic structure of the Monge matrix semigroup",
+      "description": "Tiskin's work on unit-Monge matrices and their algebra (distance multiplication) reveals deep algebraic structure in LCS computation. The Chvátal-Sankoff constant might be expressible in terms of spectral properties of random elements in this semigroup. This algebraic angle is underexplored."
+    },
+    {
+      "area": "Connection to random matrix theory eigenvalue statistics",
+      "description": "For LIS (longest increasing subsequence), the Tracy-Widom distribution and Airy process arise from random matrix theory. For LCS of binary strings, the corresponding random matrix model (if it exists) is unknown. Finding it would be a major breakthrough."
+    },
+    {
+      "area": "Computational complexity barriers",
+      "description": "Abboud-Backurs-Vassilevska Williams (2015) showed that computing LCS in O(n^{2-ε}) time requires refuting SETH. Does this hardness have implications for computing γ₂? Can we prove that no polynomial-time algorithm can compute γ₂ to arbitrary precision?"
+    },
+    {
+      "area": "Higher-order correlations in the alignment",
+      "description": "The mean-field (Bernoulli matching) model fails because it ignores correlations between matches. Boutet de Monvel showed these correlations are long-ranged and non-perturbative. A renormalization group approach to systematically account for these correlations has not been attempted."
+    },
+    {
+      "area": "Experimental mathematics: exact rationality or algebraicity",
+      "description": "Is γ₂ rational? Algebraic? Transcendental? No one has systematically checked whether high-precision numerical estimates of γ₂ match any known constants. Integer relation algorithms (PSLQ/LLL) applied to precise numerical estimates could potentially discover an exact formula."
+    },
+    {
+      "area": "Topological data analysis of alignment space",
+      "description": "The space of optimal and near-optimal LCS alignments has nontrivial topology (Boutet de Monvel found exponentially many optimal alignments). TDA tools (persistent homology) applied to the alignment landscape could reveal structural constraints on γ₂."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "What if we require the LCS alignment to be 'local' (matched characters within distance T of each other)?",
+      "analysis": "Bukh-Cox showed that for random strings, LCS_T → LCS as T → ∞, and convergence is fast (LCS_T = LCS for T = O(√n) with high probability). This means γ₂ is determined by 'local' matching patterns. Injecting the locality constraint might yield a more tractable quantity γ₂(T) that converges to γ₂ from below, providing a family of computable lower bounds.",
+      "prediction": "γ₂(T) = γ₂ - O(exp(-cT²)) for some constant c > 0. The exponential convergence means T = O(√(log(1/ε))) suffices for ε-accuracy."
+    },
+    {
+      "constraint": "What if the input strings are not i.i.d. but Markov chains?",
+      "analysis": "For Markov(p) binary strings (transition probability p for same symbol), γ₂ becomes a function γ₂(p). At p = 1/2 we recover i.i.d. At p = 1, strings are constant, so γ₂(1) = 1. At p = 0, strings alternate, giving a different constant. The function γ₂(p) encodes more information and might be smoother/more tractable than the point value.",
+      "prediction": "γ₂(p) is analytic in p ∈ (0,1) and convex, with minimum near p = 1/2. Studying the Taylor expansion around p = 1 (where γ₂ = 1 is known exactly) and analytically continuing might constrain γ₂(1/2)."
+    },
+    {
+      "constraint": "What if we work over GF(2) and replace 'equality' with linear-algebraic matching?",
+      "analysis": "Replace character matching a_i = b_j with a_i + b_j = 0 (mod 2). For binary alphabet, this is the same. But for larger alphabets over GF(q), this introduces algebraic structure. The LCS over GF(q)^k might connect to coding theory (rank-metric codes, subspace codes) and yield bounds via algebraic geometry.",
+      "prediction": "For GF(2^k), the LCS constant γ_{GF(2^k)} should interpolate between γ₂ (k=1) and the mean-field limit 2/√(2^k) (large k). The algebraic structure might make intermediate values exactly computable."
+    },
+    {
+      "constraint": "What if we add a temperature parameter (soft-max instead of max)?",
+      "analysis": "Define Z_β(a,b) = Σ_{alignments π} exp(β·|π|) and F_β = (1/β)·log Z_β. Then F_{β→∞} = LCS(a,b). The free energy F_β is convex in 1/β and analytic for finite β. The thermodynamic approach (Amsalu-Matzinger-Vachkovskaia 2008) uses exactly this. At finite temperature, the system might be more tractable while still constraining γ₂.",
+      "prediction": "E[F_β(n,n)]/n → f(β) where f(β) is analytic and f(∞) = γ₂. The function f(β) might be computable by transfer matrix methods for moderate β, with controlled extrapolation to β → ∞."
+    },
+    {
+      "constraint": "What if we constrain the number of matched characters to be exactly k?",
+      "analysis": "Let P(k,n) = Pr[LCS(a,b) ≥ k] for random binary strings of length n. Then E[LCS] = Σ_k P(k,n). The large deviation rate function I(x) = -lim (1/n) log P(xn, n) determines the tail behavior. Hauser-Martínez-Matzinger used this for upper bounds: γ₂ = inf{x : I(x) > 0}.",
+      "prediction": "I(x) is convex with I(γ₂) = 0 and I'(γ₂) = 0. Computing I(x) numerically for a grid of x values and finding the zero gives γ₂. The large-deviation computation might be more parallelizable than direct LCS computation."
+    }
+  ]
+}

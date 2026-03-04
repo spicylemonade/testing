@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "finite_size_scaling_extrapolation",
+  "description": "Bundschuh (2001) developed high-precision Monte Carlo estimates of γ₂ using finite-size scaling with analytically known functional forms. The key insight is that E[LCS(n,n)]/n = γ₂ + c₁/n^{1/3} + c₂/n^{2/3} + ... with the exponents determined by KPZ universality (conjectured). Multi-spin coding enables processing 64 string pairs simultaneously on a single CPU word.",
+  "domains": ["computational_physics", "Monte_Carlo_methods", "finite_size_scaling"],
+  "mathematical_formalization": "Finite-size scaling ansatz: E[LCS(n,n)] = γ₂·n + c₁·n^{2/3} + c₂·n^{1/3} + c₃ + O(n^{-1/3}). Fit parameters (γ₂, c₁, c₂, c₃) from simulation data at multiple n values. Multi-spin coding: encode k = 64 binary strings as k bits of a single 64-bit word; bitwise XOR detects mismatches for all 64 pairs simultaneously.",
+  "analogical_connections": [
+    "Critical phenomena finite-size scaling ↔ LCS finite-n corrections",
+    "Renormalization group ↔ coarse-graining LCS at different scales",
+    "Multi-spin coding in Ising simulations ↔ parallel LCS computation",
+    "Richardson extrapolation ↔ systematic removal of finite-size bias"
+  ],
+  "implementation_hypothesis": "Combine multi-spin coding with GPU parallelism: encode 1024 string pairs in 16 × 64-bit words, process on GPU. Run for n up to 10^7. Apply both polynomial and KPZ-informed scaling ansätze. Compare γ₂ estimates from different extrapolation methods to assess systematic error.",
+  "experiment_seed": "Implement multi-spin coded LCS in CUDA. Generate data for n = 10^3, 10^{3.5}, 10^4, ..., 10^6. For each n, compute 10^6 LCS values. Fit three scaling ansätze: (a) polynomial 1/n, (b) KPZ n^{1/3}, (c) mixed. Report γ₂ estimate with confidence intervals."
+}

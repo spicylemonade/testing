@@ -1,0 +1,14 @@
+{
+  "symbolic_name": "lp_relaxation_dual_bounds",
+  "description": "The Heineman et al. (2024) approach for lower bounds constructs feasible solutions to a dual LP. The 'feasible triplet' method defines valid configurations on length-ℓ string pairs whose expected scores lower-bound γ₂. Tightening these LP bounds via better dual solutions (parallelized search, memory-efficient recursion) achieved the current best lower bound of 0.792666.",
+  "domains": ["linear_programming", "combinatorial_optimization", "computer_science"],
+  "mathematical_formalization": "A feasible triplet (A, φ, w) consists of: A ⊆ {0,1}^ℓ × {0,1}^ℓ (alignment set), φ: A → R+ (weight function), w: {0,1}^ℓ × {0,1}^ℓ → R+ (string weight). The bound: γ₂ ≥ (1/ℓ) · Σ_{(a,b)∈A} φ(a,b) · LCS(a,b) / Σ_{(a,b)} w(a,b). Optimization over (A, φ, w) subject to consistency constraints yields tighter bounds as ℓ increases.",
+  "analogical_connections": [
+    "LP duality (strong duality theorem) ↔ upper and lower bound certificates",
+    "Column generation in LP ↔ iteratively adding feasible triplets",
+    "Branch-and-bound ↔ systematic search over feasible triplet space",
+    "Semidefinite relaxation ↔ potential SDP hierarchy for tighter bounds"
+  ],
+  "implementation_hypothesis": "Extend the feasible triplet method with: (1) GPU-accelerated search over triplet space for ℓ ≥ 20; (2) machine-learning-guided selection of promising triplets; (3) SDP relaxation to get upper bounds from the same framework.",
+  "experiment_seed": "Reproduce Heineman et al. results for ℓ = 1,...,14. Then extend to ℓ = 15,16 using parallelized code. Measure improvement per unit of ℓ. Extrapolate the convergence rate to estimate achievable bound at ℓ = 20."
+}
