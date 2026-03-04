@@ -1,0 +1,300 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-04T12:00:00Z",
+  "updated_at": "2026-03-04T07:53:28.707696+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-04T12:00:00Z",
+      "completed_at": "2026-03-04T07:53:28.707679+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and establish project scaffold",
+          "acceptance_criteria": "Create a document at results/repo_analysis.md listing all existing modules (Archivara tooling, ConceptEvolve, Semantic Scholar wrapper, OpenCode agents), their purposes, interconnections, and the empty directories (results/, figures/) that will hold outputs. Include a proposed directory layout for the research codebase (src/, benchmarks/, tests/, docs/).",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Conduct comprehensive web-based literature search on SIMD Base64 decoding",
+          "acceptance_criteria": "Use web search to locate and summarize at least 10 relevant papers, blog posts, and technical references covering: (1) Mula & Lemire AVX2 base64 (arXiv:1704.00605, ACM TWEB 2018), (2) Mula & Lemire AVX-512 near-memcpy base64 (arXiv:1910.05109), (3) Wojciech Mula's 0x80.pl SIMD base64 articles (SSE, AVX512F, AVX512BW, AVX512VBMI, NEON), (4) Turbo-Base64 (powturbo), (5) simdutf library base64 support, (6) vb64 Rust SIMD codecs, (7) Vogel & Oden RISC-V RVV base64, (8) ARM SVE base64sve, (9) Nick Nuon's OpenSSL SIMD base64 contribution, (10) RFC 4648 specification. Produce results/literature_review.md with structured summaries of each source.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Create and maintain sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "sources.bib in repo root contains valid BibTeX entries for at least 10 relevant works. Must include: Mula & Lemire 2018 (ACM TWEB), Mula & Lemire 2019 (arXiv:1910.05109), Vojciech Mula's base64simd repository, RFC 4648 (Josefsson 2006), at least 2 entries on ARM NEON/SVE SIMD techniques, at least 1 entry on AVX-512 VBMI instruction usage, and the simdutf library. Each entry must have correct author, title, year, and DOI/URL fields.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Analyze the RFC 4648 Base64 algorithm and its parallelism properties",
+          "acceptance_criteria": "Document at results/base64_algorithm_analysis.md covering: (1) the 4-input-char to 3-output-byte mapping, (2) the 6-bit extraction and recombination arithmetic, (3) the alphabet lookup (A-Z, a-z, 0-9, +, /), (4) padding rules (= and ==), (5) whitespace handling in MIME contexts, (6) formal proof that decoding of non-overlapping 4-byte groups is embarrassingly parallel, (7) identification of sequential dependencies (validation, padding at stream end, error propagation). Cite RFC 4648 from sources.bib.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Map the SIMD instruction landscape for target architectures using subagent exploration",
+          "acceptance_criteria": "Delegate to an exploration subagent to produce results/concept_evolve/tree/simd_instruction_landscape/ containing concept cards for: (1) x86-64 SSE4.2 (pshufb, 128-bit), (2) x86-64 AVX2 (vpshufb, vpmaddubsw, vpmaddwd, vpermq, 256-bit), (3) x86-64 AVX-512BW (512-bit byte/word ops), (4) x86-64 AVX-512VBMI (vpermi2b, vpermb -- the key enablers for base64), (5) ARM NEON (vtbl, vmull, 128-bit), (6) ARM SVE/SVE2 (scalable vectors, predication, gather/scatter). Each card must list relevant intrinsics, throughput/latency on representative microarchitectures, and applicability to base64 decode steps.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Survey existing production implementations and identify performance gaps",
+          "acceptance_criteria": "Document at results/production_survey.md analyzing at least 5 production base64 decoders: (1) OpenSSL EVP_DecodeBlock (scalar), (2) glibc/musl base64, (3) Chromium base64 (blink), (4) Node.js base64 (via simdutf), (5) Go standard library base64. For each, note: decode strategy (scalar/SIMD), approximate throughput (GB/s) from published benchmarks, validation approach, and streaming support. Identify the concrete performance gap between scalar and SIMD approaches citing Mula & Lemire's published 7x (AVX2) and near-memcpy (AVX-512) results.",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement RFC 4648-compliant scalar Base64 decoder as reference baseline",
+          "acceptance_criteria": "C99 implementation in src/scalar/base64_scalar.c that: (1) decodes standard Base64 (alphabet A-Za-z0-9+/) and Base64url, (2) validates all input characters and rejects invalid ones with error codes, (3) handles padding (=, ==) and missing padding, (4) passes a test suite of at least 50 test vectors including edge cases (empty input, 1-3 byte outputs, max-length, all invalid chars, embedded whitespace, truncated padding). Test suite at tests/test_scalar.c.",
+          "status": "pending",
+          "notes": "Depends on item_004 (algorithm analysis)",
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Establish benchmarking framework with reproducible measurement methodology",
+          "acceptance_criteria": "Benchmarking harness at benchmarks/ that: (1) measures throughput in GB/s for decode operations, (2) tests payload sizes at 64B, 256B, 1KB, 4KB, 16KB, 64KB, 256KB, 1MB, 10MB, (3) reports median, p95, p99 latency over 1000+ iterations with warmup, (4) pins to a single core and disables turbo boost via instructions in benchmarks/README.md, (5) uses rdtsc/cntvct_el0 cycle counters plus wall-clock time, (6) builds with CMake supporting -march=native and explicit ISA flags. CMakeLists.txt at project root.",
+          "status": "pending",
+          "notes": "Depends on item_007",
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Integrate Lemire's fastbase64/simdutf as comparison baselines",
+          "acceptance_criteria": "Build and benchmark at least 2 external SIMD implementations: (1) lemire/fastbase64 (AVX2 decode), (2) simdutf base64 decode (latest version with AVX-512 support). Record throughput numbers at all 9 payload sizes from item_008 on the test hardware. Store raw benchmark results as JSON at results/baselines/fastbase64_results.json and results/baselines/simdutf_results.json. Compare against the scalar baseline from item_007 and cite Mula & Lemire's published numbers from sources.bib.",
+          "status": "pending",
+          "notes": "Depends on item_008",
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Profile existing SIMD decoders to identify microarchitectural bottlenecks",
+          "acceptance_criteria": "Use perf stat / perf record (or ARM equivalents) to collect: (1) IPC (instructions per cycle), (2) cache miss rates (L1d, L2, LLC), (3) branch misprediction rate, (4) port utilization breakdown for the SIMD decode hot loop of fastbase64 and simdutf. Produce results/profiling_report.md identifying the top 3 bottlenecks (e.g., shuffle port contention, store-forwarding stalls, instruction decode bandwidth). This analysis directly informs Phase 3 optimization targets.",
+          "status": "pending",
+          "notes": "Depends on item_009. Delegate profiling analysis to a subagent for synthesis.",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_011",
+          "description": "Explore concept tree for novel SIMD Base64 decode strategies",
+          "acceptance_criteria": "Use ConceptEvolve to generate results/concept_evolve/tree/novel_decode_strategies/ with at least 6 concept cards exploring: (1) AVX-512 VBMI vpermi2b-based alphabet lookup replacing pshufb cascades, (2) multi-register interleaved decode pipelines to hide latency, (3) predicated SVE loops for variable-length tail handling without scalar fallback, (4) fused validation-and-decode in a single pass (no separate validation step), (5) streaming decode with inter-chunk state minimization, (6) cross-domain reframe from SIMD JSON parsing (simdjson) shuffle techniques. Each card must include estimated cycle counts and feasibility assessment.",
+          "status": "pending",
+          "notes": "Depends on items 005, 010. This is the primary novel contribution exploration.",
+          "error": null
+        },
+        {
+          "id": "item_012",
+          "description": "Design and implement AVX2 optimized decoder with improved shuffle masks",
+          "acceptance_criteria": "Implementation at src/avx2/base64_avx2.c that: (1) processes 32 input bytes (yielding 24 output bytes) per iteration, (2) uses an optimized lookup using no more than 2 vpshufb + comparison instructions (improving on Mula's 2016 approach if possible), (3) performs fused validation (invalid char detection) within the decode pipeline rather than as a separate pass, (4) handles tail bytes (< 32) with a masked or scalar fallback, (5) passes the full test suite from item_007. Document the shuffle mask design rationale in src/avx2/DESIGN.md.",
+          "status": "pending",
+          "notes": "Depends on item_011 concept exploration",
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Design and implement AVX-512 decoder exploiting VBMI and wider vectors",
+          "acceptance_criteria": "Implementation at src/avx512/base64_avx512.c that: (1) processes 64 input bytes (yielding 48 output bytes) per iteration using 512-bit registers, (2) uses AVX-512 VBMI vpermb/vpermi2b for single-instruction alphabet lookup (the key advantage over AVX2), (3) achieves decode throughput within 2x of memcpy speed on the test hardware for payloads >= 1KB, (4) includes a fallback path for AVX-512BW-only hardware (no VBMI), (5) passes the full test suite. Compare instruction count per decoded byte against the AVX2 version and Mula & Lemire's published AVX-512 results.",
+          "status": "pending",
+          "notes": "Depends on item_012",
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Design and implement ARM NEON decoder",
+          "acceptance_criteria": "Implementation at src/neon/base64_neon.c that: (1) processes 16 input bytes (yielding 12 output bytes) per iteration using 128-bit NEON registers, (2) uses vtbl/vtbx for alphabet lookup, (3) uses vmull/vmlal for the 6-bit field packing, (4) achieves at least 3x throughput over the scalar baseline on ARM64 hardware, (5) passes the full test suite. Reference Mula's NEON base64 approach from base64simd and document improvements.",
+          "status": "pending",
+          "notes": "Depends on item_011",
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Design and implement ARM SVE decoder with scalable vector width",
+          "acceptance_criteria": "Implementation at src/sve/base64_sve.c that: (1) uses SVE predicated loads and vector-length-agnostic (VLA) programming, (2) works correctly for any SVE vector width (128-bit to 2048-bit) without recompilation, (3) uses SVE TBL instruction for alphabet lookup, (4) handles arbitrary input lengths via predication without scalar tail loop, (5) passes the full test suite. This is a novel contribution as no production-quality SVE base64 decoder exists (only base64sve prototype). Reference Vogel's base64sve work from sources.bib.",
+          "status": "pending",
+          "notes": "Depends on item_011. Novel contribution area.",
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Design streaming pipeline for chunk-based decoding of arbitrarily long streams",
+          "acceptance_criteria": "Implementation at src/streaming/base64_stream.c providing: (1) a stateful decoder API that accepts arbitrary-length input chunks and produces output incrementally, (2) correct handling of Base64 groups split across chunk boundaries (carry buffer of up to 3 bytes), (3) a dispatcher that selects the fastest available SIMD path at runtime via CPUID/HWCAP, (4) validation that the streaming decoder produces byte-identical output to the one-shot decoder for all test vectors, (5) less than 5% throughput overhead versus one-shot decoding for payloads >= 4KB. Cite prior work on streaming SIMD from sources.bib.",
+          "status": "pending",
+          "notes": "Depends on items 012-015. Cross-cutting concern.",
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Investigate software pipelining and instruction-level parallelism optimizations",
+          "acceptance_criteria": "Create results/concept_evolve/tree/ilp_optimizations/ with concept cards exploring: (1) dual-pipeline interleaving (process two independent 32/64-byte blocks in parallel to fill execution ports), (2) store-to-load forwarding avoidance via non-temporal stores for large payloads, (3) prefetch insertion points for L1d residency of input data, (4) unroll factor sensitivity analysis (1x, 2x, 4x). Implement the most promising technique in at least one ISA path and measure IPC improvement. Delegate exploration to a subagent, then synthesize findings into results/ilp_analysis.md.",
+          "status": "pending",
+          "notes": "Depends on items 012-013",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Run full benchmark suite across all implementations and payload sizes",
+          "acceptance_criteria": "Execute the benchmark framework from item_008 for all implementations: scalar, AVX2 (ours), AVX-512 (ours), NEON (ours), SVE (ours), fastbase64, simdutf. Test at all 9 payload sizes (64B to 10MB). Store results as structured JSON at results/experiments/full_benchmark.json. Generate a summary table showing throughput (GB/s) for each implementation x payload size combination. All measurements taken on at least 2 distinct hardware platforms (one x86-64 with AVX-512, one ARM64 with NEON; SVE if hardware available).",
+          "status": "pending",
+          "notes": "Depends on items 012-016",
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Validate correctness across all implementations with comprehensive test suite",
+          "acceptance_criteria": "Run the test suite from item_007 (expanded to at least 100 test vectors) against every implementation. Test vectors must include: (1) RFC 4648 official test vectors, (2) adversarial inputs (every possible invalid byte value), (3) payloads of every length mod 4 (0,1,2,3), (4) all-same-character inputs, (5) maximum-length single-line and multi-line inputs, (6) Base64url variant, (7) inputs with embedded whitespace/newlines. All implementations must produce identical output and identical error detection. Report at results/experiments/correctness_report.md.",
+          "status": "pending",
+          "notes": "Depends on items 012-016",
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Measure speedup over scalar and compare against the 5x target",
+          "acceptance_criteria": "Produce results/experiments/speedup_analysis.md containing: (1) speedup ratios (our_impl / scalar_baseline) for each ISA and payload size, (2) speedup ratios (our_impl / fastbase64) and (our_impl / simdutf) showing whether further gains over Lemire's work are achieved, (3) statistical significance testing (confidence intervals at 95%), (4) explicit pass/fail assessment against the 5x target for payloads 1KB-10MB on each architecture. If 5x is not achieved for any configuration, document the bottleneck analysis from profiling.",
+          "status": "pending",
+          "notes": "Depends on item_018",
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Profile final implementations and compare microarchitectural metrics",
+          "acceptance_criteria": "Collect perf stat metrics (IPC, cache misses, branch mispredictions, port utilization) for all our SIMD implementations at the 1KB and 1MB payload sizes. Compare against the baseline profiles from item_010. Produce results/experiments/uarch_comparison.md showing: (1) instructions per decoded byte for each ISA, (2) cycles per decoded byte, (3) IPC improvement over baselines, (4) identification of remaining bottlenecks. Delegate analysis synthesis to a subagent.",
+          "status": "pending",
+          "notes": "Depends on item_018",
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Test streaming decoder with realistic workloads",
+          "acceptance_criteria": "Benchmark the streaming decoder from item_016 with: (1) chunked input at 512B, 4KB, 64KB chunk sizes, (2) simulated network stream with variable-length chunks, (3) comparison of streaming vs one-shot throughput. Verify less than 5% overhead for chunks >= 4KB. Store results at results/experiments/streaming_benchmark.json. Test with at least 3 realistic payload patterns: (a) MIME email with line breaks every 76 chars, (b) JSON-embedded base64 blob, (c) continuous binary stream.",
+          "status": "pending",
+          "notes": "Depends on items 016, 018",
+          "error": null
+        },
+        {
+          "id": "item_023",
+          "description": "Evaluate runtime ISA dispatch overhead",
+          "acceptance_criteria": "Measure the overhead of the CPUID/HWCAP-based runtime dispatcher from item_016: (1) one-time init cost in nanoseconds, (2) per-call dispatch overhead via function pointer vs direct call, (3) impact on small-payload (64B, 256B) throughput. Document at results/experiments/dispatch_overhead.md. If overhead exceeds 10% for 64B payloads, propose and test ifunc-based dispatch as an alternative.",
+          "status": "pending",
+          "notes": "Depends on item_016",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_024",
+          "description": "Synthesize findings into a comprehensive research report",
+          "acceptance_criteria": "Produce results/research_report.md (minimum 3000 words) containing: (1) Abstract, (2) Introduction and motivation with Base64 prevalence data, (3) Background on SIMD ISAs and prior work (citing at least 8 entries from sources.bib), (4) Our approach and novel contributions, (5) Experimental setup (hardware, compiler, flags), (6) Results with tables and references to figures, (7) Discussion of whether 5x target was met and analysis of any gaps, (8) Comparison with Mula & Lemire's results and simdutf, (9) Limitations, (10) Future work (SVE2, AMX, RISC-V RVV). All claims must be supported by data from Phase 4.",
+          "status": "pending",
+          "notes": "Depends on items 018-023",
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Generate publication-quality figures for all key results",
+          "acceptance_criteria": "Create at least 5 figures in figures/ directory: (1) Throughput vs payload size line chart for all implementations (figures/throughput_vs_size.png), (2) Speedup over scalar bar chart by ISA (figures/speedup_bars.png), (3) Instructions-per-byte comparison across ISAs (figures/ipb_comparison.png), (4) Streaming vs one-shot throughput (figures/streaming_overhead.png), (5) Roofline model plot showing compute vs memory bandwidth limits (figures/roofline.png). All figures must have proper axis labels, legends, and be suitable for publication. Use matplotlib or gnuplot; scripts stored at figures/generate_plots.py.",
+          "status": "pending",
+          "notes": "Depends on item_024",
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Conduct concept-tree retrospective and document transferable insights",
+          "acceptance_criteria": "Produce results/concept_evolve/tree/retrospective/ containing: (1) a summary card identifying which concept paths from Phase 3 exploration yielded the highest-value insights, (2) a card documenting dead ends and why they failed, (3) a card on transferable techniques (e.g., shuffle-mask design patterns applicable to other SIMD codec problems like hex encoding, UTF-8 validation, percent-decoding), (4) a steering-directions card proposing 3 concrete follow-up research questions. Delegate exploration and synthesis to subagents.",
+          "status": "pending",
+          "notes": "Depends on items 011, 017, 024",
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Update sources.bib with all references used throughout the project",
+          "acceptance_criteria": "Final sources.bib contains at least 15 valid BibTeX entries covering: all papers cited in the research report, all software repositories referenced (fastbase64, base64simd, simdutf, Turbo-Base64, vb64, base64sve), RFC 4648, Intel/ARM architecture manuals referenced, and any additional sources discovered during the research. Each entry must be correctly formatted and used via \\cite{} in the research report.",
+          "status": "pending",
+          "notes": "Ongoing throughout all phases, final check here",
+          "error": null
+        },
+        {
+          "id": "item_028",
+          "description": "Final review: verify all acceptance criteria are met and rubric is complete",
+          "acceptance_criteria": "Reviewer agent confirms: (1) all 27 preceding items have status 'completed', (2) the research report cites at least 8 sources from sources.bib, (3) all benchmark data is reproducible (scripts and raw data present), (4) the 5x speedup target assessment is clearly stated with supporting evidence, (5) all code compiles cleanly with -Wall -Werror on both x86-64 and ARM64 toolchains, (6) no TODO/FIXME markers remain in shipped code. Update research_rubric.json summary counts.",
+          "status": "pending",
+          "notes": "Final gate check by reviewer agent",
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 28,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 28
+  }
+}
