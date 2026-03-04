@@ -1,0 +1,125 @@
+{
+  "nodes": [
+    {"id": "multi_stream_ilp_decode", "domain": "computer_architecture"},
+    {"id": "speculative_sync_point", "domain": "information_theory"},
+    {"id": "convergence_set_fsm", "domain": "automata_theory"},
+    {"id": "simd_literal_scatter", "domain": "simd_programming"},
+    {"id": "precomputed_mega_table", "domain": "data_structures"},
+    {"id": "latency_hiding_overlap", "domain": "pipeline_design"},
+    {"id": "predictive_coding_residual", "domain": "neuroscience"},
+    {"id": "optimistic_concurrency_decode", "domain": "database_systems"},
+    {"id": "interleaved_entropy_streams", "domain": "information_theory"},
+    {"id": "chunked_pipeline_decompress", "domain": "systems_engineering"},
+    {"id": "bitvector_probe_sync", "domain": "bit_manipulation"},
+    {"id": "hierarchical_block_prediction", "domain": "machine_learning"}
+  ],
+  "edges": [
+    {
+      "source": "multi_stream_ilp_decode",
+      "target": "speculative_sync_point",
+      "relation": "Multi-stream ILP requires sync points to split a single bitstream into multiple independent decode positions"
+    },
+    {
+      "source": "speculative_sync_point",
+      "target": "convergence_set_fsm",
+      "relation": "Sync-point finding is a special case of FSM convergence: probes from N offsets converge to one valid decode state"
+    },
+    {
+      "source": "convergence_set_fsm",
+      "target": "optimistic_concurrency_decode",
+      "relation": "Both use speculative parallel execution with validation: CSE validates convergence, OCC validates segment boundaries"
+    },
+    {
+      "source": "multi_stream_ilp_decode",
+      "target": "interleaved_entropy_streams",
+      "relation": "Interleaved streams provide the virtual multi-stream structure needed for ILP decode within a single format stream"
+    },
+    {
+      "source": "interleaved_entropy_streams",
+      "target": "speculative_sync_point",
+      "relation": "Virtual interleaving requires finding evenly-spaced sync points to create stream boundaries"
+    },
+    {
+      "source": "precomputed_mega_table",
+      "target": "multi_stream_ilp_decode",
+      "relation": "Multi-symbol mega tables reduce per-symbol decode latency, changing the ILP calculation for optimal stream count"
+    },
+    {
+      "source": "latency_hiding_overlap",
+      "target": "chunked_pipeline_decompress",
+      "relation": "Both exploit temporal overlap of operations; overlap hides decode/copy latency, pipeline extends this to multi-stage"
+    },
+    {
+      "source": "simd_literal_scatter",
+      "target": "chunked_pipeline_decompress",
+      "relation": "SIMD copy acceleration benefits the LZ77 reconstruction stage, helping balance the pipeline"
+    },
+    {
+      "source": "simd_literal_scatter",
+      "target": "latency_hiding_overlap",
+      "relation": "SIMD copies are the primary operation whose latency is hidden by overlapping with the next decode"
+    },
+    {
+      "source": "predictive_coding_residual",
+      "target": "precomputed_mega_table",
+      "relation": "Both exploit statistical patterns: prediction uses most-common symbol, mega-table precomputes common symbol pairs"
+    },
+    {
+      "source": "predictive_coding_residual",
+      "target": "hierarchical_block_prediction",
+      "relation": "Both apply prediction at different granularities: symbol-level prediction vs block-level table prediction"
+    },
+    {
+      "source": "hierarchical_block_prediction",
+      "target": "optimistic_concurrency_decode",
+      "relation": "Block prediction enables speculative next-block decode; OCC handles validation and retry when prediction fails"
+    },
+    {
+      "source": "bitvector_probe_sync",
+      "target": "speculative_sync_point",
+      "relation": "Bitvector probing is an accelerated implementation of the sync-point discovery algorithm"
+    },
+    {
+      "source": "bitvector_probe_sync",
+      "target": "convergence_set_fsm",
+      "relation": "Bitvectors represent reachable state sets compactly, equivalent to convergence set membership tracking"
+    },
+    {
+      "source": "optimistic_concurrency_decode",
+      "target": "multi_stream_ilp_decode",
+      "relation": "OCC provides the thread-level parallelism framework; ILP provides within-thread parallelism for each segment"
+    },
+    {
+      "source": "chunked_pipeline_decompress",
+      "target": "hierarchical_block_prediction",
+      "relation": "Pipeline benefits from block prediction: knowing next block's table enables earlier pipeline stage startup"
+    }
+  ],
+  "bridge_chains": [
+    {
+      "name": "neuroscience_to_hardware_optimization",
+      "path": ["predictive_coding_residual", "precomputed_mega_table", "multi_stream_ilp_decode", "latency_hiding_overlap"],
+      "description": "From neuroscience's predictive coding through data structure design to hardware-aware execution optimization. Each step reduces effective decode latency: prediction skips the most common case, mega-tables decode multiple symbols per lookup, ILP fills execution slots, and overlap hides remaining latency."
+    },
+    {
+      "name": "automata_theory_to_database_systems",
+      "path": ["convergence_set_fsm", "speculative_sync_point", "optimistic_concurrency_decode"],
+      "description": "From formal language theory through synchronization algorithms to distributed systems patterns. FSM convergence theory provides the mathematical foundation for sync-point discovery, which enables the speculative parallel decode validated by OCC-style commit protocols."
+    },
+    {
+      "name": "information_theory_to_simd_engineering",
+      "path": ["interleaved_entropy_streams", "multi_stream_ilp_decode", "simd_literal_scatter", "chunked_pipeline_decompress"],
+      "description": "From information-theoretic stream interleaving through microarchitecture-aware parallelism to SIMD-accelerated reconstruction in a pipelined system. Each step addresses a different bottleneck: entropy decode throughput, instruction-level parallelism, memory copy bandwidth, and stage balancing."
+    },
+    {
+      "name": "bit_manipulation_to_systems_engineering",
+      "path": ["bitvector_probe_sync", "speculative_sync_point", "interleaved_entropy_streams", "chunked_pipeline_decompress"],
+      "description": "From low-level bit tricks through synchronization algorithms to full-system pipeline design. Bitvector operations accelerate the critical sync-finding step that enables stream splitting, which feeds into the pipelined decompression architecture."
+    },
+    {
+      "name": "machine_learning_to_speculative_execution",
+      "path": ["hierarchical_block_prediction", "predictive_coding_residual", "optimistic_concurrency_decode", "convergence_set_fsm"],
+      "description": "From learned statistical models through neural-inspired prediction to formal validation mechanisms. Block-level prediction bootstraps symbol-level speculation, validated by optimistic concurrency patterns grounded in automata-theoretic convergence guarantees."
+    }
+  ]
+}

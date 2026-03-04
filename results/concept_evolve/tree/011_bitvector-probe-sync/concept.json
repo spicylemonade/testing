@@ -1,0 +1,28 @@
+{
+  "id": 11,
+  "symbolic_name": "bitvector_probe_sync",
+  "description": "Accelerate sync-point discovery using bitvector operations. Instead of decoding symbols one at a time to find where probes converge, use a single pass that marks all possible symbol-start positions in a bitvector, then use fast bitwise operations (popcount, CTZ) to find convergence. This leverages 64-bit word operations to process 64 bit-positions simultaneously.",
+  "domains": [
+    "bit_manipulation",
+    "parallel_computing",
+    "data_structures"
+  ],
+  "mathematical_formalization": "Create bitvector V of length L (one bit per bit-position in the compressed stream). V[i] = 1 iff position i could be a valid symbol start. Initialize: V = all 1s for the first max_len positions. Propagate: for each position i where V[i]=1, set V[i + decode_length(i)] = 1. Sync point = smallest j > start where popcount(V[j-max_len+1..j]) == 1. Using 64-bit words: process 64 positions per operation.",
+  "analogical_connections": [
+    "Bloom filters: compact bitvector probabilistic set membership",
+    "Sieve of Eratosthenes: mark composites in a bit array",
+    "Bitmap indexing in databases: fast set operations on compressed bitmaps"
+  ],
+  "implementation_hypothesis": "Allocate a bitvector of block_size bits. Forward-scan the compressed block, marking reachable bit positions. Use POPCNT to count active probes in each 64-bit window. When only one active probe remains in a window of max_len consecutive positions, we've found a sync point. Can further accelerate with BMI2 PEXT/PDEP for bit manipulation.",
+  "experiment_seed": "Benchmark bitvector-based sync finding vs iterative probe convergence on DEFLATE blocks of varying sizes. Measure time to find first sync point. Compare memory overhead of bitvector approach. Test with pathological inputs (e.g., all same symbol) to check worst-case convergence.",
+  "folder_plan": {
+    "path": "tree/011_bitvector_probe_sync",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T05:03:01.844611+00:00",
+  "project_folder": "concept_evolve/tree/011_bitvector-probe-sync"
+}

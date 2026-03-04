@@ -1,0 +1,28 @@
+{
+  "id": 10,
+  "symbolic_name": "chunked_pipeline_decompress",
+  "description": "Decompose DEFLATE decompression into a pipeline of stages: (1) Huffman decode to emit literal/length/distance tokens, (2) LZ77 reconstruction to copy bytes, (3) Adler32/CRC32 checksum. Pipeline these stages across chunks so that while chunk N+1 is being Huffman-decoded, chunk N's LZ77 copy is executing, and chunk N-1's checksum is computing. This uses all three phases concurrently.",
+  "domains": [
+    "pipeline_design",
+    "compression",
+    "systems_engineering"
+  ],
+  "mathematical_formalization": "Three pipeline stages with latencies T_h (Huffman), T_lz (LZ77), T_ck (checksum). Without pipeline: T_total = K * (T_h + T_lz + T_ck). With 3-stage pipeline: T_total = K * max(T_h, T_lz, T_ck) + 2 * max(T_h, T_lz, T_ck). Speedup S = (T_h + T_lz + T_ck) / max(T_h, T_lz, T_ck). If stages are balanced (T_h ~ T_lz ~ T_ck): S -> 3.",
+  "analogical_connections": [
+    "Industrial assembly line: each station performs one operation as products flow through",
+    "Unix pipes: multiple processes connected in a pipeline, each processing data as it flows",
+    "Instruction pipeline in CPU: fetch-decode-execute-writeback stages overlap"
+  ],
+  "implementation_hypothesis": "Create an intermediate token buffer between Huffman and LZ77 stages. The Huffman decoder writes (type, value) pairs: (LITERAL, byte), (MATCH, length, distance). A separate LZ77 stage reads tokens and performs copies. A third stage computes Adler32 on the final output. Use large-enough chunk sizes (e.g., 32KB) to amortize pipeline overhead. Can also use separate threads for each stage with lock-free queues.",
+  "experiment_seed": "Implement the 3-stage pipeline with single-thread stage-interleaving (process stage A of chunk 2 while stage B of chunk 1 runs). Measure throughput vs monolithic decode on Silesia corpus. Profile to identify which stage is the bottleneck. Verify correctness of output against zlib reference.",
+  "folder_plan": {
+    "path": "tree/010_chunked_pipeline_decompress",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T05:03:01.844100+00:00",
+  "project_folder": "concept_evolve/tree/010_chunked-pipeline-decompress"
+}

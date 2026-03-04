@@ -1,0 +1,14 @@
+{
+  "id": 9,
+  "symbolic_name": "interleaved_entropy_streams",
+  "description": "Based on Fabian Giesen's interleaved entropy coders, structure the decode so that a single DEFLATE bitstream is logically treated as multiple interleaved sub-streams at the decoder level. Rather than modifying the format, use sync-point discovery to create virtual interleaving points. This enables the ILP benefits of multi-stream decoding within a format that only has one stream.",
+  "domains": ["information_theory", "compression", "computer_architecture"],
+  "mathematical_formalization": "Given bitstream B of length L bits and N interleave points at positions {p_1, ..., p_N}, create virtual streams VS_i = B[p_i..p_{i+1}]. The interleaving schedule: decode 1 symbol from each VS in round-robin. Latency L_total = K * L_one / N + sync_overhead.",
+  "analogical_connections": [
+    "Time-division multiplexing in telecommunications",
+    "Interleaved memory banks in DRAM",
+    "Round-robin CPU scheduling"
+  ],
+  "implementation_hypothesis": "For a DEFLATE block with known compressed size, find N-1 sync points at evenly-spaced intervals. Initialize N independent bit-buffer states. The inner loop alternates decoding from each stream.",
+  "experiment_seed": "Implement 2-way and 4-way virtual interleaving for the Huffman decode phase. Measure throughput improvement on Skylake. Find the minimum block size where interleaving is beneficial."
+}

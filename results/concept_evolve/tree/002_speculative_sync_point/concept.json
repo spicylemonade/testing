@@ -1,0 +1,14 @@
+{
+  "id": 2,
+  "symbolic_name": "speculative_sync_point",
+  "description": "Find synchronization points within a Huffman bitstream by speculatively decoding from N=max_code_length consecutive offsets simultaneously. Since at least one probe must land on a valid symbol boundary, all probes eventually converge to the same offset. This breaks the serial dependency for parallel Huffman decoding without format changes.",
+  "domains": ["information_theory", "parallel_computing", "formal_languages"],
+  "mathematical_formalization": "Let max_len = 15 (DEFLATE max Huffman code length). Start probes at offsets {o, o+1, ..., o+14}. After decoding k symbols from each, convergence probability P(k) ~ 1 - (1 - 1/E[symbol_length])^k. Expected convergence distance D ~ max_len * E[symbol_length] / (1 - p_miss). For typical DEFLATE data, D ~ 30-60 bits.",
+  "analogical_connections": [
+    "GPS satellite acquisition: trying multiple code phase offsets until lock is achieved",
+    "Self-synchronizing scramblers in telecommunications",
+    "Thread synchronization barriers in parallel computing"
+  ],
+  "implementation_hypothesis": "Implement dougallj's algorithm: maintain a bitmask of 15 active probes. Repeatedly advance the lowest-offset probe by decoding one symbol. If it lands on the same offset as another probe, discard the duplicate. Continue until only 1 probe remains - that offset is a guaranteed sync point.",
+  "experiment_seed": "Measure convergence distance distribution across Silesia corpus DEFLATE blocks. Compute average probes needed. Verify correctness by comparing single-stream decode output against sync-point-split parallel decode."
+}

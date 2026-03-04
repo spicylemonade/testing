@@ -1,0 +1,14 @@
+{
+  "id": 10,
+  "symbolic_name": "chunked_pipeline_decompress",
+  "description": "Decompose DEFLATE decompression into a pipeline of stages: (1) Huffman decode to emit literal/length/distance tokens, (2) LZ77 reconstruction to copy bytes, (3) Adler32/CRC32 checksum. Pipeline these stages across chunks so that while chunk N+1 is being Huffman-decoded, chunk N's LZ77 copy is executing, and chunk N-1's checksum is computing.",
+  "domains": ["pipeline_design", "compression", "systems_engineering"],
+  "mathematical_formalization": "Three pipeline stages with latencies T_h, T_lz, T_ck. Without pipeline: T_total = K * (T_h + T_lz + T_ck). With pipeline: T_total = K * max(T_h, T_lz, T_ck) + 2 * max(T_h, T_lz, T_ck). Speedup S = (T_h + T_lz + T_ck) / max(T_h, T_lz, T_ck).",
+  "analogical_connections": [
+    "Industrial assembly line",
+    "Unix pipes",
+    "Instruction pipeline in CPU: fetch-decode-execute-writeback"
+  ],
+  "implementation_hypothesis": "Create an intermediate token buffer between Huffman and LZ77 stages. Huffman writes (type, value) pairs. LZ77 stage reads tokens and performs copies. Third stage computes checksum.",
+  "experiment_seed": "Implement 3-stage pipeline with single-thread stage-interleaving. Measure throughput vs monolithic decode. Profile to identify bottleneck stage."
+}

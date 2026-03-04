@@ -1,0 +1,118 @@
+{
+  "associations": [
+    {
+      "seed": "serial Huffman dependency chain",
+      "expansions": [
+        "linked list traversal -> pointer chasing -> cache-oblivious B-tree layouts",
+        "serial dependency -> ILP stall -> Tomasulo's algorithm -> register renaming",
+        "prefix code parsing -> recursive descent parser -> PEG grammar evaluation",
+        "bit-by-bit state machine -> cellular automaton rule evaluation -> rule 110 universality",
+        "entropy decoding -> information bottleneck -> rate-distortion theory -> lossy approximation of lossless"
+      ]
+    },
+    {
+      "seed": "speculative parallel decode",
+      "expansions": [
+        "branch prediction -> two-level adaptive predictor -> neural branch predictor -> perceptron learning",
+        "optimistic concurrency -> MVCC in PostgreSQL -> snapshot isolation -> serializable ordering",
+        "speculative execution -> Spectre/Meltdown -> side channel -> timing-safe decode loops",
+        "map-reduce on a bitstream -> hadoop for bytes -> stream processing -> Apache Flink windowed operators",
+        "parallel prefix sum -> scan operation -> Blelloch's algorithm -> work-efficient parallel algorithms"
+      ]
+    },
+    {
+      "seed": "SIMD-accelerated decompression",
+      "expansions": [
+        "SIMD scatter/gather -> database columnar scan -> Apache Arrow vectorized execution",
+        "memcpy optimization -> rep movsb -> ERMS (Enhanced REP MOVSB) -> microcode assist",
+        "vector permute -> AES ShiftRows -> Galois field arithmetic -> Reed-Solomon in RAID",
+        "16-byte aligned copy -> cache line split penalty -> page boundary crossing -> 4K aliasing",
+        "GPU texture decompression -> ASTC/BC7 decode -> parallel block decompress -> hardware fixed-function"
+      ]
+    },
+    {
+      "seed": "Huffman table as lookup structure",
+      "expansions": [
+        "perfect hash function -> minimal perfect hash -> cuckoo hashing -> Robin Hood hashing",
+        "trie traversal -> compressed trie -> Patricia tree -> level-compressed trie for IP routing",
+        "decision tree classification -> random forest -> gradient boosted trees -> XGBoost split finding",
+        "ROM lookup table -> FPGA LUT -> configurable logic block -> field-programmable gate array",
+        "wavelength division multiplexing -> frequency-domain decode -> FFT-based polynomial multiplication"
+      ]
+    },
+    {
+      "seed": "format compatibility constraint",
+      "expansions": [
+        "backward compatibility -> x86 real mode -> BIOS -> UEFI transition",
+        "API-compatible drop-in -> LD_PRELOAD -> dynamic linking -> ABI stability",
+        "protocol ossification -> HTTP/2 vs HTTP/1.1 -> QUIC over UDP -> NAT traversal",
+        "constraint satisfaction -> SAT solving -> SMT -> formal verification of decoder correctness",
+        "regulated standard -> FIPS compliance -> certified implementation -> reproducible builds"
+      ]
+    }
+  ],
+  "blind_spots": [
+    {
+      "area": "ARM and RISC-V architectures",
+      "description": "Most of the analysis focuses on x86-64 (Skylake, Zen). ARM (Apple M-series, Graviton) and RISC-V have different latency profiles, issue widths, and SIMD capabilities (NEON/SVE vs SSE/AVX). Optimal stream counts and table sizes may differ dramatically. Apple M1 has 8-wide issue and 3-cycle L1 loads, changing the ILP calculation significantly.",
+      "mitigation": "Benchmark on ARM64 with NEON/SVE paths. Test on Apple M1/M2 and Graviton3. May need architecture-specific tuning of stream count and table size."
+    },
+    {
+      "area": "Small file performance",
+      "description": "All parallelization techniques have startup overhead (sync-point finding, table building, buffer allocation). For small files (<4KB), this overhead may exceed the entire single-threaded decode time, causing a slowdown. Real-world ZIP archives often contain many small files.",
+      "mitigation": "Implement adaptive strategy: for blocks below a threshold size, use optimized single-stream decode. Only activate multi-stream/parallel techniques for blocks above the threshold."
+    },
+    {
+      "area": "Memory bandwidth saturation",
+      "description": "At very high decode throughputs (>5 GB/s), the bottleneck shifts from compute to memory bandwidth. Writing decompressed data to main memory becomes the limiting factor, especially for low-compression-ratio data where the output is much larger than the input.",
+      "mitigation": "Profile memory bandwidth utilization at peak decode rates. Consider streaming stores (MOVNTPS) for large outputs that won't be re-read soon. Pipeline with checksum computation to keep data in cache."
+    },
+    {
+      "area": "Dynamic Huffman table rebuild cost",
+      "description": "DEFLATE blocks with dynamic Huffman tables require parsing the header and building decode tables before any symbols can be decoded. For streams with many small blocks, table-building dominates. The multi-stream and mega-table approaches increase table-build cost further.",
+      "mitigation": "Profile table-build vs decode time across file types. Implement incremental table building and table caching (concept 012). Use SIMD to accelerate table construction."
+    },
+    {
+      "area": "Correctness under adversarial inputs",
+      "description": "Speculative decode techniques must handle malformed, truncated, or adversarial DEFLATE streams safely. A sync-point that appears valid may lead to incorrect decode. Buffer overruns during speculative decode could cause security vulnerabilities.",
+      "mitigation": "Implement strict bounds checking on all speculative operations. Validate decoded output against Adler32/CRC32 checksum. Fuzz-test with AFL/libFuzzer against the zlib reference implementation."
+    },
+    {
+      "area": "Interaction with LZ77 back-references across sync boundaries",
+      "description": "When splitting a DEFLATE block for parallel Huffman decoding, LZ77 back-references in the second half may refer to data decoded in the first half. The parallel Huffman decode produces tokens, but LZ77 reconstruction requires the actual output bytes from earlier positions, creating a dependency.",
+      "mitigation": "Separate Huffman decoding (parallelizable) from LZ77 reconstruction (serial dependency on output buffer). First pass: parallel Huffman decode to token stream. Second pass: serial LZ77 reconstruction."
+    },
+    {
+      "area": "Power consumption and thermal throttling",
+      "description": "Techniques using wider SIMD (AVX-512), more threads, and higher IPC increase power draw. On laptops and mobile, thermal throttling may reduce clock speeds, negating throughput gains.",
+      "mitigation": "Benchmark under sustained load, not just burst performance. Measure energy-per-byte alongside throughput. Consider AVX2-only paths to avoid AVX-512 frequency penalties on Intel."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "What if the CPU has only 1-wide issue (in-order, like ARM Cortex-A55)?",
+      "analysis": "Multi-stream ILP becomes useless since there's no out-of-order execution to exploit. Mega-table multi-symbol decode becomes the dominant optimization since it reduces total instructions. SIMD literal copy still helps but with narrower vectors. The optimal strategy reverts to minimizing total instruction count rather than hiding latency.",
+      "unexpected_insight": "On in-order cores, the precomputed mega-table approach (concept 005) may provide the largest single improvement, potentially 2x, by halving the number of decode iterations. This inverts the priority ordering compared to OoO cores where ILP (concept 001) dominates."
+    },
+    {
+      "constraint": "What if DEFLATE blocks are very small (< 256 bytes compressed)?",
+      "analysis": "Sync-point finding overhead dominates. Table-building cost per block is amortized over fewer symbols. Multi-stream and pipeline approaches have net negative throughput. The optimal strategy is: reuse previous table if possible, use the simplest possible single-stream decode loop, and focus entirely on reducing table-build overhead.",
+      "unexpected_insight": "For small blocks, table-building may consume 50%+ of decode time. A 'lazy table build' that defers full table construction and uses a simpler linear search for the first N symbols could be faster. This is the opposite of the mega-table approach."
+    },
+    {
+      "constraint": "What if we allow 1% decompression error rate (lossy approximation)?",
+      "analysis": "This violates the spec requirement but reveals an interesting tradeoff space. We could skip the LZ77 reconstruction for very long back-references (replacing with zeros) or use approximate Huffman tables. The speculative prediction approach (concept 007) could aggressively predict without verification, achieving near-zero decode latency for predicted symbols.",
+      "unexpected_insight": "A 'lossy decompressor' that trades 1% accuracy for 5x speed could be useful for previewing compressed images or searching compressed text. This connects to the lossy compressed domain processing literature (querying without full decompression)."
+    },
+    {
+      "constraint": "What if the input is fully random (incompressible data stored as DEFLATE)?",
+      "analysis": "Random data in DEFLATE typically uses stored blocks (no compression) or fixed Huffman blocks with near-uniform symbol frequencies. For stored blocks, decompress is just memcpy. For fixed Huffman on random data, all symbols have similar code lengths (~8-9 bits), so mega-table multi-symbol decode works perfectly (all pairs fit in 18 bits, well within a 12-bit root table). Sync-point convergence is also fast since all codes have similar length.",
+      "unexpected_insight": "Incompressible data is paradoxically the easiest case for optimized decompression. The worst case for optimization is highly compressible data with skewed distributions and many LZ77 back-references, because that maximizes the serial dependency chains."
+    },
+    {
+      "constraint": "What if we must decompress in constant-time (no timing side channels)?",
+      "analysis": "Constant-time decompression requires that all code paths take the same time regardless of input. This eliminates: branch prediction benefits, speculative decode, variable-length table lookups, and data-dependent SIMD operations. The only safe approach is fixed-cost decode steps with unconditional operations. The mega-table approach with a fixed-size table and unconditional refill is closest to constant-time.",
+      "unexpected_insight": "Constant-time DEFLATE decoding connects to post-quantum cryptography's constant-time requirements. The fixed-table, branchless decode loop from Giesen/dougallj is essentially already constant-time per symbol. The main leak is in LZ77 copy patterns, which reveal match distances."
+    }
+  ]
+}

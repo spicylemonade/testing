@@ -1,0 +1,218 @@
+[
+  {
+    "id": 1,
+    "symbolic_name": "multi_stream_ilp_decode",
+    "description": "Exploit instruction-level parallelism by decoding multiple independent Huffman bitstreams simultaneously on a single core. Since each decode has a ~7-cycle latency chain (table lookup + shift), interleaving N streams fills execution slots that would otherwise be idle. Fabian Giesen's Oodle uses 3-6 streams on Skylake to reach ~2.8 cycles/byte.",
+    "domains": ["computer_architecture", "compression", "pipeline_scheduling"],
+    "mathematical_formalization": "Let L = critical_path_latency(decode_step), W = issue_width, S = uops_per_decode. Optimal streams N* = ceil(L * W / S). For Skylake: L=7, W=4, S=6 => N* ~ 4.67, so N=5-6 streams are needed. Throughput T = N * (symbols_per_refill) / max(L, N*S/W).",
+    "analogical_connections": [
+      "Assembly line: multiple products on the line at once, each at a different station",
+      "Restaurant kitchen: multiple orders cooked simultaneously on different burners",
+      "CPU pipeline: instruction-level parallelism hides individual instruction latency"
+    ],
+    "implementation_hypothesis": "Split a DEFLATE block's Huffman-coded portion into N sub-streams. Each sub-stream maintains its own bit-buffer, bit-count, and read-pointer. The inner loop round-robins decodes across all N streams. For DEFLATE compatibility, the encoder must produce standard output but the decoder recognizes that within a single block, all symbols use the same Huffman table. Find sync points (concept 002) to create N starting positions within the block.",
+    "experiment_seed": "Benchmark a 3-stream vs 6-stream DEFLATE Huffman decoder on Silesia corpus files compressed at level 6. Measure cycles/byte using rdtsc. Compare against zlib-ng single-stream baseline. Target: 2x throughput on Skylake. Profile IPC to confirm we're throughput-bound, not latency-bound.",
+    "folder_plan": {
+      "path": "tree/001_multi_stream_ilp_decode",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 2,
+    "symbolic_name": "speculative_sync_point",
+    "description": "Find synchronization points within a Huffman bitstream by speculatively decoding from N=max_code_length consecutive offsets simultaneously. Since at least one probe must land on a valid symbol boundary, all probes eventually converge to the same offset. This breaks the serial dependency for parallel Huffman decoding without format changes.",
+    "domains": ["information_theory", "parallel_computing", "formal_languages"],
+    "mathematical_formalization": "Let max_len = 15 (DEFLATE max Huffman code length). Start probes at offsets {o, o+1, ..., o+14}. After decoding k symbols from each, convergence probability P(k) ~ 1 - (1 - 1/E[symbol_length])^k. Expected convergence distance D ~ max_len * E[symbol_length] / (1 - p_miss). For typical DEFLATE data, D ~ 30-60 bits.",
+    "analogical_connections": [
+      "GPS satellite acquisition: trying multiple code phase offsets until lock is achieved",
+      "Self-synchronizing scramblers in telecommunications",
+      "Thread synchronization barriers in parallel computing"
+    ],
+    "implementation_hypothesis": "Implement dougallj's algorithm: maintain a bitmask of 15 active probes. Repeatedly advance the lowest-offset probe by decoding one symbol. If it lands on the same offset as another probe, discard the duplicate. Continue until only 1 probe remains - that offset is a guaranteed sync point. Use this to split blocks for multi-stream ILP decoding.",
+    "experiment_seed": "Measure convergence distance distribution across Silesia corpus DEFLATE blocks. Compute average probes needed. Verify correctness by comparing single-stream decode output against sync-point-split parallel decode. Profile overhead of sync-finding vs benefit of parallel decode.",
+    "folder_plan": {
+      "path": "tree/002_speculative_sync_point",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 3,
+    "symbolic_name": "convergence_set_fsm",
+    "description": "Model Huffman decoding as a finite-state machine where the state is the current bit-offset within the stream. Rather than enumerating all possible starting states individually, group states into convergence sets - sets of states that will all reach the same state after processing enough input symbols. This reduces redundant computation in parallel FSM execution.",
+    "domains": ["automata_theory", "parallel_computing", "compression"],
+    "mathematical_formalization": "FSM with state space S = {bit_offsets mod block_size}. Transition function delta(s, input_chunk) -> s'. Convergence set CS_i = {s in S : delta^k(s, input[j..j+k]) = delta^k(s', input[j..j+k]) for all s,s' in CS_i after k steps}. CSE computes set->set mappings instead of state->state, achieving 2-8.6x speedup over lookback enumeration.",
+    "analogical_connections": [
+      "Basin of attraction in dynamical systems: different initial conditions converge to same attractor",
+      "Consensus protocols in distributed systems: nodes with different initial values converge",
+      "Equivalence classes in automata minimization"
+    ],
+    "implementation_hypothesis": "For each DEFLATE block, precompute convergence sets using profiled transition probabilities. During parallel decode, assign segments to threads. Each thread starts with a convergence set rather than a single state. If the set converges to a single state within the segment, no re-execution needed. Otherwise, re-execute with the correct state from the previous segment.",
+    "experiment_seed": "Implement CSE for DEFLATE Huffman tables. Measure convergence probability vs segment length for typical DEFLATE blocks. Compare parallelization efficiency against naive enumeration (all 15 starting states). Target: >90% convergence within 64 symbols.",
+    "folder_plan": {
+      "path": "tree/003_convergence_set_fsm",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 4,
+    "symbolic_name": "simd_literal_scatter",
+    "description": "Use SIMD instructions (AVX2/SSE) to accelerate the copying of literal byte runs and LZ77 back-references during DEFLATE decompression. While Huffman decoding is latency-bound, the LZ77 reconstruction phase can be throughput-bound on memory bandwidth. Vectorized 16/32-byte copies with overlapping writes can dramatically speed up literal runs.",
+    "domains": ["simd_programming", "compression", "memory_systems"],
+    "mathematical_formalization": "For a literal run of length L bytes: scalar_cycles = L * c_store, simd_cycles = ceil(L/W) * c_vstore where W=16 (SSE) or 32 (AVX2). Speedup = L * c_store / (ceil(L/W) * c_vstore). For back-refs with distance d >= W, same formula applies. For d < W, need overlapping copy: cycles = ceil(L/d) * c_vstore (with shuffle for periodic pattern).",
+    "analogical_connections": [
+      "Flood fill in graphics: filling large contiguous regions with a single operation",
+      "Broadcast in network protocols: one message replicated to many destinations",
+      "Gene duplication in biology: copying segments efficiently"
+    ],
+    "implementation_hypothesis": "Implement chunkcopy_simd(): for each LZ77 token, determine if distance >= 16. If so, use SSE movdqu to copy 16 bytes at a time, allowing overlap past the end (safe with output buffer padding). For short distances (1-15), use SSSE3 pshufb to create a repeating pattern in a 16-byte register and then scatter-store. For literals, emit 16 bytes unconditionally from the decode buffer.",
+    "experiment_seed": "Benchmark LZ77 reconstruction with scalar vs SSE vs AVX2 copies on files with different literal/match ratios (text-heavy vs binary). Measure throughput in GB/s for the copy phase alone. Verify: is the bottleneck Huffman decoding or LZ77 copy? Profile to determine which phase to optimize further.",
+    "folder_plan": {
+      "path": "tree/004_simd_literal_scatter",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 5,
+    "symbolic_name": "precomputed_mega_table",
+    "description": "Expand the Huffman decode table to cover more bits per lookup, enabling multi-symbol decoding in a single table access. A 12-15 bit root table can decode 2-3 short symbols at once by encoding (symbol1, symbol2, total_bits_consumed) tuples. This turns two serial decode steps into one parallel lookup, reducing the effective critical-path latency per symbol.",
+    "domains": ["compression", "data_structures", "computer_architecture"],
+    "mathematical_formalization": "Standard table: T[b] = (symbol, len) for b in 0..2^k-1. Multi-symbol table: T2[b] = (sym1, sym2, len1+len2) where len1+len2 <= k. Table size = 2^k * entry_size. For k=12: 4096 entries * 4 bytes = 16KB (fits L1). Expected symbols per lookup E[n] = sum over valid (s1,s2) pairs of P(len(s1)+len(s2) <= k). For typical text DEFLATE: ~1.8 symbols per lookup at k=12.",
+    "analogical_connections": [
+      "Dictionary lookup: looking up a phrase rather than individual words",
+      "Memoization in dynamic programming: precompute results for common input combinations",
+      "VLIW instruction packets: bundling multiple operations into one fetch"
+    ],
+    "implementation_hypothesis": "Build a 2-symbol decode table during block header parsing. For each possible k-bit peek value, try to decode sym1 (len1 bits) then sym2 (len1..k remaining bits). If both fit, store (sym1, sym2, len1+len2, flag=2). If only sym1 fits, store (sym1, 0, len1, flag=1). Hot decode loop: peek k bits, lookup, emit 1-2 symbols, consume total_len bits. Falls back to standard decode for length/distance codes.",
+    "experiment_seed": "Measure table-build overhead vs decode throughput improvement. Test with k=10,11,12 on Silesia corpus. Compare cycles/symbol against single-symbol table. Measure L1 cache miss rate to verify table fits. Expected: 30-50% improvement on literal-heavy data where most symbols have len <= 6.",
+    "folder_plan": {
+      "path": "tree/005_precomputed_mega_table",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 6,
+    "symbolic_name": "latency_hiding_overlap",
+    "description": "Overlap the execution of different decompression phases to hide latency. Specifically, begin the Huffman table lookup for the next iteration before completing the LZ77 copy of the current iteration. This exploits the out-of-order execution capability of modern CPUs, allowing memory copy latency to be absorbed by decode computation.",
+    "domains": ["computer_architecture", "compression", "pipeline_design"],
+    "mathematical_formalization": "Let T_decode = latency of Huffman decode chain, T_copy = latency of LZ77 copy. Without overlap: total = T_decode + T_copy per iteration. With overlap: total = max(T_decode, T_copy) + pipeline_startup. On OoO cores, if decode and copy use independent execution units, overlap = min(T_decode, T_copy). dougallj measured ~6% speedup from this technique.",
+    "analogical_connections": [
+      "Double buffering in GPU rendering: compute next frame while displaying current",
+      "Prefetching in database query execution: fetch next page while processing current",
+      "Pipelining in CPU: fetch next instruction while executing current"
+    ],
+    "implementation_hypothesis": "In the DEFLATE decode loop, after parsing a length/distance pair but before executing the LZ77 copy, perform the bit-buffer refill and initial table lookup for the next symbol. The copy uses load/store units while the lookup uses ALU+load. On Skylake with 2 load ports, both can proceed in parallel. Structure the loop so the table lookup result is ready by the time the copy finishes.",
+    "experiment_seed": "Implement the overlap technique in a modified zlib-ng. Use perf stat to measure IPC before and after. Profile with Intel VTune to verify that decode and copy operations actually overlap on the execution timeline. Benchmark on files with high match ratios (mozilla, samba) where copy dominates.",
+    "folder_plan": {
+      "path": "tree/006_latency_hiding_overlap",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 7,
+    "symbolic_name": "predictive_coding_residual",
+    "description": "Apply the neuroscience concept of predictive coding to DEFLATE decompression. In the visual cortex, higher layers predict lower-layer activity and only prediction errors are transmitted. Analogously, predict the next Huffman symbol (most likely = most common literal) and speculatively decode assuming the prediction is correct. Only pay full decode cost when the prediction fails.",
+    "domains": ["neuroscience", "compression", "speculative_execution"],
+    "mathematical_formalization": "Let p_max = probability of most common symbol, len_max = its Huffman code length. Speculative decode cost C_spec = len_max (always consume len_max bits first). Correction cost C_corr = T_full_decode * (1 - p_max). Expected cost E[C] = C_spec + C_corr = len_max + T_full * (1 - p_max). Beneficial when p_max > 1 - len_max/T_full. For ASCII text p_max ~ 0.15 (space char), marginal. For binary runs p_max can be much higher.",
+    "analogical_connections": [
+      "Visual cortex predictive coding: predict expected stimuli, only process surprises",
+      "Branch prediction in CPUs: speculatively execute the predicted branch",
+      "Delta encoding in video codecs: encode only differences from predicted frame"
+    ],
+    "implementation_hypothesis": "Profile symbol frequency distribution of typical DEFLATE blocks. If a single literal has probability > 30%, create a speculative fast-path: peek at the next len_max bits, check if they match the predicted symbol's code. If match, emit the symbol and advance by len_max bits (2-3 cycles). If mismatch, fall through to the full table-lookup path (~7 cycles). Net benefit depends on prediction accuracy.",
+    "experiment_seed": "Collect symbol frequency histograms across diverse file types. Compute potential speedup for speculative decode with top-1, top-2, top-3 predictions. Implement and benchmark on files with skewed distributions (NCI dataset has very skewed frequencies). Compare against unconditional full decode.",
+    "folder_plan": {
+      "path": "tree/007_predictive_coding_residual",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 8,
+    "symbolic_name": "optimistic_concurrency_decode",
+    "description": "Apply database optimistic concurrency control principles to parallel DEFLATE decompression. Multiple decoder threads work on different segments of a block simultaneously without locks. Each thread speculatively decodes its segment. At merge time, validate that each thread's starting state was correct. If not, re-execute only the invalidated segments - analogous to transaction abort and retry.",
+    "domains": ["database_systems", "parallel_computing", "compression"],
+    "mathematical_formalization": "N threads, each processes segment of size B/N bits. Thread i starts speculatively from guessed offset o_i. Validation: check if thread_{i-1}'s final offset equals o_i. If yes, commit; if no, abort and re-execute from correct offset. Expected re-executions E[R] = N * P(sync_fail). Total time T = max(B/(N*throughput), R * B/(N*throughput)). Beneficial when P(sync_fail) < (N-1)/N.",
+    "analogical_connections": [
+      "Optimistic concurrency control in databases: process transactions, validate at commit time",
+      "Speculative multithreading in compilers: execute loop iterations in parallel, validate dependencies",
+      "Map-reduce: map phase is speculative, reduce phase validates and merges"
+    ],
+    "implementation_hypothesis": "Divide DEFLATE block into N segments at estimated bit boundaries. Each thread: (1) find sync point using concept 002, (2) decode Huffman symbols from sync point to estimated end, (3) write decoded symbols to a temporary buffer. Main thread: validate segment boundaries match, concatenate output buffers, then run LZ77 reconstruction serially (or with concept 004 SIMD copies). Retry any failed segments.",
+    "experiment_seed": "Implement 2-thread optimistic decode for large DEFLATE blocks (>32KB). Measure sync-finding overhead, decode parallelism, and validation/retry rate. Compare total throughput against single-thread decode on 4+ core machine. Target: 1.5x throughput with 2 threads for large blocks.",
+    "folder_plan": {
+      "path": "tree/008_optimistic_concurrency_decode",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 9,
+    "symbolic_name": "interleaved_entropy_streams",
+    "description": "Based on Fabian Giesen's interleaved entropy coders, structure the decode so that a single DEFLATE bitstream is logically treated as multiple interleaved sub-streams at the decoder level. Rather than modifying the format, use sync-point discovery to create virtual interleaving points. This enables the ILP benefits of multi-stream decoding within a format that only has one stream.",
+    "domains": ["information_theory", "compression", "computer_architecture"],
+    "mathematical_formalization": "Given bitstream B of length L bits and N interleave points at positions {p_1, ..., p_N}, create virtual streams VS_i = B[p_i..p_{i+1}]. Each VS_i is decoded with independent bit-buffer state. The interleaving schedule: decode 1 symbol from VS_0, 1 from VS_1, ..., 1 from VS_{N-1}, repeat. This converts serial latency L_total = K * L_one into parallel latency L_total = K * L_one / N + sync_overhead.",
+    "analogical_connections": [
+      "Time-division multiplexing in telecommunications: multiple signals share one channel by alternating",
+      "Interleaved memory banks in DRAM: access different banks in rotation to hide latency",
+      "Round-robin CPU scheduling: multiple processes share one core"
+    ],
+    "implementation_hypothesis": "For a DEFLATE block with known compressed size, find N-1 sync points at evenly-spaced intervals. Initialize N independent bit-buffer states (bitbuf, bitcount, readptr) at these sync points. The inner loop alternates decoding from each stream, emitting symbols to separate output regions. After all streams complete, the N output regions are concatenated (or written directly to correct offsets if the Huffman-only pass counts symbols first).",
+    "experiment_seed": "Implement 2-way and 4-way virtual interleaving for the Huffman decode phase of DEFLATE. Measure throughput improvement on Skylake. Compare against a real 2-stream format (like Oodle's). Measure overhead of sync-point finding relative to block size. Find the minimum block size where interleaving is beneficial.",
+    "folder_plan": {
+      "path": "tree/009_interleaved_entropy_streams",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 10,
+    "symbolic_name": "chunked_pipeline_decompress",
+    "description": "Decompose DEFLATE decompression into a pipeline of stages: (1) Huffman decode to emit literal/length/distance tokens, (2) LZ77 reconstruction to copy bytes, (3) Adler32/CRC32 checksum. Pipeline these stages across chunks so that while chunk N+1 is being Huffman-decoded, chunk N's LZ77 copy is executing, and chunk N-1's checksum is computing. This uses all three phases concurrently.",
+    "domains": ["pipeline_design", "compression", "systems_engineering"],
+    "mathematical_formalization": "Three pipeline stages with latencies T_h (Huffman), T_lz (LZ77), T_ck (checksum). Without pipeline: T_total = K * (T_h + T_lz + T_ck). With 3-stage pipeline: T_total = K * max(T_h, T_lz, T_ck) + 2 * max(T_h, T_lz, T_ck). Speedup S = (T_h + T_lz + T_ck) / max(T_h, T_lz, T_ck). If stages are balanced (T_h ~ T_lz ~ T_ck): S -> 3.",
+    "analogical_connections": [
+      "Industrial assembly line: each station performs one operation as products flow through",
+      "Unix pipes: multiple processes connected in a pipeline, each processing data as it flows",
+      "Instruction pipeline in CPU: fetch-decode-execute-writeback stages overlap"
+    ],
+    "implementation_hypothesis": "Create an intermediate token buffer between Huffman and LZ77 stages. The Huffman decoder writes (type, value) pairs: (LITERAL, byte), (MATCH, length, distance). A separate LZ77 stage reads tokens and performs copies. A third stage computes Adler32 on the final output. Use large-enough chunk sizes (e.g., 32KB) to amortize pipeline overhead. Can also use separate threads for each stage with lock-free queues.",
+    "experiment_seed": "Implement the 3-stage pipeline with single-thread stage-interleaving (process stage A of chunk 2 while stage B of chunk 1 runs). Measure throughput vs monolithic decode on Silesia corpus. Profile to identify which stage is the bottleneck. Verify correctness of output against zlib reference.",
+    "folder_plan": {
+      "path": "tree/010_chunked_pipeline_decompress",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 11,
+    "symbolic_name": "bitvector_probe_sync",
+    "description": "Accelerate sync-point discovery using bitvector operations. Instead of decoding symbols one at a time to find where probes converge, use a single pass that marks all possible symbol-start positions in a bitvector, then use fast bitwise operations (popcount, CTZ) to find convergence. This leverages 64-bit word operations to process 64 bit-positions simultaneously.",
+    "domains": ["bit_manipulation", "parallel_computing", "data_structures"],
+    "mathematical_formalization": "Create bitvector V of length L (one bit per bit-position in the compressed stream). V[i] = 1 iff position i could be a valid symbol start. Initialize: V = all 1s for the first max_len positions. Propagate: for each position i where V[i]=1, set V[i + decode_length(i)] = 1. Sync point = smallest j > start where popcount(V[j-max_len+1..j]) == 1. Using 64-bit words: process 64 positions per operation.",
+    "analogical_connections": [
+      "Bloom filters: compact bitvector probabilistic set membership",
+      "Sieve of Eratosthenes: mark composites in a bit array",
+      "Bitmap indexing in databases: fast set operations on compressed bitmaps"
+    ],
+    "implementation_hypothesis": "Allocate a bitvector of block_size bits. Forward-scan the compressed block, marking reachable bit positions. Use POPCNT to count active probes in each 64-bit window. When only one active probe remains in a window of max_len consecutive positions, we've found a sync point. Can further accelerate with BMI2 PEXT/PDEP for bit manipulation.",
+    "experiment_seed": "Benchmark bitvector-based sync finding vs iterative probe convergence on DEFLATE blocks of varying sizes. Measure time to find first sync point. Compare memory overhead of bitvector approach. Test with pathological inputs (e.g., all same symbol) to check worst-case convergence.",
+    "folder_plan": {
+      "path": "tree/011_bitvector_probe_sync",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  },
+  {
+    "id": 12,
+    "symbolic_name": "hierarchical_block_prediction",
+    "description": "Use statistical properties of DEFLATE blocks to predict block boundaries, sizes, and Huffman table similarity across blocks. Most real-world DEFLATE streams use similar Huffman tables in consecutive blocks. By predicting the next block's table, we can begin speculative decoding of the next block before the current block finishes, or even reuse the current table if it matches.",
+    "domains": ["machine_learning", "compression", "signal_processing"],
+    "mathematical_formalization": "Let H_k = Huffman table of block k. Define similarity S(H_k, H_{k+1}) = sum over symbols s of |len_k(s) - len_{k+1}(s)|. If S < threshold tau, tables are 'similar' and H_k can be reused speculatively. Probability of table reuse P(S < tau) depends on data homogeneity. For homogeneous files (e.g., XML): P > 0.8. Table-build cost C_build ~ 1000 cycles; speculative decode cost C_spec = 0 if prediction correct, C_build + C_redecode if wrong.",
+    "analogical_connections": [
+      "Motion vector prediction in video coding: predict next frame's motion from previous",
+      "Branch target buffer in CPUs: predict next instruction address from history",
+      "Weather forecasting: tomorrow's weather is most likely similar to today's"
+    ],
+    "implementation_hypothesis": "Maintain a 'previous block table' cache. When a new dynamic Huffman block header is parsed, quickly compare its code lengths to the cached table. If they match within tolerance, skip table build and reuse the cached decode tables. If they differ, build new tables but also speculatively start decoding the next block with the current table in a separate buffer.",
+    "experiment_seed": "Analyze DEFLATE blocks across Silesia corpus files: measure Huffman table similarity between consecutive blocks. Compute hit rate of table prediction. Measure table-build time as fraction of total decode time. Implement table caching and measure end-to-end speedup.",
+    "folder_plan": {
+      "path": "tree/012_hierarchical_block_prediction",
+      "files": ["concept.json", "README.md", "literature.json"]
+    }
+  }
+]

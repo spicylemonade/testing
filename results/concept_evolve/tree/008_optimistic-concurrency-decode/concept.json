@@ -1,0 +1,28 @@
+{
+  "id": 8,
+  "symbolic_name": "optimistic_concurrency_decode",
+  "description": "Apply database optimistic concurrency control principles to parallel DEFLATE decompression. Multiple decoder threads work on different segments of a block simultaneously without locks. Each thread speculatively decodes its segment. At merge time, validate that each thread's starting state was correct. If not, re-execute only the invalidated segments - analogous to transaction abort and retry.",
+  "domains": [
+    "database_systems",
+    "parallel_computing",
+    "compression"
+  ],
+  "mathematical_formalization": "N threads, each processes segment of size B/N bits. Thread i starts speculatively from guessed offset o_i. Validation: check if thread_{i-1}'s final offset equals o_i. If yes, commit; if no, abort and re-execute from correct offset. Expected re-executions E[R] = N * P(sync_fail). Total time T = max(B/(N*throughput), R * B/(N*throughput)). Beneficial when P(sync_fail) < (N-1)/N.",
+  "analogical_connections": [
+    "Optimistic concurrency control in databases: process transactions, validate at commit time",
+    "Speculative multithreading in compilers: execute loop iterations in parallel, validate dependencies",
+    "Map-reduce: map phase is speculative, reduce phase validates and merges"
+  ],
+  "implementation_hypothesis": "Divide DEFLATE block into N segments at estimated bit boundaries. Each thread: (1) find sync point using concept 002, (2) decode Huffman symbols from sync point to estimated end, (3) write decoded symbols to a temporary buffer. Main thread: validate segment boundaries match, concatenate output buffers, then run LZ77 reconstruction serially (or with concept 004 SIMD copies). Retry any failed segments.",
+  "experiment_seed": "Implement 2-thread optimistic decode for large DEFLATE blocks (>32KB). Measure sync-finding overhead, decode parallelism, and validation/retry rate. Compare total throughput against single-thread decode on 4+ core machine. Target: 1.5x throughput with 2 threads for large blocks.",
+  "folder_plan": {
+    "path": "tree/008_optimistic_concurrency_decode",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T05:03:01.843269+00:00",
+  "project_folder": "concept_evolve/tree/008_optimistic-concurrency-decode"
+}

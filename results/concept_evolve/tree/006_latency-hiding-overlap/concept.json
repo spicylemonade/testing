@@ -1,0 +1,28 @@
+{
+  "id": 6,
+  "symbolic_name": "latency_hiding_overlap",
+  "description": "Overlap the execution of different decompression phases to hide latency. Specifically, begin the Huffman table lookup for the next iteration before completing the LZ77 copy of the current iteration. This exploits the out-of-order execution capability of modern CPUs, allowing memory copy latency to be absorbed by decode computation.",
+  "domains": [
+    "computer_architecture",
+    "compression",
+    "pipeline_design"
+  ],
+  "mathematical_formalization": "Let T_decode = latency of Huffman decode chain, T_copy = latency of LZ77 copy. Without overlap: total = T_decode + T_copy per iteration. With overlap: total = max(T_decode, T_copy) + pipeline_startup. On OoO cores, if decode and copy use independent execution units, overlap = min(T_decode, T_copy). dougallj measured ~6% speedup from this technique.",
+  "analogical_connections": [
+    "Double buffering in GPU rendering: compute next frame while displaying current",
+    "Prefetching in database query execution: fetch next page while processing current",
+    "Pipelining in CPU: fetch next instruction while executing current"
+  ],
+  "implementation_hypothesis": "In the DEFLATE decode loop, after parsing a length/distance pair but before executing the LZ77 copy, perform the bit-buffer refill and initial table lookup for the next symbol. The copy uses load/store units while the lookup uses ALU+load. On Skylake with 2 load ports, both can proceed in parallel. Structure the loop so the table lookup result is ready by the time the copy finishes.",
+  "experiment_seed": "Implement the overlap technique in a modified zlib-ng. Use perf stat to measure IPC before and after. Profile with Intel VTune to verify that decode and copy operations actually overlap on the execution timeline. Benchmark on files with high match ratios (mozilla, samba) where copy dominates.",
+  "folder_plan": {
+    "path": "tree/006_latency_hiding_overlap",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T05:03:01.842411+00:00",
+  "project_folder": "concept_evolve/tree/006_latency-hiding-overlap"
+}

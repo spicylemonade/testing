@@ -1,0 +1,28 @@
+{
+  "id": 9,
+  "symbolic_name": "interleaved_entropy_streams",
+  "description": "Based on Fabian Giesen's interleaved entropy coders, structure the decode so that a single DEFLATE bitstream is logically treated as multiple interleaved sub-streams at the decoder level. Rather than modifying the format, use sync-point discovery to create virtual interleaving points. This enables the ILP benefits of multi-stream decoding within a format that only has one stream.",
+  "domains": [
+    "information_theory",
+    "compression",
+    "computer_architecture"
+  ],
+  "mathematical_formalization": "Given bitstream B of length L bits and N interleave points at positions {p_1, ..., p_N}, create virtual streams VS_i = B[p_i..p_{i+1}]. Each VS_i is decoded with independent bit-buffer state. The interleaving schedule: decode 1 symbol from VS_0, 1 from VS_1, ..., 1 from VS_{N-1}, repeat. This converts serial latency L_total = K * L_one into parallel latency L_total = K * L_one / N + sync_overhead.",
+  "analogical_connections": [
+    "Time-division multiplexing in telecommunications: multiple signals share one channel by alternating",
+    "Interleaved memory banks in DRAM: access different banks in rotation to hide latency",
+    "Round-robin CPU scheduling: multiple processes share one core"
+  ],
+  "implementation_hypothesis": "For a DEFLATE block with known compressed size, find N-1 sync points at evenly-spaced intervals. Initialize N independent bit-buffer states (bitbuf, bitcount, readptr) at these sync points. The inner loop alternates decoding from each stream, emitting symbols to separate output regions. After all streams complete, the N output regions are concatenated (or written directly to correct offsets if the Huffman-only pass counts symbols first).",
+  "experiment_seed": "Implement 2-way and 4-way virtual interleaving for the Huffman decode phase of DEFLATE. Measure throughput improvement on Skylake. Compare against a real 2-stream format (like Oodle's). Measure overhead of sync-point finding relative to block size. Find the minimum block size where interleaving is beneficial.",
+  "folder_plan": {
+    "path": "tree/009_interleaved_entropy_streams",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T05:03:01.843688+00:00",
+  "project_folder": "concept_evolve/tree/009_interleaved-entropy-streams"
+}

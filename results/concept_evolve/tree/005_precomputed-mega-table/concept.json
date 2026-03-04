@@ -1,0 +1,28 @@
+{
+  "id": 5,
+  "symbolic_name": "precomputed_mega_table",
+  "description": "Expand the Huffman decode table to cover more bits per lookup, enabling multi-symbol decoding in a single table access. A 12-15 bit root table can decode 2-3 short symbols at once by encoding (symbol1, symbol2, total_bits_consumed) tuples. This turns two serial decode steps into one parallel lookup, reducing the effective critical-path latency per symbol.",
+  "domains": [
+    "compression",
+    "data_structures",
+    "computer_architecture"
+  ],
+  "mathematical_formalization": "Standard table: T[b] = (symbol, len) for b in 0..2^k-1. Multi-symbol table: T2[b] = (sym1, sym2, len1+len2) where len1+len2 <= k. Table size = 2^k * entry_size. For k=12: 4096 entries * 4 bytes = 16KB (fits L1). Expected symbols per lookup E[n] = sum over valid (s1,s2) pairs of P(len(s1)+len(s2) <= k). For typical text DEFLATE: ~1.8 symbols per lookup at k=12.",
+  "analogical_connections": [
+    "Dictionary lookup: looking up a phrase rather than individual words",
+    "Memoization in dynamic programming: precompute results for common input combinations",
+    "VLIW instruction packets: bundling multiple operations into one fetch"
+  ],
+  "implementation_hypothesis": "Build a 2-symbol decode table during block header parsing. For each possible k-bit peek value, try to decode sym1 (len1 bits) then sym2 (len1..k remaining bits). If both fit, store (sym1, sym2, len1+len2, flag=2). If only sym1 fits, store (sym1, 0, len1, flag=1). Hot decode loop: peek k bits, lookup, emit 1-2 symbols, consume total_len bits. Falls back to standard decode for length/distance codes.",
+  "experiment_seed": "Measure table-build overhead vs decode throughput improvement. Test with k=10,11,12 on Silesia corpus. Compare cycles/symbol against single-symbol table. Measure L1 cache miss rate to verify table fits. Expected: 30-50% improvement on literal-heavy data where most symbols have len <= 6.",
+  "folder_plan": {
+    "path": "tree/005_precomputed_mega_table",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T05:03:01.841962+00:00",
+  "project_folder": "concept_evolve/tree/005_precomputed-mega-table"
+}

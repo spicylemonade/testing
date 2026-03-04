@@ -1,0 +1,153 @@
+{
+  "id": "repo_analysis",
+  "symbolic_name": "repo_analysis",
+  "description": "Complete analysis of the research repository infrastructure, multi-agent workflow, and tooling pipeline for the fast DEFLATE decompression research project.",
+  "generated_at": "2026-03-04T05:00:00Z",
+  "modules": {
+    ".archivara/": {
+      "description": "Core research infrastructure containing Python tooling scripts and agent configuration.",
+      "files": {
+        "concept_evolve.py": {
+          "purpose": "ConceptEvolve CLI: concept-tree generation, probing, reframing, and walking via OpenCode sub-agents.",
+          "commands": ["evolve", "probe", "reframe", "walk"],
+          "outputs": [
+            "results/concept_evolve/concept_cards.json",
+            "results/concept_evolve/semantic_bridge.json",
+            "results/concept_evolve/introspection.json",
+            "results/concept_evolve/steering_directions.json",
+            "results/concept_evolve/tree/NNN_slug/concept.json",
+            "results/concept_evolve/tree/NNN_slug/README.md",
+            "results/concept_evolve/tree/index.json",
+            "results/concept_evolve/tree/adjacency.json",
+            "results/concept_evolve/tree/walk_paths.json"
+          ],
+          "dependencies": ["opencode CLI binary", "ANTHROPIC_API_KEY env var"],
+          "mechanism": "Launches opencode sub-agents via subprocess; sub-agents do research and write files; Python post-processes filesystem artifacts (builds adjacency graphs, walk paths, ensures concept folders)."
+        },
+        "semantic_scholar.py": {
+          "purpose": "Semantic Scholar API wrapper for literature graph mining.",
+          "commands": ["search", "citations", "references", "recommend", "graph", "bibtex"],
+          "api_base": "https://api.semanticscholar.org/graph/v1",
+          "features": [
+            "Exponential backoff retry (6 attempts)",
+            "Citation graph construction with configurable roots and fanout",
+            "BibTeX entry generation from paper IDs",
+            "Pretty-printing and JSON output modes",
+            "Save to file support"
+          ],
+          "dependencies": ["urllib (stdlib)", "Semantic Scholar public API"]
+        },
+        "opencode.json": {
+          "purpose": "OpenCode agent and tool configuration. Defines the multi-agent workflow.",
+          "model": "anthropic/claude-opus-4-6",
+          "default_agent": "build",
+          "agents_defined": {
+            "orchestrator": "Planning-only rubric author (no concept_evolve access)",
+            "researcher": "Execution-heavy research worker (has concept_evolve + semantic_scholar)",
+            "writer": "Paper writing and synthesis worker (has semantic_scholar, no concept_evolve)",
+            "reviewer": "Peer review and quality control worker (has semantic_scholar, no concept_evolve)",
+            "concept_worker": "ConceptEvolve sub-worker (no recursive concept tool, has full tool access)"
+          }
+        },
+        "logs/": {
+          "purpose": "Agent execution logs"
+        }
+      }
+    },
+    ".opencode/": {
+      "description": "OpenCode runtime configuration including custom agents and tool wrappers.",
+      "files": {
+        "agents/concept-tree-explorer.md": {
+          "purpose": "Subagent for traversing concept trees, identifying missing links, proposing next experiments.",
+          "mode": "subagent",
+          "tools": ["webfetch", "websearch", "todoread", "todowrite"],
+          "notes": "Read-only (no write/edit). Focused on exploration."
+        },
+        "agents/literature-graph-miner.md": {
+          "purpose": "Subagent for mining citation graphs for transferable ideas and supporting evidence.",
+          "mode": "subagent",
+          "tools": ["webfetch", "websearch", "todoread", "todowrite"],
+          "notes": "Read-only. Prioritizes cross-domain citation chains."
+        },
+        "tools/concept_evolve.ts": {
+          "purpose": "TypeScript tool wrapper exposing concept_evolve commands to OpenCode agents."
+        },
+        "tools/semantic_scholar.ts": {
+          "purpose": "TypeScript tool wrapper exposing semantic_scholar commands to OpenCode agents."
+        }
+      }
+    },
+    "research_rubric.json": {
+      "description": "Central progress tracker with 5 phases and 28 items. Updated by agents to track research progress.",
+      "phases": [
+        {"id": "phase_1", "name": "Problem Analysis & Literature Review", "items": 6},
+        {"id": "phase_2", "name": "Baseline Implementation & Metrics", "items": 5},
+        {"id": "phase_3", "name": "Core Research & Novel Approaches", "items": 7},
+        {"id": "phase_4", "name": "Experiments & Evaluation", "items": 5},
+        {"id": "phase_5", "name": "Analysis & Documentation", "items": 5}
+      ]
+    },
+    "results/": {
+      "description": "Output directory for all research artifacts.",
+      "subdirs": {
+        "concept_evolve/": "ConceptEvolve outputs (concept cards, bridges, trees)",
+        "concept_evolve/tree/": "Individual concept folders with concept.json and README.md"
+      }
+    },
+    "figures/": {
+      "description": "Publication-grade figures in PNG (300 DPI) and PDF formats."
+    },
+    "sources.bib": {
+      "description": "BibTeX bibliography (to be created). Minimum 15 entries required.",
+      "status": "not yet created"
+    }
+  },
+  "multi_agent_workflow": {
+    "description": "Sequential multi-agent pipeline: orchestrator -> researcher -> writer -> reviewer",
+    "stages": [
+      {
+        "agent": "orchestrator",
+        "role": "Creates research_rubric.json with phases and items. Planning only.",
+        "status": "completed"
+      },
+      {
+        "agent": "researcher",
+        "role": "Executes all rubric items: literature search, implementation, benchmarking, analysis. Has full tool access including concept_evolve and semantic_scholar.",
+        "status": "in_progress"
+      },
+      {
+        "agent": "writer",
+        "role": "Drafts technical report and documentation. Uses semantic_scholar for citation validation.",
+        "status": "pending"
+      },
+      {
+        "agent": "reviewer",
+        "role": "Quality control: verifies acceptance criteria, checks statistical methodology, flags unsupported claims.",
+        "status": "pending"
+      }
+    ]
+  },
+  "dependency_graph": {
+    "description": "Tooling pipeline dependency graph",
+    "edges": [
+      {"from": "opencode CLI", "to": "concept_evolve.py", "relation": "invoked as subprocess"},
+      {"from": "concept_evolve.py", "to": "opencode sub-agent", "relation": "launches sub-agent process"},
+      {"from": "opencode sub-agent", "to": "semantic_scholar.py", "relation": "may use for literature search"},
+      {"from": "opencode sub-agent", "to": "websearch/webfetch", "relation": "uses for web research"},
+      {"from": "opencode sub-agent", "to": "filesystem", "relation": "writes concept_cards.json, semantic_bridge.json, etc."},
+      {"from": "concept_evolve.py", "to": "filesystem", "relation": "post-processes: builds index.json, adjacency.json, walk_paths.json"},
+      {"from": "research_rubric.json", "to": "all agents", "relation": "progress tracking and task coordination"},
+      {"from": "sources.bib", "to": "semantic_scholar.py", "relation": "populated via bibtex command"},
+      {"from": "opencode.json", "to": "all agents", "relation": "agent configuration and permissions"},
+      {"from": "concept-tree-explorer agent", "to": "results/concept_evolve/tree/", "relation": "reads concept tree for exploration"},
+      {"from": "literature-graph-miner agent", "to": "semantic_scholar.py", "relation": "mines citation graphs"}
+    ]
+  },
+  "key_observations": [
+    "The concept_evolve.py script uses file-based locking and caching (TTL 7200s) to avoid duplicate runs.",
+    "Sub-agents write files directly to disk; Python only does post-processing (graph construction, folder creation).",
+    "The concept_worker agent is specifically designed to prevent recursive concept_evolve invocations.",
+    "All agents share the same model (claude-opus-4-6) but have different tool access permissions.",
+    "The workflow is designed for incremental, artifact-driven research with concept folders as the unit of work."
+  ]
+}

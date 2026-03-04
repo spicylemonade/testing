@@ -1,0 +1,28 @@
+{
+  "id": 3,
+  "symbolic_name": "convergence_set_fsm",
+  "description": "Model Huffman decoding as a finite-state machine where the state is the current bit-offset within the stream. Rather than enumerating all possible starting states individually, group states into convergence sets - sets of states that will all reach the same state after processing enough input symbols. This reduces redundant computation in parallel FSM execution.",
+  "domains": [
+    "automata_theory",
+    "parallel_computing",
+    "compression"
+  ],
+  "mathematical_formalization": "FSM with state space S = {bit_offsets mod block_size}. Transition function delta(s, input_chunk) -> s'. Convergence set CS_i = {s in S : delta^k(s, input[j..j+k]) = delta^k(s', input[j..j+k]) for all s,s' in CS_i after k steps}. CSE computes set->set mappings instead of state->state, achieving 2-8.6x speedup over lookback enumeration.",
+  "analogical_connections": [
+    "Basin of attraction in dynamical systems: different initial conditions converge to same attractor",
+    "Consensus protocols in distributed systems: nodes with different initial values converge",
+    "Equivalence classes in automata minimization"
+  ],
+  "implementation_hypothesis": "For each DEFLATE block, precompute convergence sets using profiled transition probabilities. During parallel decode, assign segments to threads. Each thread starts with a convergence set rather than a single state. If the set converges to a single state within the segment, no re-execution needed. Otherwise, re-execute with the correct state from the previous segment.",
+  "experiment_seed": "Implement CSE for DEFLATE Huffman tables. Measure convergence probability vs segment length for typical DEFLATE blocks. Compare parallelization efficiency against naive enumeration (all 15 starting states). Target: >90% convergence within 64 symbols.",
+  "folder_plan": {
+    "path": "tree/003_convergence_set_fsm",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T05:03:01.841123+00:00",
+  "project_folder": "concept_evolve/tree/003_convergence-set-fsm"
+}

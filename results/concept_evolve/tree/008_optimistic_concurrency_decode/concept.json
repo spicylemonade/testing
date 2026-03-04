@@ -1,0 +1,14 @@
+{
+  "id": 8,
+  "symbolic_name": "optimistic_concurrency_decode",
+  "description": "Apply database optimistic concurrency control principles to parallel DEFLATE decompression. Multiple decoder threads work on different segments of a block simultaneously without locks. Each thread speculatively decodes its segment. At merge time, validate that each thread's starting state was correct. If not, re-execute only the invalidated segments.",
+  "domains": ["database_systems", "parallel_computing", "compression"],
+  "mathematical_formalization": "N threads, each processes segment of size B/N bits. Thread i starts speculatively from guessed offset o_i. Validation: check if thread_{i-1}'s final offset equals o_i. If yes, commit; if no, abort and re-execute. Expected re-executions E[R] = N * P(sync_fail). Total time T = max(B/(N*throughput), R * B/(N*throughput)).",
+  "analogical_connections": [
+    "Optimistic concurrency control in databases: process transactions, validate at commit time",
+    "Speculative multithreading in compilers: execute loop iterations in parallel, validate dependencies",
+    "Map-reduce: map phase is speculative, reduce phase validates and merges"
+  ],
+  "implementation_hypothesis": "Divide DEFLATE block into N segments at estimated bit boundaries. Each thread: (1) find sync point, (2) decode Huffman symbols, (3) write to temporary buffer. Main thread: validate boundaries match, concatenate, then LZ77 reconstruction.",
+  "experiment_seed": "Implement 2-thread optimistic decode for large DEFLATE blocks (>32KB). Measure sync-finding overhead, decode parallelism, and retry rate."
+}

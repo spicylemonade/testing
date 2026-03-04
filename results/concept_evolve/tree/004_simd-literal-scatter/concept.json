@@ -1,0 +1,28 @@
+{
+  "id": 4,
+  "symbolic_name": "simd_literal_scatter",
+  "description": "Use SIMD instructions (AVX2/SSE) to accelerate the copying of literal byte runs and LZ77 back-references during DEFLATE decompression. While Huffman decoding is latency-bound, the LZ77 reconstruction phase can be throughput-bound on memory bandwidth. Vectorized 16/32-byte copies with overlapping writes can dramatically speed up literal runs.",
+  "domains": [
+    "simd_programming",
+    "compression",
+    "memory_systems"
+  ],
+  "mathematical_formalization": "For a literal run of length L bytes: scalar_cycles = L * c_store, simd_cycles = ceil(L/W) * c_vstore where W=16 (SSE) or 32 (AVX2). Speedup = L * c_store / (ceil(L/W) * c_vstore). For back-refs with distance d >= W, same formula applies. For d < W, need overlapping copy: cycles = ceil(L/d) * c_vstore (with shuffle for periodic pattern).",
+  "analogical_connections": [
+    "Flood fill in graphics: filling large contiguous regions with a single operation",
+    "Broadcast in network protocols: one message replicated to many destinations",
+    "Gene duplication in biology: copying segments efficiently"
+  ],
+  "implementation_hypothesis": "Implement chunkcopy_simd(): for each LZ77 token, determine if distance >= 16. If so, use SSE movdqu to copy 16 bytes at a time, allowing overlap past the end (safe with output buffer padding). For short distances (1-15), use SSSE3 pshufb to create a repeating pattern in a 16-byte register and then scatter-store. For literals, emit 16 bytes unconditionally from the decode buffer.",
+  "experiment_seed": "Benchmark LZ77 reconstruction with scalar vs SSE vs AVX2 copies on files with different literal/match ratios (text-heavy vs binary). Measure throughput in GB/s for the copy phase alone. Verify: is the bottleneck Huffman decoding or LZ77 copy? Profile to determine which phase to optimize further.",
+  "folder_plan": {
+    "path": "tree/004_simd_literal_scatter",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T05:03:01.841569+00:00",
+  "project_folder": "concept_evolve/tree/004_simd-literal-scatter"
+}

@@ -1,0 +1,14 @@
+{
+  "id": 5,
+  "symbolic_name": "precomputed_mega_table",
+  "description": "Expand the Huffman decode table to cover more bits per lookup, enabling multi-symbol decoding in a single table access. A 12-15 bit root table can decode 2-3 short symbols at once by encoding (symbol1, symbol2, total_bits_consumed) tuples. This turns two serial decode steps into one parallel lookup, reducing the effective critical-path latency per symbol.",
+  "domains": ["compression", "data_structures", "computer_architecture"],
+  "mathematical_formalization": "Standard table: T[b] = (symbol, len) for b in 0..2^k-1. Multi-symbol table: T2[b] = (sym1, sym2, len1+len2) where len1+len2 <= k. Table size = 2^k * entry_size. For k=12: 4096 entries * 4 bytes = 16KB (fits L1). Expected symbols per lookup E[n] = sum over valid (s1,s2) pairs of P(len(s1)+len(s2) <= k).",
+  "analogical_connections": [
+    "Dictionary lookup: looking up a phrase rather than individual words",
+    "Memoization in dynamic programming: precompute results for common input combinations",
+    "VLIW instruction packets: bundling multiple operations into one fetch"
+  ],
+  "implementation_hypothesis": "Build a 2-symbol decode table during block header parsing. For each possible k-bit peek value, try to decode sym1 then sym2. Store both if they fit within k bits total.",
+  "experiment_seed": "Measure table-build overhead vs decode throughput improvement. Test with k=10,11,12 on Silesia corpus. Compare cycles/symbol against single-symbol table."
+}

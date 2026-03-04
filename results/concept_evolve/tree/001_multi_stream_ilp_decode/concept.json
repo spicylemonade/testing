@@ -1,0 +1,14 @@
+{
+  "id": 1,
+  "symbolic_name": "multi_stream_ilp_decode",
+  "description": "Exploit instruction-level parallelism by decoding multiple independent Huffman bitstreams simultaneously on a single core. Since each decode has a ~7-cycle latency chain (table lookup + shift), interleaving N streams fills execution slots that would otherwise be idle. Fabian Giesen's Oodle uses 3-6 streams on Skylake to reach ~2.8 cycles/byte.",
+  "domains": ["computer_architecture", "compression", "pipeline_scheduling"],
+  "mathematical_formalization": "Let L = critical_path_latency(decode_step), W = issue_width, S = uops_per_decode. Optimal streams N* = ceil(L * W / S). For Skylake: L=7, W=4, S=6 => N* ~ 4.67, so N=5-6 streams are needed. Throughput T = N * (symbols_per_refill) / max(L, N*S/W).",
+  "analogical_connections": [
+    "Assembly line: multiple products on the line at once, each at a different station",
+    "Restaurant kitchen: multiple orders cooked simultaneously on different burners",
+    "CPU pipeline: instruction-level parallelism hides individual instruction latency"
+  ],
+  "implementation_hypothesis": "Split a DEFLATE block's Huffman-coded portion into N sub-streams. Each sub-stream maintains its own bit-buffer, bit-count, and read-pointer. The inner loop round-robins decodes across all N streams. For DEFLATE compatibility, the encoder must produce standard output but the decoder recognizes that within a single block, all symbols use the same Huffman table. Find sync points (concept 002) to create N starting positions within the block.",
+  "experiment_seed": "Benchmark a 3-stream vs 6-stream DEFLATE Huffman decoder on Silesia corpus files compressed at level 6. Measure cycles/byte using rdtsc. Compare against zlib-ng single-stream baseline. Target: 2x throughput on Skylake. Profile IPC to confirm we're throughput-bound, not latency-bound."
+}

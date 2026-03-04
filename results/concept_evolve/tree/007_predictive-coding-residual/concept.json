@@ -1,0 +1,28 @@
+{
+  "id": 7,
+  "symbolic_name": "predictive_coding_residual",
+  "description": "Apply the neuroscience concept of predictive coding to DEFLATE decompression. In the visual cortex, higher layers predict lower-layer activity and only prediction errors are transmitted. Analogously, predict the next Huffman symbol (most likely = most common literal) and speculatively decode assuming the prediction is correct. Only pay full decode cost when the prediction fails.",
+  "domains": [
+    "neuroscience",
+    "compression",
+    "speculative_execution"
+  ],
+  "mathematical_formalization": "Let p_max = probability of most common symbol, len_max = its Huffman code length. Speculative decode cost C_spec = len_max (always consume len_max bits first). Correction cost C_corr = T_full_decode * (1 - p_max). Expected cost E[C] = C_spec + C_corr = len_max + T_full * (1 - p_max). Beneficial when p_max > 1 - len_max/T_full. For ASCII text p_max ~ 0.15 (space char), marginal. For binary runs p_max can be much higher.",
+  "analogical_connections": [
+    "Visual cortex predictive coding: predict expected stimuli, only process surprises",
+    "Branch prediction in CPUs: speculatively execute the predicted branch",
+    "Delta encoding in video codecs: encode only differences from predicted frame"
+  ],
+  "implementation_hypothesis": "Profile symbol frequency distribution of typical DEFLATE blocks. If a single literal has probability > 30%, create a speculative fast-path: peek at the next len_max bits, check if they match the predicted symbol's code. If match, emit the symbol and advance by len_max bits (2-3 cycles). If mismatch, fall through to the full table-lookup path (~7 cycles). Net benefit depends on prediction accuracy.",
+  "experiment_seed": "Collect symbol frequency histograms across diverse file types. Compute potential speedup for speculative decode with top-1, top-2, top-3 predictions. Implement and benchmark on files with skewed distributions (NCI dataset has very skewed frequencies). Compare against unconditional full decode.",
+  "folder_plan": {
+    "path": "tree/007_predictive_coding_residual",
+    "files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  "generated_at": "2026-03-04T05:03:01.842833+00:00",
+  "project_folder": "concept_evolve/tree/007_predictive-coding-residual"
+}
