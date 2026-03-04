@@ -257,15 +257,64 @@ static const uint8_t codelen_order[19] = {
 /*
  * Fast memory copy for LZ77 back-references.
  * Handles overlapping copies (distance < length) correctly.
+ *
+ * Optimized for common DEFLATE match patterns:
+ *   - Most matches are short (3-10 bytes) with distance >= 8
+ *   - RLE (distance=1) is common for repetitive data
+ *   - Long matches (>32 bytes) benefit from wider copies
  */
 static inline void fast_copy(uint8_t *dst, size_t dst_pos,
                              uint32_t distance, uint32_t length) {
     uint8_t *out = dst + dst_pos;
     const uint8_t *src = out - distance;
 
-    if (distance >= 8) {
-        /* Non-overlapping or minimally overlapping: use word copies.
-         * Copy 8 bytes at a time. Safe because output buffer has padding. */
+    if (__builtin_expect(distance >= 16, 1)) {
+        /* Non-overlapping or wide-overlap: use wide copies.
+         * Most common case for typical DEFLATE streams.
+         *
+         * IMPORTANT: SIMD copy width must not exceed distance, otherwise
+         * the load reads bytes beyond the valid source (which may be
+         * uninitialized output). Use SSE2 only when distance >= 16,
+         * AVX2 only when distance >= 32.
+         */
+#ifdef __AVX2__
+        if (distance >= 32 && length >= 32) {
+            /* AVX2 path for large copies with distance >= 32 */
+            uint8_t *end = out + length;
+            do {
+                __m256i chunk = _mm256_loadu_si256((const __m256i *)src);
+                _mm256_storeu_si256((__m256i *)out, chunk);
+                src += 32;
+                out += 32;
+            } while (out < end);
+            return;
+        }
+#endif
+        /* SSE2 / 16-byte copy path — safe when distance >= 16 */
+        if (length >= 16) {
+            uint8_t *end = out + length;
+            do {
+                __m128i chunk = _mm_loadu_si128((const __m128i *)src);
+                _mm_storeu_si128((__m128i *)out, chunk);
+                src += 16;
+                out += 16;
+            } while (out < end);
+            return;
+        }
+        /* Short match with large distance: 8-byte copies are sufficient */
+        {
+            uint64_t chunk;
+            memcpy(&chunk, src, 8);
+            memcpy(out, &chunk, 8);
+            if (length > 8) {
+                memcpy(&chunk, src + 8, 8);
+                memcpy(out + 8, &chunk, 8);
+            }
+        }
+    } else if (distance >= 8) {
+        /* Medium distance (8-15): 8-byte copies, step by 8.
+         * Since distance >= 8, each 8-byte read from src doesn't overlap
+         * with the 8-byte write to out within the same iteration. */
         uint8_t *end = out + length;
         do {
             uint64_t chunk;
@@ -275,12 +324,35 @@ static inline void fast_copy(uint8_t *dst, size_t dst_pos,
             out += 8;
         } while (out < end);
     } else if (distance == 1) {
-        /* RLE: single byte repeated */
+        /* RLE: single byte repeated — very common */
         memset(out, *src, length);
+    } else if (distance >= 4) {
+        /* Distance 4-7: copy 4 bytes at a time, step by 4.
+         * Since distance >= 4, each 4-byte read from src doesn't overlap
+         * with the 4-byte write to out within the same iteration.
+         * We step by 4 (not distance) to avoid skipping bytes. */
+        uint8_t *end = out + length;
+        do {
+            uint32_t chunk;
+            memcpy(&chunk, src, 4);
+            memcpy(out, &chunk, 4);
+            src += 4;
+            out += 4;
+        } while (out < end);
     } else {
-        /* Small distance overlap: byte-at-a-time */
-        for (uint32_t i = 0; i < length; i++) {
-            out[i] = src[i];
+        /* Distance 2-3: byte-at-a-time or small-pattern expansion */
+        if (distance == 2) {
+            uint16_t pat;
+            memcpy(&pat, src, 2);
+            uint8_t *end = out + length;
+            while (out < end) {
+                memcpy(out, &pat, 2);
+                out += 2;
+            }
+        } else { /* distance == 3 */
+            for (uint32_t i = 0; i < length; i++) {
+                out[i] = src[i];
+            }
         }
     }
 }
