@@ -1,4 +1,6 @@
-# Peer Review Report
+import os
+
+review_content = """# Peer Review Report
 
 **Verdict:** ACCEPT
 
@@ -44,3 +46,7 @@ The paper presents an exceptionally creative contribution to extremal combinator
 
 ## Overall Verdict
 **ACCEPT.** The manuscript achieves high standards in methodology, writing, visualization, and most importantly, scientific creativity. The cross-disciplinary bridge successfully produces non-trivial results that advance theoretical combinatorial methods.
+"""
+
+with open("peer_review.md", "w") as f:
+    f.write(review_content)
