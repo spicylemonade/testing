@@ -1,0 +1,292 @@
+{
+  "version": "1.0",
+  "created_at": "2026-03-05T12:00:00Z",
+  "updated_at": "2026-03-05T06:15:23.831063+00:00",
+  "current_agent": "orchestrator",
+  "agent_status": {
+    "orchestrator": {
+      "status": "completed",
+      "started_at": "2026-03-05T12:00:00Z",
+      "completed_at": "2026-03-05T06:15:23.831045+00:00",
+      "error": null
+    },
+    "researcher": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "writer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    },
+    "reviewer": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Problem Analysis & Literature Review",
+      "order": 1,
+      "items": [
+        {
+          "id": "item_001",
+          "description": "Analyze repository structure and catalog all modules, agents, and tools",
+          "acceptance_criteria": "Written document at results/repo_analysis.md listing all directories (results/, figures/, .opencode/, .archivara/), the two custom agents (concept-tree-explorer, literature-graph-miner), two tools (concept_evolve, semantic_scholar), and their purposes and interconnections",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_002",
+          "description": "Formal problem specification: derive and verify all necessary conditions for SRG(99,14,1,2)",
+          "acceptance_criteria": "Document at results/problem_spec.md containing: (1) the basic relation (v-k-1)mu = k(k-lambda-1) verified for (99,14,1,2), (2) eigenvalue computation showing r=5 and s=-2 with multiplicities f=45 and g=53, (3) Krein conditions checked, (4) absolute bound checked, (5) clique and coclique bounds derived. All arithmetic explicitly shown",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_003",
+          "description": "Conduct comprehensive web-based literature review on Conway's 99-graph problem",
+          "acceptance_criteria": "Using websearch and Semantic Scholar, locate and summarize at least 15 distinct sources covering: (a) original problem statement (Biggs 1969, Conway 1975), (b) spectral/algebraic approaches (Brouwer & Van Maldeghem monograph), (c) automorphism group results (Makhnev-Minakova 2004, Behbahani-Lam 2009, Crnkovic-Maksimovic 2020, Cesarz-Woldar 2023/2025), (d) computational/SAT approaches (Selub 2023, GrayTaylor GitHub), (e) evolutionary/RL approaches (Hutnyk 2020, bbrdthierry 2023), (f) substructure analysis (Lou-Murin 2014, Reimbayev 2024/2025). Summary document at results/literature_review.md",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_004",
+          "description": "Create and populate sources.bib with BibTeX entries for all consulted sources",
+          "acceptance_criteria": "File sources.bib in repo root contains valid BibTeX entries for at least 10 relevant papers. Must include entries for: Biggs (1969 or 1971 SRG survey), Brouwer & Van Maldeghem (SRG monograph), Makhnev-Minakova (2004), Behbahani thesis (2009), Crnkovic-Maksimovic (2020), Cesarz-Woldar (2023), Lou-Murin (2014 MIT PRIMES), Selub (2023 SAT), Reimbayev (2024 hexagons), and at least one additional reference. Each entry must have author, title, year, and venue/URL fields",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_005",
+          "description": "Subagent delegation: use literature-graph-miner to trace citation chains and identify overlooked approaches",
+          "acceptance_criteria": "Launch literature-graph-miner subagent with seed papers on Conway's 99-graph. Agent returns at least 5 actionable leads from citation chains connecting SRG theory to potentially transferable ideas from coding theory, finite geometry, or group theory. Results saved to results/concept_evolve/tree/lit_mining_leads.md",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_006",
+          "description": "Classify known approaches and their failure modes for SRG(99,14,1,2)",
+          "acceptance_criteria": "Document at results/approach_taxonomy.md with a table classifying each known approach (spectral, automorphism group, local structure, SAT, evolutionary, greedy extension) by: (1) what it proved/disproved, (2) why it fell short of resolving existence, (3) what gap remains. Must reference at least 8 entries from sources.bib",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Baseline Implementation & Metrics",
+      "order": 2,
+      "items": [
+        {
+          "id": "item_007",
+          "description": "Implement SRG(99,14,1,2) validation oracle: given an adjacency matrix, verify all four parameter conditions",
+          "acceptance_criteria": "Python script at results/baseline/srg_validator.py that takes a 99x99 adjacency matrix and returns: (1) is_regular_14 (bool), (2) lambda_violations (count of adjacent pairs not sharing exactly 1 common neighbor), (3) mu_violations (count of non-adjacent pairs not sharing exactly 2 common neighbors), (4) total_violation_score (sum). Validated on Paley(9) graph as srg(9,4,1,2) control case",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_008",
+          "description": "Implement spectral feasibility checker and eigenvalue analysis module",
+          "acceptance_criteria": "Script at results/baseline/spectral_analysis.py that: (1) computes adjacency matrix eigenvalues, (2) checks interlacing conditions, (3) verifies Krein and absolute bounds, (4) computes and verifies the p-rank for small primes (p=2,3,5,7). Must reproduce known eigenvalues r=5, s=-2 with multiplicities 45, 53 for the putative SRG(99,14,1,2)",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_009",
+          "description": "Implement local neighborhood structure enumerator for the fan/blade decomposition",
+          "acceptance_criteria": "Script at results/baseline/local_structure.py that: (1) generates the canonical 15-vertex ego-neighborhood (vertex + 14 neighbors arranged as 7 blades of a fan), (2) enumerates all valid extensions to 2-neighborhoods respecting lambda=1 and mu=2, (3) counts and classifies distinct local configurations. Output stored at results/baseline/local_configs.json",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_010",
+          "description": "Define quantitative fitness/distance metrics for candidate graphs",
+          "acceptance_criteria": "Document at results/baseline/metrics.md defining at least 4 metrics: (1) violation_count (lambda + mu violations), (2) spectral_distance (L2 distance of eigenvalue spectrum from target), (3) regularity_defect (max degree deviation from 14), (4) structural_score (weighted combination). Python implementation at results/baseline/fitness.py with unit tests demonstrating metrics on small known SRGs",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_011",
+          "description": "Subagent delegation: use concept-tree-explorer to map baseline concept space and identify high-value paths",
+          "acceptance_criteria": "Launch concept-tree-explorer subagent to explore concept tree rooted at 'SRG(99,14,1,2) construction strategies'. Agent returns a concept tree with at least 3 levels of depth and at least 8 leaf nodes, saved to results/concept_evolve/tree/baseline_concept_tree.json. Each leaf annotated with feasibility estimate (high/medium/low) and justification",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Core Research & Novel Approaches",
+      "order": 3,
+      "items": [
+        {
+          "id": "item_012",
+          "description": "Algebraic construction attempt: explore Cayley graph and group-theoretic constructions over candidate groups of order 99",
+          "acceptance_criteria": "Script at results/novel/cayley_construction.py that: (1) enumerates groups of order 99 (Z99, Z9 x Z11, Z3 x Z33, Z3 x Z3 x Z11), (2) for each group, systematically searches for a 14-element connection set S with S=S^{-1} satisfying lambda=1, mu=2, (3) documents why each group does or does not yield a valid construction. Results summary at results/novel/cayley_results.md referencing prior work from sources.bib",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_013",
+          "description": "Constraint propagation approach: encode SRG conditions as CSP and apply arc consistency + intelligent backtracking",
+          "acceptance_criteria": "Script at results/novel/csp_approach.py implementing: (1) CSP encoding with 99*98/2 binary variables (edges), (2) constraints for regularity, lambda=1, mu=2, (3) arc-consistency propagation (AC-3 or higher), (4) symmetry breaking using automorphism group knowledge (|Aut| in {1,2,3}), (5) intelligent variable ordering heuristic. Must run to completion on at least 30 vertices (partial graph) within 1 hour. Progress logs at results/novel/csp_log.txt",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_014",
+          "description": "Spectral nonexistence proof attempt: investigate whether p-rank, Smith normal form, or modular conditions yield a contradiction",
+          "acceptance_criteria": "Analysis at results/novel/spectral_nonexistence.md that: (1) computes the 2-rank, 3-rank, 5-rank, 7-rank constraints for the adjacency matrix A of a hypothetical SRG(99,14,1,2), (2) examines the Smith normal form of A-rI and A-sI over Z, (3) checks divisibility conditions on the determinant of submatrices, (4) attempts to derive a contradiction or documents exactly which conditions are satisfied. References at least 3 papers from sources.bib",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_015",
+          "description": "Incremental construction via greedy extension with intelligent backtracking from maximal partial SRGs",
+          "acceptance_criteria": "Script at results/novel/greedy_extend.py that: (1) starts from canonical 15-vertex ego-neighborhood, (2) greedily adds vertices maintaining SRG constraints locally, (3) implements backtracking when contradictions arise, (4) tracks maximum partial graph size achieved. Must reach at least 40 vertices in a partial valid subgraph. Results and statistics at results/novel/extension_stats.json",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_016",
+          "description": "Subagent delegation: concept-tree-explorer evolves novel approach ideas by probing connections between finite geometry and SRG construction",
+          "acceptance_criteria": "Launch concept-tree-explorer to explore paths connecting: (a) partial geometries pg(s,t,alpha) with s=7, (b) quasi-symmetric 2-designs, (c) two-weight codes over GF(q), (d) equiangular lines in R^45 or R^53. Agent returns at least 3 concrete construction hypotheses with feasibility analysis, saved to results/concept_evolve/tree/novel_connections.md",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_017",
+          "description": "Investigate the connection between SRG(99,14,1,2) and partial linear spaces / near-pencil geometries",
+          "acceptance_criteria": "Document at results/novel/geometry_connection.md analyzing: (1) if SRG(99,14,1,2) arises as block graph of a (putative) quasi-symmetric 2-design, (2) the point-line incidence structure induced by triangles (231 triangles as 'lines' on 99 'points'), (3) whether this incidence structure is embeddable in a known geometry. Must cite at least 2 papers from sources.bib and state a clear conclusion on whether the geometric viewpoint yields new constraints",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_4",
+      "name": "Experiments & Evaluation",
+      "order": 4,
+      "items": [
+        {
+          "id": "item_018",
+          "description": "Run Cayley graph exhaustive search over all groups of order 99",
+          "acceptance_criteria": "Complete execution of results/novel/cayley_construction.py with output showing: (1) number of candidate connection sets tested per group, (2) best fitness score achieved per group, (3) definitive statement that no Cayley SRG(99,14,1,2) exists (if search completes) or a valid construction. Results at results/experiments/cayley_exhaustive.json",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_019",
+          "description": "Run CSP solver experiment with increasing vertex counts and document wall at which propagation stalls",
+          "acceptance_criteria": "Execution logs at results/experiments/csp_scaling.json documenting: (1) time-to-complete for vertex counts 15, 20, 25, 30, 35, 40, (2) number of backtracks per vertex count, (3) identification of the critical vertex count where search space explodes, (4) comparison with prior SAT approach (Selub 2023) from sources.bib",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_020",
+          "description": "Run greedy extension experiment from multiple random starting configurations",
+          "acceptance_criteria": "Execute results/novel/greedy_extend.py with at least 100 random initial seeds. Results at results/experiments/extension_results.json with: (1) distribution of maximum sizes reached, (2) histogram of failure points (vertex count at first contradiction), (3) analysis of structural bottlenecks. Include comparison figure at figures/extension_distribution.png",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_021",
+          "description": "Evaluate spectral nonexistence analysis: determine if any modular arithmetic condition rules out SRG(99,14,1,2)",
+          "acceptance_criteria": "Document at results/experiments/spectral_verdict.md with: (1) explicit statement of each p-rank constraint tested, (2) result (satisfied/violated) for each, (3) Smith normal form analysis results, (4) final verdict: 'contradiction found' (with proof) or 'all spectral conditions satisfied' (with explicit listing). Must compare against Brouwer's tables and cite sources.bib",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_022",
+          "description": "Subagent delegation: literature-graph-miner cross-references experimental results with latest 2024-2026 publications",
+          "acceptance_criteria": "Launch literature-graph-miner to search for any 2024-2026 papers resolving or making progress on Conway's 99-graph problem (including Shpectorov-Zhao 2025 on SRG(85,14,3,2) as methodological reference). Agent returns: (1) any resolution claims found, (2) novel constraints discovered, (3) updated sources.bib entries. Results at results/concept_evolve/tree/recent_progress.md",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "phase_5",
+      "name": "Analysis & Documentation",
+      "order": 5,
+      "items": [
+        {
+          "id": "item_023",
+          "description": "Synthesize all experimental results into a unified existence/nonexistence assessment",
+          "acceptance_criteria": "Document at results/synthesis.md containing: (1) table summarizing every approach attempted and its outcome, (2) strongest evidence for existence (if any construction came close), (3) strongest evidence for nonexistence (if any proof technique nearly succeeded), (4) precise statement of the current status: 'resolved (exists)', 'resolved (does not exist)', or 'remains open with the following narrowed constraints'. Must reference all experimental results from Phase 4 and cite at least 8 papers from sources.bib",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_024",
+          "description": "Generate concept evolution tree summarizing the full research journey",
+          "acceptance_criteria": "Use concept_evolve tool to produce a final concept tree at results/concept_evolve/tree/final_tree.json containing: (1) all explored approaches as nodes, (2) edges showing logical dependencies and inspirations between approaches, (3) leaf annotations marking each approach as 'productive', 'dead-end', or 'promising-unexplored', (4) at least 15 total nodes across 4+ levels of depth",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_025",
+          "description": "Write final research report with clear statement of findings and open questions",
+          "acceptance_criteria": "Document at results/final_report.md with sections: (1) Abstract (200 words), (2) Introduction with problem statement, (3) Literature Review (referencing sources.bib), (4) Methods (each approach from Phase 3), (5) Results (each experiment from Phase 4), (6) Discussion comparing our findings to prior work, (7) Conclusion with definitive statement or precise characterization of remaining gap, (8) References (all entries from sources.bib). Total length at least 3000 words",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_026",
+          "description": "Subagent delegation: concept-tree-explorer identifies top 3 most promising unexplored directions for future work",
+          "acceptance_criteria": "Launch concept-tree-explorer to analyze the final concept tree and experimental results. Agent returns ranked list of 3 most promising unexplored directions with: (1) description of approach, (2) estimated probability of success, (3) estimated computational/theoretical effort required, (4) key prerequisite insights needed. Saved to results/concept_evolve/tree/future_directions.md",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        },
+        {
+          "id": "item_027",
+          "description": "Validate all code, data artifacts, and documentation for completeness and correctness",
+          "acceptance_criteria": "Checklist at results/validation_checklist.md confirming: (1) all Python scripts run without errors, (2) all referenced JSON/MD files exist and are non-empty, (3) sources.bib contains >= 10 valid entries, (4) figures/ contains at least 1 generated figure, (5) results/concept_evolve/tree/ contains at least 4 files, (6) final_report.md references all major results. Each checklist item marked pass/fail with notes",
+          "status": "pending",
+          "notes": null,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_items": 27,
+    "completed": 0,
+    "in_progress": 0,
+    "failed": 0,
+    "pending": 27
+  }
+}
