@@ -1,0 +1,17 @@
+# gflownet_entropy_collapse
+
+## Context
+Trains a Generative Flow Network (GFlowNet) to sequentially build K_N graphs edge-by-edge, receiving a reward only if no monochromatic K_5 is formed. The GFlowNet learns the partition function Z. At N = R(5,5), the estimated log-partition function undergoes a mathematical singularity.
+
+## Domains
+Machine Learning, Thermodynamics, Graph Theory
+
+## Math
+Total flow Z = F(s_0). If valid terminal states x have R(x)=1 and invalid R(x)=0, then Z(N) counts valid graphs. An abrupt drop Z(N) \to 0 gives the bound.
+
+## Analogies
+Like a fluid network where pipes sequentially split. If all terminal pipes are blocked (no valid graphs), the pressure at the source (partition function) drops to zero, and the flow field collapses.
+
+## Implementation Backlog
+- Implement an edge-by-edge graph building GFlowNet. Train it on N=40..44. Measure the converged Z(N) estimate. Use the derivative d\log Z(N) / dN to detect the phase boundary.
+- Train on R(4,4) and plot Z(N) for N=10..18. Prove that the learned flow accurately predicts Z(18)=0. Apply identically to N=40..46 with a large distributed GPU run.

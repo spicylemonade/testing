@@ -1,0 +1,329 @@
+[0m
+> concept_worker · google/gemini-3.1-pro-preview
+[0m
+[0m⚙ [0msemantic_scholar {"query":"Ramsey number R(5,5) bounds","command":"search","limit":5}
+[0m⚙ [0msemantic_scholar {"command":"search","query":"Ramsey theory statistical mechanics spin glass","limit":5}
+[0m✗ [0msemantic_scholar failed
+[91m[1mError: [0mCommand failed: python3 /home/archivara/work/repo/.archivara/semantic_scholar.py search Ramsey numbers semidefinite programming sum of squares --limit 5 --json
+[0m◈ [0mExa Web Search ""R(5,5)" Ramsey bounds current 2026"
+[0m
+[0m$ [0mmkdir -p /home/archivara/work/repo/results/concept_evolve/tree/001_spin_glass_partition_zeros /home/archivara/work/repo/results/concept_evolve/tree/002_topological_graph_homology /home/archivara/work/repo/results/concept_evolve/tree/003_tensor_network_contraction /home/archivara/work/repo/results/concept_evolve/tree/004_sos_diffusion_geometry /home/archivara/work/repo/results/concept_evolve/tree/005_quantum_walk_mixing_time /home/archivara/work/repo/results/concept_evolve/tree/006_gflownet_entropy_collapse /home/archivara/work/repo/results/concept_evolve/tree/007_holographic_bulk_reconstruction /home/archivara/work/repo/results/concept_evolve/tree/008_algebraic_geometry_syzygies /home/archivara/work/repo/results/concept_evolve/tree/009_semantic_compression_limit /home/archivara/work/repo/results/concept_evolve/tree/010_categorical_adjunction_obstruction
+[0m
+[0m$ [0mcat << 'EOF' > /home/archivara/work/repo/results/concept_evolve/concept_cards.json
+[
+  {
+    "symbolic_name": "spin_glass_partition_zeros",
+    "description": "Models the space of valid Ramsey R(5,5) graphs as the ground states of an infinite-range spin glass model where Hamiltonian corresponds to the count of monochromatic K5s. By studying the Lee-Yang-Fisher zeros of the partition function in the complex temperature plane, we can identify a thermodynamic phase transition that strictly demarcates the non-existence of valid graphs when N >= R(5,5).",
+    "domains": ["Statistical Mechanics", "Complex Analysis", "Graph Theory"],
+    "mathematical_formalization": "Z_N(\\beta) = \\sum_{x \\in \\{0,1\\}^{\\binom{N}{2}}} e^{-\\beta H(x)}, where H(x) is the K5 count. The Lee-Yang zeros accumulate on the real axis at a critical size N_c = R(5,5).",
+    "analogical_connections": "The disappearance of valid graphs at R(5,5) is analogous to the sudden loss of magnetization in a ferromagnetic material as it crosses the Curie temperature, or a phase boundary where zero-temperature entropy exactly hits zero.",
+    "implementation_hypothesis": "Use simulated annealing and Markov Chain Monte Carlo (MCMC) with parallel tempering to map out the density of states. Compute the partition function zeros using numerical analytic continuation. Track how the leading zero approaches the real axis as N grows.",
+    "experiment_seed": "Estimate the partition function zeros for R(3,3)=6 and R(4,4)=18 first. Observe the scaling of zero locations. Then run an extrapolated scaling analysis up to N=46 to predict the R(5,5) boundary.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "topological_graph_homology",
+    "description": "Constructs a chain complex graded by the number of edges, where basis elements are graphs avoiding monochromatic K5s. The boundary operator removes an edge. The homology of this complex contains topological invariants of the space of Ramsey graphs. R(5,5) is the minimal N where the top-dimensional homology group vanishes identically.",
+    "domains": ["Algebraic Topology", "Combinatorics", "Homological Algebra"],
+    "mathematical_formalization": "\\partial G = \\sum_{e \\in E(G)} (-1)^{\\text{sgn}(e)} (G \\setminus e). If H_k(C, \\mathbb{Z}) = 0 for all k, no valid graph of size N exists.",
+    "analogical_connections": "This is akin to finding the highest Betti number of a manifold; if the manifold has 'holes', a graph exists. When the Ramsey bound is hit, the 'manifold' collapses into a point, indicating impossibility.",
+    "implementation_hypothesis": "Generate the boundary matrices for smaller subgraphs of size k<N and compute their Smith Normal Forms. Look for predictable structural collapse in the persistent homology as N grows.",
+    "experiment_seed": "Compute Betti numbers for the R(4,4) graph complex. Verify that the Betti numbers uniformly hit 0 at N=18. Formulate a predictive dimension formula for N=43..48.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "tensor_network_contraction",
+    "description": "Formulates the boolean constraints of a valid R(5,5) coloring as a 2D grid tensor network (like a Projected Entangled Pair State - PEPS). Each tensor represents a localized constraint. The global contraction of this network yields the total number of valid Ramsey graphs. The bound R(5,5) is reached when the exact contraction yields a zero norm state.",
+    "domains": ["Quantum Information", "Computational Complexity", "Graph Theory"],
+    "mathematical_formalization": "|\\Psi\\rangle = \\sum_{G} \\delta_{K_5}(G) |G\\rangle. The norm \\langle \\Psi | \\Psi \\rangle = \\text{tTr}(\\prod_{i,j} T^{[i,j]}) exactly counts valid graphs. R(5,5) = \\min \\{N \\mid \\langle \\Psi_N | \\Psi_N \\rangle = 0\\}.",
+    "analogical_connections": "Like tracking the entanglement entropy in a many-body quantum system, where the ground state abruptly changes its topology. Here, the 'norm' is the volume of valid graphs.",
+    "implementation_hypothesis": "Map the K5 constraint to a set of rank-4 tensors on an N x N lattice. Use approximate tensor contraction algorithms (like DMRG or TRG) to estimate the norm of the network. A sharp drop to zero indicates the bound.",
+    "experiment_seed": "Contract the network for R(3,3)=6 and R(4,4)=18. Analyze the contraction time and entanglement scaling with N. Try to extrapolate to N=43 to 48 using finite-size scaling techniques.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "sos_diffusion_geometry",
+    "description": "Relaxes the discrete domain of Ramsey graphs to a continuous pseudo-distribution using the Sum-of-Squares (SoS) hierarchy. We then train a continuous score-based diffusion model over this SoS manifold. If the diffusion drift field contains no stable attractors corresponding to valid integer solutions, the discrete space must be empty.",
+    "domains": ["Continuous Optimization", "Generative AI", "Semidefinite Programming"],
+    "mathematical_formalization": "Let \\mathcal{M}_{SoS} be the degree-d SoS relaxation of the Boolean constraint manifold. Diffusion process: dx_t = f(x_t, t)dt + g(t)dw. Score matching operates on \\mathcal{M}_{SoS}.",
+    "analogical_connections": "Analogous to finding an energy minimum in a continuous landscape. If the continuous 'puddles' (SoS regions) evaporate under a geometric flow, then there's no physical 'water' (discrete valid graphs).",
+    "implementation_hypothesis": "Build a degree-4 SoS SDP relaxation for R(5,5). Run a Langevin dynamics process guided by the SoS pseudo-probabilities. Track the failure rate of rounding continuous samples to discrete graphs.",
+    "experiment_seed": "Verify that for N < 18, the SoS+Diffusion process correctly rounds to valid R(4,4) graphs. For N=18, verify it fails. Extrapolate failure thresholds to N=43..48.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "quantum_walk_mixing_time",
+    "description": "Defines a continuous-time quantum walk (CTQW) whose state space is the set of all 2-colorings of K_N, with an energy penalty for K_5 subgraphs. By observing the Quantum Inverse Participation Ratio (IPR), we can detect localization. When valid graphs vanish, the walk becomes completely localized, signaling the Ramsey bound.",
+    "domains": ["Quantum Computing", "Spectral Graph Theory"],
+    "mathematical_formalization": "Hamiltonian H = \\gamma L + \\sum_{K_5} Z_{e_1} \\dots Z_{e_{10}}. IPR = \\sum_x |\\langle x | \\psi(t) \\rangle|^4. Spike in IPR implies N >= R(5,5).",
+    "analogical_connections": "Like Anderson localization in condensed matter physics, where electron wavefunctions become trapped due to disorder (here, the 'disorder' is the extreme rarity and eventual absence of valid graphs).",
+    "implementation_hypothesis": "Simulate a proxy of this walk using Trotterization on a classical simulator (or tensor networks). Measure the spectral gap and the scaling of the mixing time. When mixing time diverges exponentially, the bound is hit.",
+    "experiment_seed": "Calculate the exact spectral gap of the Hamiltonian for small N up to 10. Fit the scaling curve of the gap vs N. The zero crossing of the gap polynomial provides an estimator for R(5,5).",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "gflownet_entropy_collapse",
+    "description": "Trains a Generative Flow Network (GFlowNet) to sequentially build K_N graphs edge-by-edge, receiving a reward only if no monochromatic K_5 is formed. The GFlowNet learns the partition function Z. At N = R(5,5), the estimated log-partition function undergoes a mathematical singularity.",
+    "domains": ["Machine Learning", "Thermodynamics", "Graph Theory"],
+    "mathematical_formalization": "Total flow Z = F(s_0). If valid terminal states x have R(x)=1 and invalid R(x)=0, then Z(N) counts valid graphs. An abrupt drop Z(N) \\to 0 gives the bound.",
+    "analogical_connections": "Like a fluid network where pipes sequentially split. If all terminal pipes are blocked (no valid graphs), the pressure at the source (partition function) drops to zero, and the flow field collapses.",
+    "implementation_hypothesis": "Implement an edge-by-edge graph building GFlowNet. Train it on N=40..44. Measure the converged Z(N) estimate. Use the derivative d\\log Z(N) / dN to detect the phase boundary.",
+    "experiment_seed": "Train on R(4,4) and plot Z(N) for N=10..18. Prove that the learned flow accurately predicts Z(18)=0. Apply identically to N=40..46 with a large distributed GPU run.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "holographic_bulk_reconstruction",
+    "description": "Uses the AdS/CFT correspondence principle to map the discrete graph coloring problem (boundary) to a minimal surface problem in a hyperbolic bulk (AdS). A monochromatic K_5 corresponds to a topological defect. The Ramsey bound is the critical boundary size that inevitably forces a defect in the bulk.",
+    "domains": ["String Theory", "Graph Theory", "Differential Geometry"],
+    "mathematical_formalization": "Graph nodes lie at z \\to 0 in hyperbolic metric. Edges are bulk geodesics. The absence of a K_5 defect places a strict upper bound on the boundary curvature. When curvature bounds are violated, N >= R(5,5).",
+    "analogical_connections": "Similar to how a 2D surface can only hold so many non-overlapping strings before they tangle; the boundary capacity is determined by the bulk's volume. Exceeding R(5,5) creates a black hole singularity in the bulk representation.",
+    "implementation_hypothesis": "Construct an embedding of K_N into a discrete hyperbolic lattice. Calculate the minimal spanning volume of colored edge subsets. Track the emergence of 'entanglement wedges' which signal unavoidable K_5 cliques.",
+    "experiment_seed": "Embed graphs of N=10 to 20 for R(4,4) into an AdS3 discrete slice. Calculate the bulk topological defect density. The N=18 threshold should cleanly match a geometrical phase transition.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "algebraic_geometry_syzygies",
+    "description": "Casts the Ramsey problem as finding the roots of a system of polynomial equations in characteristic 2. By computing the minimal free resolution of the corresponding ideal, we extract the Betti numbers. The projective dimension of the module changes suddenly at the Ramsey boundary.",
+    "domains": ["Commutative Algebra", "Algebraic Geometry", "Combinatorics"],
+    "mathematical_formalization": "Variables x_e \\in \\{0,1\\}. Ideal I = \\langle x_{e_1}\\dots x_{e_{10}}, (1-x_{e_1})\\dots(1-x_{e_{10}}) \\rangle. Compute the free resolution. R(5,5) is where 1 \\notin I becomes false.",
+    "analogical_connections": "Like shining a light through a crystal to see its diffraction pattern (syzygies). When the crystal's structure becomes impossible (hitting the Ramsey bound), the diffraction pattern shatters or becomes trivial.",
+    "implementation_hypothesis": "Use randomized algebraic algorithms to find the degree of the Hilbert polynomial for varying N. Analyze the length of the free resolution as N approaches 43.",
+    "experiment_seed": "Run Macaulay2 to compute the Betti tables for R(3,3)=6 and R(4,3)=9. Look for a predictive algebraic invariant in the Betti table that scales with N and collapses at the bound.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "semantic_compression_limit",
+    "description": "Treats valid R(5,5) graphs as an ensemble of meaning-preserving messages under a distortion metric. We study the phase diagram of this semantic compression space. A first-order phase transition from lossy to lossless compression defines the strict upper bound.",
+    "domains": ["Information Theory", "Cognitive Neuroscience", "Statistical Mechanics"],
+    "mathematical_formalization": "Rate-distortion R(D) = \\min I(X; \\hat{X}) subject to E[d(X,\\hat{X})] \\le D. As N increases, the required rate R(0) exceeds the Shannon capacity of the edge channel.",
+    "analogical_connections": "Like trying to ZIP compress a file of pure noise. A valid Ramsey graph looks like pseudo-random noise, but is actually highly constrained. At R(5,5), the required constraint density exceeds the information capacity.",
+    "implementation_hypothesis": "Implement the Replica Symmetric (RS) equations for the semantic compression Hamiltonian. Solve the saddle-point equations numerically. Identify the critical system size N where the replica symmetry breaking phase boundary hits D=0.",
+    "experiment_seed": "Solve the RS equations for the R(4,4) problem using the framework from Can (2025). The predicted first-order transition line should intersect the D=0 axis exactly at N=18.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  },
+  {
+    "symbolic_name": "categorical_adjunction_obstruction",
+    "description": "Lifts the problem to Category Theory by defining a functor from the category of Graphs to a category of 'Ramsey Obstructions'. The existence of a right adjoint provides a universal obstruction map. R(5,5) is mathematically defined as the initial object in the subcategory of inescapable obstructions.",
+    "domains": ["Category Theory", "Logic", "Graph Theory"],
+    "mathematical_formalization": "Functor F: Graph \\to Obs. If F \\dashv U, we have a natural bijection Hom(F(G), X) \\cong Hom(G, U(X)). When N=R(5,5), F(K_N) becomes isomorphic to the terminal object 1.",
+    "analogical_connections": "Like finding the 'shadow' of a complex object. The adjunction gives the purest possible shadow. If the shadow fills the entire room, the object cannot exist.",
+    "implementation_hypothesis": "Formalize the Graph and Obstruction categories in a proof assistant like Lean or Coq. Define the adjunction structurally. Extract a computable structural condition for the terminal mapping.",
+    "experiment_seed": "Write a Lean4 theorem proving that F(K_6) maps to 1 for the R(3,3) problem. Formally specify the constraints for F(K_N) in the R(5,5) case to computationally search for the terminal isomorphism.",
+    "folder_plan": ["concept.json", "README.md", "literature.json"]
+  }
+]
+EOF
+[0m
+[0m$ [0mcat << 'EOF' > /home/archivara/work/repo/results/concept_evolve/semantic_bridge.json
+{
+  "nodes": [
+    {"id": "spin_glass_partition_zeros", "domain": "Statistical Mechanics"},
+    {"id": "topological_graph_homology", "domain": "Algebraic Topology"},
+    {"id": "tensor_network_contraction", "domain": "Quantum Information"},
+    {"id": "sos_diffusion_geometry", "domain": "Continuous Optimization"},
+    {"id": "quantum_walk_mixing_time", "domain": "Quantum Computing"},
+    {"id": "gflownet_entropy_collapse", "domain": "Machine Learning"},
+    {"id": "holographic_bulk_reconstruction", "domain": "String Theory"},
+    {"id": "algebraic_geometry_syzygies", "domain": "Algebraic Geometry"},
+    {"id": "semantic_compression_limit", "domain": "Information Theory"},
+    {"id": "categorical_adjunction_obstruction", "domain": "Category Theory"}
+  ],
+  "edges": [
+    {"source": "tensor_network_contraction", "target": "spin_glass_partition_zeros", "relation": "Tensor networks compute the exact partition function of the classical spin glass mapping of the Ramsey constraint."},
+    {"source": "quantum_walk_mixing_time", "target": "tensor_network_contraction", "relation": "Quantum walk operator evolution and IPR calculations can be evaluated via tensor network contraction over time."},
+    {"source": "gflownet_entropy_collapse", "target": "spin_glass_partition_zeros", "relation": "GFlowNet effectively learns a variational approximation of the partition function Z, locating its collapse."},
+    {"source": "topological_graph_homology", "target": "algebraic_geometry_syzygies", "relation": "The homology of the graph complex is dual to the Betti numbers of the minimal free resolution of the graph ideal."},
+    {"source": "holographic_bulk_reconstruction", "target": "topological_graph_homology", "relation": "Minimal surfaces in the bulk AdS space correspond to topological obstructions (homology classes) on the boundary graph."},
+    {"source": "semantic_compression_limit", "target": "spin_glass_partition_zeros", "relation": "The semantic compression threshold is analytically solved using replica theory on the corresponding spin glass Hamiltonian."},
+    {"source": "sos_diffusion_geometry", "target": "algebraic_geometry_syzygies", "relation": "Sum-of-Squares hierarchies rely on Positivstellensatz, providing an optimization perspective on algebraic syzygies."},
+    {"source": "categorical_adjunction_obstruction", "target": "topological_graph_homology", "relation": "Adjunctions provide a universal way to map graphs to classifying spaces whose homology bounds the Ramsey number."}
+  ],
+  "bridge_chains": [
+    {
+      "name": "Thermodynamic-ML-Information Chain",
+      "path": ["gflownet_entropy_collapse", "spin_glass_partition_zeros", "semantic_compression_limit"],
+      "description": "Uses ML to learn the partition function, analyzed via statistical mechanics, to find the fundamental information-theoretic compression limit of Ramsey graphs."
+    },
+    {
+      "name": "Quantum-Tensor-Statistical Chain",
+      "path": ["quantum_walk_mixing_time", "tensor_network_contraction", "spin_glass_partition_zeros"],
+      "description": "Simulates a quantum walk using tensor networks to detect the thermodynamic phase transition of the Ramsey spin glass."
+    },
+    {
+      "name": "Algebraic-Topological-Categorical Chain",
+      "path": ["sos_diffusion_geometry", "algebraic_geometry_syzygies", "topological_graph_homology", "categorical_adjunction_obstruction"],
+      "description": "Relaxes the discrete problem continuously, studies its algebraic invariants, maps them to topological holes, and categorifies the obstruction."
+    }
+  ]
+}
+EOF
+[0m
+[0m$ [0mcat << 'EOF' > /home/archivara/work/repo/results/concept_evolve/introspection.json
+{
+  "associations": {
+    "zero_temperature_entropy": ["ground state degeneracy", "frustration", "combinatorial explosion", "glassy dynamics", "replica symmetry breaking"],
+    "topological_obstruction": ["Euler characteristic", "Betti numbers", "Euler classes", "K-theory", "Chern classes of graph vector bundles"],
+    "information_bottleneck": ["Shannon capacity", "Kolmogorov complexity", "Chaitin's constant", "rate-distortion theory", "semantic spaces"],
+    "algorithmic_cooling": ["simulated annealing", "quantum annealing", "adiabatic theorem", "Langevin dynamics", "diffusion models"]
+  },
+  "blind_spots": [
+    "Most of these continuous methods only provide approximate bounds; extracting exact integer bounds requires proving rigorous error bounds on the relaxations (e.g., in SoS or Tensor Networks).",
+    "The phase transition in statistical mechanics usually occurs in the thermodynamic limit (N -> infinity). Since R(5,5) is small (N <= 46), finite-size scaling might dominate the signal and mask the true critical point.",
+    "Categorical and algebraic methods might suffer from double exponential complexity in computing syzygies or adjunctions, making them computationally intractable even for N=18.",
+    "The graph isomorphism problem heavily complicates counting. Symmetries of K_N might cause extreme degeneracy that breaks naive Monte Carlo sampling or diffusion models."
+  ],
+  "anomaly_results": {
+    "injecting_symmetry_breaking": "If we forcefully break the S_N symmetry of the vertices by adding a local magnetic field to the spin glass model, the phase transition might become first-order and easier to detect numerically.",
+    "quantum_interference_collapse": "In the quantum walk model, introducing non-Hermitian parity-time (PT) symmetric terms could cause the eigenvalues to coalesce at exceptional points exactly at N=R(5,5).",
+    "negative_probabilities": "In the SoS hierarchy, if we allow pseudo-distributions with slightly negative probabilities, the diffusion model might find 'ghost' graphs for N > R(5,5) that act as repellers, mathematically proving the bound from the outside in."
+  }
+}
+EOF
+[0m
+[0m$ [0mcat << 'EOF' > /home/archivara/work/repo/results/concept_evolve/steering_directions.json
+[
+  {
+    "direction": "Quantum Tensor Network Scaling",
+    "rationale": "Classical graph search faces a combinatorial explosion. Tensor networks (PEPS/TRG) allow representing constraint spaces up to N=46 without explicit enumeration by leveraging quantum many-body approximation methods.",
+    "first_step": "Construct a 2D constraint tensor network for R(4,4) counting, optimize it with TRG on a GPU, and measure the exact norm contraction error vs bond dimension.",
+    "expected_signal": "At the critical N (e.g. N=18 for R(4,4)), the required bond dimension to avoid returning exactly zero norm diverges algebraically."
+  },
+  {
+    "direction": "Thermodynamic Flow Rate Analysis (GFlowNet)",
+    "rationale": "Machine learning generative models (like GFlowNets) naturally learn the partition function of constrained spaces. As valid states vanish at the Ramsey bound, the gradient of log Z should show a singularity.",
+    "first_step": "Train an edge-adding GFlowNet to maximize a reward function based on absence of K_5. Plot the converged estimate of Z(N) for N=40 to N=46.",
+    "expected_signal": "A sharp first-order phase transition in the learned log Z(N) curve, plummeting exponentially faster than predicted by finite-size scaling, indicating Z(N_crit) = 0."
+  },
+  {
+    "direction": "Semantic Rate-Distortion Limit",
+    "rationale": "Information theory provides fundamental limits on compressibility. Modeling Ramsey graphs as semantic messages undergoing lossless compression provides an analytical replica symmetry breaking approach.",
+    "first_step": "Write down the Replica Symmetric (RS) and 1-step Replica Symmetry Breaking (1RSB) saddle point equations for the Boolean hypercube with K_5 penalty.",
+    "expected_signal": "Solving the saddle point equations numerically will reveal a critical system size N_c where the D=0 (zero distortion) constraint requires an information rate exceeding 1 bit per edge, proving R(5,5) <= N_c."
+  }
+]
+EOF
+[0m
+[0m$ [0mcat << 'EOF' > /home/archivara/work/repo/results/concept_evolve/write_tree.py
+import json
+import os
+
+with open("/home/archivara/work/repo/results/concept_evolve/concept_cards.json", "r") as f:
+    cards = json.load(f)
+
+tree_dir = "/home/archivara/work/repo/results/concept_evolve/tree"
+os.makedirs(tree_dir, exist_ok=True)
+
+for i, card in enumerate(cards):
+    idx = i + 1
+    slug = card['symbolic_name']
+    folder_name = f"{idx:03d}_{slug}"
+    folder_path = os.path.join(tree_dir, folder_name)
+    os.makedirs(folder_path, exist_ok=True)
+    
+    # Write concept.json
+    with open(os.path.join(folder_path, "concept.json"), "w") as f:
+        json.dump(card, f, indent=2)
+        
+    # Write README.md
+    with open(os.path.join(folder_path, "README.md"), "w") as f:
+        f.write(f"# {slug}\n\n")
+        f.write(f"## Context\n{card['description']}\n\n")
+        f.write(f"## Domains\n{', '.join(card['domains'])}\n\n")
+        f.write(f"## Math\n{card['mathematical_formalization']}\n\n")
+        f.write(f"## Analogies\n{card['analogical_connections']}\n\n")
+        f.write(f"## Implementation Backlog\n- {card['implementation_hypothesis']}\n- {card['experiment_seed']}\n")
+        
+    # Write literature.json (Mocked literature for now based on domain)
+    lit = [
+        {
+            "title": f"Seminal work in {card['domains'][0]} related to {slug}",
+            "abstract": "This paper discusses the theoretical foundations necessary for the concept.",
+            "url": "https://example.com/paper1"
+        },
+        {
+            "title": f"Application of {card['domains'][1]} to Combinatorial Optimization",
+            "abstract": "A review of cross-domain methods that inspired this concept.",
+            "url": "https://example.com/paper2"
+        }
+    ]
+    with open(os.path.join(folder_path, "literature.json"), "w") as f:
+        json.dump(lit, f, indent=2)
+
+print("Tree written successfully.")
+EOF
+python3 /home/archivara/work/repo/results/concept_evolve/write_tree.py
+
+Tree written successfully.
+[0m
+[0m$ [0mcat << 'EOF' > /home/archivara/work/repo/results/concept_evolve/write_real_literature.py
+import json
+import os
+import glob
+
+real_papers = [
+    {
+        "title": "A new upper bound on the Ramsey number R(5, 5)",
+        "authors": ["B. McKay", "S. Radziszowski"],
+        "year": 1992,
+        "abstract": "We establish a new upper bound for the classical Ramsey number R(5,5).",
+        "url": "https://www.semanticscholar.org/paper/160081e3e1f57e3478499da04264f84564db90f2"
+    },
+    {
+        "title": "R(5,5) <= 46",
+        "authors": ["Vigleik Angeltveit", "Brendan D. McKay"],
+        "year": 2024,
+        "abstract": "We prove that the Ramsey number R(5,5) is less than or equal to 46. The proof uses a combination of linear programming and checking a large number of cases by computer.",
+        "url": "https://arxiv.org/abs/2409.15709"
+    },
+    {
+        "title": "Statistical Mechanics of Semantic Compression",
+        "authors": ["Tankut Can"],
+        "year": 2025,
+        "abstract": "We map the optimization problem of determining the minimal-length, meaning-preserving message to a spin glass Hamiltonian and solve the resulting statistical mechanics problem using replica theory.",
+        "url": "https://arxiv.org/abs/2503.00612"
+    },
+    {
+        "title": "Spin Glass Theory and the Statistical Mechanics of Language Models",
+        "authors": ["Eliza Kosloff"],
+        "year": null,
+        "abstract": "An overview of how spin glass theory and statistical mechanics connect to large neural models and optimization over discrete sequences.",
+        "url": "https://www.semanticscholar.org/paper/746106e47a83a82758c3291d6caee2f48b80740c"
+    },
+    {
+        "title": "An exact value for the Ramsey number R(K5, K5 - e)",
+        "authors": ["Vigleik Angeltveit"],
+        "year": 2026,
+        "abstract": "We compute the exact value of the Ramsey number R(K5, K5-e). It is equal to 30.",
+        "url": "https://arxiv.org/abs/2602.11459"
+    }
+]
+
+tree_dir = "/home/archivara/work/repo/results/concept_evolve/tree"
+for folder in os.listdir(tree_dir):
+    path = os.path.join(tree_dir, folder, "literature.json")
+    if os.path.exists(path):
+        with open(path, "w") as f:
+            json.dump(real_papers, f, indent=2)
+
+print("Updated literature.json with real papers.")
+EOF
+python3 /home/archivara/work/repo/results/concept_evolve/write_real_literature.py
+
+Traceback (most recent call last):
+  File "/home/archivara/work/repo/results/concept_evolve/write_real_literature.py", line 30, in <module>
+    "year": null,
+NameError: name 'null' is not defined
+[0m
+[0m$ [0msed -i 's/"year": null/"year": None/g' /home/archivara/work/repo/results/concept_evolve/write_real_literature.py && python3 /home/archivara/work/repo/results/concept_evolve/write_real_literature.py
+Updated literature.json with real papers.
+[0m
+[0m$ [0mls -R /home/archivara/work/repo/results/concept_evolve
+[0m
+[0m$ [0mls -la /home/archivara/work/repo/results/concept_evolve
+[0m
+[0m$ [0mls -la /home/archivara/work/repo/results/
+[0m
+[0m$ [0mls -la /home/archivara/work/repo
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mbash failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.

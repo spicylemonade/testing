@@ -1,0 +1,17 @@
+# sos_diffusion_geometry
+
+## Context
+Relaxes the discrete domain of Ramsey graphs to a continuous pseudo-distribution using the Sum-of-Squares (SoS) hierarchy. We then train a continuous score-based diffusion model over this SoS manifold. If the diffusion drift field contains no stable attractors corresponding to valid integer solutions, the discrete space must be empty.
+
+## Domains
+Continuous Optimization, Generative AI, Semidefinite Programming
+
+## Math
+Let \mathcal{M}_{SoS} be the degree-d SoS relaxation of the Boolean constraint manifold. Diffusion process: dx_t = f(x_t, t)dt + g(t)dw. Score matching operates on \mathcal{M}_{SoS}.
+
+## Analogies
+Analogous to finding an energy minimum in a continuous landscape. If the continuous 'puddles' (SoS regions) evaporate under a geometric flow, then there's no physical 'water' (discrete valid graphs).
+
+## Implementation Backlog
+- Build a degree-4 SoS SDP relaxation for R(5,5). Run a Langevin dynamics process guided by the SoS pseudo-probabilities. Track the failure rate of rounding continuous samples to discrete graphs.
+- Verify that for N < 18, the SoS+Diffusion process correctly rounds to valid R(4,4) graphs. For N=18, verify it fails. Extrapolate failure thresholds to N=43..48.
