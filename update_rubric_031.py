@@ -5,12 +5,12 @@ with open('research_rubric.json', 'r') as f:
 
 for phase in data['phases']:
     for item in phase['items']:
-        if item['id'] == 'item_026':
+        if item['id'] == 'item_031':
             item['status'] = 'completed'
-            item['notes'] = 'Implemented TRG-like 2D tensor network contraction that strictly maps K_5 inclusion-exclusion to localized MPOs and exact/approximate partition function evaluator.'
+            item['notes'] = 'Successfully integrated novel findings, MPO transfer eigenvalues, and GFlowNet graphs into research_paper.tex. Compiled to PDF with added citations for TRG and GFlowNet.'
 
 data['summary']['completed'] += 1
-data['summary']['in_progress'] -= 1
+data['summary']['pending'] -= 1
 
 with open('research_rubric.json', 'w') as f:
     json.dump(data, f, indent=2)
