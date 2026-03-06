@@ -4,10 +4,10 @@
 - Model: openai/gpt-5.4
 - OpenCode model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
-- Note: H1 locked as the default wedge after ConceptEvolve kickoff and swarm review
-- Rubric progress: 1/25 completed
+- Note: H1 is locked and the bibliography plus prior-art differentiation log are now in place
+- Rubric progress: 4/25 completed
 - Known papers tracked: 77
-- `sources.bib` entries: 0
+- `sources.bib` entries: 17
 - Swarm hypotheses: 3
 - Verification summary present: no
 
