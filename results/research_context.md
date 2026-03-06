@@ -1,11 +1,11 @@
 # Research Context
 
-- Stage: phase_1_problem_locked
+- Stage: phase_1_complete
 - Model: openai/gpt-5.4
 - OpenCode model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
-- Note: H1 is locked and the bibliography plus prior-art differentiation log are now in place
-- Rubric progress: 4/25 completed
+- Note: Phase 1 is complete with H1 championed and concept-tree leads narrowed to auditable close-encounter and determinism paths
+- Rubric progress: 5/25 completed
 - Known papers tracked: 77
 - `sources.bib` entries: 17
 - Swarm hypotheses: 3
