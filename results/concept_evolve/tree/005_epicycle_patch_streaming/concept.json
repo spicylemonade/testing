@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "epicycle_patch_streaming",
+  "description": "Represent large ring or disk scenes as co-moving patches in Hill coordinates and only instantiate high-fidelity particles near the camera or selected body. The bridge is between planetary-ring local models and game-engine chunk streaming: physics lives in local frames while the UI still feels like one world.",
+  "domains": [
+    "planetary_science",
+    "game_engine_architecture",
+    "numerical_analysis"
+  ],
+  "mathematical_formalization": "For patch p centered at R_p, evolve local states under Hill equations: x_ddot - 2 Omega y_dot - 3 Omega^2 x = f_x, y_ddot + 2 Omega x_dot = f_y, z_ddot + Omega_z^2 z = f_z; remap bodies when ||x_local|| > L_p / 2",
+  "analogical_connections": [
+    "Open-world terrain chunks become co-moving orbital patches.",
+    "Weather tiles around a camera map onto local Hill frames around an orbit.",
+    "A rolling-window signal processor inspires local physics windows with stitched global summaries."
+  ],
+  "implementation_hypothesis": "Maintain a patch manager around the active region; evolve each patch with a shearing-sheet integrator; represent distant patches by aggregate moments for rendering and weak forcing; hand bodies across patch boundaries with coordinate transforms instead of global reinitialization.",
+  "experiment_seed": "Simulate a narrow ring and an asteroid belt with a moving camera; compare memory, runtime, and trajectory continuity against a single global-coordinate implementation.",
+  "closest_prior_art": [
+    {
+      "title": "Symplectic integrators in the shearing sheet",
+      "paperId": "c3ae70601355411b026e65f87e96d7f91be8afc5"
+    },
+    {
+      "title": "REBOUND: An open-source multi-purpose N-body code for collisional dynamics",
+      "paperId": "5240c4a18da2b6dcae3fbfa633c01bee1670d0a0"
+    },
+    {
+      "title": "Stochastic orbital migration of small bodies in Saturn's rings",
+      "paperId": "d3638068ed56d60817d059d8219958e4210afa0e"
+    }
+  ],
+  "novelty_claim": "The new element is to reinterpret shearing-sheet locality as a streaming architecture, making a large interactive world feasible with minimal local physics.",
+  "differentiation": "Research shearing-sheet codes usually study one local box at a time. This concept uses many transient local boxes as a runtime system, driven by visibility and interaction rather than by a fixed scientific domain.",
+  "folder_plan": {
+    "tree_folder": "results/concept_evolve/tree/005_epicycle_patch_streaming",
+    "required_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_stage_paths": [
+      "prototypes/minigrav/world/patch_manager.py",
+      "prototypes/minigrav/world/shearing_patch.py"
+    ]
+  },
+  "generated_at": "2026-03-06T01:37:13.107124+00:00",
+  "project_folder": "concept_evolve/tree/005_epicycle_patch_streaming"
+}

@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "forward_reverse_verification_loop",
+  "description": "Make reversibility a first-class diagnostic: run forward then backward, measure round-trip error, and use it both as a regression test and a runtime quality meter. This combines molecular-dynamics reversibility culture with modern code-verification thinking so the simulator can report when its simplifications stop being trustworthy.",
+  "domains": [
+    "software_verification",
+    "molecular_dynamics",
+    "astrophysics"
+  ],
+  "mathematical_formalization": "e_rev(T, z0) = ||Phi_-T(Phi_T(z0)) - z0||; if e_rev > tau_warn then warn, if e_rev > tau_switch then shrink dt or enable a more accurate mode",
+  "analogical_connections": [
+    "A checksum roundtrip becomes a dynamical roundtrip.",
+    "A unit test and a runtime watchdog collapse into the same mechanism.",
+    "A reversible debugger for phase space shows when the simulation cannot get back home."
+  ],
+  "implementation_hypothesis": "Expose a `roundtrip_error(z0, T)` helper; add manufactured or analytic scenarios to a regression suite; in interactive mode, sample short roundtrips in the background and trigger step-size reduction or solver escalation when error spikes.",
+  "experiment_seed": "Run circular orbit, highly eccentric orbit, and close-flyby scenes; chart how round-trip error correlates with visible trajectory failure and energy drift.",
+  "closest_prior_art": [
+    {
+      "title": "Molecular dynamics and time reversibility",
+      "paperId": "9d7ff20438c6cc21330cb254163a4c6667c18e68"
+    },
+    {
+      "title": "TRACE: a code for time-reversible astrophysical close encounters",
+      "paperId": "9696edaf37f8ebd7cc544f1b3b0069d0d32632a1"
+    },
+    {
+      "title": "Code-Verification Techniques for Particle-in-Cell Simulations with Direct Simulation Monte Carlo Collisions",
+      "paperId": "6276e49e5a4e7fce7c4fca8ffe5f3c23bc4a8ae9"
+    }
+  ],
+  "novelty_claim": "The novelty is to turn reversibility error into an operational trust metric that directly controls solver behavior and surfaces approximation quality to the user.",
+  "differentiation": "Time-reversibility papers usually use the roundtrip as an analysis tool, and code-verification papers use manufactured solutions offline. This concept fuses both into a live control loop for a minimal simulator.",
+  "folder_plan": {
+    "tree_folder": "results/concept_evolve/tree/008_forward_reverse_verification_loop",
+    "required_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_stage_paths": [
+      "prototypes/minigrav/verification/roundtrip.py",
+      "prototypes/minigrav/verification/test_roundtrip_regression.py"
+    ]
+  },
+  "generated_at": "2026-03-06T01:37:13.108423+00:00",
+  "project_folder": "concept_evolve/tree/008_forward_reverse_verification_loop"
+}

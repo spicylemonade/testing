@@ -1,0 +1,452 @@
+[
+  {
+    "symbolic_name": "neighbor_tree_gravity",
+    "description": "Combine exact near-field gravity from molecular-dynamics-style neighbor lists with Barnes-Hut or fast-multipole far fields. The result is a minimal simulator that keeps close passes crisp without paying O(N^2) everywhere.",
+    "domains": [
+      "astrophysics",
+      "molecular_dynamics",
+      "numerical_analysis"
+    ],
+    "mathematical_formalization": "a_i = sum_{j in N_i(r_n)} G m_j r_ji / (||r_ji||^2 + eps_i^2)^(3/2) + M_theta(Far(i)); choose r_n, theta so that ||delta a_i|| < eta",
+    "analogical_connections": [
+      "Verlet lists in molecular dynamics become exact near-field shells for gravity.",
+      "Terrain level-of-detail becomes force level-of-detail through multipole summaries.",
+      "An audio crossover network suggests splitting force into local high-frequency detail and distant low-frequency bulk."
+    ],
+    "implementation_hypothesis": "Build `cells = hash_positions(x, h)`; accumulate exact forces from adjacent cells; build a tree over cell centers of mass; evaluate far cells with Barnes-Hut or FMM; fallback to dense pairwise summation when `N` is below a direct-sum threshold.",
+    "experiment_seed": "Benchmark 2-body, Plummer-sphere, and ring scenes at N in {16, 128, 1024}; compare wall-clock time, force error, and orbit drift against direct summation and pure Barnes-Hut.",
+    "closest_prior_art": [
+      {
+        "title": "REBOUND: An open-source multi-purpose N-body code for collisional dynamics",
+        "paperId": "5240c4a18da2b6dcae3fbfa633c01bee1670d0a0"
+      },
+      {
+        "title": "A hierarchical O(N log N) force-calculation algorithm",
+        "paperId": "fce7fd98928ab9bf3e4e919e108c48fc1040f569"
+      },
+      {
+        "title": "A fast algorithm for particle simulations",
+        "paperId": "688384fc5e643445e835435e96b9dfcfb6598d36"
+      }
+    ],
+    "novelty_claim": "The novelty is the interface boundary: the simulator is organized around an explicit near/far split that matches interactive workloads, rather than around a monolithic research code or a single global approximation.",
+    "differentiation": "Barnes-Hut and FMM accelerate all interactions, while molecular-dynamics neighbor lists usually assume short-range cutoffs. This concept fuses them for gravity by keeping local exactness without pretending the force law is actually truncated.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/001_neighbor_tree_gravity",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/force/neighbor_tree.py",
+        "prototypes/minigrav/benchmarks/neighbor_tree_accuracy.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "encounter_reversible_substeps",
+    "description": "Run a cheap symplectic base integrator everywhere, but wrap close encounters in symmetric micro-steps triggered only when bodies enter an encounter envelope. The bridge is between hybrid planetary integrators and rare-event scheduling: expensive accuracy is reserved for the tiny fraction of time where human-visible errors actually happen.",
+    "domains": [
+      "astrophysics",
+      "event_driven_simulation",
+      "numerical_analysis"
+    ],
+    "mathematical_formalization": "Phi_dt(z) = S_base(dt)(z) if d_min > rho; else Phi_dt(z) = S_base(dt/2) o S_enc(dt/m)^m o S_base(dt/2), with ||Phi_-dt(Phi_dt(z)) - z|| kept below tau_rev",
+    "analogical_connections": [
+      "An interrupt-driven operating system runs a heavy handler only on rare events.",
+      "Adaptive mesh refinement around shocks mirrors substeps around orbital close passes.",
+      "Bullet-time in games appears only when something dangerous is about to happen."
+    ],
+    "implementation_hypothesis": "Maintain an encounter queue from a sweep or neighbor pass; outside the queue, advance with leapfrog or Wisdom-Holman; inside the queue, execute a symmetric micro-step wrapper and log a round-trip mismatch for diagnostics.",
+    "experiment_seed": "Use slingshot, binary flyby, and star-grazing test scenes; compare energy drift and wall-clock time against a uniform small-timestep baseline.",
+    "closest_prior_art": [
+      {
+        "title": "TRACE: a code for time-reversible astrophysical close encounters",
+        "paperId": "9696edaf37f8ebd7cc544f1b3b0069d0d32632a1"
+      },
+      {
+        "title": "Symplectic maps for the N-body problem.",
+        "paperId": "377d069236ca0108a79170e634986a0d7edffdfa"
+      },
+      {
+        "title": "Molecular dynamics and time reversibility",
+        "paperId": "9d7ff20438c6cc21330cb254163a4c6667c18e68"
+      }
+    ],
+    "novelty_claim": "The new part is the trigger policy and scope: only user-visible encounter windows activate the expensive reversible path, so the mechanism is tuned for a minimal interactive simulator rather than a general planetary code.",
+    "differentiation": "TRACE and related hybrid maps are general-purpose research integrators. This concept repackages the idea as a tiny encounter-only service layer with explicit quality thresholds and a UI-facing notion of when accuracy mode should engage.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/002_encounter_reversible_substeps",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/integrators/encounter_switch.py",
+        "prototypes/minigrav/tests/test_encounter_switch.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "constraint_projected_kepler",
+    "description": "After an explicit step, apply a small position-based-dynamics-style projection that restores soft invariants such as total energy, angular momentum, and barycenter. This treats orbital drift the way graphics treats penetrations: as a correctable constraint violation rather than a failure that always demands a smaller global timestep.",
+    "domains": [
+      "computer_graphics",
+      "astrophysics",
+      "human_computer_interaction"
+    ],
+    "mathematical_formalization": "Given z' = (q', v') after one step, solve min_{Delta z} ||Delta z||^2 subject to C_H(z' + Delta z) ~= 0, C_L(z' + Delta z) ~= 0, and C_B(z' + Delta z) = sum_i m_i q_i - B0 = 0 using 1-2 Gauss-Seidel passes",
+    "analogical_connections": [
+      "Cloth constraint projection becomes orbital invariant projection.",
+      "Image stabilization suggests small post-step nudges instead of globally slower capture.",
+      "A balance controller keeps the state near a target manifold instead of chasing exact equations every instant."
+    ],
+    "implementation_hypothesis": "Represent each invariant as a constraint function; after leapfrog, run one or two local correction passes on positions and velocities with clamped updates; only fire the projection when measured drift exceeds a tolerance.",
+    "experiment_seed": "Take a two-body ellipse and a three-body choreography with intentionally large dt; compare user-visible stability, energy drift, and correction magnitude against a smaller-dt reference.",
+    "closest_prior_art": [
+      {
+        "title": "Position based dynamics",
+        "paperId": "9b2ba0c0508aadcf95870dd377b1544f838141cb"
+      },
+      {
+        "title": "Hierarchical Position Based Dynamics",
+        "paperId": "f9c62b65e442e353f0ab0937de3d84fa65873828"
+      },
+      {
+        "title": "Symplectic maps for the N-body problem.",
+        "paperId": "377d069236ca0108a79170e634986a0d7edffdfa"
+      }
+    ],
+    "novelty_claim": "The novelty is to cast conserved-orbit structure as PBD-style constraints, making stability a controllable post-process that matches interactive teaching goals.",
+    "differentiation": "Position based dynamics papers focus on geometric constraints for cloth, soft bodies, and contacts. This concept instead projects onto orbital invariants, so it is not a reimplementation of cloth or rigid-body PBD inside a gravity setting.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/003_constraint_projected_kepler",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/stabilizers/invariant_projection.py",
+        "prototypes/minigrav/ui/projection_overlay.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "differentiable_softening_calibration",
+    "description": "Treat the minimal simulator's shortcuts - softening, timestep, opening angle, even encounter radius - as learnable knobs fit against a reference trajectory corpus. This imports differentiable programming not to learn a policy, but to automatically tune a stripped-down gravity engine until it behaves like a more faithful teacher.",
+    "domains": [
+      "differentiable_programming",
+      "astrophysics",
+      "software_engineering"
+    ],
+    "mathematical_formalization": "min_theta sum_s sum_t ||x_t^mini(theta, s) - x_t^ref(s)||^2 + alpha * Drift(theta, s) + beta * Cost(theta), where theta = {eps, dt, theta_open, rho_enc}",
+    "analogical_connections": [
+      "A large teacher model is distilled into a smaller student simulator.",
+      "Camera calibration becomes physics-engine calibration.",
+      "Speaker equalization suggests tuning a coarse system until it matches a trusted reference response."
+    ],
+    "implementation_hypothesis": "Implement the simulator step in JAX, Taichi, or PyTorch; generate teacher traces from REBOUND or analytic two-body solutions; optimize theta offline and export presets such as `fast`, `stable`, and `teaching`.",
+    "experiment_seed": "Train on circular, eccentric, and flyby scenes; evaluate on held-out three-body traces to see whether one calibrated preset generalizes or whether multiple named presets are needed.",
+    "closest_prior_art": [
+      {
+        "title": "DiffTaichi: Differentiable Programming for Physical Simulation",
+        "paperId": "666aaf80f647faf52d5058ff951e2d4b9a8844f5"
+      },
+      {
+        "title": "End-to-End Differentiable Physics for Learning and Control",
+        "paperId": "0933f3dd33cf907e07aa938ce9465fb0d4250394"
+      },
+      {
+        "title": "Fast and Feature-Complete Differentiable Physics for Articulated Rigid Bodies with Contact",
+        "paperId": "60d9bf409dd7c5027ee95eb9b2ebe95bc3e85382"
+      }
+    ],
+    "novelty_claim": "The novelty is to use gradients for simulator simplification tuning rather than for control, contact learning, or robot policy optimization.",
+    "differentiation": "Differentiable-physics papers usually optimize control signals or hidden physical parameters of a complex system. This concept instead tunes the approximation knobs of a deliberately tiny gravity engine, keeping the model simple while borrowing fidelity from a teacher.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/004_differentiable_softening_calibration",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/calibration/diff_fit.py",
+        "prototypes/minigrav/calibration/preset_registry.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "epicycle_patch_streaming",
+    "description": "Represent large ring or disk scenes as co-moving patches in Hill coordinates and only instantiate high-fidelity particles near the camera or selected body. The bridge is between planetary-ring local models and game-engine chunk streaming: physics lives in local frames while the UI still feels like one world.",
+    "domains": [
+      "planetary_science",
+      "game_engine_architecture",
+      "numerical_analysis"
+    ],
+    "mathematical_formalization": "For patch p centered at R_p, evolve local states under Hill equations: x_ddot - 2 Omega y_dot - 3 Omega^2 x = f_x, y_ddot + 2 Omega x_dot = f_y, z_ddot + Omega_z^2 z = f_z; remap bodies when ||x_local|| > L_p / 2",
+    "analogical_connections": [
+      "Open-world terrain chunks become co-moving orbital patches.",
+      "Weather tiles around a camera map onto local Hill frames around an orbit.",
+      "A rolling-window signal processor inspires local physics windows with stitched global summaries."
+    ],
+    "implementation_hypothesis": "Maintain a patch manager around the active region; evolve each patch with a shearing-sheet integrator; represent distant patches by aggregate moments for rendering and weak forcing; hand bodies across patch boundaries with coordinate transforms instead of global reinitialization.",
+    "experiment_seed": "Simulate a narrow ring and an asteroid belt with a moving camera; compare memory, runtime, and trajectory continuity against a single global-coordinate implementation.",
+    "closest_prior_art": [
+      {
+        "title": "Symplectic integrators in the shearing sheet",
+        "paperId": "c3ae70601355411b026e65f87e96d7f91be8afc5"
+      },
+      {
+        "title": "REBOUND: An open-source multi-purpose N-body code for collisional dynamics",
+        "paperId": "5240c4a18da2b6dcae3fbfa633c01bee1670d0a0"
+      },
+      {
+        "title": "Stochastic orbital migration of small bodies in Saturn's rings",
+        "paperId": "d3638068ed56d60817d059d8219958e4210afa0e"
+      }
+    ],
+    "novelty_claim": "The new element is to reinterpret shearing-sheet locality as a streaming architecture, making a large interactive world feasible with minimal local physics.",
+    "differentiation": "Research shearing-sheet codes usually study one local box at a time. This concept uses many transient local boxes as a runtime system, driven by visibility and interaction rather than by a fixed scientific domain.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/005_epicycle_patch_streaming",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/world/patch_manager.py",
+        "prototypes/minigrav/world/shearing_patch.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "event_sparse_far_field",
+    "description": "Cache far-field multipole summaries and refresh them on predicted error events instead of every tick. This reframes tree maintenance as an event-driven problem, borrowing the sparsity mindset of event-driven molecular dynamics for a force law that is otherwise continuously evaluated.",
+    "domains": [
+      "event_driven_simulation",
+      "performance_engineering",
+      "astrophysics"
+    ],
+    "mathematical_formalization": "Schedule refresh tau_c = min{t : ||M_c(t) - M_c(t_last)|| > delta_M or topology(c) changes}; use a_i(t) = a_near(t) + a_far(M(t_last)) until t >= tau_c",
+    "analogical_connections": [
+      "Dirty-rectangle rendering refreshes only changed screen regions; here only stale force summaries are recomputed.",
+      "Event-driven hard-sphere molecular dynamics becomes event-driven multipole refresh.",
+      "An incremental build system mirrors selective invalidation of distant gravity caches."
+    ],
+    "implementation_hypothesis": "Store center-of-mass and multipole summaries with velocity bounds per node; predict when each summary exits its error budget; push refresh events into a priority queue; rebuild globally only when invalidations become too dense.",
+    "experiment_seed": "Use a quasi-stable solar-system scene and a chaotic scattering scene; measure tree-refresh count, wall-clock time, and trajectory error versus rebuilding every frame.",
+    "closest_prior_art": [
+      {
+        "title": "Application of event-driven molecular dynamics approach to rarefied gas dynamics problems",
+        "paperId": "bf741d3dc8d599d9b42d19125a11b1141a805174"
+      },
+      {
+        "title": "Cold atom-ion systems in radio-frequency multipole traps: Event-driven molecular dynamics and stochastic simulations",
+        "paperId": "9650464407bda642ed29f83febd4b967cf19f591"
+      },
+      {
+        "title": "A hierarchical O(N log N) force-calculation algorithm",
+        "paperId": "fce7fd98928ab9bf3e4e919e108c48fc1040f569"
+      }
+    ],
+    "novelty_claim": "The novelty is not event-driven pairwise gravity, but event-driven maintenance of approximate distant structure, which matches the update patterns of interactive scenes.",
+    "differentiation": "Event-driven molecular dynamics papers schedule actual collisions or interaction events. This concept schedules when a cached approximation becomes too stale, so it changes the bookkeeping layer rather than the physical force law itself.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/006_event_sparse_far_field",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/force/event_sparse_far_field.py",
+        "prototypes/minigrav/benchmarks/tree_refresh_profile.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "angular_sweep_encounter_queue",
+    "description": "In nearly planar scenes, sweep over angle or x-intervals to build a shortlist of bodies whose trajectories can come close during the next step. It turns broad-phase collision geometry into a gravitational encounter scheduler, so expensive local refinement is only spent on pairs that geometry says can matter.",
+    "domains": [
+      "computational_geometry",
+      "astrophysics",
+      "computer_graphics"
+    ],
+    "mathematical_formalization": "For each body i, build swept interval I_i = [phi_i^min - rho, phi_i^max + rho] or [x_i^min - rho, x_i^max + rho]; during a sweep-line pass, enqueue pair (i, j) whenever I_i intersects I_j and d_perp(i, j) < rho",
+    "analogical_connections": [
+      "A sweep-line segment-intersection algorithm becomes an orbital close-pass shortlist.",
+      "Broad-phase collision detection becomes broad-phase gravitational encounter detection.",
+      "A rotating radar scan suggests selecting only objects that enter a tracking wedge."
+    ],
+    "implementation_hypothesis": "Estimate one-step swept intervals after a tentative drift; sort interval endpoints; maintain an active set; emit candidate pairs only; pass the shortlist to encounter-aware integration rather than to a collision response system.",
+    "experiment_seed": "Use a 2D asteroid belt and a narrow ring scene; compare candidate-pair recall and runtime against brute-force O(N^2) close-pass scans.",
+    "closest_prior_art": [
+      {
+        "title": "Algorithms for Reporting and Counting Geometric Intersections",
+        "paperId": "62278010df9000e5496ea2523d46e98bb2206c56"
+      },
+      {
+        "title": "REBOUND: An open-source multi-purpose N-body code for collisional dynamics",
+        "paperId": "5240c4a18da2b6dcae3fbfa633c01bee1670d0a0"
+      },
+      {
+        "title": "Symplectic integrators in the shearing sheet",
+        "paperId": "c3ae70601355411b026e65f87e96d7f91be8afc5"
+      }
+    ],
+    "novelty_claim": "The key novelty is to use geometry not for collision response, but for deciding when gravitational integration should temporarily become more expensive.",
+    "differentiation": "REBOUND's sweep is about collisions in elongated or ring-like systems. This concept redirects the same geometric idea into encounter triage and local solver escalation, so it is not just a collision detector copied into a new codebase.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/007_angular_sweep_encounter_queue",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/geometry/angular_sweep.py",
+        "prototypes/minigrav/tests/test_angular_sweep.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "forward_reverse_verification_loop",
+    "description": "Make reversibility a first-class diagnostic: run forward then backward, measure round-trip error, and use it both as a regression test and a runtime quality meter. This combines molecular-dynamics reversibility culture with modern code-verification thinking so the simulator can report when its simplifications stop being trustworthy.",
+    "domains": [
+      "software_verification",
+      "molecular_dynamics",
+      "astrophysics"
+    ],
+    "mathematical_formalization": "e_rev(T, z0) = ||Phi_-T(Phi_T(z0)) - z0||; if e_rev > tau_warn then warn, if e_rev > tau_switch then shrink dt or enable a more accurate mode",
+    "analogical_connections": [
+      "A checksum roundtrip becomes a dynamical roundtrip.",
+      "A unit test and a runtime watchdog collapse into the same mechanism.",
+      "A reversible debugger for phase space shows when the simulation cannot get back home."
+    ],
+    "implementation_hypothesis": "Expose a `roundtrip_error(z0, T)` helper; add manufactured or analytic scenarios to a regression suite; in interactive mode, sample short roundtrips in the background and trigger step-size reduction or solver escalation when error spikes.",
+    "experiment_seed": "Run circular orbit, highly eccentric orbit, and close-flyby scenes; chart how round-trip error correlates with visible trajectory failure and energy drift.",
+    "closest_prior_art": [
+      {
+        "title": "Molecular dynamics and time reversibility",
+        "paperId": "9d7ff20438c6cc21330cb254163a4c6667c18e68"
+      },
+      {
+        "title": "TRACE: a code for time-reversible astrophysical close encounters",
+        "paperId": "9696edaf37f8ebd7cc544f1b3b0069d0d32632a1"
+      },
+      {
+        "title": "Code-Verification Techniques for Particle-in-Cell Simulations with Direct Simulation Monte Carlo Collisions",
+        "paperId": "6276e49e5a4e7fce7c4fca8ffe5f3c23bc4a8ae9"
+      }
+    ],
+    "novelty_claim": "The novelty is to turn reversibility error into an operational trust metric that directly controls solver behavior and surfaces approximation quality to the user.",
+    "differentiation": "Time-reversibility papers usually use the roundtrip as an analysis tool, and code-verification papers use manufactured solutions offline. This concept fuses both into a live control loop for a minimal simulator.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/008_forward_reverse_verification_loop",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/verification/roundtrip.py",
+        "prototypes/minigrav/verification/test_roundtrip_regression.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "resolution_coupled_softening",
+    "description": "Choose gravitational softening from the simulator's actual resolution - pixel footprint, patch size, or local cell width - instead of pretending one epsilon works at every zoom level. This borrows anti-aliasing and mesh-resolution logic from graphics and FEM so a minimal simulator degrades honestly when representation gets coarse.",
+    "domains": [
+      "computer_graphics",
+      "geophysics",
+      "astrophysics"
+    ],
+    "mathematical_formalization": "eps_i = max(eps_phys, k_screen * s_px(i), k_cell * h_cell(i)); a_i = sum_j G m_j r_ij / (||r_ij||^2 + eps_ij^2)^(3/2), with eps_ij = max(eps_i, eps_j)",
+    "analogical_connections": [
+      "An anti-aliasing kernel in graphics becomes a force-blur kernel in gravity.",
+      "Finite-element mesh size defines what spatial detail is actually resolvable.",
+      "Sensor blur suggests admitting when the representation cannot support sharp forces."
+    ],
+    "implementation_hypothesis": "Measure screen-world scale each frame in interactive mode or local cell size in batch mode; set epsilon from that scale; show the effective epsilon as an overlay so users can see when the simulator is intentionally smoothing.",
+    "experiment_seed": "Run the same scene across repeated zoom-in and zoom-out cycles; compare stability, aliasing, and conservation metrics for fixed epsilon versus scale-aware epsilon.",
+    "closest_prior_art": [
+      {
+        "title": "REBOUND: An open-source multi-purpose N-body code for collisional dynamics",
+        "paperId": "5240c4a18da2b6dcae3fbfa633c01bee1670d0a0"
+      },
+      {
+        "title": "Efficient parallel finite-element methods for planetary gravitation: DtN and multipole expansions",
+        "paperId": "973aaba20de052e555f2721ee9b1c47ddff95fef"
+      },
+      {
+        "title": "Momentum-conserving self-gravity in the phantom smoothed particle hydrodynamics code. Parallel dual tree traversal for the symmetric fast multipole method",
+        "paperId": "e30e52bdbc59b0847e73cd4141831bf1ce285a5b"
+      }
+    ],
+    "novelty_claim": "The novelty is to bind the smoothing scale to representational limits rather than only to physical heuristics or density estimates.",
+    "differentiation": "Adaptive softening in self-gravity codes is usually motivated by particle density or kernel support. Here the driver is what the simulator can honestly resolve and display, which is a different control signal.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/009_resolution_coupled_softening",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/force/resolution_softening.py",
+        "prototypes/minigrav/ui/softening_overlay.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "trajectory_mass_inference",
+    "description": "Let the user draw or import a trajectory and infer masses or G that make the minimal simulator reproduce it. This turns the simulator into an inverse-problem sandbox, bridging educational interactivity and differentiable system identification.",
+    "domains": [
+      "scientific_inference",
+      "differentiable_programming",
+      "education_technology"
+    ],
+    "mathematical_formalization": "min_{m, G} sum_t ||x_t^sim(m, G) - x_t^obs||^2 + lambda * prior(m); optionally infer only a subset of masses while others remain fixed",
+    "analogical_connections": [
+      "Inverse graphics becomes inverse orbital mechanics.",
+      "Tuning a guitar by matching beats mirrors fitting masses until simulated and observed trails line up.",
+      "A flight-recorder system-identification loop becomes a sketch-to-physics tool."
+    ],
+    "implementation_hypothesis": "Expose a `fit_from_trail()` workflow; for small N, optimize masses and G with autodiff or finite-difference Levenberg-Marquardt; lock subsets of parameters when the problem is underdetermined and display residuals after fitting.",
+    "experiment_seed": "Generate synthetic ellipses and noisy three-body traces, hide the true masses, and test recovery accuracy under full, partial, and noisy observations.",
+    "closest_prior_art": [
+      {
+        "title": "DiffTaichi: Differentiable Programming for Physical Simulation",
+        "paperId": "666aaf80f647faf52d5058ff951e2d4b9a8844f5"
+      },
+      {
+        "title": "End-to-End Differentiable Physics for Learning and Control",
+        "paperId": "0933f3dd33cf907e07aa938ce9465fb0d4250394"
+      },
+      {
+        "title": "Dynamic Visual Reasoning by Learning Differentiable Physics Models from Video and Language",
+        "paperId": "cbc40f2b5822219c09b0d974f9703d5351fbe48d"
+      }
+    ],
+    "novelty_claim": "The novelty is to narrow differentiable inference to a human-authored gravity toy, where the main input is an orbit trail rather than a video stream or a control objective.",
+    "differentiation": "Prior work usually infers physics from perception pipelines or optimizes policies through physics. This concept instead uses a tiny inverse solver as an educational affordance inside the simulator itself.",
+    "folder_plan": {
+      "tree_folder": "results/concept_evolve/tree/010_trajectory_mass_inference",
+      "required_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_stage_paths": [
+        "prototypes/minigrav/inference/fit_from_trail.py",
+        "prototypes/minigrav/tests/test_mass_inference.py"
+      ]
+    }
+  }
+]

@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "angular_sweep_encounter_queue",
+  "description": "In nearly planar scenes, sweep over angle or x-intervals to build a shortlist of bodies whose trajectories can come close during the next step. It turns broad-phase collision geometry into a gravitational encounter scheduler, so expensive local refinement is only spent on pairs that geometry says can matter.",
+  "domains": [
+    "computational_geometry",
+    "astrophysics",
+    "computer_graphics"
+  ],
+  "mathematical_formalization": "For each body i, build swept interval I_i = [phi_i^min - rho, phi_i^max + rho] or [x_i^min - rho, x_i^max + rho]; during a sweep-line pass, enqueue pair (i, j) whenever I_i intersects I_j and d_perp(i, j) < rho",
+  "analogical_connections": [
+    "A sweep-line segment-intersection algorithm becomes an orbital close-pass shortlist.",
+    "Broad-phase collision detection becomes broad-phase gravitational encounter detection.",
+    "A rotating radar scan suggests selecting only objects that enter a tracking wedge."
+  ],
+  "implementation_hypothesis": "Estimate one-step swept intervals after a tentative drift; sort interval endpoints; maintain an active set; emit candidate pairs only; pass the shortlist to encounter-aware integration rather than to a collision response system.",
+  "experiment_seed": "Use a 2D asteroid belt and a narrow ring scene; compare candidate-pair recall and runtime against brute-force O(N^2) close-pass scans.",
+  "closest_prior_art": [
+    {
+      "title": "Algorithms for Reporting and Counting Geometric Intersections",
+      "paperId": "62278010df9000e5496ea2523d46e98bb2206c56"
+    },
+    {
+      "title": "REBOUND: An open-source multi-purpose N-body code for collisional dynamics",
+      "paperId": "5240c4a18da2b6dcae3fbfa633c01bee1670d0a0"
+    },
+    {
+      "title": "Symplectic integrators in the shearing sheet",
+      "paperId": "c3ae70601355411b026e65f87e96d7f91be8afc5"
+    }
+  ],
+  "novelty_claim": "The key novelty is to use geometry not for collision response, but for deciding when gravitational integration should temporarily become more expensive.",
+  "differentiation": "REBOUND's sweep is about collisions in elongated or ring-like systems. This concept redirects the same geometric idea into encounter triage and local solver escalation, so it is not just a collision detector copied into a new codebase.",
+  "folder_plan": {
+    "tree_folder": "results/concept_evolve/tree/007_angular_sweep_encounter_queue",
+    "required_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_stage_paths": [
+      "prototypes/minigrav/geometry/angular_sweep.py",
+      "prototypes/minigrav/tests/test_angular_sweep.py"
+    ]
+  },
+  "generated_at": "2026-03-06T01:37:13.107983+00:00",
+  "project_folder": "concept_evolve/tree/007_angular_sweep_encounter_queue"
+}

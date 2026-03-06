@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "resolution_coupled_softening",
+  "description": "Choose gravitational softening from the simulator's actual resolution - pixel footprint, patch size, or local cell width - instead of pretending one epsilon works at every zoom level. This borrows anti-aliasing and mesh-resolution logic from graphics and FEM so a minimal simulator degrades honestly when representation gets coarse.",
+  "domains": [
+    "computer_graphics",
+    "geophysics",
+    "astrophysics"
+  ],
+  "mathematical_formalization": "eps_i = max(eps_phys, k_screen * s_px(i), k_cell * h_cell(i)); a_i = sum_j G m_j r_ij / (||r_ij||^2 + eps_ij^2)^(3/2), with eps_ij = max(eps_i, eps_j)",
+  "analogical_connections": [
+    "An anti-aliasing kernel in graphics becomes a force-blur kernel in gravity.",
+    "Finite-element mesh size defines what spatial detail is actually resolvable.",
+    "Sensor blur suggests admitting when the representation cannot support sharp forces."
+  ],
+  "implementation_hypothesis": "Measure screen-world scale each frame in interactive mode or local cell size in batch mode; set epsilon from that scale; show the effective epsilon as an overlay so users can see when the simulator is intentionally smoothing.",
+  "experiment_seed": "Run the same scene across repeated zoom-in and zoom-out cycles; compare stability, aliasing, and conservation metrics for fixed epsilon versus scale-aware epsilon.",
+  "closest_prior_art": [
+    {
+      "title": "REBOUND: An open-source multi-purpose N-body code for collisional dynamics",
+      "paperId": "5240c4a18da2b6dcae3fbfa633c01bee1670d0a0"
+    },
+    {
+      "title": "Efficient parallel finite-element methods for planetary gravitation: DtN and multipole expansions",
+      "paperId": "973aaba20de052e555f2721ee9b1c47ddff95fef"
+    },
+    {
+      "title": "Momentum-conserving self-gravity in the phantom smoothed particle hydrodynamics code. Parallel dual tree traversal for the symmetric fast multipole method",
+      "paperId": "e30e52bdbc59b0847e73cd4141831bf1ce285a5b"
+    }
+  ],
+  "novelty_claim": "The novelty is to bind the smoothing scale to representational limits rather than only to physical heuristics or density estimates.",
+  "differentiation": "Adaptive softening in self-gravity codes is usually motivated by particle density or kernel support. Here the driver is what the simulator can honestly resolve and display, which is a different control signal.",
+  "folder_plan": {
+    "tree_folder": "results/concept_evolve/tree/009_resolution_coupled_softening",
+    "required_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_stage_paths": [
+      "prototypes/minigrav/force/resolution_softening.py",
+      "prototypes/minigrav/ui/softening_overlay.py"
+    ]
+  },
+  "generated_at": "2026-03-06T01:37:13.108829+00:00",
+  "project_folder": "concept_evolve/tree/009_resolution_coupled_softening"
+}

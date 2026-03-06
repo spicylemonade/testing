@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "neighbor_tree_gravity",
+  "description": "Combine exact near-field gravity from molecular-dynamics-style neighbor lists with Barnes-Hut or fast-multipole far fields. The result is a minimal simulator that keeps close passes crisp without paying O(N^2) everywhere.",
+  "domains": [
+    "astrophysics",
+    "molecular_dynamics",
+    "numerical_analysis"
+  ],
+  "mathematical_formalization": "a_i = sum_{j in N_i(r_n)} G m_j r_ji / (||r_ji||^2 + eps_i^2)^(3/2) + M_theta(Far(i)); choose r_n, theta so that ||delta a_i|| < eta",
+  "analogical_connections": [
+    "Verlet lists in molecular dynamics become exact near-field shells for gravity.",
+    "Terrain level-of-detail becomes force level-of-detail through multipole summaries.",
+    "An audio crossover network suggests splitting force into local high-frequency detail and distant low-frequency bulk."
+  ],
+  "implementation_hypothesis": "Build `cells = hash_positions(x, h)`; accumulate exact forces from adjacent cells; build a tree over cell centers of mass; evaluate far cells with Barnes-Hut or FMM; fallback to dense pairwise summation when `N` is below a direct-sum threshold.",
+  "experiment_seed": "Benchmark 2-body, Plummer-sphere, and ring scenes at N in {16, 128, 1024}; compare wall-clock time, force error, and orbit drift against direct summation and pure Barnes-Hut.",
+  "closest_prior_art": [
+    {
+      "title": "REBOUND: An open-source multi-purpose N-body code for collisional dynamics",
+      "paperId": "5240c4a18da2b6dcae3fbfa633c01bee1670d0a0"
+    },
+    {
+      "title": "A hierarchical O(N log N) force-calculation algorithm",
+      "paperId": "fce7fd98928ab9bf3e4e919e108c48fc1040f569"
+    },
+    {
+      "title": "A fast algorithm for particle simulations",
+      "paperId": "688384fc5e643445e835435e96b9dfcfb6598d36"
+    }
+  ],
+  "novelty_claim": "The novelty is the interface boundary: the simulator is organized around an explicit near/far split that matches interactive workloads, rather than around a monolithic research code or a single global approximation.",
+  "differentiation": "Barnes-Hut and FMM accelerate all interactions, while molecular-dynamics neighbor lists usually assume short-range cutoffs. This concept fuses them for gravity by keeping local exactness without pretending the force law is actually truncated.",
+  "folder_plan": {
+    "tree_folder": "results/concept_evolve/tree/001_neighbor_tree_gravity",
+    "required_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_stage_paths": [
+      "prototypes/minigrav/force/neighbor_tree.py",
+      "prototypes/minigrav/benchmarks/neighbor_tree_accuracy.py"
+    ]
+  },
+  "generated_at": "2026-03-06T01:37:13.105088+00:00",
+  "project_folder": "concept_evolve/tree/001_neighbor_tree_gravity"
+}

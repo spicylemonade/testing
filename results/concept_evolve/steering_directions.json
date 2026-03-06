@@ -1,0 +1,26 @@
+[
+  {
+    "direction": "Build a two-engine baseline first.",
+    "rationale": "A hybrid idea is only meaningful if an exact reference engine exists inside the same project for force and trajectory comparison.",
+    "first_step": "Implement a direct-sum leapfrog path beside the planned neighbor-tree model and record force and orbit traces on three canonical scenes.",
+    "expected_signal": "If the hybrid path is not already 3x faster by N around 256 while staying close to the dense reference, the extra complexity is probably not worth it."
+  },
+  {
+    "direction": "Treat close encounters as interrupts.",
+    "rationale": "Most visible failures in small gravity toys come from rare close passes, not from smooth far-field drift.",
+    "first_step": "Add an angular-sweep broad phase and route queued pairs into reversible micro-step handling.",
+    "expected_signal": "Energy spikes collapse on flyby scenes without paying the cost of a uniformly tiny global timestep."
+  },
+  {
+    "direction": "Make trust metrics user-visible.",
+    "rationale": "A minimal simulator should explain its own approximation regime instead of silently pretending to be exact.",
+    "first_step": "Expose round-trip error, active softening scale, and current force mode in a compact overlay or CLI report.",
+    "expected_signal": "When the metrics line up with visible failure cases, they become a practical control surface for auto-tuning and debugging."
+  },
+  {
+    "direction": "Use gradients offline before trying them live.",
+    "rationale": "Differentiable calibration is powerful, but live differentiation adds brittleness before the basic simulator architecture is trustworthy.",
+    "first_step": "Generate teacher traces from REBOUND or analytic solutions and fit epsilon, dt, opening-angle, and encounter presets offline.",
+    "expected_signal": "Named presets such as `fast`, `stable`, and `teaching` emerge with a consistent ranking across held-out scenes."
+  }
+]

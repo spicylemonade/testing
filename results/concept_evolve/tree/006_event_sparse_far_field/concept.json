@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "event_sparse_far_field",
+  "description": "Cache far-field multipole summaries and refresh them on predicted error events instead of every tick. This reframes tree maintenance as an event-driven problem, borrowing the sparsity mindset of event-driven molecular dynamics for a force law that is otherwise continuously evaluated.",
+  "domains": [
+    "event_driven_simulation",
+    "performance_engineering",
+    "astrophysics"
+  ],
+  "mathematical_formalization": "Schedule refresh tau_c = min{t : ||M_c(t) - M_c(t_last)|| > delta_M or topology(c) changes}; use a_i(t) = a_near(t) + a_far(M(t_last)) until t >= tau_c",
+  "analogical_connections": [
+    "Dirty-rectangle rendering refreshes only changed screen regions; here only stale force summaries are recomputed.",
+    "Event-driven hard-sphere molecular dynamics becomes event-driven multipole refresh.",
+    "An incremental build system mirrors selective invalidation of distant gravity caches."
+  ],
+  "implementation_hypothesis": "Store center-of-mass and multipole summaries with velocity bounds per node; predict when each summary exits its error budget; push refresh events into a priority queue; rebuild globally only when invalidations become too dense.",
+  "experiment_seed": "Use a quasi-stable solar-system scene and a chaotic scattering scene; measure tree-refresh count, wall-clock time, and trajectory error versus rebuilding every frame.",
+  "closest_prior_art": [
+    {
+      "title": "Application of event-driven molecular dynamics approach to rarefied gas dynamics problems",
+      "paperId": "bf741d3dc8d599d9b42d19125a11b1141a805174"
+    },
+    {
+      "title": "Cold atom-ion systems in radio-frequency multipole traps: Event-driven molecular dynamics and stochastic simulations",
+      "paperId": "9650464407bda642ed29f83febd4b967cf19f591"
+    },
+    {
+      "title": "A hierarchical O(N log N) force-calculation algorithm",
+      "paperId": "fce7fd98928ab9bf3e4e919e108c48fc1040f569"
+    }
+  ],
+  "novelty_claim": "The novelty is not event-driven pairwise gravity, but event-driven maintenance of approximate distant structure, which matches the update patterns of interactive scenes.",
+  "differentiation": "Event-driven molecular dynamics papers schedule actual collisions or interaction events. This concept schedules when a cached approximation becomes too stale, so it changes the bookkeeping layer rather than the physical force law itself.",
+  "folder_plan": {
+    "tree_folder": "results/concept_evolve/tree/006_event_sparse_far_field",
+    "required_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_stage_paths": [
+      "prototypes/minigrav/force/event_sparse_far_field.py",
+      "prototypes/minigrav/benchmarks/tree_refresh_profile.py"
+    ]
+  },
+  "generated_at": "2026-03-06T01:37:13.107558+00:00",
+  "project_folder": "concept_evolve/tree/006_event_sparse_far_field"
+}

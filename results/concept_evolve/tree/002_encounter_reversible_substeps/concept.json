@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "encounter_reversible_substeps",
+  "description": "Run a cheap symplectic base integrator everywhere, but wrap close encounters in symmetric micro-steps triggered only when bodies enter an encounter envelope. The bridge is between hybrid planetary integrators and rare-event scheduling: expensive accuracy is reserved for the tiny fraction of time where human-visible errors actually happen.",
+  "domains": [
+    "astrophysics",
+    "event_driven_simulation",
+    "numerical_analysis"
+  ],
+  "mathematical_formalization": "Phi_dt(z) = S_base(dt)(z) if d_min > rho; else Phi_dt(z) = S_base(dt/2) o S_enc(dt/m)^m o S_base(dt/2), with ||Phi_-dt(Phi_dt(z)) - z|| kept below tau_rev",
+  "analogical_connections": [
+    "An interrupt-driven operating system runs a heavy handler only on rare events.",
+    "Adaptive mesh refinement around shocks mirrors substeps around orbital close passes.",
+    "Bullet-time in games appears only when something dangerous is about to happen."
+  ],
+  "implementation_hypothesis": "Maintain an encounter queue from a sweep or neighbor pass; outside the queue, advance with leapfrog or Wisdom-Holman; inside the queue, execute a symmetric micro-step wrapper and log a round-trip mismatch for diagnostics.",
+  "experiment_seed": "Use slingshot, binary flyby, and star-grazing test scenes; compare energy drift and wall-clock time against a uniform small-timestep baseline.",
+  "closest_prior_art": [
+    {
+      "title": "TRACE: a code for time-reversible astrophysical close encounters",
+      "paperId": "9696edaf37f8ebd7cc544f1b3b0069d0d32632a1"
+    },
+    {
+      "title": "Symplectic maps for the N-body problem.",
+      "paperId": "377d069236ca0108a79170e634986a0d7edffdfa"
+    },
+    {
+      "title": "Molecular dynamics and time reversibility",
+      "paperId": "9d7ff20438c6cc21330cb254163a4c6667c18e68"
+    }
+  ],
+  "novelty_claim": "The new part is the trigger policy and scope: only user-visible encounter windows activate the expensive reversible path, so the mechanism is tuned for a minimal interactive simulator rather than a general planetary code.",
+  "differentiation": "TRACE and related hybrid maps are general-purpose research integrators. This concept repackages the idea as a tiny encounter-only service layer with explicit quality thresholds and a UI-facing notion of when accuracy mode should engage.",
+  "folder_plan": {
+    "tree_folder": "results/concept_evolve/tree/002_encounter_reversible_substeps",
+    "required_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_stage_paths": [
+      "prototypes/minigrav/integrators/encounter_switch.py",
+      "prototypes/minigrav/tests/test_encounter_switch.py"
+    ]
+  },
+  "generated_at": "2026-03-06T01:37:13.105662+00:00",
+  "project_folder": "concept_evolve/tree/002_encounter_reversible_substeps"
+}

@@ -1,0 +1,145 @@
+{
+  "nodes": [
+    {
+      "id": "neighbor_tree_gravity",
+      "domain": "astrophysics"
+    },
+    {
+      "id": "encounter_reversible_substeps",
+      "domain": "event_driven_simulation"
+    },
+    {
+      "id": "constraint_projected_kepler",
+      "domain": "computer_graphics"
+    },
+    {
+      "id": "differentiable_softening_calibration",
+      "domain": "differentiable_programming"
+    },
+    {
+      "id": "epicycle_patch_streaming",
+      "domain": "game_engine_architecture"
+    },
+    {
+      "id": "event_sparse_far_field",
+      "domain": "event_driven_simulation"
+    },
+    {
+      "id": "angular_sweep_encounter_queue",
+      "domain": "computational_geometry"
+    },
+    {
+      "id": "forward_reverse_verification_loop",
+      "domain": "software_verification"
+    },
+    {
+      "id": "resolution_coupled_softening",
+      "domain": "computer_graphics"
+    },
+    {
+      "id": "trajectory_mass_inference",
+      "domain": "scientific_inference"
+    }
+  ],
+  "edges": [
+    {
+      "source": "neighbor_tree_gravity",
+      "target": "event_sparse_far_field",
+      "relation": "Both split gravity into exact local work and cached distant summaries."
+    },
+    {
+      "source": "neighbor_tree_gravity",
+      "target": "resolution_coupled_softening",
+      "relation": "Both treat approximation scale as a first-class control knob."
+    },
+    {
+      "source": "encounter_reversible_substeps",
+      "target": "angular_sweep_encounter_queue",
+      "relation": "The sweep queue provides the candidate pairs that trigger reversible micro-steps."
+    },
+    {
+      "source": "encounter_reversible_substeps",
+      "target": "forward_reverse_verification_loop",
+      "relation": "Round-trip error decides when encounter mode must engage or back off."
+    },
+    {
+      "source": "constraint_projected_kepler",
+      "target": "differentiable_softening_calibration",
+      "relation": "Projection thresholds and weights can be tuned against teacher trajectories."
+    },
+    {
+      "source": "constraint_projected_kepler",
+      "target": "resolution_coupled_softening",
+      "relation": "Projection strength and softening both depend on what scales are visibly resolved."
+    },
+    {
+      "source": "differentiable_softening_calibration",
+      "target": "trajectory_mass_inference",
+      "relation": "The same gradient path supports both simulator tuning and parameter fitting from trajectories."
+    },
+    {
+      "source": "differentiable_softening_calibration",
+      "target": "forward_reverse_verification_loop",
+      "relation": "Calibration objectives can include reversibility and trust metrics, not only position mismatch."
+    },
+    {
+      "source": "epicycle_patch_streaming",
+      "target": "angular_sweep_encounter_queue",
+      "relation": "Planar patches make angular broad phases especially cheap and accurate."
+    },
+    {
+      "source": "epicycle_patch_streaming",
+      "target": "neighbor_tree_gravity",
+      "relation": "Patch-local exact forces pair naturally with a global near/far force split."
+    },
+    {
+      "source": "event_sparse_far_field",
+      "target": "epicycle_patch_streaming",
+      "relation": "Patch boundaries and migrations become natural events for refreshing cached distant summaries."
+    },
+    {
+      "source": "forward_reverse_verification_loop",
+      "target": "event_sparse_far_field",
+      "relation": "Round-trip spikes can reveal when far-field caches have gone stale."
+    },
+    {
+      "source": "trajectory_mass_inference",
+      "target": "constraint_projected_kepler",
+      "relation": "Fitted masses define new invariant targets that the projector can preserve."
+    },
+    {
+      "source": "resolution_coupled_softening",
+      "target": "trajectory_mass_inference",
+      "relation": "Inference must account for representation-scale blur if the fitted model is to generalize across zoom levels."
+    }
+  ],
+  "bridge_chains": [
+    {
+      "path": [
+        "angular_sweep_encounter_queue",
+        "encounter_reversible_substeps",
+        "forward_reverse_verification_loop",
+        "differentiable_softening_calibration",
+        "trajectory_mass_inference"
+      ],
+      "summary": "Computational geometry narrows candidate events, event-driven integration resolves them, verification measures trust, differentiable tuning improves the engine, and inverse fitting turns the result into an exploratory lab."
+    },
+    {
+      "path": [
+        "neighbor_tree_gravity",
+        "event_sparse_far_field",
+        "epicycle_patch_streaming",
+        "resolution_coupled_softening"
+      ],
+      "summary": "Astrophysical force decomposition meets event-driven caching, then game-style world streaming, then graphics-inspired representation-aware smoothing."
+    },
+    {
+      "path": [
+        "constraint_projected_kepler",
+        "resolution_coupled_softening",
+        "neighbor_tree_gravity"
+      ],
+      "summary": "Graphics-style stabilization flows into scale-aware smoothing, then lands back in a concrete astrophysical force engine."
+    }
+  ]
+}

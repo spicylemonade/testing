@@ -1,0 +1,74 @@
+{
+  "associations": [
+    {
+      "seed": "gravity as long-range molecular dynamics",
+      "expansion": [
+        "Verlet lists without a hard cutoff",
+        "event queues for stale force summaries",
+        "teacher-student calibration between exact and approximate trajectories"
+      ]
+    },
+    {
+      "seed": "simulator as instrument rather than oracle",
+      "expansion": [
+        "softening behaves like a blur kernel",
+        "round-trip error behaves like a calibration residual",
+        "patch size behaves like an aperture setting"
+      ]
+    },
+    {
+      "seed": "orbit toy as inverse problem",
+      "expansion": [
+        "drawn trails become observations",
+        "mass fitting becomes an educational affordance",
+        "residual plots become honesty indicators"
+      ]
+    },
+    {
+      "seed": "streamed world physics",
+      "expansion": [
+        "camera-centered chunks",
+        "co-moving Hill frames",
+        "distant patch moments instead of distant particles"
+      ]
+    },
+    {
+      "seed": "trust-aware minimal engine",
+      "expansion": [
+        "quality bars in the UI",
+        "automatic mode switching on reversibility spikes",
+        "named presets for speed, stability, and teaching"
+      ]
+    }
+  ],
+  "blind_spots": [
+    "This research pass did not deeply mine WebGPU, browser, or mobile-CPU implementation literature, which may dominate a real minimal simulator deployment.",
+    "The pass stayed close to simulation and numerics papers; it did not fully explore HCI or education studies on what makes orbital behavior understandable to novices.",
+    "Relativistic, non-Newtonian, and constrained-body cases were treated as out of scope, which may be wrong if the user means gravity in a broader pedagogical sense.",
+    "Differentiable calibration ideas may become brittle at mode switches unless encounter triggers are smoothed or relaxed.",
+    "Resolution-coupled softening improves honesty, but it could also confuse users if the UI does not clearly distinguish numerical blur from real physics.",
+    "The prior-art watchlist is noisy, so there may be unsurfaced educational simulators or game-engine notes outside academic indices that deserve a second pass."
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "Must run at 60 fps on a phone CPU.",
+      "result": "Global O(N^2) dies quickly; neighbor_tree_gravity, angular_sweep_encounter_queue, and event_sparse_far_field move from optional ideas to structural requirements."
+    },
+    {
+      "constraint": "No square roots allowed in the inner loop.",
+      "result": "The design shifts toward inverse-distance approximations, cached rsqrt paths, epicycle patches, and aggressive near/far decomposition instead of naive pairwise force code."
+    },
+    {
+      "constraint": "Users can inject million-to-one mass ratios live.",
+      "result": "Fixed dt becomes fragile; encounter_reversible_substeps and forward_reverse_verification_loop become the safety spine, not nice-to-have add-ons."
+    },
+    {
+      "constraint": "The simulator must be explainable to middle-school students.",
+      "result": "Constraint projection, explicit trust metrics, and fit-from-trail workflows become more valuable than squeezing out another layer of invisible raw accuracy."
+    },
+    {
+      "constraint": "The scene is a narrow ring instead of free space.",
+      "result": "Epicycle patches and angular sweeps dominate the architecture, while a generic global tree is no longer the central organizing principle."
+    }
+  ]
+}

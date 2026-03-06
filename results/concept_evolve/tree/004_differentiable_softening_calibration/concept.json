@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "differentiable_softening_calibration",
+  "description": "Treat the minimal simulator's shortcuts - softening, timestep, opening angle, even encounter radius - as learnable knobs fit against a reference trajectory corpus. This imports differentiable programming not to learn a policy, but to automatically tune a stripped-down gravity engine until it behaves like a more faithful teacher.",
+  "domains": [
+    "differentiable_programming",
+    "astrophysics",
+    "software_engineering"
+  ],
+  "mathematical_formalization": "min_theta sum_s sum_t ||x_t^mini(theta, s) - x_t^ref(s)||^2 + alpha * Drift(theta, s) + beta * Cost(theta), where theta = {eps, dt, theta_open, rho_enc}",
+  "analogical_connections": [
+    "A large teacher model is distilled into a smaller student simulator.",
+    "Camera calibration becomes physics-engine calibration.",
+    "Speaker equalization suggests tuning a coarse system until it matches a trusted reference response."
+  ],
+  "implementation_hypothesis": "Implement the simulator step in JAX, Taichi, or PyTorch; generate teacher traces from REBOUND or analytic two-body solutions; optimize theta offline and export presets such as `fast`, `stable`, and `teaching`.",
+  "experiment_seed": "Train on circular, eccentric, and flyby scenes; evaluate on held-out three-body traces to see whether one calibrated preset generalizes or whether multiple named presets are needed.",
+  "closest_prior_art": [
+    {
+      "title": "DiffTaichi: Differentiable Programming for Physical Simulation",
+      "paperId": "666aaf80f647faf52d5058ff951e2d4b9a8844f5"
+    },
+    {
+      "title": "End-to-End Differentiable Physics for Learning and Control",
+      "paperId": "0933f3dd33cf907e07aa938ce9465fb0d4250394"
+    },
+    {
+      "title": "Fast and Feature-Complete Differentiable Physics for Articulated Rigid Bodies with Contact",
+      "paperId": "60d9bf409dd7c5027ee95eb9b2ebe95bc3e85382"
+    }
+  ],
+  "novelty_claim": "The novelty is to use gradients for simulator simplification tuning rather than for control, contact learning, or robot policy optimization.",
+  "differentiation": "Differentiable-physics papers usually optimize control signals or hidden physical parameters of a complex system. This concept instead tunes the approximation knobs of a deliberately tiny gravity engine, keeping the model simple while borrowing fidelity from a teacher.",
+  "folder_plan": {
+    "tree_folder": "results/concept_evolve/tree/004_differentiable_softening_calibration",
+    "required_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_stage_paths": [
+      "prototypes/minigrav/calibration/diff_fit.py",
+      "prototypes/minigrav/calibration/preset_registry.json"
+    ]
+  },
+  "generated_at": "2026-03-06T01:37:13.106562+00:00",
+  "project_folder": "concept_evolve/tree/004_differentiable_softening_calibration"
+}

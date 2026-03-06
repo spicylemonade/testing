@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "constraint_projected_kepler",
+  "description": "After an explicit step, apply a small position-based-dynamics-style projection that restores soft invariants such as total energy, angular momentum, and barycenter. This treats orbital drift the way graphics treats penetrations: as a correctable constraint violation rather than a failure that always demands a smaller global timestep.",
+  "domains": [
+    "computer_graphics",
+    "astrophysics",
+    "human_computer_interaction"
+  ],
+  "mathematical_formalization": "Given z' = (q', v') after one step, solve min_{Delta z} ||Delta z||^2 subject to C_H(z' + Delta z) ~= 0, C_L(z' + Delta z) ~= 0, and C_B(z' + Delta z) = sum_i m_i q_i - B0 = 0 using 1-2 Gauss-Seidel passes",
+  "analogical_connections": [
+    "Cloth constraint projection becomes orbital invariant projection.",
+    "Image stabilization suggests small post-step nudges instead of globally slower capture.",
+    "A balance controller keeps the state near a target manifold instead of chasing exact equations every instant."
+  ],
+  "implementation_hypothesis": "Represent each invariant as a constraint function; after leapfrog, run one or two local correction passes on positions and velocities with clamped updates; only fire the projection when measured drift exceeds a tolerance.",
+  "experiment_seed": "Take a two-body ellipse and a three-body choreography with intentionally large dt; compare user-visible stability, energy drift, and correction magnitude against a smaller-dt reference.",
+  "closest_prior_art": [
+    {
+      "title": "Position based dynamics",
+      "paperId": "9b2ba0c0508aadcf95870dd377b1544f838141cb"
+    },
+    {
+      "title": "Hierarchical Position Based Dynamics",
+      "paperId": "f9c62b65e442e353f0ab0937de3d84fa65873828"
+    },
+    {
+      "title": "Symplectic maps for the N-body problem.",
+      "paperId": "377d069236ca0108a79170e634986a0d7edffdfa"
+    }
+  ],
+  "novelty_claim": "The novelty is to cast conserved-orbit structure as PBD-style constraints, making stability a controllable post-process that matches interactive teaching goals.",
+  "differentiation": "Position based dynamics papers focus on geometric constraints for cloth, soft bodies, and contacts. This concept instead projects onto orbital invariants, so it is not a reimplementation of cloth or rigid-body PBD inside a gravity setting.",
+  "folder_plan": {
+    "tree_folder": "results/concept_evolve/tree/003_constraint_projected_kepler",
+    "required_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_stage_paths": [
+      "prototypes/minigrav/stabilizers/invariant_projection.py",
+      "prototypes/minigrav/ui/projection_overlay.py"
+    ]
+  },
+  "generated_at": "2026-03-06T01:37:13.106140+00:00",
+  "project_folder": "concept_evolve/tree/003_constraint_projected_kepler"
+}
