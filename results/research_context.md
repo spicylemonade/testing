@@ -1,11 +1,11 @@
 # Research Context
 
-- Stage: phase_1_complete
+- Stage: complete
 - Model: openai/gpt-5.4
 - OpenCode model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
-- Note: Phase 1 is complete with H1 championed and concept-tree leads narrowed to auditable close-encounter and determinism paths
-- Rubric progress: 5/25 completed
+- Note: all rubric items are complete; the final contribution is an audited small-N kernel plus a close-encounter trust spine
+- Rubric progress: 25/25 completed
 - Known papers tracked: 77
 - `sources.bib` entries: 17
 - Swarm hypotheses: 3
