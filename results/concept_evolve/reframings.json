@@ -1,0 +1,86 @@
+{
+  "problem": "create a minimal gravity simulator",
+  "framings": [
+    {
+      "domain": "Graph visualization",
+      "reframing": "Treat the simulator as a force-directed layout engine where bodies are nodes and the goal is to reveal stable spatial structure rather than exact orbital truth.",
+      "key_insight": "Force-directed layout work shows that many-body systems can stay useful even when far-field forces are approximate, as long as the global geometry stays coherent.",
+      "suggested_technique": "ForceAtlas2-style continuous layout with Barnes-Hut acceleration (Jacomy et al., 2012).",
+      "mapping_back": "Use a quadtree or octree plus an opening-angle rule to approximate distant gravitational interactions so a minimal simulator stays simple at small N but can scale past toy sizes.",
+      "candidate_folder_name": "graph_visualization_forceatlas2"
+    },
+    {
+      "domain": "VLSI placement",
+      "reframing": "Treat bodies as circuit cells being placed on a chip, where gravity is a potential field that pulls elements into low-cost regions while density penalties prevent collapse.",
+      "key_insight": "Electrostatics-based placement turns pairwise interaction into a field solve, which can be simpler and faster than direct all-pairs evaluation.",
+      "suggested_technique": "ePlace electrostatics-based placement using FFT Poisson solves and Nesterov updates (Lu et al.).",
+      "mapping_back": "Deposit mass on a grid, solve for gravitational potential, sample accelerations from the field, and keep direct pairwise force only as an optional high-accuracy mode.",
+      "candidate_folder_name": "vlsi_electrostatic_placement"
+    },
+    {
+      "domain": "Swarm robotics",
+      "reframing": "View each mass as a robot following attractive and repulsive potentials in real time.",
+      "key_insight": "Robot navigation separates long-range goal attraction from near-field collision avoidance, which is exactly the split a minimal gravity simulator needs around close encounters.",
+      "suggested_technique": "Khatib's artificial potential fields for real-time obstacle avoidance (1986).",
+      "mapping_back": "Keep Newtonian attraction at distance, then add a soft repulsive barrier or softening radius near singularities so bodies do not explode numerically during close passes.",
+      "candidate_folder_name": "swarm_robotics_potential_fields"
+    },
+    {
+      "domain": "Crowd dynamics",
+      "reframing": "Model bodies like pedestrians whose velocity responds to a desired motion plus social interaction forces.",
+      "key_insight": "Crowd models show that stable multi-agent motion often comes from bounded short-range forces and relaxation terms, not from unbounded raw pairwise laws.",
+      "suggested_technique": "Helbing-Molnar social force model for pedestrian dynamics (1995).",
+      "mapping_back": "Add optional damping, capped accelerations, or relaxation-to-velocity terms so the simulator can stay stable and interpretable in dense or near-collision scenarios.",
+      "candidate_folder_name": "crowd_dynamics_social_force"
+    },
+    {
+      "domain": "Urban planning and spatial interaction",
+      "reframing": "Interpret gravity as a flow-allocation model where origin masses send traffic to destination masses based on attractiveness and distance decay.",
+      "key_insight": "Spatial interaction models decouple mass, distance law, and conservation constraints, making the force law easier to tune and audit.",
+      "suggested_technique": "Wilson's doubly constrained gravity model for trip distribution and entropy-based calibration.",
+      "mapping_back": "Use the same mass-times-attractiveness over distance^beta structure to design test kernels, calibrate exponents, and compare aggregate interaction patterns from the simulator.",
+      "candidate_folder_name": "urban_planning_gravity_model"
+    },
+    {
+      "domain": "Bayesian computation",
+      "reframing": "Treat the simulator as Hamiltonian state evolution where the main requirement is reversible phase-space motion with controlled energy error.",
+      "key_insight": "Hamiltonian Monte Carlo evaluates integration quality in terms of reversibility and energy drift, which is a practical lens for a minimal but trustworthy gravity core.",
+      "suggested_technique": "Hamiltonian Monte Carlo leapfrog integration with total-energy diagnostics (Neal).",
+      "mapping_back": "Use leapfrog or velocity-Verlet as the default stepper and log energy drift per step or per orbit as an acceptance-style quality check.",
+      "candidate_folder_name": "bayesian_hamiltonian_dynamics"
+    },
+    {
+      "domain": "Dimensionality reduction",
+      "reframing": "See bodies as embedded points whose positions emerge from a cheap approximation to many interacting forces.",
+      "key_insight": "Barnes-Hut t-SNE shows that tree-based force approximation can preserve useful global structure while avoiding exact O(N^2) updates.",
+      "suggested_technique": "Barnes-Hut t-SNE repulsive-force approximation (van der Maaten, 2014).",
+      "mapping_back": "Reuse the same tree summary and opening-angle heuristic to approximate far-field gravity so a minimal simulator can handle moderate N without abandoning understandable code.",
+      "candidate_folder_name": "dimensionality_reduction_barnes_hut"
+    },
+    {
+      "domain": "Cell biology and chemotaxis",
+      "reframing": "Model masses as cells that move up gradients of a field they jointly create.",
+      "key_insight": "Chemotaxis models separate particle motion from field evolution, offering a clean alternative to direct pairwise force calculation.",
+      "suggested_technique": "Keller-Segel particle-field formulation with grid-based chemoattractant solves.",
+      "mapping_back": "Deposit mass to a lattice, solve for gravitational potential as a field, sample its gradient at body locations, and advance bodies from that sampled acceleration.",
+      "candidate_folder_name": "chemotaxis_particle_field"
+    },
+    {
+      "domain": "Computer animation",
+      "reframing": "Treat the simulator as a flocking engine where simple local rules create visually rich group motion.",
+      "key_insight": "Boids demonstrates that minimal code plus local neighborhoods can produce convincing multi-body behavior without exact physics everywhere.",
+      "suggested_technique": "Reynolds Boids with separation and cohesion rules plus spatial grid neighborhoods (1987).",
+      "mapping_back": "Use grid hashing for neighbor lookup and optionally blend Newtonian attraction with simple local steering rules when building a didactic or visually stable gravity toy.",
+      "candidate_folder_name": "computer_animation_boids"
+    },
+    {
+      "domain": "Computer vision",
+      "reframing": "Treat bodies as control points of a deformable contour moving under external attraction and internal smoothness forces.",
+      "key_insight": "Active contours show how a force system can stay coherent by pairing attraction with regularization, not by relying on attraction alone.",
+      "suggested_technique": "Snakes or active contour models with internal tension and external forces (Kass, Witkin, and Terzopoulos, 1988).",
+      "mapping_back": "Add optional link forces or shape regularizers when the gravity simulator should preserve formations or avoid jagged numerical artifacts during integration.",
+      "candidate_folder_name": "computer_vision_active_contours"
+    }
+  ],
+  "timestamp": "2026-03-06T02:56:15.915914+00:00"
+}
