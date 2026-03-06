@@ -1,15 +1,15 @@
 # Research Context
 
-- Stage: complete
+- Stage: post_writer
 - Model: openai/gpt-5.4
 - OpenCode model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
-- Note: all rubric items are complete; the final contribution is an audited small-N kernel plus a close-encounter trust spine
+- Note: paper draft and compilation stage completed
 - Rubric progress: 25/25 completed
-- Known papers tracked: 77
+- Known papers tracked: 301
 - `sources.bib` entries: 17
 - Swarm hypotheses: 3
-- Verification summary present: no
+- Verification summary present: yes
 
 ## Closest Prior Art
 - Data-constrained Solar Modeling with GX Simulator (2023)
@@ -18,15 +18,8 @@
 - Gravity-perfused airway-on-a-chip optimized for quantitative BSL-3 studies of SARS-CoV-2 infection: barrier permeability, cytokine production, immunohistochemistry, and viral load assays (2024)
 
 ## Recent Semantic Scholar Activity
-- search :: Orbital Mechanics Two-Body Model for Educational Purposes (results=0, cache_hits=0, network_calls=0)
-- search :: A hierarchical O(N log N) force-calculation algorithm Barnes Hut (results=3, cache_hits=0, network_calls=1)
-- search :: Wisdom Holman symplectic maps n-body problem (results=0, cache_hits=0, network_calls=0)
-- search :: velocity Verlet leapfrog symplectic integrator orbital mechanics (results=0, cache_hits=0, network_calls=0)
-- search :: universe sandbox educational gravity simulator (results=3, cache_hits=0, network_calls=1)
-
-## Current Direction
-
-- Champion: `H1` audit-first deterministic reference kernel.
-- Backup: `H2` honest close-encounter minimal core.
-- Immediate build target: deterministic Newtonian 2-body, 3-body, and small-N reference scenarios with invariant logging, convergence checks, and cross-runtime reproducibility.
-- Explicit non-claims: no new integrator family, no large-N engine, no UI novelty claim.
+- search :: A new paradigm for reproducing and analyzing N-body simulations of planetary systems (results=0, cache_hits=0, network_calls=0)
+- search :: Real-time reachability for verified simplex design (results=3, cache_hits=0, network_calls=1)
+- search :: Code-Verification Techniques for Particle-in-Cell Simulations with Direct Simulation Monte Carlo Collisions (results=3, cache_hits=0, network_calls=1)
+- search :: Simulationarchive: An archive format for reproducible N-body simulations (results=0, cache_hits=1, network_calls=0)
+- search :: Human-feedback shield synthesis for perceived safety in deep reinforcement learning (results=1, cache_hits=0, network_calls=1)
