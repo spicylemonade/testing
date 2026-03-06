@@ -38,3 +38,10 @@ Use a 2D asteroid belt and a narrow ring scene; compare candidate-pair recall an
 - `results/concept_evolve/tree/007_angular_sweep_encounter_queue/literature.json`
 - `prototypes/minigrav/geometry/angular_sweep.py`
 - `prototypes/minigrav/tests/test_angular_sweep.py`
+
+## Phase 5 Status
+- [x] Compute swept angular intervals over one tentative step.
+- [x] Maintain a sweep-line active set.
+- [x] Emit candidate close-pass pairs only.
+- [x] Feed the queue into encounter-aware integration.
+- [x] Benchmark recall versus a brute-force truth set.

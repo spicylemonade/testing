@@ -38,3 +38,9 @@ Benchmark 2-body, Plummer-sphere, and ring scenes at N in {16, 128, 1024}; compa
 - `results/concept_evolve/tree/001_neighbor_tree_gravity/literature.json`
 - `prototypes/minigrav/force/neighbor_tree.py`
 - `prototypes/minigrav/benchmarks/neighbor_tree_accuracy.py`
+
+## Phase 5 Status
+- [x] Define minimal executable artifact for this concept.
+- [x] Connect this concept to the promoted and retired bridge decisions.
+- [x] Document how this differs from REBOUND and Barnes-Hut.
+- [x] Record why the branch is deferred instead of implemented.

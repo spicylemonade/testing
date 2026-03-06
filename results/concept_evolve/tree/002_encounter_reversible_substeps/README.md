@@ -38,3 +38,10 @@ Use slingshot, binary flyby, and star-grazing test scenes; compare energy drift 
 - `results/concept_evolve/tree/002_encounter_reversible_substeps/literature.json`
 - `prototypes/minigrav/integrators/encounter_switch.py`
 - `prototypes/minigrav/tests/test_encounter_switch.py`
+
+## Phase 5 Status
+- [x] Detect candidate encounters from the current state.
+- [x] Add a symmetric micro-step wrapper around the base integrator.
+- [x] Log forward/backward mismatch for each encounter.
+- [x] Compare against a uniform baseline and REBOUND on a star-grazing stress case.
+- [ ] Extend the same treatment to unequal-mass flybys.

@@ -38,3 +38,10 @@ Run circular orbit, highly eccentric orbit, and close-flyby scenes; chart how ro
 - `results/concept_evolve/tree/008_forward_reverse_verification_loop/literature.json`
 - `prototypes/minigrav/verification/roundtrip.py`
 - `prototypes/minigrav/verification/test_roundtrip_regression.py`
+
+## Phase 5 Status
+- [x] Implement a reversible roundtrip harness.
+- [x] Add analytic and stress-test scenes.
+- [x] Surface round-trip diagnostics in machine-readable outputs.
+- [x] Test whether the signal predicts close-encounter failure.
+- [x] Record that the standalone trust-signal claim is partially invalidated.

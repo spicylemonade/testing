@@ -38,3 +38,10 @@ Run the same scene across repeated zoom-in and zoom-out cycles; compare stabilit
 - `results/concept_evolve/tree/009_resolution_coupled_softening/literature.json`
 - `prototypes/minigrav/force/resolution_softening.py`
 - `prototypes/minigrav/ui/softening_overlay.py`
+
+## Phase 5 Status
+- [x] Measure a batch-mode local cell scale.
+- [x] Bind epsilon to that scale in a dedicated runner.
+- [x] Export the effective epsilon as a first-class output.
+- [x] Sweep close-encounter dt values and compare against direct and encounter-aware modes.
+- [x] Record that this branch does not enter the declared safe regime.
