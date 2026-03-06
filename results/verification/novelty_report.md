@@ -1,0 +1,20 @@
+# Novelty Report
+
+## Watchlist Comparators
+
+| Comparator | Overlap | Differentiation | Kill criteria |
+| --- | --- | --- | --- |
+| Data-constrained Solar Modeling with GX Simulator (2023) | Both are physics simulators with modular pipelines. | GX Simulator is a solar-domain 3D modeling framework with plasma and emission workflows, while this project is a tiny Newtonian audit kernel for 2-body, 3-body, and small-N controls. | Novelty fails if the final artifact drifts into broad domain-simulator language instead of staying a bounded reference kernel. |
+| Three-axis borehole gravity monitoring for CO2 storage using machine learning coupled to fluid flow simulator (2023) | The title contains `gravity` and `simulator`. | That paper solves a geophysical inverse problem with fluid-flow and ML coupling; this project targets orbital dynamics, invariant drift, convergence, and replayability. | Novelty audit fails if we cannot show that geophysical false positives were explicitly rejected and replaced with real orbital neighbors. |
+| Trajectories of Bright Stars and Shadows around Supermassive Black Holes as Tests of Gravity Theories (2023) | Both touch trajectory simulation under gravity. | The black-hole paper is a strong-gravity and alternative-theory study; this project is strictly Newtonian and claims novelty only in auditability and trust reporting. | Novelty fails if any final claim implies relativistic, strong-field, or black-hole validity. |
+| Gravity-perfused airway-on-a-chip optimized for quantitative BSL-3 studies of SARS-CoV-2 infection... (2024) | Keyword overlap on `gravity` only. | The airway-on-a-chip work is unrelated biomedical microfluidics, useful only as evidence that naive search was noisy. | Novelty audit fails if our literature review still depends on keyword collisions instead of real simulator comparators. |
+
+## True Near-Neighbors
+
+| Comparator | Overlap | Differentiation | Kill criteria |
+| --- | --- | --- | --- |
+| REBOUND: An open-source multi-purpose N-body code for collisional dynamics (2011) | Both simulate Newtonian N-body gravity and evaluate close encounters. | REBOUND is a mature, feature-rich ecosystem; our contribution is a tiny direct-sum reference kernel with explicit audit surfaces, replay fingerprints, and a narrow concept-driven trust spine. | Novelty fails if the final contribution is merely `small REBOUND` without a distinct audit-first story. |
+| TRACE: a code for time-reversible astrophysical close encounters (2024) | Both use reversible close-encounter handling ideas. | TRACE is a mature hybrid integrator; our promoted branch is a deterministic encounter queue plus runtime trust metric and offline preset calibration inside a minimal kernel. | Novelty fails if the implemented encounter path is just TRACE-style switching without a new trigger policy, reporting layer, or calibration result. |
+| JANUS: a bit-wise reversible integrator for N-body dynamics (2017) | Both care about reversibility and deterministic replay. | JANUS achieves exact bit-wise reversibility with integer/floating-point design choices; our scope is tolerance-bounded cross-runtime reproducibility with explicit fingerprints and round-trip metrics. | Novelty fails if we claim exact or bit-wise determinism rather than bounded replay envelopes. |
+| poliastro: a Python library for interactive astrodynamics (2022) | Both provide accessible Python orbital computation. | poliastro focuses on astrodynamics APIs, units, and orbit workflows; our novelty lies in mutual-gravity audit outputs, convergence gates, and cross-runtime reproducibility rather than API convenience. | Novelty fails if the project is framed as just another easy-to-use orbital Python tool. |
+| PhET Gravity and Orbits | Both can support education and intuitive gravity exploration. | PhET owns the teaching-simulator branch; our final wedge is machine-readable trust, failure disclosure, and benchmark discipline. | Novelty fails if the strongest surviving claim is classroom friendliness or visualization. |
