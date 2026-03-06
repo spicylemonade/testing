@@ -1,0 +1,91 @@
+[
+  {
+    "id": "H1",
+    "title": "Audit-first deterministic reference kernel",
+    "novelty_claim": "The research contribution is not another orbit demo, but a tiny Newtonian gravity reference kernel whose core claim is falsifiable auditability: invariant tracking, timestep-convergence checks, and reproducibility across constrained runtimes.",
+    "closest_prior_art": [
+      "REBOUND: An open-source multi-purpose N-body code for collisional dynamics (2011)",
+      "Orbital Mechanics Two-Body Model for Educational Purposes (2024)",
+      "PhET Gravity and Orbits",
+      "poliastro (2022)"
+    ],
+    "differentiation": [
+      "Restrict scope to a minimal direct-sum 2-body/3-body/small-N core rather than claiming a new fast or general N-body engine.",
+      "Make conservation diagnostics, analytic controls, and a compact benchmark pack first-class outputs instead of optional validation.",
+      "Treat deterministic behavior across browser, WASM, and other low-precision targets as part of the research claim, not a packaging detail."
+    ],
+    "easiest_falsifier": "Novelty fails if an existing lightweight simulator already combines the same audit surface and runtime reproducibility guarantees, or if the kernel cannot meet stated tolerance targets on analytic controls and a trusted baseline comparison.",
+    "evidence_plan": [
+      "Recover circular and elliptical two-body motion, period, escape velocity, and orbital elements against closed-form expectations.",
+      "Track total energy, angular momentum, and center-of-mass drift over long horizons.",
+      "Run timestep-halving convergence checks until state error and invariant drift stabilize.",
+      "Compare matched scenarios against REBOUND or an equivalent trusted direct-sum baseline.",
+      "Execute the same scenario bundle in at least two runtimes and record tolerance-bounded reproducibility or failure."
+    ],
+    "budget_envelope": {
+      "existing_artifact_synthesis": "high",
+      "targeted_external_search": "low",
+      "benchmark_design_and_audit": "high",
+      "implementation_exploration": "medium"
+    },
+    "selected": "champion"
+  },
+  {
+    "id": "H2",
+    "title": "Honest close-encounter minimal core",
+    "novelty_claim": "The under-served gap is a minimal gravity simulator that exposes its safe operating regime during near-collision events through explicit policy choices, sensitivity disclosure, and honest failure reporting.",
+    "closest_prior_art": [
+      "REBOUND close-encounter workflows",
+      "Barnes and Hut (1986)",
+      "student and hobby gravity simulators with Euler, Verlet, or Barnes-Hut variants"
+    ],
+    "differentiation": [
+      "Center the contribution on close-encounter robustness rather than large-N speed or another generic sandbox UI.",
+      "Make adaptive-step triggers, softening sensitivity, and merge-or-abort rules explicit and benchmarked.",
+      "Treat failure envelopes as publishable outputs so the simulator states when it stops being trustworthy."
+    ],
+    "easiest_falsifier": "The claim collapses if a plain fixed-step baseline already survives the chosen close-encounter cases with comparable results, or if mature codes expose the same policies in equally lightweight form.",
+    "evidence_plan": [
+      "Stress unequal masses, high eccentricity, slingshot, and near-collision trajectories.",
+      "Ablate no-softening, softening, merge, bounce, and abort policies on identical scenarios.",
+      "Measure epsilon and dt sensitivity under the same initial conditions.",
+      "Compare trajectories and invariant drift against a trusted baseline in the same regimes."
+    ],
+    "budget_envelope": {
+      "existing_artifact_synthesis": "medium",
+      "targeted_external_search": "low",
+      "benchmark_design_and_audit": "high",
+      "implementation_exploration": "medium_high"
+    },
+    "selected": "backup"
+  },
+  {
+    "id": "H3",
+    "title": "Unit-safe scenario compiler for minimal gravity simulation",
+    "novelty_claim": "A hidden failure mode in minimal gravity simulators is incoherent mass-distance-time scaling; a unit-safe authoring layer could make small simulators scientifically legible instead of merely visually plausible.",
+    "closest_prior_art": [
+      "poliastro (2022)",
+      "Orekit",
+      "educational toy simulators using arbitrary gravitational constants"
+    ],
+    "differentiation": [
+      "Shift the contribution from propagation breadth to scenario validity and scale safety.",
+      "Support dimensionless normalization plus SI-to-normalized conversion for both classroom and real-data scenarios.",
+      "Reject or warn on incoherent unit triples before simulation instead of silently producing attractive but meaningless trajectories."
+    ],
+    "easiest_falsifier": "This direction weakens fast if lightweight tools already provide the same normalization guard rails with similar simplicity, or if corrected units do not materially change benchmark outcomes.",
+    "evidence_plan": [
+      "Detect inconsistent units and unstable scale choices before execution.",
+      "Round-trip SI-to-normalized-to-SI conversions and verify orbital parameter recovery within tolerance.",
+      "Run paired normalized and physical-unit scenarios and confirm matching trajectories.",
+      "Curate representative toy scenarios that otherwise fail silently because of unit incoherence."
+    ],
+    "budget_envelope": {
+      "existing_artifact_synthesis": "medium",
+      "targeted_external_search": "low",
+      "benchmark_design_and_audit": "medium",
+      "implementation_exploration": "medium"
+    },
+    "selected": "hold"
+  }
+]
