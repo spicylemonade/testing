@@ -23,5 +23,5 @@
 ## Auditor Verdict
 
 - Decision: pass.
-- Rationale: every named baseline or prior-art comparator already used in Phase 1 through Phase 4 has a matching entry in `sources.bib`.
-- Required follow-up: when `results/analysis.md` is written, every major interpretive claim should cite at least one of these entries directly instead of relying on uncited narrative carry-over.
+- Rationale: every named baseline or prior-art comparator already used in Phase 1 through Phase 5 has a matching entry in `sources.bib`, and the major claims in `results/analysis.md` now cite those entries directly.
+- Required follow-up: keep this file synchronized if any new named comparator is added after the final review pass.
