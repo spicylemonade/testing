@@ -18,7 +18,7 @@ fi
 python - <<'PY'
 from importlib.util import find_spec
 
-modules = ["numpy", "scipy", "pandas", "matplotlib", "seaborn", "pytest", "rebound"]
+modules = ["numpy", "scipy", "pandas", "matplotlib", "seaborn", "pytest", "rebound", "poliastro"]
 missing = [name for name in modules if find_spec(name) is None]
 if missing:
     raise SystemExit(f"Missing expected packages after setup: {missing}")

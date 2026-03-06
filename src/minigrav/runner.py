@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import time
 from typing import Any
 
 from minigrav.core.forces import ForceConfig, compute_pairwise_forces
@@ -32,7 +33,7 @@ def _record_state(time: float, state, snapshot, drift) -> dict[str, Any]:
     }
 
 
-def run_scenario(config_or_path: SimulationConfig | str | Path) -> dict[str, Any]:
+def run_scenario(config_or_path: SimulationConfig | str | Path, sample_every: int = 1) -> dict[str, Any]:
     config = load_scenario(config_or_path) if isinstance(config_or_path, (str, Path)) else config_or_path
     state = config.initial_state.copy()
     force_config = ForceConfig(gravitational_constant=config.gravitational_constant)
@@ -40,14 +41,17 @@ def run_scenario(config_or_path: SimulationConfig | str | Path) -> dict[str, Any
     initial_snapshot = compute_invariants(state, force_report)
 
     diagnostics: list[dict[str, Any]] = []
+    start = time.perf_counter()
     for step in range(config.steps + 1):
-        snapshot = compute_invariants(state, force_report)
-        drift = compute_relative_drift(snapshot, initial_snapshot)
-        diagnostics.append(_record_state(step * config.dt, state, snapshot, drift))
+        if step % sample_every == 0 or step == config.steps:
+            snapshot = compute_invariants(state, force_report)
+            drift = compute_relative_drift(snapshot, initial_snapshot)
+            diagnostics.append(_record_state(step * config.dt, state, snapshot, drift))
         if step == config.steps:
             break
         state, step_report = step_leapfrog(state, config.dt, force_config, start_force=force_report)
         force_report = step_report.end_force
+    runtime_seconds = time.perf_counter() - start
 
     result = {
         "metadata": {
@@ -61,6 +65,7 @@ def run_scenario(config_or_path: SimulationConfig | str | Path) -> dict[str, Any
             "steps": config.steps,
             "integrator": "leapfrog_kdk",
             "force_model": "direct_sum_newtonian",
+            "runtime_seconds": runtime_seconds,
             "benchmark_tags": list(config.benchmark_tags),
             "body_ids": list(config.initial_state.ids),
             "claim_map": {
