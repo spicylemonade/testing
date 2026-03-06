@@ -49,6 +49,7 @@
   - `gravitational_constant`
   - `duration`
   - `dt`
+  - optional `steps` override when the desired analytic duration is not exactly divisible by `dt`
   - `expected_metrics`
   - `benchmark_tags`
   - `bodies` (ordered array)
