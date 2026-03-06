@@ -7,6 +7,8 @@ from minigrav.core.forces import ForceConfig, compute_pairwise_forces
 from minigrav.core.integrators import step_leapfrog
 from minigrav.diagnostics.invariants import compute_invariants, compute_relative_drift
 from minigrav.io.scenarios import SimulationConfig, load_scenario
+from minigrav.verification.reproducibility import terminal_state_fingerprint, trajectory_fingerprint
+from minigrav.verification.roundtrip import roundtrip_error
 
 
 def _record_state(time: float, state, snapshot, drift) -> dict[str, Any]:
@@ -47,7 +49,7 @@ def run_scenario(config_or_path: SimulationConfig | str | Path) -> dict[str, Any
         state, step_report = step_leapfrog(state, config.dt, force_config, start_force=force_report)
         force_report = step_report.end_force
 
-    return {
+    result = {
         "metadata": {
             "scenario_id": config.scenario_id,
             "description": config.description,
@@ -61,7 +63,17 @@ def run_scenario(config_or_path: SimulationConfig | str | Path) -> dict[str, Any
             "force_model": "direct_sum_newtonian",
             "benchmark_tags": list(config.benchmark_tags),
             "body_ids": list(config.initial_state.ids),
+            "claim_map": {
+                "invariant_tracking": "results/problem_statement.md :: Add audit surfaces that ordinary toy simulators omit: energy and angular-momentum drift, center-of-mass drift, round-trip reversibility diagnostics, timestep-halving convergence, and scenario-level benchmark metadata.",
+                "timestep_halving_convergence": "results/problem_statement.md :: Long-horizon invariant drift and timestep-halving behavior are measured rather than assumed.",
+                "reproducibility_hooks": "results/problem_statement.md :: The same scenario bundle can be replayed across at least two runtimes or numeric targets with documented tolerances and failure cases.",
+                "scenario_benchmark_metadata": "results/problem_statement.md :: Make the benchmark pack part of the contribution, not supporting material."
+            },
         },
         "expected_metrics": config.expected_metrics,
         "diagnostics": diagnostics,
     }
+    result["metadata"]["roundtrip"] = roundtrip_error(config)
+    result["metadata"]["terminal_state_fingerprint"] = terminal_state_fingerprint(result)
+    result["metadata"]["trajectory_fingerprint"] = trajectory_fingerprint(result)
+    return result
