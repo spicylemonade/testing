@@ -2,6 +2,8 @@
 
 Update this file throughout the run. If you discover a branch that is already well-covered by prior work, document it here and pivot rather than repeating it.
 
+- Delegated citation-mining memo: `results/literature/literature_graph_memo.md`
+
 ## 1. Louisville Seamount Trail: implications for geodynamic mantle flow models and the geochemical evolution of primary hotspots (2011)
 - Paper ID: 775cbec780f290f31002251f3b59b98d805c77f1
 - Why it is close: It is not mathematically close; it entered the watchlist through lexical overlap on words such as `sequence`, `homogeneous`, and `numbers`.
