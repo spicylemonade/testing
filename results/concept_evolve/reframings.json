@@ -1,0 +1,148 @@
+{
+  "problem": "Characterize real numbers r such that floor(n r) has an infinite subsequence satisfying a homogeneous linear recurrence; seek negative-space hypotheses avoiding standard Beatty/Sturmian/continued-fraction approaches.",
+  "framings": [
+    {
+      "domain": "systems theory and control",
+      "reframing": "Treat b_k = floor(n_k r) as the output of a scalar autonomous LTI system. Existence of a homogeneous recurrence means the infinite Hankel matrix built from b_k has finite rank and admits a Ho-Kalman style realization.",
+      "key_insight": "This shifts attention from word complexity to McMillan degree. A negative-space hypothesis is that for irrational r with no hidden algebraic renormalization, every admissible sampled trace has growing Hankel rank because the bounded carry term {n_k r} behaves like irreducible model error rather than finite-state dynamics.",
+      "suggested_technique": "Use finite Hankel-rank tests, vanishing Hankel minors, and Ho-Kalman or low-rank Hankel realization methods.",
+      "mapping_back": "If every candidate subsequence of floor(n r) has infinitely many nonzero Hankel minors, then no homogeneous recurrence exists. Conversely, any low-rank Hankel witness gives a concrete finite-dimensional algebraic model for the subsequence.",
+      "candidate_folder_name": "systems_control_hankel"
+    },
+    {
+      "domain": "signal processing and spectral estimation",
+      "reframing": "Interpret a recurrent subsequence as a signal with an annihilating filter: after characteristic-root decomposition it is a finite sum of exponentials or polynomial-exponentials, exactly the regime of Prony, MUSIC, and ESPRIT.",
+      "key_insight": "Prony-type models are rigid. Since floor(n_k r) = r n_k - {n_k r}, the sampled data is a near-linear trend plus bounded phase noise, and sparse spectral methods suggest that only highly nongeneric sampling times could make this noise collapse into a finite pole set.",
+      "suggested_technique": "Apply Prony's method or annihilating-filter analysis to classify possible characteristic roots, then compare them with monotone near-linear growth.",
+      "mapping_back": "A successful recurrence would imply a finite pole set for b_k. Showing that the carry term forces broadband or non-annihilatable behavior rules out recurrent subsequences except in degenerate algebraic cases.",
+      "candidate_folder_name": "sparse_spectral_prony"
+    },
+    {
+      "domain": "generating functions and analytic combinatorics",
+      "reframing": "Ask whether some extracted series G(z) = sum_{k>=0} floor(n_k r) z^k is rational. Homogeneous recurrences are exactly rational ordinary generating functions, and Kronecker or Hadamard machinery tests rationality via finite-rank Hankel structure and coefficientwise operations.",
+      "key_insight": "The negative-space heuristic is that irrational-slope floor data should produce sections with natural-boundary or nonrational singular behavior unless the extraction hides a very rigid algebraic pattern.",
+      "suggested_technique": "Use rationality criteria for power series, Kronecker finite-rank tests, and Hadamard quotient techniques.",
+      "mapping_back": "Instead of reasoning about words, prove that every admissible extracted generating series is nonrational. That immediately excludes homogeneous recurrences.",
+      "candidate_folder_name": "generating_function_rationality"
+    },
+    {
+      "domain": "p-adic arithmetic dynamics",
+      "reframing": "View a putative recurrence as producing p-adically analytic zero conditions. Skolem-Mahler-Lech says zeros of linear recurrences are eventually finite unions of arithmetic progressions, and standard proofs pass through p-adic interpolation.",
+      "key_insight": "This suggests a negative-space hypothesis: if floor(n r) had a recurrent subsequence, the induced vanishing relations should force p-adic periodicity or semilinearity in the index set, something generic irrational rotations should resist.",
+      "suggested_technique": "Use p-adic interpolation, Strassmann-type arguments, and Skolem-Mahler-Lech reasoning on recurrence-derived difference sequences.",
+      "mapping_back": "Convert the recurrence into infinite vanishing of an auxiliary sequence built from floor(n_k r). If p-adic methods force eventual periodicity in k or n_k, compare that with the distribution of fractional parts {n r}.",
+      "candidate_folder_name": "padic_skolem_mahler_lech"
+    },
+    {
+      "domain": "Diophantine approximation and transcendence theory",
+      "reframing": "After characteristic-root decomposition, any recurrent subsequence is an exponential polynomial E_k with floor(n_k r) = E_k. Since E_k = r n_k + O(1), one gets infinitely many near-equalities between structured algebraic quantities and multiples of r.",
+      "key_insight": "This replaces continued fractions by multiplicative dependence. Baker-Wustholz bounds and the Subspace Theorem are built to show that repeated near-cancellations among algebraic exponentials only happen when hidden algebraic relations exist.",
+      "suggested_technique": "Use linear forms in logarithms and Subspace-Theorem arguments for power sums or S-unit type equations.",
+      "mapping_back": "If one proves that ||r n_k - E_k|| cannot stay in [0,1) for infinitely many k unless r and the dominant characteristic roots satisfy exceptional algebraic relations, the original problem reduces to classifying those exceptional r.",
+      "candidate_folder_name": "diophantine_transcendence"
+    },
+    {
+      "domain": "ergodic theory and sparse equidistribution",
+      "reframing": "Treat floor(n r) as a coding of an irrational rotation and the selected indices n_k as a sparse sampling schedule. The question becomes whether a sparse rotation code can look rigid enough to collapse to a finite-dimensional recurrence.",
+      "key_insight": "Rigidity-sequence theory and sparse equidistribution on rotations or nilmanifolds suggest that most sparse schedules still spread mass rather than create repeated near-returns. A negative-space hypothesis is that recurrent subsequences would require n_k to behave like a rigidity sequence for the rotation by r.",
+      "suggested_technique": "Use rigidity-sequence criteria, sparse equidistribution estimates, and nilsequence comparison.",
+      "mapping_back": "Analyze {n_k r}. If those fractional parts remain equidistributed or sufficiently nonrigid, the bounded carry term cannot conspire with r n_k to satisfy a fixed recurrence.",
+      "candidate_folder_name": "ergodic_sparse_rigidity"
+    },
+    {
+      "domain": "aperiodic order and quasicrystals",
+      "reframing": "The graph {(n, floor(n r))} is a lattice slice in a width-1 strip, i.e. a model-set or cut-and-project picture. A recurrent subsequence would be a highly self-similar sub-pattern inside that quasicrystalline point set.",
+      "key_insight": "Model-set theory ties exact self-similarity to Pisot or substitution phenomena and Meyer-set rigidity. The negative-space guess is that only slopes supporting a hidden self-similar window could contain an infinite recurrence-compatible subset.",
+      "suggested_technique": "Use cut-and-project or model-set tools, Meyer-set criteria, and Pisot-scaling or substitution renormalization tests.",
+      "mapping_back": "Translate the selected points (n_k, floor(n_k r)) into a projected lattice subset. If no self-similar window or renormalization exists, rule out recurrence on geometric grounds.",
+      "candidate_folder_name": "cut_project_quasicrystal"
+    },
+    {
+      "domain": "geometry of numbers and lattice-point counting",
+      "reframing": "Study points (n_k, b_k) with b_k = floor(n_k r) as lattice points trapped in the strip 0 <= r x - y < 1. A recurrent subsequence becomes a structured parametric family of lattice points living forever in a strip of width 1.",
+      "key_insight": "Thin-sector and thin-strip counting results are sensitive to the Diophantine type of the slope. This suggests a negative-space hypothesis that recurrence-generated parametrizations cannot keep hitting such a strip infinitely often unless the slope has exceptionally tame approximation properties or the recurrence degenerates to polynomial growth.",
+      "suggested_technique": "Use lattice-point counting in thin sectors or tilted rectangles, discrepancy bounds, and parametric geometry-of-numbers estimates.",
+      "mapping_back": "Write the recurrence values as a structured curve k -> (n_k, b_k) and show that its intersection with the strip must be finite for generic r.",
+      "candidate_folder_name": "geometry_of_numbers_strip"
+    },
+    {
+      "domain": "model theory and Presburger expansions",
+      "reframing": "Work in the structure of integers expanded by the Beatty graph or Beatty set for r. An infinite recurrence subsequence asks whether that structure interprets an infinite semilinear or module-like fragment inside {(n, floor(n r))}.",
+      "key_insight": "Presburger-definable sets are semilinear or ultimately periodic, while recent model-theoretic work on expansions by Beatty sequences isolates how much extra structure irrational floor maps add. The negative-space hypothesis is that any recurrent subsequence would force a definable periodic core that only very special slopes can support.",
+      "suggested_technique": "Use quantifier elimination or definability results for Beatty-sequence expansions together with Muchnik's definable criterion for Presburger definability.",
+      "mapping_back": "Formalize the recurrence relation and the selector set inside the Beatty expansion. If that would make the selector semilinear or ultimately periodic, compare with known non-Presburger behavior to exclude generic r.",
+      "candidate_folder_name": "model_theory_presburger_beatty"
+    },
+    {
+      "domain": "additive combinatorics and higher-order Fourier analysis",
+      "reframing": "Reduce candidate subsequences modulo many q and ask whether k -> floor(n_k r) mod q exhibits the strong structured correlations characteristic of low-complexity linear recurrences.",
+      "key_insight": "Large Gowers U^d norms and inverse theorems detect hidden nilsequence structure. The negative-space hypothesis is that sparse samples of an irrational rotation remain too Gowers-uniform, across many moduli, to sustain a nontrivial recurrence.",
+      "suggested_technique": "Estimate Gowers norms or nilsequence correlations of floor(n_k r) modulo q and apply inverse theorems when the norms are large.",
+      "mapping_back": "If every modular reduction of any admissible subsequence looks higher-order uniform rather than nilsequence-like, then no fixed constant-coefficient recurrence can survive integrally.",
+      "candidate_folder_name": "higher_order_fourier"
+    }
+  ],
+  "timestamp": "2026-03-11T22:41:23.680062+00:00",
+  "input_fingerprint": "3bcb97b7453367d609fe4833c472d6dce7f94db9637ae671ed738d4674169a60",
+  "input_context": {
+    "command": "reframe",
+    "topic": "characterize real numbers r such that floor(n r) has an infinite subsequence satisfying a homogeneous linear recurrence; seek negative-space hypotheses avoiding standard beatty/sturmian/continued-fraction approaches.",
+    "context": [
+      {
+        "path": "results/research_context.md",
+        "exists": true,
+        "sha256": "5723aaa80f9f8cfeb8ec1eb83adf817acd8141cb96a2012dbf9bfd90645980bc"
+      },
+      {
+        "path": "results/literature/prior_art_watchlist.md",
+        "exists": true,
+        "sha256": "396f902177c8936d55ac9043b17b0bb8e56cb89639d2655329931d713c6ace35"
+      },
+      {
+        "path": "results/literature/prior_art_gap.md",
+        "exists": true,
+        "sha256": "19be0b00f9cc15fb9ae9549fcb1a9bd6a82ea8d6150e6ac8cbf9993cb261295b"
+      },
+      {
+        "path": "results/literature/semantic_scholar_manifest.json",
+        "exists": true,
+        "sha256": "4ae62687447e9030ae30f19b9a29115cad8047e2eafd1bb8ce607fa20167b150"
+      },
+      {
+        "path": "results/swarm/director_brief.md",
+        "exists": false,
+        "sha256": ""
+      },
+      {
+        "path": "results/swarm/hypotheses.json",
+        "exists": false,
+        "sha256": ""
+      },
+      {
+        "path": "results/swarm/tool_plan.md",
+        "exists": false,
+        "sha256": ""
+      },
+      {
+        "path": "results/swarm/falsifier.md",
+        "exists": false,
+        "sha256": ""
+      },
+      {
+        "path": "results/concept_evolve/probe_result.json",
+        "exists": false,
+        "sha256": ""
+      },
+      {
+        "path": "results/concept_evolve/concept_delta.md",
+        "exists": false,
+        "sha256": ""
+      },
+      {
+        "path": "results/verification/verification_summary.md",
+        "exists": false,
+        "sha256": ""
+      }
+    ]
+  }
+}
