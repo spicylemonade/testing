@@ -1,0 +1,453 @@
+[
+  {
+    "symbolic_name": "ostrowski_synchronized_subsequence_search",
+    "description": "Quadratic irrationals already admit synchronized descriptions of Beatty membership via Ostrowski numeration. This card turns that machinery into a search engine for hidden homogeneous linear recurrences inside floor(n*r) by treating both the selector n_k and the recurrence witness as automata-readable objects.",
+    "domains": [
+      "automata theory",
+      "Diophantine approximation",
+      "number theory"
+    ],
+    "mathematical_formalization": "Fix a quadratic irrational r. Search for d >= 1, integers c_0,...,c_d with c_d != 0, and an increasing selector n_0 < n_1 < ... such that y_k = floor(r*n_k) and sum_{i=0}^d c_i*y_{k+i} = 0 for all k >= K. Encode (k,n_k,y_k) in Ostrowski numeration so the relation y = floor(r*n) and monotonicity of the selector are recognized by finite automata.",
+    "analogical_connections": [
+      "Use Ostrowski digits as a hardware clock for candidate subsequences.",
+      "Treat the Beatty sequence as a synchronized stream and the recurrence as a regular-language invariant.",
+      "Turn continued fractions into a compiler target for recurrence witnesses."
+    ],
+    "implementation_hypothesis": "Use Walnut or Pecan style automata over Ostrowski representations of a quadratic r. Enumerate recurrence orders d <= 4 and coefficient boxes |c_i| <= C, encode selector families by transducers, and ask for an accepting run that certifies an exact recurrence.",
+    "experiment_seed": "Start with r in {phi, sqrt(2), 1+sqrt(2), (3+sqrt(5))/2}. For each r, search selectors of automaton size <= 6 and recurrence order <= 4, then record the smallest exact witness or a proof that the tested template family fails.",
+    "closest_prior_art": [
+      {
+        "title": "Beatty Sequences for a Quadratic Irrational: Decidability and Applications",
+        "paperId": "74492951ce0e23319ffde058fc107cefc4488d0e"
+      },
+      {
+        "title": "Ostrowski-automatic sequences: Theory and applications",
+        "paperId": "60d51405e92dd39f0836d04dbbe88f5904b094b3"
+      },
+      {
+        "title": "Decidability for Sturmian words",
+        "paperId": "9db8fdff7bca15077834c62d6051340e5e06180b"
+      }
+    ],
+    "novelty_claim": "The new step is not merely deciding Beatty membership or first-order Beatty properties; it uses synchronized numeration as a witness generator for exact LRS subsequences.",
+    "differentiation": "Existing automata papers stop at definability and decidability of Beatty or Sturmian relations. This proposal adds a recurrence-template search layer that outputs candidate subsequences and orders, not just yes or no membership answers.",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/001_ostrowski_synchronized_subsequence_search",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "presburger_recurrence_oracle",
+    "description": "Automatic theorem provers already decide rich theories of Sturmian and Beatty structures in special cases. This card repackages the special numbers problem as a family of first-order search and decision tasks so that conjectures about exact recurrence orders can be machine-generated rather than hand-guessed.",
+    "domains": [
+      "logic",
+      "automated theorem proving",
+      "Beatty arithmetic"
+    ],
+    "mathematical_formalization": "In a structure M_r extending (N,+,<) with a predicate or function for floor(n*r), express formulas of the form: there exist d, c_0,...,c_d, and an increasing selector n_k such that y_k = floor(r*n_k) and sum_{i=0}^d c_i*y_{k+i} = 0. For quadratic r, use an Ostrowski-synchronized presentation; for tame axiomatized Beatty expansions, use the model-complete presentations when available.",
+    "analogical_connections": [
+      "Use a theorem prover as a wind tunnel for recurrence templates.",
+      "Turn a subsequence classification question into a satisfiability landscape.",
+      "Treat recurrence certificates as machine-checkable proofs rather than hand-constructed examples."
+    ],
+    "implementation_hypothesis": "Generate formulas for fixed d, coefficient tuples, and selector schemas, then feed them to Walnut or Pecan on decidable Beatty or Sturmian presentations. Cache UNSAT templates to build a forbidden-pattern atlas and SAT templates to recover explicit examples.",
+    "experiment_seed": "Run the oracle first on the golden ratio and silver ratio, then compare with a transcendental-axiomatized Beatty case. The expected output is a template table separating easy rational or quadratic cases from apparently structureless ones.",
+    "closest_prior_art": [
+      {
+        "title": "Decidability for Sturmian words",
+        "paperId": "9db8fdff7bca15077834c62d6051340e5e06180b"
+      },
+      {
+        "title": "Model-completeness and decidability of the additive structure of integers expanded with a function for a Beatty sequence",
+        "paperId": "e2ab0ff0760958d37dcde2ddb5292d9784a74f0b"
+      },
+      {
+        "title": "Expansions of the group of integers by Beatty sequences",
+        "paperId": "71157b4e3492593ee91953f91f660c81f13b388c"
+      }
+    ],
+    "novelty_claim": "The novelty is the workflow: decidable Beatty theories become an experimental oracle for the subsequence problem, not just a source of ambient structure theorems.",
+    "differentiation": "Prior logic papers prove decidability of whole structures. This card uses that decidability to enumerate, accept, and reject candidate recurrence patterns in the specific Beatty subsequence problem.",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/002_presburger_recurrence_oracle",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "generalized_polynomial_intersection_obstruction",
+    "description": "Beatty sets and many sparse recurrence-value sets live in the generalized-polynomial world, but not all such intersections are allowed. This card asks whether an LRS subsequence exists only when the LRS value set is generalized-polynomial compatible with the Beatty set, shifting the problem from direct construction to structural obstruction.",
+    "domains": [
+      "generalized polynomial theory",
+      "symbolic dynamics",
+      "Diophantine geometry"
+    ],
+    "mathematical_formalization": "Let B_r = {floor(n*r) : n >= 1}. If an LRS subsequence y_k exists, then Y = {y_k} is an infinite subset of B_r and its indicator behaves like the intersection of a Beatty generalized-polynomial set with an LRS value set. Test whether 1_Y, or a selector surrogate for Y, can still be generalized polynomial, and use sparse-GP obstructions to rule out generic intersections.",
+    "analogical_connections": [
+      "Think of the problem as a collision of two low-complexity grammars.",
+      "Overlay a cut-and-project set with a state-space orbit and ask when the overlap stays structured.",
+      "Use generalized polynomials as a type system for admissible subsequence values."
+    ],
+    "implementation_hypothesis": "Build a library of candidate LRS value sets such as Fibonacci, Lucas, Tribonacci, Pell, and Salem-type sequences, then numerically test their intersections with B_r across rational, quadratic, Pisot, and random r. Where intersections persist, attempt to reverse-engineer a generalized-polynomial selector suggested by known Pisot constructions.",
+    "experiment_seed": "For each candidate r, compute Y_N = B_r intersect {u_k : u_k <= N} for several LRS families. Compare the observed growth with finite, logarithmic, power-law, and substitution-like patterns.",
+    "closest_prior_art": [
+      {
+        "title": "Sparse generalised polynomials",
+        "paperId": "352a36ff547769f41b9a06e2a153f14869312eb8"
+      },
+      {
+        "title": "Pisot numbers, Salem numbers, and generalised polynomials",
+        "paperId": "945bf0b906b8a3273f821db634b506879566566f"
+      },
+      {
+        "title": "Bracket words: A generalisation of Sturmian words arising from generalised polynomials",
+        "paperId": "3e68c8006cb2bc75d36e8bbd84fd1a82eaae702d"
+      }
+    ],
+    "novelty_claim": "The new angle is to treat hidden recurrences in floor(n*r) as an intersection-complexity problem between generalized-polynomial and LRS worlds.",
+    "differentiation": "Prior work classifies generalized-polynomial objects or specific LRS value sets individually. This card studies when their overlap can encode an exact subsequence inside a Beatty sequence.",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/003_generalized_polynomial_intersection_obstruction",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "skolem_automatic_intersection_filter",
+    "description": "Skolem-Mahler-Lech gives arithmetic-progression structure for zero sets of linear recurrences, and automatic Beatty presentations turn membership into finite-state constraints. This card combines them into a rejection filter: many candidate LRS templates should fail because the required Beatty-intersection pattern cannot simultaneously look progression-like and automatic in the right coordinates.",
+    "domains": [
+      "recurrence sequence theory",
+      "automata theory",
+      "arithmetic geometry"
+    ],
+    "mathematical_formalization": "Given an LRS u_k and Beatty set B_r, study S = {k : u_k in B_r}. Use algebraic relations among shifted tuples of the recurrence to derive SML-type arithmetic constraints, then intersect those constraints with automata or numeration constraints defining B_r or y = floor(r*n). The heuristic prediction is that infinite S must lie in a very small family of progression-compatible selector languages.",
+    "analogical_connections": [
+      "Sieve arithmetic progressions against DFA traces.",
+      "Cross p-adic regularity with finite-state regularity.",
+      "Treat a recurrence witness as an orbit-intersection problem with two incompatible symmetries."
+    ],
+    "implementation_hypothesis": "For fixed LRS families, derive modular and p-adic necessary conditions on membership in B_r. Intersect those conditions with Beatty automata or Ostrowski recognizers and discard templates whose admissible k-set collapses to a finite or inconsistent progression pattern.",
+    "experiment_seed": "Start with Fibonacci, Pell, and Tribonacci values against B_r for r in {phi, sqrt(2), plastic constant, random algebraic}. Measure how quickly modular filters eliminate candidate selectors before any exhaustive search.",
+    "closest_prior_art": [
+      {
+        "title": "A Generalised Skolem-Mahler-Lech Theorem for Affine Varieties",
+        "paperId": "a14e28b77b148c3f351936f109820a3a88950037"
+      },
+      {
+        "title": "A Skolem-Mahler-Lech theorem in positive characteristic and finite automata",
+        "paperId": "6b07357c75ab7826e36cf9e2758dc491cee20211"
+      },
+      {
+        "title": "Beatty Sequences for a Quadratic Irrational: Decidability and Applications",
+        "paperId": "74492951ce0e23319ffde058fc107cefc4488d0e"
+      }
+    ],
+    "novelty_claim": "Skolem-Mahler-Lech is used here as a pre-filter for Beatty subsequence existence, not only as a theorem about zeros of a known recurrence.",
+    "differentiation": "Existing SML papers analyze recurrence zero sets or affine-orbit intersections in isolation. This proposal couples them to automatic Beatty membership and subsequence search.",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/004_skolem_automatic_intersection_filter",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "convergent_hankel_detector",
+    "description": "A hidden homogeneous recurrence leaves a low-rank Hankel fingerprint, even when viewed through sparse or irregular samples. This card samples floor(n*r) on continued-fraction convergents and feeds the samples to Prony or Hankel machinery, betting that quadratic or Pisot-type r expose exact low-rank blocks while generic r only show noisy near-rank deficiency.",
+    "domains": [
+      "signal processing",
+      "continued fractions",
+      "computational number theory"
+    ],
+    "mathematical_formalization": "Let q_j be denominators of convergents to r and define x_j = floor(q_j*r) or x_j^(m,ell) = floor(q_{m*j+ell}*r). Search for d such that the Hankel matrices H_d(a,b) = x_{a+b} have bounded exact rank. Exact rank collapse implies that the sampled subsequence satisfies a homogeneous linear recurrence.",
+    "analogical_connections": [
+      "Use Hankel rank as a seismograph for arithmetic self-similarity.",
+      "Treat convergents as compressed sensors tuned to the slope.",
+      "Turn continued fractions into an adaptive acquisition protocol."
+    ],
+    "implementation_hypothesis": "Compute convergent blocks for candidate r, build exact integer Hankel matrices, and run matrix-pencil or Prony reconstruction. If an annihilating polynomial emerges, validate it symbolically on longer blocks and map the witness back to the original Beatty subsequence.",
+    "experiment_seed": "Benchmark rational, quadratic irrational, plastic-constant, and random-real inputs. Record exact Hankel rank, recovered order, and failure modes under different block choices (m, ell).",
+    "closest_prior_art": [
+      {
+        "title": "Learning algebraic decompositions using Prony structures",
+        "paperId": "a87683c0a5bfd0d50927b45c7994b04cc1088c64"
+      },
+      {
+        "title": "The Generalized Operator Based Prony Method",
+        "paperId": "342ed71a75d859bb7830916a589af527aa3f8296"
+      },
+      {
+        "title": "Beatty Sequences for a Quadratic Irrational: Decidability and Applications",
+        "paperId": "74492951ce0e23319ffde058fc107cefc4488d0e"
+      }
+    ],
+    "novelty_claim": "The novelty is to redirect Prony-style recovery from classical exponential sums to convergent-sampled Beatty arithmetic.",
+    "differentiation": "Signal-processing papers reconstruct sparse exponential models from samples. This card instead derives the samples from continued fractions and uses low-rank detection to hunt hidden recurrences inside floor(n*r).",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/005_convergent_hankel_detector",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "annihilating_filter_quantization",
+    "description": "The floor map is a quantizer, so floor(n*r) is a linear signal plus structured clipping noise. This card searches for selectors n_k whose residue sequence {n_k*r} is itself annihilable, so that the quantized values inherit an exact homogeneous recurrence after the noise cancels.",
+    "domains": [
+      "signal processing",
+      "Beatty sequences",
+      "approximation theory"
+    ],
+    "mathematical_formalization": "Write y_k = floor(n_k*r) = r*n_k - eps_k with eps_k = {n_k*r} in [0,1). Seek coefficients c_i such that sum_i c_i*n_{k+i} = 0 and sum_i c_i*eps_{k+i} = 0, hence sum_i c_i*y_{k+i} = 0. The problem becomes simultaneous annihilation of a selector trajectory and its quantization residue.",
+    "analogical_connections": [
+      "Cancel clock jitter rather than model the whole waveform.",
+      "Find a clipping pattern with a built-in inverse filter.",
+      "Align arithmetic sampling with residue-phase locking."
+    ],
+    "implementation_hypothesis": "Generate candidate selectors from convergents, Bohr sets, and substitution blocks; compute exact residue vectors and solve small integer linear systems for annihilating filters. Use lattice reduction to prioritize selectors where residues cluster on a low-dimensional torus.",
+    "experiment_seed": "Compare selectors built from q_j, Fibonacci indices, and bounded-remainder windows for r in {phi, sqrt(2), plastic constant, random badly approximable}. Track exact cancellations versus near-cancellations.",
+    "closest_prior_art": [
+      {
+        "title": "Learning algebraic decompositions using Prony structures",
+        "paperId": "a87683c0a5bfd0d50927b45c7994b04cc1088c64"
+      },
+      {
+        "title": "Reconstruction of stationary and non-stationary signals by the generalized Prony method",
+        "paperId": "40aa1637440fc9d10d8ffa8eeba8d9d3bb9e4568"
+      },
+      {
+        "title": "Generalized Beatty sequences and complementary triples",
+        "paperId": "99423440cb26736fac8589d091008d2118a1bcc0"
+      }
+    ],
+    "novelty_claim": "The direct target is the quantization-error sequence, not the Beatty values alone.",
+    "differentiation": "Generalized Prony papers handle sparse signals with structured samples. This proposal treats the floor nonlinearity as a structured noise source to be neutralized by arithmetic selector design.",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/006_annihilating_filter_quantization",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "substitution_return_word_compiler",
+    "description": "The first-difference word of a Beatty sequence is mechanical, and for bounded-type slopes it is linearly recurrent as a word even when the arithmetic values are not obviously recurrent. This card compiles return words, substitution blocks, and their abelianized counts into candidate cumulative-sum subsequences whose values may fall onto a one-dimensional recurrence eigenspace.",
+    "domains": [
+      "combinatorics on words",
+      "formal languages",
+      "linear algebra"
+    ],
+    "mathematical_formalization": "Let Delta_n = floor((n+1)*r) - floor(n*r). Build the return-word system on the mechanical word Delta. For selected concatenation blocks w_k, define y_k as the cumulative sum up to the end of w_k. If the abelianization vectors of w_k evolve by a primitive substitution matrix M and project to a one-dimensional eigenspace, then y_k may obey a homogeneous LRS.",
+    "analogical_connections": [
+      "Compile a symbolic grammar into arithmetic totals.",
+      "Turn return words into macro-instructions whose cumulative cost is recurrent.",
+      "Use substitution matrices as transfer functions from words to values."
+    ],
+    "implementation_hypothesis": "Compute return words for rational approximants of the slope, estimate the incidence matrix, and search for block families whose prefix-sum projections satisfy a fixed companion matrix. Validate by reconstructing the corresponding indices n_k in the Beatty sequence.",
+    "experiment_seed": "Test the Fibonacci and silver-ratio cases first, then non-quadratic bounded-type slopes. Measure whether exact recurrences survive when return-word blocks are grown by substitution depth.",
+    "closest_prior_art": [
+      {
+        "title": "Generalized Beatty sequences and complementary triples",
+        "paperId": "99423440cb26736fac8589d091008d2118a1bcc0"
+      },
+      {
+        "title": "Sturmian numeration systems and decompositions to palindromes",
+        "paperId": "31a0025e468f7d7c604ea3ca3227a102aa00ff87"
+      },
+      {
+        "title": "Substitution Invariant Sturmian Words and Binary Trees",
+        "paperId": "3c63b09bb62adda5ad09d0abc336d0b0d24301e7"
+      }
+    ],
+    "novelty_claim": "The bridge is from symbolic linear recurrence of the difference word to arithmetic linear recurrence of cumulative Beatty values.",
+    "differentiation": "Prior Sturmian and substitution papers analyze word structure, numeration, or complementary sequences. This card compiles those objects into candidate LRS subsequences of numeric Beatty values.",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/007_substitution_return_word_compiler",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "rauzy_window_recurrence_lift",
+    "description": "Rauzy tilings tie Pisot numeration, toral rotations, and bounded remainder sets to linear-recurrence geometry. This card uses self-similar windows in Rauzy space as a geometric selector for Beatty values, lifting orbit hits on tile boundaries into arithmetic subsequences that may inherit Pisot recurrences.",
+    "domains": [
+      "tilings",
+      "ergodic theory",
+      "algebraic number theory"
+    ],
+    "mathematical_formalization": "Embed candidate indices as orbit points under a toral rotation and choose subsequences by hits into a nested self-similar family of Rauzy windows W_k. If window endpoints or tile addresses evolve by a Pisot substitution matrix M, then the selected Beatty values y_k = floor(n_k*r) are expected to satisfy y_{k+d} = sum_{i<d} a_i*y_{k+i} along the induced symbolic itinerary.",
+    "analogical_connections": [
+      "Tile boundaries act as recurrence resonators.",
+      "A toral orbit is cut by a fractal stencil.",
+      "Bounded remainder windows become exact arithmetic samplers."
+    ],
+    "implementation_hypothesis": "Construct Rauzy or generalized Rauzy tiles for small Pisot units, simulate orbit hits, and collect the associated Beatty values. Fit substitution matrices on tile addresses, then verify whether the sampled values satisfy the same characteristic polynomial.",
+    "experiment_seed": "Use the golden ratio and plastic constant as first test cases. Compare arbitrary window hits against self-similar boundary hits to see whether only the latter produce exact low-order recurrences.",
+    "closest_prior_art": [
+      {
+        "title": "Generalized Rauzy tilings and linear recurrence sequences",
+        "paperId": "0354e145b397be098c4ddcecd337be8455e59486"
+      },
+      {
+        "title": "Pisot numbers, Salem numbers, and generalised polynomials",
+        "paperId": "945bf0b906b8a3273f821db634b506879566566f"
+      },
+      {
+        "title": "Generalized Beatty sequences and complementary triples",
+        "paperId": "99423440cb26736fac8589d091008d2118a1bcc0"
+      }
+    ],
+    "novelty_claim": "Rauzy windows are promoted from geometric background to explicit selectors for Beatty subsequence extraction.",
+    "differentiation": "Rauzy papers geometrize linear-recurrence numeration and bounded remainder sets. This proposal pulls an exact subsequence extraction problem back through that geometry.",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/008_rauzy_window_recurrence_lift",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "pisot_beta_endpoint_sampler",
+    "description": "Known generalized-polynomial constructions show that some Pisot or Salem linear-recurrence value sets are definable by floor expressions. This card reverses the arrow: choose indices from beta-endpoint numeration systems and test whether Beatty values sampled on those endpoints become exact LRS, potentially exposing a Pisot-only extension beyond the quadratic or Ostrowski world.",
+    "domains": [
+      "beta-numeration",
+      "Pisot theory",
+      "quasicrystals"
+    ],
+    "mathematical_formalization": "Let beta > 1 be a Pisot unit with associated linear-recurrence numeration G_n. Choose indices n_k whose greedy beta-expansion terminates in a fixed endpoint or cylinder pattern, or whose Rauzy address lies on a fixed face. Study y_k = floor(r*n_k) and test whether y_k satisfies the characteristic polynomial of G_n or a factor of it.",
+    "analogical_connections": [
+      "Use beta-endpoints as crystal defects that amplify hidden recurrence.",
+      "Treat Pisot numeration as a non-quadratic cousin of Ostrowski coding.",
+      "Sample along self-similar faces of a quasicrystal."
+    ],
+    "implementation_hypothesis": "Generate G_n and greedy beta expansions for small Pisot units, enumerate endpoint-constrained indices, and test the resulting Beatty values with exact Hankel and companion-matrix checks. If a recurrence candidate appears, search for a symbolic explanation via tile addresses.",
+    "experiment_seed": "Try beta in {phi, 1+sqrt(2), plastic constant}. Compare endpoint-conditioned samples with random beta-digit samples as a control.",
+    "closest_prior_art": [
+      {
+        "title": "Pisot numbers, Salem numbers, and generalised polynomials",
+        "paperId": "945bf0b906b8a3273f821db634b506879566566f"
+      },
+      {
+        "title": "Generalized Rauzy tilings and linear recurrence sequences",
+        "paperId": "0354e145b397be098c4ddcecd337be8455e59486"
+      },
+      {
+        "title": "Sparse generalised polynomials",
+        "paperId": "352a36ff547769f41b9a06e2a153f14869312eb8"
+      }
+    ],
+    "novelty_claim": "Endpoint-conditioned Beatty sampling is proposed as a way to discover higher-degree algebraic special numbers.",
+    "differentiation": "Existing Pisot and generalized-polynomial work shows that some LRS value sets are floor-definable. This card asks whether such numeration endpoints can generate exact subsequences inside an external Beatty sequence.",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/009_pisot_beta_endpoint_sampler",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "beatty_model_complete_obstruction",
+    "description": "Several Beatty expansions of the additive integers are now axiomatized or model-complete, which sharply constrains how sparse definable subsets can look. This card uses those tame theories as an obstruction engine: if every definable sparse set in a given Beatty structure is trivial or tightly structured, then a hidden LRS subsequence should force r into a narrow algebraic corridor.",
+    "domains": [
+      "model theory",
+      "additive combinatorics",
+      "Beatty arithmetic"
+    ],
+    "mathematical_formalization": "Work in structures such as (Z,+,P_r) or (Z,+,f_r), where P_r(n) iff n belongs to B_r and f_r(x) = floor(r*x). If an infinite LRS subsequence Y subset B_r is definable, or selector-definable, inside a tame theory with quantifier elimination or model-completeness, derive necessary forms for Y from the classified definable sets and compare them with sparse recurrence-value growth.",
+    "analogical_connections": [
+      "Model-completeness acts like a no-room theorem for exotic sparse sets.",
+      "Beatty arithmetic becomes a tame language that rejects irregular hidden melodies.",
+      "Definable sparsity works like a phase diagram for admissible subsequences."
+    ],
+    "implementation_hypothesis": "Extract quantifier-free normal forms from known Beatty theories and test whether candidate LRS value sets or selector sets fit them. Where the normal forms only yield finite unions of dense arithmetic pieces, rule out genuine sparse LRS subsequences.",
+    "experiment_seed": "Compare quadratic, transcendental-axiomatized, and golden-ratio-floor structures. Ask whether Fibonacci or Pell value sets can be defined or approximated in each setting.",
+    "closest_prior_art": [
+      {
+        "title": "Expansions of the group of integers by Beatty sequences",
+        "paperId": "71157b4e3492593ee91953f91f660c81f13b388c"
+      },
+      {
+        "title": "Model-completeness and decidability of the additive structure of integers expanded with a function for a Beatty sequence",
+        "paperId": "e2ab0ff0760958d37dcde2ddb5292d9784a74f0b"
+      },
+      {
+        "title": "Fibonacci Numbers and Model-Complete Axiomatization of Presburger Arithmetic Expanded with a Beatty Sequence",
+        "paperId": "c87d7b645610c9b9412dafe492d673424efbd0d0"
+      }
+    ],
+    "novelty_claim": "Model theory is used as a classification obstruction for subsequences, not just as a decidability result about the ambient Beatty structure.",
+    "differentiation": "Existing papers classify definable sets or prove model-completeness of Beatty expansions. This proposal targets the specific sparse-LRS phenomenon and turns tameness into a nonexistence heuristic.",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/010_beatty_model_complete_obstruction",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "rigidity_time_selector",
+    "description": "Rigidity and Bohr-time sequences in rotations describe when fractional parts nearly return to a prescribed phase. This card uses those times as selector candidates for Beatty subsequences, because clustered residues can convert the floor nonlinearity into a bounded-remainder correction on top of a simpler recurrent backbone.",
+    "domains": [
+      "ergodic theory",
+      "discrepancy theory",
+      "dynamical systems"
+    ],
+    "mathematical_formalization": "Choose n_k with ||n_k*r - theta|| tending to 0, or with n_k drawn from a Bohr set around theta. Then floor(n_k*r) = n_k*r - theta - eta_k with eta_k small or bounded by a bounded-remainder window. If n_k also tracks a recurrence numeration or substitution scale, exact recurrence may emerge after correcting by the bounded remainder term.",
+    "analogical_connections": [
+      "Sample only when the torus orbit nearly hits the same gate.",
+      "Use rigidity times as a phase-locked loop for the floor map.",
+      "Bounded remainder sets act like error-correcting buffers."
+    ],
+    "implementation_hypothesis": "Construct selectors from convergent denominators, Bohr neighborhoods, and bounded-remainder windows, then test exact recurrences on the induced Beatty values. Prioritize badly approximable r where discrepancy control is strongest, and compare with Liouville-type controls where near-returns are frequent but unstable.",
+    "experiment_seed": "For r = phi, sqrt(2), a random badly approximable slope, and a Liouville-style proxy, collect rigidity-based selectors and measure exact recurrence hit rates. Compare against random selector baselines of the same density.",
+    "closest_prior_art": [
+      {
+        "title": "Rigidity times for a weakly mixing dynamical system which are not rigidity times for any irrational rotation",
+        "paperId": "f20ac9ecd9f1da69b6ffbb9a21b9af9f15078a27"
+      },
+      {
+        "title": "New Kronecker-Weyl type equidistribution results and Diophantine approximation",
+        "paperId": "b1e853dbd63122efc55109f7df7f95feabce45da"
+      },
+      {
+        "title": "Generalized Rauzy tilings and linear recurrence sequences",
+        "paperId": "0354e145b397be098c4ddcecd337be8455e59486"
+      }
+    ],
+    "novelty_claim": "Rigidity times are used here as explicit selector generators for Beatty-LRS hunting.",
+    "differentiation": "Prior rigidity and discrepancy papers study orbit-return statistics, not exact arithmetic subsequences inside floor(n*r).",
+    "folder_plan": {
+      "folder": "results/concept_evolve/tree/011_rigidity_time_selector",
+      "files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  }
+]
