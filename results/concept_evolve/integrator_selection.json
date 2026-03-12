@@ -1,21 +1,125 @@
 {
+  "generated_at": "2026-03-12",
   "lane_id": "H1_multisource_cold_start",
-  "top_3": [
-    "001_packet_scout_handoff_root",
-    "002_dual_bucket_polarity_split_bootstrap",
-    "003_time_constant_ranked_arbiter"
+  "method": "Saved-artifact-only H1 integrator synthesis from the specified context, literature, swarm, falsifier, and concept-evolve notes. No new broad search.",
+  "materialize_all_top_6": true,
+  "top_3_ranked": [
+    "results/concept_evolve/tree/001_packet_scout_handoff_root",
+    "results/concept_evolve/tree/002_dual_bucket_polarity_split_bootstrap",
+    "results/concept_evolve/tree/003_time_constant_ranked_arbiter"
+  ],
+  "alias_resolution": [
+    {
+      "scout_name": "impedance_ranked_packet_probe",
+      "canonical_folder": "results/concept_evolve/tree/001_packet_scout_handoff_root",
+      "action": "canonicalized"
+    },
+    {
+      "scout_name": "polarity_split_dual_bucket_bootstrap",
+      "canonical_folder": "results/concept_evolve/tree/002_dual_bucket_polarity_split_bootstrap",
+      "action": "canonicalized"
+    },
+    {
+      "scout_name": "anti_backdrive_latched_oring",
+      "canonical_folder": "results/concept_evolve/tree/004_reverse_leakage_vote_or",
+      "action": "canonicalized"
+    },
+    {
+      "scout_name": "uvlo_deglitched_token_handoff",
+      "canonical_folder": "results/concept_evolve/tree/005_tokenized_uvlo_handoff_gate",
+      "action": "canonicalized"
+    },
+    {
+      "scout_name": "dual_path_helperless_startup",
+      "action": "retired_as_standalone",
+      "reason": "Duplicated startup paths and selector leakage push directly into the H1 overhead kill rule, and the framing drifts too close to existing low-voltage and assisted-startup prior art."
+    },
+    {
+      "scout_name": "source_signature_charge_packet_startup",
+      "action": "absorbed_not_materialized",
+      "absorbed_by": [
+        "results/concept_evolve/tree/001_packet_scout_handoff_root",
+        "results/concept_evolve/tree/006_comparatorless_current_probe_bootstrap"
+      ],
+      "reason": "Local signature timing plus packet transfer overlaps the 2023-2024 multi-input extraction family too closely once equal energy accounting is enforced."
+    }
   ],
   "top_6": [
-    "001_packet_scout_handoff_root",
-    "002_dual_bucket_polarity_split_bootstrap",
-    "003_time_constant_ranked_arbiter",
-    "004_reverse_leakage_vote_or",
-    "005_tokenized_uvlo_handoff_gate",
-    "006_comparatorless_current_probe_bootstrap"
+    {
+      "rank": 1,
+      "folder": "results/concept_evolve/tree/001_packet_scout_handoff_root",
+      "symbolic_name": "packet_scout_handoff_root",
+      "materialization_tier": "champion",
+      "standalone_status": "active",
+      "selection_reason": "Only concept that keeps the H1 thesis intact: helper-free source scouting before the main arbiter is alive under heterogeneous ramp, impedance, and polarity conditions.",
+      "novelty_risk": "Collapses if it behaves like ordinary priority OR-ing, threshold ranking, or another generic multi-input startup interface.",
+      "overhead_risk": "Probe energy, sequencing delay, mirror mismatch, or any hidden precharge/helper behavior can erase the gain.",
+      "falsifier_constraint": "Must beat fixed-path and non-source-aware multi-input startup under equal accounting, include mixed-polarity and 1:20 impedance cases, and avoid helper-rail behavior."
+    },
+    {
+      "rank": 2,
+      "folder": "results/concept_evolve/tree/002_dual_bucket_polarity_split_bootstrap",
+      "symbolic_name": "dual_bucket_polarity_split_bootstrap",
+      "materialization_tier": "narrow_fallback",
+      "standalone_status": "active_if_mixed_polarity_drives_the_gap",
+      "selection_reason": "Best backup if mixed-polarity cold start remains the unresolved regime not covered by the closest recent multi-input piezo interfaces.",
+      "novelty_risk": "Collapses if one bucket acts like a helper reservoir or if a simple rectifier or ideal-diode baseline removes the advantage.",
+      "overhead_risk": "Two scout buckets, merge clamps, and cross-coupled control can dominate below 50 mV; leakage can erase polarity separation.",
+      "falsifier_constraint": "Keep only if mixed-polarity cases remain central and merge-control energy stays below the startup benefit."
+    },
+    {
+      "rank": 3,
+      "folder": "results/concept_evolve/tree/003_time_constant_ranked_arbiter",
+      "symbolic_name": "time_constant_ranked_arbiter",
+      "materialization_tier": "ablation_benchmark",
+      "standalone_status": "active_as_control_only",
+      "selection_reason": "Cleanest low-overhead source-aware comparator for the required equal-accounting benchmark and ablation line.",
+      "novelty_risk": "Too close to ordinary RC arbitration or adaptive startup to carry the headline claim by itself.",
+      "overhead_risk": "Only defensible if RC ranking is materially cheaper than explicit compare-and-select logic.",
+      "falsifier_constraint": "Keep as a benchmark family only; retire as a lead claim if it fails to improve startup benefit per control energy."
+    },
+    {
+      "rank": 4,
+      "folder": "results/concept_evolve/tree/004_reverse_leakage_vote_or",
+      "symbolic_name": "reverse_leakage_vote_or",
+      "materialization_tier": "support_block",
+      "standalone_status": "downgraded",
+      "selection_reason": "Useful anti-backdrive support block inside H1, but not strong enough to anchor the thesis.",
+      "novelty_risk": "Anti-backdrive alone is already expected in multi-input interfaces, and leakage-vote sensing is easy to match with simpler isolation baselines.",
+      "overhead_risk": "Windowing, latch stability, and calibration overhead can dominate the small reverse-current win.",
+      "falsifier_constraint": "Keep only if it improves startup correctness rather than reverse-current cosmetics."
+    },
+    {
+      "rank": 5,
+      "folder": "results/concept_evolve/tree/005_tokenized_uvlo_handoff_gate",
+      "symbolic_name": "tokenized_uvlo_handoff_gate",
+      "materialization_tier": "support_block",
+      "standalone_status": "downgraded",
+      "selection_reason": "Useful only as a handoff stabilizer for H1 mixed-source startup, not as a standalone architecture claim.",
+      "novelty_risk": "Reads like a refined POR or UVLO deglitcher unless tied to a distinctly multi-source failure mode.",
+      "overhead_risk": "Token accumulation and reset energy can approach the same control budget as ordinary startup-control baselines.",
+      "falsifier_constraint": "Keep only if it removes measured UVLO chatter or false handoff that conventional hysteresis does not."
+    },
+    {
+      "rank": 6,
+      "folder": "results/concept_evolve/tree/006_comparatorless_current_probe_bootstrap",
+      "symbolic_name": "comparatorless_current_probe_bootstrap",
+      "materialization_tier": "conditional_merge_candidate",
+      "standalone_status": "downgraded",
+      "selection_reason": "Only valuable as the lowest-overhead implementation of packet scouting; otherwise it belongs inside the packet-scout family.",
+      "novelty_risk": "Without a clear overhead advantage it is just another source-probing variant inside 001, and any need for precharge or hidden bias weakens the helper-free story immediately.",
+      "overhead_risk": "Capacitor mismatch, injected-charge loss, and weak-source perturbation can consume the same budget as the RC ranker while corrupting the estimate.",
+      "falsifier_constraint": "Keep only if it beats 003 on startup benefit per control energy without requiring precharge, sense amplification, or hidden bias."
+    }
   ],
-  "retired_or_downgraded": {
-    "004_reverse_leakage_vote_or": "Retained as an enabling anti-backdrive block, not the headline concept.",
-    "005_tokenized_uvlo_handoff_gate": "Retained as a required chatter-control block rather than the main thesis.",
-    "006_comparatorless_current_probe_bootstrap": "Retained as a lower-overhead comparatorless variant for later ablation."
+  "decision": {
+    "headline_family": "results/concept_evolve/tree/001_packet_scout_handoff_root",
+    "narrow_fallback": "results/concept_evolve/tree/002_dual_bucket_polarity_split_bootstrap",
+    "required_ablation": "results/concept_evolve/tree/003_time_constant_ranked_arbiter",
+    "downgraded_folders": [
+      "results/concept_evolve/tree/004_reverse_leakage_vote_or",
+      "results/concept_evolve/tree/005_tokenized_uvlo_handoff_gate",
+      "results/concept_evolve/tree/006_comparatorless_current_probe_bootstrap"
+    ]
   }
 }

@@ -1,39 +1,51 @@
-# Hypothesis Scout H1 Cards
+# H1 Multisource Cold-Start Concept Cards
 
-Parent reconstruction after codex child-pass stream disconnect.
+Derived only from the saved H1 lane artifacts: `research_rubric.json`, `results/research_context.md`, `results/literature/literature_snapshot.json`, `results/literature/prior_art_gap.md`, `results/swarm/director_brief.md`, `results/swarm/hypotheses.json`, `results/swarm/tool_plan.md`, and `results/swarm/falsifier.md`.
 
-## impedance_ranked_packet_probe
-- Description: Probe each weak source with a nanowatt packet load, rank recovery slope without a helper rail, and grant the strongest source first access to the startup path before enabling the rest. The goal is source-aware cold start without a full MPPT controller.
-- Dependencies: source models, packet probe capacitor, recovery-slope detector, source-ranking latch, sequenced OR-ing network, startup reservoir
-- First experiment: Sweep 20/50/100/300 mV sources across 1:1, 1:5, and 1:20 impedance ratios and compare startup success, time-to-handoff, and startup-control energy against a fixed path and a non-source-aware multi-input baseline.
-- Predicted failure mode: Probe energy or ranking ambiguity under ultra-slow ramps erases the startup benefit.
+## 1. `packet_scout_handoff_root`
+- `symbolic_name`: `packet_scout_handoff_root`
+- `description`: Issue tiny startup charge packets into each source branch, observe which branch recovers fastest, and let only that branch seed the shared startup reservoir until enough energy exists to pay for wider arbitration.
+- `dependency list`: `scout packet capacitor`, `source-local sampling switch`, `recovery detector or monotonic latch`, `startup reservoir`, `sequenced OR-ing gate`, `handoff gate`
+- `first experiment`: Run the H1 matrix over `20/50/100/300 mV` and `1:1/1:5/1:20` impedance ratios, then compare startup success, time-to-handoff, and probe/control energy against a fixed startup path and a non-source-aware multi-input startup path.
+- `predicted failure mode`: The packet probes collapse the weakest sources or produce ambiguous rankings under ultra-slow ramps, so the control overhead exceeds the saved back-drive loss.
+- `novelty rationale`: This keeps the H1 claim centered on pre-arbitration source selection rather than generic multi-source harvesting. It is materially different from single-source low-voltage startup papers because the main question is which source should be trusted first before the normal controller exists.
 
-## dual_path_helperless_startup
-- Description: Use two helper-free startup engines that share one reservoir: a passive charge-stacking path for very high-impedance weak sources and a burst-transfer path for lower-impedance sources. A self-referenced selector activates only one engine until the reservoir can sustain arbitration overhead.
-- Dependencies: passive stacker, burst-transfer startup path, mode selector, startup reservoir, anti-backdrive OR-ing
-- First experiment: Run the H1 matrix with asymmetric impedance and ramp-rate corners, logging whether the selected startup path matches the winning source regime and whether handoff time improves over a one-path startup.
-- Predicted failure mode: Duplicated startup-path parasitics and selector leakage dominate at 20-50 mV.
+## 2. `time_constant_ranked_arbiter`
+- `symbolic_name`: `time_constant_ranked_arbiter`
+- `description`: Apply a fixed micro-load pulse to each source and use the recovery time constant, not open-circuit voltage alone, as an analog ranking signal for which source gets first access to startup.
+- `dependency list`: `micro-load pulse injector`, `recovery timing capacitor`, `source ranking latch`, `branch isolation switch`, `startup reservoir`
+- `first experiment`: Hold source voltage equal while varying source impedance and ramp rate, then test whether recovery-time ranking predicts the winning startup branch better than voltage-only selection.
+- `predicted failure mode`: RC timing spread and leakage dominate below `50 mV`, so the measured time constant reflects circuit parasitics more than source strength.
+- `novelty rationale`: The adaptation variable is source recoverability under load, which is more specific than the steady-state efficiency framing in the overlap papers. That makes it a direct H1 concept rather than another multi-input PMU story.
 
-## polarity_split_dual_bucket_bootstrap
-- Description: Accumulate positive and negative or phase-skewed inputs into separate low-leakage scout buckets, then merge into the main reservoir only after one bucket can sustain isolation overhead. This converts mixed-polarity startup from a rectification problem into a staged-energy-aggregation problem.
-- Dependencies: positive scout bucket, negative scout bucket, merge gate, cross-coupled latch, main reservoir
-- First experiment: Mixed-polarity cases at 20-100 mV with 1:20 impedance asymmetry; compare back-drive loss and handoff success against a single-reservoir OR-ing baseline.
-- Predicted failure mode: Bucket leakage or merge-threshold overhead destroys net gain below 50 mV.
+## 3. `dual_bucket_polarity_split_bootstrap`
+- `symbolic_name`: `dual_bucket_polarity_split_bootstrap`
+- `description`: Keep positive and negative or phase-opposed sources in separate scout buckets, then merge only the surviving bucket into the main reservoir once it can pay the isolation overhead.
+- `dependency list`: `positive scout bucket`, `negative scout bucket`, `merge gate`, `cross-coupled isolation latch`, `main startup reservoir`
+- `first experiment`: Run mixed-polarity `20-100 mV` cases with `1:20` impedance asymmetry and compare back-drive loss, startup success, and merge latency against a single-reservoir OR-ing baseline.
+- `predicted failure mode`: Scout-bucket leakage and merge-threshold overhead erase the benefit below about `50 mV` or during very slow ramps.
+- `novelty rationale`: This directly targets the mixed-polarity startup regime that the recovered H1 prior art does not make central. The contribution is staged cold-start aggregation, not just another rectifier or piezo interface.
 
-## source_signature_charge_packet_startup
-- Description: Transfer charge from each source in discrete packets only when a local envelope and recovery signature indicate that the source can recover before the next packet. The reservoir sees controlled packet arrivals instead of uncontrolled contention.
-- Dependencies: local envelope detector, packet switch, recovery timer, shared reservoir, handoff gate
-- First experiment: Impedance-asymmetry and source-collapse falsifier cases comparing packetized versus always-connected startup paths.
-- Predicted failure mode: Local timing blocks consume more energy than the packetization saves.
+## 4. `reverse_leakage_vote_or`
+- `symbolic_name`: `reverse_leakage_vote_or`
+- `description`: Turn on a branch OR-ing device only after multiple source-local indications agree that forward conduction is useful, then hold that decision through short reservoir droops to suppress cross-source back-drive during startup.
+- `dependency list`: `source-local evidence capacitor`, `vote latch`, `ultra-low-leakage OR switch`, `reverse-current sense element`, `reservoir droop hold path`
+- `first experiment`: Under source collapse, polarity mismatch, and UVLO-chatter cases, compare back-drive loss and false conduction events against diode-connected OR-ing and static ideal-switch OR-ing.
+- `predicted failure mode`: The vote mechanism chatters or leaks enough current that it remains only a useful sub-block, not a viable top-level architecture.
+- `novelty rationale`: This makes anti-backdrive a startup-state decision rather than a passive device choice. That is different enough to test cleanly, but still vulnerable to the H1 kill rule if the overhead dominates.
 
-## anti_backdrive_latched_oring
-- Description: Keep startup OR-ing devices hard-off until a source-local latch has enough evidence to justify one-way conduction, then hold directionality through short reservoir droops. This makes reverse leakage an explicit startup design variable.
-- Dependencies: source-local latch capacitor, ultra-low-leakage OR-ing switch, reverse-current monitor, startup reservoir
-- First experiment: Run mixed-polarity, source-collapse, and UVLO-chatter cases while measuring back-drive loss versus ordinary diode-connected OR-ing.
-- Predicted failure mode: Latch set/reset chatter or monitor overhead makes it a useful sub-block but not a standalone thesis.
+## 5. `tokenized_uvlo_handoff_gate`
+- `symbolic_name`: `tokenized_uvlo_handoff_gate`
+- `description`: Replace edge-triggered UVLO wakeup with a token integrator that releases the main controller only after sustained energy surplus, reducing premature handoff under ultra-slow ramps and asynchronous source arrival.
+- `dependency list`: `token integrator capacitor`, `window detector`, `handoff gate`, `reset/discharge path`, `startup reservoir monitor`
+- `first experiment`: At `0.1` and `1 mV/s` ramps with near-handoff source collapse, compare false starts, handoff time, and startup-control energy against ordinary UVLO wakeup.
+- `predicted failure mode`: Integrator leakage adds too much delay, so chatter is reduced but successful startups are lost.
+- `novelty rationale`: This is not a standalone thesis, but it is a plausible H1-specific adaptation for the failure mode where ordinary UVLO is too binary. Its value comes from being part of source-aware cold-start sequencing, not from claiming a generic reset invention.
 
-## uvlo_deglitched_token_handoff
-- Description: Require a time-integrated token, not a single UVLO crossing, before waking the main control path. This trades a tiny analog state element for lower chatter under ultra-slow ramps and asynchronous source arrival.
-- Dependencies: token integrator, window comparator, handoff gate, reset path
-- First experiment: Ultra-slow 0.1 and 1 mV/s ramps with source collapse near handoff; compare false starts and control energy against ordinary UVLO wakeup.
-- Predicted failure mode: Delay and integrator leakage make it useful only as an ablation switch, not the main novelty claim.
+## 6. `comparatorless_current_probe_bootstrap`
+- `symbolic_name`: `comparatorless_current_probe_bootstrap`
+- `description`: Infer source deliverability from the voltage delta caused by a fixed switched-cap current probe, using passive ratios and latches instead of a powered comparator so source awareness appears before any helper rail exists.
+- `dependency list`: `switched-cap current probe`, `delta-hold capacitor`, `comparatorless latch or cross-coupled sampler`, `branch selector`, `startup reservoir`
+- `first experiment`: Compare comparatorless probing against open-circuit-voltage selection in equal-voltage but unequal-impedance cases, measuring ranking accuracy and control energy at `20/50/100 mV`.
+- `predicted failure mode`: Probe disturbance or sampler mismatch obscures the voltage delta at the lowest voltages, collapsing the advantage over a simpler selector.
+- `novelty rationale`: This pushes H1 toward genuinely helper-free source inference. Unlike prior integrated startup work that mainly optimizes voltage threshold or startup path, this asks whether useful source classification can be done without an active comparator or helper rail.

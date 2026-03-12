@@ -1,0 +1,47 @@
+* Champion packet-scout netlist with branch-aware ranking.
+
+.include ../../../shared/source_pair_models.inc
+.include ../../../shared/startup_cells.inc
+.include ../../../shared/packet_scout_frontend.inc
+
+.param VLEVEL=100m
+.param VOC_A={VLEVEL}
+.param VOC_B={VLEVEL}
+.param R_UNIT=1k
+.param RATIO=5
+.param R_A={R_UNIT}
+.param R_B={RATIO * R_UNIT}
+.param POL_A=1
+.param POL_B=-1
+.param RAMP_MVPS=10
+.param C_STORE=10u
+.param V_HANDOFF=1.2
+.param V_HANDOFF_FALL=1.0
+.param TSTOP={max(1.25 * (VLEVEL / 1m) / RAMP_MVPS, T_SCOUT_DONE + 8 * min(R_A, R_B) * C_STORE)}
+
+VMEAS_A src_a_p n_src_a_p 0
+VMEAS_B src_b_p n_src_b_p 0
+XSOURCES src_a_p n_src_a_n src_b_p n_src_b_n source_pair
+
+BMON_A n_src_a 0 V = { V(n_src_a_p,n_src_a_n) }
+BMON_B n_src_b 0 V = { V(n_src_b_p,n_src_b_n) }
+RANCHOR_A n_src_a_p n_src_a_n 1g
+RANCHOR_B n_src_b_p n_src_b_n 1g
+RREF_A n_src_a_n 0 1g
+RREF_B n_src_b_n 0 1g
+
+XFRONTEND n_src_a_p n_src_a_n n_src_b_p n_src_b_n n_start_p n_start_n n_env_a n_env_b n_sel_a n_sel_b packet_scout_frontend params: aware=1
+XSTARTUP n_start_p n_start_n n_store n_handoff startup_pump
+
+VCTRL_MON n_store n_ctrl 0
+RCTRL_OSC n_ctrl 0 40meg
+RCTRL_SCOUT n_ctrl 0 60meg
+RCTRL_SELECT n_ctrl 0 60meg
+
+CSTORE n_store 0 {C_STORE} ic=0
+RLOAD n_store 0 100meg
+
+.include ../../../shared/measurement_hooks.inc
+
+.tran 0.5m {TSTOP} 0 0.5m
+.end
