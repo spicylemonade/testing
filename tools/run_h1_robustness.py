@@ -28,7 +28,7 @@ SUMMARY_PATH = LANE_ROOT / "tables" / "robustness_summary.json"
 NGSPICE_BIN = REPO_ROOT / "tools" / "ngspice-local"
 
 DEFAULT_CASES = ["fa_001", "fa_004", "fa_005", "sm_015"]
-DEFAULT_DESIGNS = ["champion", "fixed", "nonaware", "source_blind", "time_constant_ranked"]
+DEFAULT_DESIGNS = ["champion", "fixed", "nonaware", "source_blind", "time_constant_ranked", "blind_packet_merge"]
 
 SCALE_RE = {
     "t": 1e12,
@@ -105,7 +105,7 @@ def vary_case(case: dict, design: str, rng: random.Random) -> tuple[dict, dict]:
     base_vstart_dead = parse_numeric(overrides.get("VSTART_DEAD", "5m"))
     overrides["VSTART_DEAD"] = to_spice(clamp(base_vstart_dead * (1.0 + rng.gauss(0.0, 0.12)), 1e-3, 15e-3))
 
-    if design in {"champion", "source_blind"}:
+    if design in {"champion", "source_blind", "blind_packet_merge"}:
         overrides["SCOUT_R"] = to_spice(parse_numeric(overrides.get("SCOUT_R", "150k")) * max(0.6, 1.0 + rng.gauss(0.0, 0.12)))
         overrides["SCOUT_C"] = to_spice(parse_numeric(overrides.get("SCOUT_C", "5n")) * max(0.6, 1.0 + rng.gauss(0.0, 0.12)))
         overrides["G_SCOUT_CTRL"] = to_spice(parse_numeric(overrides.get("G_SCOUT_CTRL", "40n")) * max(0.5, 1.0 + rng.gauss(0.0, 0.10)))

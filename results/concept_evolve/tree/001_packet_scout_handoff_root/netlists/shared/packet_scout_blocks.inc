@@ -4,6 +4,7 @@
 .param SCOUT_C=5n
 .param SEL_GAIN=20
 .param G_SCOUT_CTRL=40n
+.param MERGE_R=5
 .param TC_FAST_R=30k
 .param TC_FAST_C=1.5n
 .param TC_SLOW_R=220k
@@ -52,6 +53,27 @@ BSTORE_B 0 n_store I = { ETA_PUMP * G_PUMP * pos(V(b_p,b_n) - VSTART_DEAD) * 0.5
 BCTRL_SCOUT n_ctrl 0 I = { G_SCOUT_CTRL * V(n_ctrl) }
 XHANDOFF n_store n_handoff handoff_flag
 .ends source_blind_packet_gate
+
+.subckt blind_packet_merge_gate a_p a_n b_p b_n n_store n_ctrl n_handoff
+EOBS_A a_obs 0 VALUE = { V(a_p,a_n) }
+RSCOUT_A a_obs a_probe {SCOUT_R}
+CSCOUT_A a_probe 0 {SCOUT_C}
+
+EOBS_B b_obs 0 VALUE = { V(b_p,b_n) }
+RSCOUT_B b_obs b_probe {SCOUT_R}
+CSCOUT_B b_probe 0 {SCOUT_C}
+
+RMERGE_AP a_p merge_p {MERGE_R}
+RMERGE_BP b_p merge_p {MERGE_R}
+RMERGE_AN a_n merge_n {MERGE_R}
+RMERGE_BN b_n merge_n {MERGE_R}
+
+BIN_M merge_p merge_n I = { G_PUMP * pos(V(merge_p,merge_n) - VSTART_DEAD) }
+BSTORE_M 0 n_store I = { ETA_PUMP * G_PUMP * pos(V(merge_p,merge_n) - VSTART_DEAD) }
+
+BCTRL_SCOUT n_ctrl 0 I = { G_SCOUT_CTRL * V(n_ctrl) }
+XHANDOFF n_store n_handoff handoff_flag
+.ends blind_packet_merge_gate
 
 .subckt time_constant_ranked_arbiter a_p a_n b_p b_n n_store n_ctrl n_handoff
 EOBS_A a_obs 0 VALUE = { V(a_p,a_n) }

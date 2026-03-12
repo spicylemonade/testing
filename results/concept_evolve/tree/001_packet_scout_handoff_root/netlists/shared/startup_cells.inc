@@ -10,14 +10,10 @@
 .param G_PUMP=50u
 .param ETA_PUMP=3
 .param VSTART_DEAD=5m
+.param I_HAND_STATE=1u
+.param C_HAND_STATE=1n
 
 .model SWROUTE SW(Ron={RON_ROUTE} Roff={ROFF_ROUTE} Vt=1m Vh={ROUTE_HYST})
-.model SWHANDOFF SW(
-  Ron=1m
-  Roff=1e12
-  Vt={(V_HANDOFF + V_HANDOFF_FALL) / 2}
-  Vh={(V_HANDOFF - V_HANDOFF_FALL) / 2}
-)
 
 .subckt fw_router in_p in_n out_p out_n
 BCTRL ctrl 0 V = { V(in_p,in_n) }
@@ -32,9 +28,11 @@ RLEAK_NP out_n in_p {RLEAK_ROUTE}
 .ends fw_router
 
 .subckt handoff_flag n_store n_handoff
-VHAND_REF n_hand_ref 0 1
-SHAND n_handoff n_hand_ref n_store 0 SWHANDOFF
-RHAND_PD n_handoff 0 10k
+BHSTATE_LOGIC hand_state_logic 0 V = { 0.5 * (1 + tanh(40 * (V(hand_state) - 0.5))) }
+BSTATE 0 hand_state I = { I_HAND_STATE * pos(V(n_store) - V_HANDOFF) * (1 - V(hand_state_logic)) - I_HAND_STATE * pos(V_HANDOFF_FALL - V(n_store)) * V(hand_state_logic) }
+CHAND hand_state 0 {C_HAND_STATE} ic=0
+RHAND_HOLD hand_state 0 1e12
+BHAND_OUT n_handoff 0 V = { V(hand_state_logic) }
 .ends handoff_flag
 
 .subckt startup_pump in_p in_n n_store n_handoff

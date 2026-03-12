@@ -8,6 +8,9 @@ BSEEN_DRV seen_drv 0 V = { V(n_handoff) > 0.5 ? 1 : 0 }
 DSEEN seen_drv n_seen DSEENMOD
 CSEEN n_seen 0 1p ic=0
 RSEEN n_seen 0 1e12
+BHAND_EVT_DRV handoff_evt_drv 0 V = { V(n_handoff) }
+REVT handoff_evt_drv n_handoff_evt 1k
+CEVT n_handoff_evt 0 1u ic=0
 .model DSEENMOD D(Is=1e-18 N=1 Rs=1m Cjo=0)
 
 BLATCH handoff_latched 0 V = { 0.5 * (1 + tanh(80 * (V(n_seen) - 0.5))) }
@@ -19,9 +22,13 @@ BPAWR_B_PRE pwr_back_b_pre 0 V = { V(pwr_back_b) * (1 - V(handoff_latched)) }
 BPCTRL_PRE pwr_ctrl_pre 0 V = { V(pwr_ctrl) * (1 - V(handoff_latched)) }
 
 .measure tran vstore_final find v(n_store) at={TSTOP}
-.measure tran t_handoff when v(n_store)={V_HANDOFF} rise=1
-.measure tran t_handoff_fall when v(n_store)={V_HANDOFF_FALL} fall=1
-.measure tran t_handoff_rise2 when v(n_store)={V_HANDOFF} rise=2
+.measure tran handoff_seen_final find v(n_seen) at={TSTOP}
+.measure tran t_handoff when v(n_handoff_evt)=0.5 rise=1
+.measure tran t_handoff_fall when v(n_handoff_evt)=0.5 fall=1
+.measure tran t_handoff_rise2 when v(n_handoff_evt)=0.5 rise=2
+.measure tran t_store_proxy when v(n_store)={V_HANDOFF} rise=1
+.measure tran t_store_proxy_fall when v(n_store)={V_HANDOFF_FALL} fall=1
+.measure tran t_store_proxy_rise2 when v(n_store)={V_HANDOFF} rise=2
 .measure tran e_back_a integ v(pwr_back_a_pre) from=0 to={TSTOP}
 .measure tran e_back_b integ v(pwr_back_b_pre) from=0 to={TSTOP}
 .measure tran e_backdrive param='e_back_a + e_back_b'
@@ -30,4 +37,4 @@ BPCTRL_PRE pwr_ctrl_pre 0 V = { V(pwr_ctrl) * (1 - V(handoff_latched)) }
 .measure tran e_back_b_full integ v(pwr_back_b) from=0 to={TSTOP}
 .measure tran e_backdrive_full param='e_back_a_full + e_back_b_full'
 .measure tran e_ctrl_full integ v(pwr_ctrl) from=0 to={TSTOP}
-.measure tran startup_ok param='(vstore_final >= V_HANDOFF)'
+.measure tran startup_ok param='(vstore_final >= V_HANDOFF) * (handoff_seen_final >= 0.5)'

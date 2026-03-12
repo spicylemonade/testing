@@ -25,7 +25,7 @@ BENCHMARK_SUMMARY_PATH = LANE_ROOT / "tables" / "benchmark_summary.json"
 NGSPICE_BIN = REPO_ROOT / "tools" / "ngspice-local"
 
 CORE_DESIGNS = ["champion", "fixed", "nonaware"]
-DESIGN_ORDER = CORE_DESIGNS + ["source_blind", "time_constant_ranked"]
+DESIGN_ORDER = CORE_DESIGNS + ["source_blind", "time_constant_ranked", "blind_packet_merge"]
 DECKS = {
     "champion": LANE_ROOT
     / "netlists"
@@ -53,6 +53,11 @@ DECKS = {
     / "ablations"
     / "time_constant_ranked_arbiter"
     / "time_constant_ranked_arbiter.cir",
+    "blind_packet_merge": LANE_ROOT
+    / "netlists"
+    / "ablations"
+    / "blind_packet_merge"
+    / "blind_packet_merge.cir",
 }
 
 PARAM_RE = {
@@ -75,6 +80,10 @@ MEASURE_PATTERNS = {
     "t_handoff_s": r"t_handoff\s*=\s*([-+0-9.eE]+)",
     "t_handoff_fall_s": r"t_handoff_fall\s*=\s*([-+0-9.eE]+)",
     "t_handoff_rise2_s": r"t_handoff_rise2\s*=\s*([-+0-9.eE]+)",
+    "handoff_seen_v": r"handoff_seen_final\s*=\s*([-+0-9.eE]+)",
+    "t_store_proxy_s": r"t_store_proxy\s*=\s*([-+0-9.eE]+)",
+    "t_store_proxy_fall_s": r"t_store_proxy_fall\s*=\s*([-+0-9.eE]+)",
+    "t_store_proxy_rise2_s": r"t_store_proxy_rise2\s*=\s*([-+0-9.eE]+)",
     "e_backdrive_j": r"e_backdrive\s*=\s*([-+0-9.eE]+)",
     "e_ctrl_j": r"e_ctrl\s*=\s*([-+0-9.eE]+)",
     "e_backdrive_full_j": r"e_backdrive_full\s*=\s*([-+0-9.eE]+)",
@@ -260,6 +269,10 @@ def write_table(rows: list[dict]) -> None:
         "t_handoff_s",
         "t_handoff_fall_s",
         "t_handoff_rise2_s",
+        "handoff_seen_v",
+        "t_store_proxy_s",
+        "t_store_proxy_fall_s",
+        "t_store_proxy_rise2_s",
         "e_backdrive_j",
         "e_ctrl_j",
         "e_backdrive_full_j",

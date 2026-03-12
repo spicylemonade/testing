@@ -70,6 +70,8 @@ Every netlist must expose the same node names and current-sense elements.
 - Required measurements to implement in a shared include later:
   - `startup_ok`
   - `t_handoff`
+  - `t_handoff_fall`
+  - `t_handoff_rise2`
   - `e_backdrive`
   - `e_ctrl`
 
@@ -84,9 +86,10 @@ Every netlist must expose the same node names and current-sense elements.
 
 ### Time-To-Handoff
 
-- `t_handoff` is the first time when both conditions hold:
-  - `V(n_store) >= V_HANDOFF`
-  - `V(n_handoff)` indicates the main arbiter may take over
+- `t_handoff` is the first `n_handoff` rise event.
+- `t_handoff_fall` is the first `n_handoff` fall event after the initial rise.
+- `t_handoff_rise2` is the second `n_handoff` rise event.
+- `V(n_store)` threshold times may still be logged as diagnostics, but they are not the canonical event metric.
 
 ### Back-Drive Loss
 
@@ -105,6 +108,7 @@ Every netlist must expose the same node names and current-sense elements.
 - Measurement rule:
   - all explicit control-only branches must pass through `VCTRL_MON`
   - if a baseline has no separate controller, its isolation or arbitration devices must still be counted through the same control monitor path
+  - the same-scaffold no-packet control must keep the scout observation branches but remove packet isolation only; it may not hide clocks or routing energy outside `VCTRL_MON`
 
 ## Stop-Time Rule
 
