@@ -1,0 +1,110 @@
+[
+  {
+    "symbolic_name": "impedance_ranked_packet_probe",
+    "short_description": "Probe each weak source with a nanowatt packet load, rank recovery slope without a helper rail, and grant the strongest source first access to the startup path before enabling the rest. The goal is source-aware cold start without a full MPPT controller.",
+    "key_mechanism": "Capacitive packet probe plus passive recovery-timing latch chooses the initial source path and delays multi-input arbitration until the reservoir can pay for it.",
+    "closest_overlap_papers": [
+      {
+        "paperId": "78bca7d91e70d6a08b0b7aff9286695fa1b34e37",
+        "title": "Power management unit for multi-source energy harvesting in wearable electronics"
+      },
+      {
+        "paperId": "9fd5e15b325f8534ee928242f7e9507a01586677",
+        "title": "Single- and multi-source battery-less power management circuits for piezoelectric energy harvesting systems"
+      },
+      {
+        "paperId": "254a50d3d11f95e13c87d5b068a92e29fb0f2dee",
+        "title": "Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting"
+      }
+    ],
+    "why_it_matters": "Closest surviving concept to the H1 thesis because it adds cheap source awareness before full arbitration instead of claiming generic multi-source harvesting."
+  },
+  {
+    "symbolic_name": "dual_path_helperless_startup",
+    "short_description": "Use two helper-free startup engines that share one reservoir: a passive charge-stacking path for very high-impedance weak sources and a burst-transfer path for lower-impedance sources. A self-referenced selector activates only one engine until the reservoir can sustain arbitration overhead.",
+    "key_mechanism": "Self-referenced mode selection between two startup paths before the main PMU comes alive.",
+    "closest_overlap_papers": [
+      {
+        "paperId": "c75c82be2e98a8d66907742a89b886902c1a0162",
+        "title": "Fully Integrated Startup at 70 mV of Boost Converters for Thermoelectric Energy Harvesting"
+      },
+      {
+        "paperId": "d9415d1253fb75da110cffc9d1ab87509010d30e",
+        "title": "A CMOS Startup Circuit for Thermoelectric Energy Harvesting Systems"
+      },
+      {
+        "paperId": "dfecac253dbefc0807d87edafe69873b2a45bfc1",
+        "title": "A Thermoelectric Energy Harvesting System Assisted by a Piezoelectric Transducer Achieving 10-MV Cold-Startup and 82.7% Peak Efficiency"
+      }
+    ],
+    "why_it_matters": "Distinct from low-voltage single-source startup papers because the claim is about helper-free mode selection among heterogeneous weak sources."
+  },
+  {
+    "symbolic_name": "polarity_split_dual_bucket_bootstrap",
+    "short_description": "Accumulate positive and negative or phase-skewed inputs into separate low-leakage scout buckets, then merge into the main reservoir only after one bucket can sustain isolation overhead. This converts mixed-polarity startup from a rectification problem into a staged-energy-aggregation problem.",
+    "key_mechanism": "Dual scout buckets plus cross-coupled merge gating delay shared-reservoir exposure until startup is safe.",
+    "closest_overlap_papers": [
+      {
+        "paperId": "0fd827923bda6369f44527bd52fdf7b4c60e4941",
+        "title": "Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements"
+      },
+      {
+        "paperId": "6022e53796c25cba2130c9505c6e6c908fd43cb0",
+        "title": "A self-powered multi-input OSECE interface circuit for multiple piezoelectric transducers"
+      },
+      {
+        "paperId": "254a50d3d11f95e13c87d5b068a92e29fb0f2dee",
+        "title": "Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting"
+      }
+    ],
+    "why_it_matters": "Targets the exact mixed-polarity startup regime that most recovered overlap papers do not benchmark explicitly."
+  },
+  {
+    "symbolic_name": "source_signature_charge_packet_startup",
+    "short_description": "Transfer charge from each source in discrete packets only when a local envelope and recovery signature indicate that the source can recover before the next packet. The reservoir sees controlled packet arrivals instead of uncontrolled contention.",
+    "key_mechanism": "Local recovery signature gates packet transfer into the shared reservoir.",
+    "closest_overlap_papers": [
+      {
+        "paperId": "254a50d3d11f95e13c87d5b068a92e29fb0f2dee",
+        "title": "Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting"
+      },
+      {
+        "paperId": "6022e53796c25cba2130c9505c6e6c908fd43cb0",
+        "title": "A self-powered multi-input OSECE interface circuit for multiple piezoelectric transducers"
+      }
+    ],
+    "why_it_matters": "More adaptive than ordinary time-division multiplexing, but closer to existing multi-input extraction papers than the top three concepts."
+  },
+  {
+    "symbolic_name": "anti_backdrive_latched_oring",
+    "short_description": "Keep startup OR-ing devices hard-off until a source-local latch has enough evidence to justify one-way conduction, then hold directionality through short reservoir droops. This makes reverse leakage an explicit startup design variable.",
+    "key_mechanism": "Source-local latch delays and direction-locks OR-ing devices during startup.",
+    "closest_overlap_papers": [
+      {
+        "paperId": "9fd5e15b325f8534ee928242f7e9507a01586677",
+        "title": "Single- and multi-source battery-less power management circuits for piezoelectric energy harvesting systems"
+      },
+      {
+        "paperId": "0fd827923bda6369f44527bd52fdf7b4c60e4941",
+        "title": "Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements"
+      }
+    ],
+    "why_it_matters": "Important enabling block for H1, but too narrow to carry the full claim alone."
+  },
+  {
+    "symbolic_name": "uvlo_deglitched_token_handoff",
+    "short_description": "Require a time-integrated token, not a single UVLO crossing, before waking the main control path. This trades a tiny analog state element for lower chatter under ultra-slow ramps and asynchronous source arrival.",
+    "key_mechanism": "Token accumulator measures sustained energy margin before handoff.",
+    "closest_overlap_papers": [
+      {
+        "paperId": "d30bff950b51bfb17324047f1b9193d837341002",
+        "title": "A 220-mV Power-on-Reset Based Self-Starter With 2-nW Quiescent Power for Thermoelectric Energy Harvesting Systems"
+      },
+      {
+        "paperId": "d9415d1253fb75da110cffc9d1ab87509010d30e",
+        "title": "A CMOS Startup Circuit for Thermoelectric Energy Harvesting Systems"
+      }
+    ],
+    "why_it_matters": "High practical value for H1 experiments, but too incremental to headline by itself."
+  }
+]

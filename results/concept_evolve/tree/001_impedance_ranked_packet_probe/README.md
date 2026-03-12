@@ -1,0 +1,25 @@
+# Concept: impedance_ranked_packet_probe
+
+- Rank: 1
+- Domains: energy_harvesting_pmic, startup_sequencing, analog_source_inference
+- Key mechanism: Capacitive packet probe plus passive recovery-timing latch chooses the initial source path and delays multi-input arbitration until the reservoir can pay for it.
+- Novelty rationale: Closest surviving concept to the H1 thesis because it adds cheap source awareness before full arbitration instead of claiming generic multi-source harvesting.
+
+## Dependencies
+- source models
+- packet probe capacitor
+- recovery-slope detector
+- source-ranking latch
+- sequenced OR-ing network
+- startup reservoir
+
+## First Experiment
+- Sweep 20/50/100/300 mV sources across 1:1, 1:5, and 1:20 impedance ratios and compare startup success, time-to-handoff, and startup-control energy against a fixed path and a non-source-aware multi-input baseline.
+
+## Predicted Failure Mode
+- Probe energy or ranking ambiguity under ultra-slow ramps erases the startup benefit.
+
+## Closest Overlap Papers
+- Power management unit for multi-source energy harvesting in wearable electronics (78bca7d91e70d6a08b0b7aff9286695fa1b34e37)
+- Single- and multi-source battery-less power management circuits for piezoelectric energy harvesting systems (9fd5e15b325f8534ee928242f7e9507a01586677)
+- Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting (254a50d3d11f95e13c87d5b068a92e29fb0f2dee)

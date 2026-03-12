@@ -1,0 +1,125 @@
+{
+  "nodes": [
+    {
+      "id": "impedance_ranked_packet_probe",
+      "domain": "energy_harvesting_pmic"
+    },
+    {
+      "id": "impedance_ranked_packet_probe",
+      "domain": "startup_sequencing"
+    },
+    {
+      "id": "impedance_ranked_packet_probe",
+      "domain": "analog_source_inference"
+    },
+    {
+      "id": "dual_path_helperless_startup",
+      "domain": "energy_harvesting_pmic"
+    },
+    {
+      "id": "dual_path_helperless_startup",
+      "domain": "multi_mode_startup"
+    },
+    {
+      "id": "dual_path_helperless_startup",
+      "domain": "weak_source_conversion"
+    },
+    {
+      "id": "polarity_split_dual_bucket_bootstrap",
+      "domain": "energy_harvesting_pmic"
+    },
+    {
+      "id": "polarity_split_dual_bucket_bootstrap",
+      "domain": "mixed_polarity_startup"
+    },
+    {
+      "id": "polarity_split_dual_bucket_bootstrap",
+      "domain": "anti_backdrive"
+    },
+    {
+      "id": "source_signature_charge_packet_startup",
+      "domain": "energy_harvesting_pmic"
+    },
+    {
+      "id": "source_signature_charge_packet_startup",
+      "domain": "packetized_energy_transfer"
+    },
+    {
+      "id": "source_signature_charge_packet_startup",
+      "domain": "source_signature_sensing"
+    },
+    {
+      "id": "anti_backdrive_latched_oring",
+      "domain": "energy_harvesting_pmic"
+    },
+    {
+      "id": "anti_backdrive_latched_oring",
+      "domain": "anti_backdrive"
+    },
+    {
+      "id": "anti_backdrive_latched_oring",
+      "domain": "startup_isolation"
+    },
+    {
+      "id": "uvlo_deglitched_token_handoff",
+      "domain": "energy_harvesting_pmic"
+    },
+    {
+      "id": "uvlo_deglitched_token_handoff",
+      "domain": "handoff_control"
+    },
+    {
+      "id": "uvlo_deglitched_token_handoff",
+      "domain": "uvlo_chatter_mitigation"
+    }
+  ],
+  "edges": [
+    {
+      "source": "impedance_ranked_packet_probe",
+      "target": "dual_path_helperless_startup",
+      "relation": "ranking chooses startup engine"
+    },
+    {
+      "source": "dual_path_helperless_startup",
+      "target": "uvlo_deglitched_token_handoff",
+      "relation": "selected path feeds controlled handoff"
+    },
+    {
+      "source": "polarity_split_dual_bucket_bootstrap",
+      "target": "anti_backdrive_latched_oring",
+      "relation": "bucket merge needs isolation"
+    },
+    {
+      "source": "anti_backdrive_latched_oring",
+      "target": "uvlo_deglitched_token_handoff",
+      "relation": "safe OR-ing reduces false handoff"
+    },
+    {
+      "source": "source_signature_charge_packet_startup",
+      "target": "impedance_ranked_packet_probe",
+      "relation": "both infer source quality before arbitration"
+    },
+    {
+      "source": "source_signature_charge_packet_startup",
+      "target": "anti_backdrive_latched_oring",
+      "relation": "packet gating benefits from directional isolation"
+    }
+  ],
+  "bridge_chains": [
+    [
+      "impedance_ranked_packet_probe",
+      "dual_path_helperless_startup",
+      "uvlo_deglitched_token_handoff"
+    ],
+    [
+      "polarity_split_dual_bucket_bootstrap",
+      "anti_backdrive_latched_oring",
+      "uvlo_deglitched_token_handoff"
+    ],
+    [
+      "source_signature_charge_packet_startup",
+      "impedance_ranked_packet_probe",
+      "dual_path_helperless_startup"
+    ]
+  ]
+}
