@@ -1,15 +1,30 @@
 # Research Context
 
-- Stage: post_director_swarm
+- Stage: post_novelty_deepening
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: high
-- Note: gap_queries=4, swarm_agents=4
-- Rubric progress: 25/25 completed
-- Known papers tracked: 100
+- Note: phase_6 resolved with one failed item (`item_029`) and four completed items.
+- Rubric progress: 30/30 resolved
+- Known papers tracked: 105
 - `sources.bib` entries: 15
 - Swarm hypotheses: 3
 - Verification summary present: yes
+
+## Current Research Position
+
+- The boundedness question for `T(1,n+1) - T(1,n)` remains unresolved.
+- The strongest new positive result from phase 6 is structural: the one-step frontier
+  update is abelian up to axis swap on the audited late states, and the only
+  schedule-independent predictive observable is the same anchor geometry already
+  isolated by the border theorems.
+- The strongest new negative result is methodological: no bounded-correction
+  anchor/backbone law, no border-prefix interval-extension law, no small-`q`
+  modular-locking story, and no currently credible full-witness rigidity invariant
+  clears the late-window controls.
+- The project is therefore best framed as a sharpened negative-result and
+  overlap-control package around Kimberling's open problem, not as a new mechanism
+  paper.
 
 ## Closest Prior Art
 - The Haros-Farey sequence at two hundred years. A survey. (2003)

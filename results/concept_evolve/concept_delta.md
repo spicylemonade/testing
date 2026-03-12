@@ -2,35 +2,49 @@
 
 ## Suggestion
 
-Use the post-verification ConceptEvolve loop to pivot away from failed raw-witness and
-prime-support stories and toward the only surviving bridge: full witness hypergraphs
-plus explicit surrogate controls against Ford-style overlap.
+Use the post-phase-6 ConceptEvolve loop to narrow the search even further: keep only
+the structural abelian-frontier reformulation and the negative-result overlap controls,
+while treating positive witness-compression and modular-locking bridges as unvalidated.
 
 ## Implementation
 
-- Executed the required `reframe` and `iterate` passes after the verification artifacts existed.
-- Added a million-step experiment package plus validated full-witness hypergraph exports.
-- Updated the concept tree so H1 is marked as pivoted, H2 as retired, witness taxonomy as a completed negative result, and robustness variants as completed.
-- Read and incorporated `concept_delta.json`, `recurrent_state.json`, and `bridge_candidates.json`.
+- Executed the required `probe`, `reframe`, and `iterate` passes around the novelty-deepening work.
+- Built a checker-backed late-window corpus with matched non-record windows and affine surrogate product windows.
+- Added the phase-6 audit artifacts:
+  - `item_026_anchor_backbone.md`
+  - `item_027_schedule_network.md`
+  - `item_028_prefix_law.md`
+  - `item_029_hypergraph_invariants.md`
+  - `item_030_modular_locking.md`
+- Read and incorporated the refreshed `concept_delta.json`, `recurrent_state.json`, `bridge_candidates.json`, and `reframings.json`.
 
 ## Result
 
-- The champion bridge is now explicit:
-  - full witness hypergraphs -> hypergraph certificate complexity / invariant compression.
-- The required overlap-control bridge is also explicit:
-  - mex-coupled frontier -> size-matched surrogate product-set ablation.
-- Three weaker bridges were retired:
-  - symbolic/automaton law on raw witnesses,
-  - prime-support fixed point,
-  - parking/jamming phenomenology as an active mechanism.
+- One bridge survived positively, but only as structure:
+  - the one-step frontier update is abelian up to axis swap, and the right-defect
+    depth is a real schedule-independent observable on the matched-window corpus.
+- Three mechanism bridges were retired or downgraded:
+  - bounded-correction anchor/backbone law,
+  - border-prefix interval-extension law,
+  - small-`q` modular locking.
+- The remaining hypergraph bridge was tested directly and failed to clear the full
+  control logic:
+  - stable graph summaries exist, but no candidate invariant is both
+    canonicalization-stable and specific to true record windows rather than to the
+    broader anchored-coverage geometry.
 
 ## Novelty Delta
 
-The project is now sharply positioned:
+The project is now more sharply bounded than before:
 
 - not as a positive proof or asymptotic mechanism claim,
-- but as a validated negative-result / overlap-audit package with one bounded remaining
-  rescue path on full witness hypergraphs.
+- not even as a live hypergraph-rescue program under the current surrogate family,
+- but as a structurally cleaner and more defensible negative-result dossier.
 
-If that rescue path fails against surrogate controls, the concept loop now says to stop
-rather than widen the search again.
+What remains novel is the precision of the obstruction map:
+
+- the anchor geometry is exact but not a bounded-memory mechanism,
+- the abelian one-step frontier law is real but local,
+- the border-prefix route fails for a theorem-level reason,
+- the modular route fails against an actual admissibility perturbation,
+- and the hypergraph route currently fails honestly rather than being left vague.

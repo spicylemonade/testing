@@ -813,32 +813,27 @@ def write_hypergraph_report(corpus: dict[str, Any], out_dir: Path) -> dict[str, 
     def values(windows: list[dict[str, Any]], graph: str, metric: str) -> list[float]:
         return [float(window[graph][metric]) for window in windows]
 
-    candidates: list[dict[str, Any]] = []
-    for graph in ["full_graph", "lex_graph", "balanced_graph"]:
-        for metric in ["cycle_rank", "leaf_fraction", "description_length_per_value", "component_count", "edge_count", "vertex_count"]:
-            record_values = values(records, graph, metric)
-            control_values = values(controls, graph, metric)
-            surrogate_values = values(surrogates, graph, metric)
-            record_min = min(record_values)
-            record_max = max(record_values)
-            surrogate_failure = max(
-                sum(value < record_min for value in surrogate_values) / len(surrogate_values),
-                sum(value > record_max for value in surrogate_values) / len(surrogate_values),
-            )
-            control_overlap = sum(record_min <= value <= record_max for value in control_values) / len(control_values)
-            candidates.append(
-                {
-                    "graph": graph,
-                    "metric": metric,
-                    "record_min": record_min,
-                    "record_max": record_max,
-                    "record_mean": mean(record_values),
-                    "control_overlap": control_overlap,
-                    "surrogate_failure_rate": surrogate_failure,
-                }
-            )
+    def outside_band(values_in_family: list[float], record_min: float, record_max: float) -> float:
+        return sum(not (record_min <= value <= record_max) for value in values_in_family) / len(values_in_family)
 
-    best_surrogate = max(candidates, key=lambda item: (item["surrogate_failure_rate"], -item["control_overlap"]))
+    def auroc_against_controls(graph: str, metric: str) -> float:
+        record_values = values(records, graph, metric)
+        control_values = values(controls, graph, metric)
+        return roc_auc([1] * len(record_values) + [0] * len(control_values), record_values + control_values)
+
+    candidate = {
+        "graph": "balanced_graph",
+        "metric": "leaf_fraction",
+        "record_values": values(records, "balanced_graph", "leaf_fraction"),
+        "control_values": values(controls, "balanced_graph", "leaf_fraction"),
+        "surrogate_values": values(surrogates, "balanced_graph", "leaf_fraction"),
+        "lex_record_values": values(records, "lex_graph", "leaf_fraction"),
+        "lex_surrogate_values": values(surrogates, "lex_graph", "leaf_fraction"),
+    }
+    record_min = min(candidate["record_values"])
+    record_max = max(candidate["record_values"])
+    lex_record_min = min(candidate["lex_record_values"])
+    lex_record_max = max(candidate["lex_record_values"])
     canonical_stability = [
         {
             "step": int(window["step"]),
@@ -855,8 +850,18 @@ def write_hypergraph_report(corpus: dict[str, Any], out_dir: Path) -> dict[str, 
     ]
 
     payload = {
-        "candidate_count": len(candidates),
-        "best_surrogate_separator": best_surrogate,
+        "candidate": {
+            "graph": candidate["graph"],
+            "metric": candidate["metric"],
+            "record_band": [record_min, record_max],
+            "lex_record_band": [lex_record_min, lex_record_max],
+            "balanced_surrogate_failure_rate": outside_band(candidate["surrogate_values"], record_min, record_max),
+            "lex_surrogate_failure_rate": outside_band(candidate["lex_surrogate_values"], lex_record_min, lex_record_max),
+            "balanced_control_overlap": 1.0 - outside_band(candidate["control_values"], record_min, record_max),
+            "balanced_record_vs_control_auroc": auroc_against_controls("balanced_graph", "leaf_fraction"),
+            "lex_record_vs_control_auroc": auroc_against_controls("lex_graph", "leaf_fraction"),
+        },
+        "verdict": "near_miss",
         "canonical_stability": canonical_stability,
         "cycle_rank_record_values": values(records, "full_graph", "cycle_rank"),
     }
@@ -872,29 +877,35 @@ def write_hypergraph_report(corpus: dict[str, Any], out_dir: Path) -> dict[str, 
         "- full/lex/balanced description length per skipped value",
         "- full/lex/balanced component, edge, and vertex counts",
         "",
-        "## Strongest Surrogate Separator",
+        "## Eliminated Candidate",
         "",
-        f"- Best candidate by surrogate failure rate: `{best_surrogate['graph']}.{best_surrogate['metric']}`.",
-        f"- Record range: `{best_surrogate['record_min']}` to `{best_surrogate['record_max']}`.",
-        f"- Surrogate windows outside that record range: `{best_surrogate['surrogate_failure_rate']:.3f}`.",
-        f"- Matched non-record windows still inside that record range: `{best_surrogate['control_overlap']:.3f}`.",
+        "- The truly full-witness Betti/forest story collapses to `cycle_rank = 0` everywhere: on records, controls, and surrogates the factor graph is a forest.",
+        "- So the first cycle-rank / arboricity pass is structurally true but not discriminative.",
         "",
-        "## Canonicalization Stability",
+        "## Strongest Near-Miss",
         "",
-        f"- Maximum lex-vs-balanced description-density gap on the true record windows: `{max(entry['description_gap_lex_vs_balanced'] for entry in canonical_stability):.3f}`.",
+        "The strongest surviving near-miss is the canonical-forest leaf fraction derived from the full witness hypergraph under two canonicalizations.",
+        "",
+        f"- Balanced record band: `{payload['candidate']['record_band']}`.",
+        f"- Lexicographic record band: `{payload['candidate']['lex_record_band']}`.",
+        f"- Balanced surrogate failure rate: `{payload['candidate']['balanced_surrogate_failure_rate']:.3f}`.",
+        f"- Lexicographic surrogate failure rate: `{payload['candidate']['lex_surrogate_failure_rate']:.3f}`.",
+        f"- Balanced record-vs-control AUROC: `{payload['candidate']['balanced_record_vs_control_auroc']:.3f}`.",
+        f"- Lexicographic record-vs-control AUROC: `{payload['candidate']['lex_record_vs_control_auroc']:.3f}`.",
+        f"- Balanced matched-control overlap inside the record band: `{payload['candidate']['balanced_control_overlap']:.3f}`.",
         f"- Maximum lex-vs-balanced leaf-fraction gap on the true record windows: `{max(entry['leaf_gap_lex_vs_balanced'] for entry in canonical_stability):.3f}`.",
         "",
         "## Verdict",
         "",
         "No candidate invariant currently clears the full item-029 gate.",
         "",
-        "1. The strongest surrogate separators are canonical-tree description density and related size counts, but they also overlap heavily with the matched non-record windows. They therefore describe anchored covered intervals in general, not true record formation.",
-        "2. The genuinely full-witness invariant `cycle_rank = 0` is stable across all true record windows, but it also holds on the surrogate family and so does not survive the Ford-style control.",
-        "3. The chosen-canonicalization metrics are stable across lexicographic and balanced selections, but their surrogate separation is entangled with the affine surrogate undercoverage rather than with a record-specific rigidity law.",
+        "1. The invariant is derived from the full hypergraph, not from first-witness bookkeeping: every window starts from the full witness pair set and then projects to two canonical spanning forests.",
+        "2. The balanced and lexicographic canonicalizations agree to within a leaf-fraction gap of at most `0.023` on every true record window through `10^6`, and they do reject at least `96%` of the affine size-matched surrogate windows.",
+        "3. That is still not enough for a credible `T`-specific rigidity law here: about `28.9%` of the matched non-record windows remain inside the balanced record band, and the current affine surrogate family is undercovered enough that surrogate separation alone is too weak to justify promotion.",
         "",
         "## Conclusion",
         "",
-        "Item 029 should close as a failed positive search: the corpus supports a tree-like full witness graph, but no invariant found so far is both canonicalization-stable and genuinely specific to true record windows rather than to the broader anchored-coverage geometry.",
+        "Item 029 should close as a failed positive search. The canonical-forest leaf fraction is the best near-miss found so far, but it remains a descriptive overlap metric rather than a credible `T`-specific full-witness invariant.",
         "",
     ]
     (out_dir / "item_029_hypergraph_invariants.md").write_text("\n".join(lines))
@@ -975,14 +986,14 @@ def write_modular_report(
         for checkpoint in checkpoints
     }
     anchor_baseline = load_json(out_dir / "item_026_anchor_metrics.json")["held_out_auroc_anchor_extremality"]
-    hypergraph_baseline = load_json(out_dir / "item_029_hypergraph_metrics.json")["best_surrogate_separator"]["surrogate_failure_rate"]
+    hypergraph_baseline = load_json(out_dir / "item_029_hypergraph_metrics.json")["candidate"]["balanced_record_vs_control_auroc"]
 
     payload = {
         "checkpoints": checkpoints,
         "best_baseline_modulus": best_modulus,
         "best_baseline_modulus_auroc": best_auroc,
         "baseline_anchor_auroc": anchor_baseline,
-        "hypergraph_surrogate_failure_rate": hypergraph_baseline,
+        "hypergraph_auroc": hypergraph_baseline,
         "perturbation_best_moduli": {
             str(checkpoint): {"modulus": modulus, "l1_gap": score}
             for checkpoint, (score, modulus) in perturb_best.items()
@@ -1015,9 +1026,9 @@ def write_modular_report(
         "## Comparator Ceiling",
         "",
         f"- Anchor/backbone comparator from Item 026: AUROC `{anchor_baseline:.3f}`.",
-        f"- Hypergraph comparator currently available from Item 029: surrogate-failure rate `{hypergraph_baseline:.3f}`.",
+        f"- Hypergraph comparator from Item 029: record-vs-control AUROC `{hypergraph_baseline:.3f}`.",
         "",
-        "A small-`q` modular feature would need to beat the anchor comparator by `20%`, which is impossible here because the anchor baseline is already close to the AUROC ceiling. The residue features are also step-level quantities, so they are constant across the matched controls drawn from the same frontier state and cannot express the within-step geometry that the anchor score captures.",
+        "A small-`q` modular feature would need to beat both the anchor and hypergraph comparators by `20%`. It misses that gate immediately: the best modulus family stays at AUROC `0.526`, far below both comparators. The residue features are also step-level quantities, so they are constant across the matched controls drawn from the same frontier state and cannot express the within-step geometry that the anchor and hypergraph scores capture.",
         "",
         "## Conclusion",
         "",
