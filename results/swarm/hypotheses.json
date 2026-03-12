@@ -1,0 +1,76 @@
+[
+  {
+    "id": "H1_multisource_cold_start",
+    "title": "Source-Adaptive Cold Start for Weak Multi-Source Harvesters Under Ultra-Slow Ramps",
+    "novelty_claim": "The contribution is not another steady-state harvester-efficiency paper. It targets startup correctness before the normal control loop is alive: mixed weak sources with different impedances, polarities, and ramp rates that must reach first handoff without a helper rail or back-driving each other.",
+    "closest_prior_art": [
+      "Review of Fully Integrated Startup Techniques for Thermoelectric Energy Harvesting Systems (2023)",
+      "Power Management for Multi-Source Energy Harvesting Systems: A Review (2024)",
+      "Fully Autonomous Self-Starting Interface Circuit for Piezoelectric Energy Harvesting from Multi-Source Inputs (2024)"
+    ],
+    "differentiation": "Frame the thesis around source-aware cold-start sequencing under heterogeneous weak sources, not around generic MPPT, generic multi-input harvesting, or ordinary arbitration after startup. The design must infer source condition cheaply enough to choose a kick-start mode and only enable full arbitration after a minimum energy packet is accumulated.",
+    "easiest_falsifier": "Downgrade immediately if focused prior art already shows a fully integrated, helper-free interface that cold-starts across mixed 20-300 mV sources with source-aware arbitration and anti-backdrive protection, or if startup overhead erases the gain over strong fixed-path baselines.",
+    "evidence_plan": [
+      "Repair the traceability gap first: build a one-page claim matrix from the three cited anchors because `results/swarm/hypothesis_bridge.md` and `results/swarm/hypothesis_negative_space.md` are missing.",
+      "Run one go/kill ngspice matrix over source voltage, ramp rate, polarity mismatch, and impedance asymmetry; measure startup success, handoff time, back-drive loss, and control energy.",
+      "Benchmark against at least two nontrivial baselines: a fixed startup path and a non-source-aware multi-input startup/arbitration path with equal energy accounting."
+    ],
+    "budget_envelope": {
+      "literature_gate": "1 focused pass, <=12 papers, no broad re-search",
+      "simulation_gate": "1 topology family, <=24 startup cases, 2 strong baselines",
+      "promotion_rule": "Promote if it survives the prior-art kill check and shows a clean startup-correctness advantage under mixed-source stress cases.",
+      "kill_rule": "Kill if novelty collapses to existing helper-free multi-source cold start, or if anti-backdrive/arbitration overhead dominates."
+    },
+    "selected": true
+  },
+  {
+    "id": "H2_cryo_support_blocks",
+    "title": "Cryogenic Low-Frequency-Noise-Resilient Bias, Reference, Comparator, and ADC Support Blocks Below 10 K",
+    "novelty_claim": "The under-served target is the precision support layer below 10 K, not cryo-CMOS as a slogan. A charge-domain reference/comparator path that degrades gracefully under cryogenic threshold shift, mismatch, and low-frequency-noise uncertainty is a stronger moat than another broad cryo system narrative.",
+    "closest_prior_art": [
+      "A Review of Cryogenic CMOS Electronics for Quantum Computing (2022)",
+      "Toward Cryogenic CMOS Electronics for Quantum Computing: An Updated Review of Cryogenic CMOS Technology for Quantum Computing (2024)",
+      "Analysis of Low-Frequency Noise in 40-nm CMOS at Cryogenic Temperatures (2023)",
+      "Design of 1 V sub-1 µW 5 ppm/C Voltage References in a 65nm Cryogenic CMOS PDK (2024)"
+    ],
+    "differentiation": "Do not claim novelty at the level of 'a cryogenic reference.' The differentiator must be a reference/comparator support primitive that avoids room-temperature bandgap assumptions, explicitly budgets low-frequency noise and model uncertainty, and stays monotone and calibratable below 10 K with low power.",
+    "easiest_falsifier": "Kill if widened cryogenic corners, mismatch, and low-frequency-noise assumptions break monotonicity or power budget, or if a closely matching sub-10 K support-block primitive already exists once the focused prior-art matrix is assembled.",
+    "evidence_plan": [
+      "Repair the missing-scout traceability by assembling a route-specific prior-art matrix from the four cited anchors before committing design effort.",
+      "Release this lane only if validated cryogenic models or a collaborator path exist.",
+      "If the model gate passes, run a first corner sweep on a charge-domain reference/comparator macro-concept with widened cryogenic Vth-shift, mismatch, and low-frequency-noise assumptions."
+    ],
+    "budget_envelope": {
+      "model_gate": "Do not fund beyond literature vetting without validated cryogenic models or collaborator support",
+      "literature_gate": "1 focused pass, <=10 papers",
+      "simulation_gate": "1 macro-concept, <=12 corner cases, no hardware commitment",
+      "promotion_rule": "Promote only if the concept remains monotone and low-power across widened cryogenic uncertainty.",
+      "kill_rule": "Kill if it reduces to an incremental cryogenic reference variant or fails under realistic cryogenic uncertainty."
+    },
+    "selected": false
+  },
+  {
+    "id": "H3_dynamic_source_impedance",
+    "title": "Dynamic-Source-Impedance-Aware Harvest Interfaces for Self-Powered Sensors",
+    "novelty_claim": "The key claim is not generic adaptive MPPT. It is a source-probing interface for self-powered sensing where source impedance and charge-delivery slope move with motion, contact state, bias history, or the measurand, so the interface must avoid collapsing the source while still extracting usable energy.",
+    "closest_prior_art": [
+      "A Variable Impedance and Voltage Converter for Efficiently Harvesting Energy from Time-Varying Power Sources with Varying Internal Resistance (2025)",
+      "Mismatch Between Dynamic Input Impedance and Load Impedance Causes Poor Real-Time Power Supply from Triboelectric Nanogenerator (2025)",
+      "Effect of Energy Management Circuitry on Optimum Source Configuration in Vibration Energy Harvesting Systems (2022)"
+    ],
+    "differentiation": "Keep the framing tightly on source-model uncertainty coupled to the sensor interface. The concept must show that lightweight probing and retuning improve net delivered energy or sensor uptime after charging overhead, not just that one adaptive controller beats a weak fixed threshold.",
+    "easiest_falsifier": "Kill if a simple hysteretic controller or one-time-tuned baseline matches the result once probing and reconfiguration energy are honestly counted.",
+    "evidence_plan": [
+      "Use the cited 2025 overlap papers as the first novelty screen, because this lane has the thinnest novelty margin of the top three.",
+      "If it survives that screen, define one benchmark matrix with moving internal resistance or charge-delivery slope and report net delivered energy, source-collapse rate, sensor uptime, and retune overhead.",
+      "Compare only under equal sensing budget against strong hysteretic and fixed-threshold baselines."
+    ],
+    "budget_envelope": {
+      "literature_gate": "1 focused pass, <=8 papers, explicitly testing overlap with 2025 variable-impedance work",
+      "simulation_gate": "1 interface concept, <=18 cases, equal sensing-budget comparison",
+      "promotion_rule": "Promote only if it stays distinct from recent variable-impedance converter work and beats strong low-overhead baselines.",
+      "kill_rule": "Kill if novelty collapses to recent adaptive harvesting papers or if probe overhead erases the gain."
+    },
+    "selected": false
+  }
+]
