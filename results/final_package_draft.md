@@ -7,10 +7,12 @@
 - In the proved eventually-periodic-gap lane - concretely, arithmetic progressions and finite unions of arithmetic progressions - exact value recurrence occurs if and only if `r` is rational.
 
 ### Empirical
-- In the frozen zero-density panel, the only irrational ordered value sequences that survive the package's exact finite holdout protocol are the `quadratic_convergent_even` cases for `phi`, `sqrt(2)`, and `1 + sqrt(2)`.
+- In the frozen sparse panel, the only exact-certified irrational ordered value sequences are the `quadratic_convergent_even` cases for `phi - 1`, `phi`, `sqrt(2)`, and `1 + sqrt(2)`.
+- The revision follow-up runs all 15 `uncertified_exact_holdout` rows to length `320`: `salem_quartic / ost_suffix_001` fails by `80`, while the remaining long exact leaks stay empirical only.
 
-### Conjectural
-- The sparse irrational survivor mechanism looks periodic-continued-fraction / quadratic rather than broadly Pisot, but that refinement is not claimed as a theorem.
+### Scope discipline
+- No family-level claim is carried forward for quadratics, periodic continued fractions, or zero intercept.
+- The failed higher-degree Pisot lane is used only as a falsifier outcome, not as evidence for a positive theorem.
 
 ## Support
 
@@ -20,16 +22,17 @@
 - For arithmetic progressions and finite-union selectors, an exact constant-coefficient recurrence for `b_k` would force eventual periodicity of the bounded first-difference sequence, while the corresponding irrational rotation codings are not eventually periodic.
 
 ### Empirical
-- Across the frozen matrix, positive-density families yield 7 exact cases, all rational.
-- Zero-density families yield 3 exact cases, all from the single selector `quadratic_convergent_even`.
-- Prefix fits, modular-shadow survivors, and floating approximations do not count as claims. Finite exact holdout survival is stronger than approximation, but still weaker than a proved infinite identity.
-- The tested higher-degree Pisot, Salem, and transcendental controls do not produce exact survivors in the current frozen constructions.
+- Across the frozen matrix, the AP/FUAP rows yield 28 exact cases, all rational.
+- The only sparse exact-certified cases are the 4 `quadratic_convergent_even` identities.
+- The 15 `uncertified_exact_holdout` rows split into 11 persistent leaks and 4 broken cases under the 320-term revision follow-up; none is upgraded to theorem status.
+- The tested higher-degree Pisot, Salem, and transcendental controls do not produce any exact certificate in the current frozen constructions.
 
-### Conjectural
-- The failed higher-degree Pisot lane supports using Pisot as a falsifier target, not as the basis for a positive theorem.
+### Scope discipline
+- Prefix fits, modular-shadow survivors, and finite exact holdout survival do not count as theorem claims.
+- The package separates proved exact identity, exact-certified examples, and empirical leakage cases, and it should stay that way in any outward-facing version.
 
 ## Limitations
 
-- No theorem is claimed for arbitrary subsequences, zero-density selectors in general, symbolic linear recurrence, or unordered Beatty-set embeddings.
+- No theorem is claimed for arbitrary subsequences, sparse selectors in general, symbolic linear recurrence, or unordered Beatty-set embeddings.
 - The sparse irrational cases remain experimental: they are limited to the current selector family, search range, recurrence orders, and exact holdout windows.
-- No approximation claim is being made. The package separates proved exact identity, finite exact evidence, and conjecture, and it should stay that way in any outward-facing version.
+- Stronger sparse-lane claims would still need intercept controls, continued-fraction-prefix-matched nonquadratic controls, and infinite certificates for the surviving leaks.

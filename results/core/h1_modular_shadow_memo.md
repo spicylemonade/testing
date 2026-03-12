@@ -4,7 +4,7 @@
 
 Champion claim `H1` is split into one theorem-backed part and one screened extension.
 
-1. **Theorem-backed positive-density statement.**
+1. **Theorem-backed eventually-periodic-gap statement.**
    For the frozen selector classes consisting of arithmetic progressions and finite unions of arithmetic progressions, the extracted value sequence `b_k = floor(n_k r)` satisfies a homogeneous constant-coefficient recurrence over `Z` if and only if `r` is rational.
 
 2. **Screened zero-density extension.**
@@ -17,7 +17,7 @@ Champion claim `H1` is split into one theorem-backed part and one screened exten
 - Selector classes covered directly by proof: arithmetic progressions and finite unions of arithmetic progressions.
 - Selector classes covered by screening rather than proof: linear-recursive selectors and Ostrowski-definable selectors.
 
-## Why the positive-density theorem is plausible
+## Why the eventually-periodic-gap theorem is plausible
 
 ### Arithmetic progressions
 Let `n_k = a k + b` with `a >= 1`. Then
@@ -46,7 +46,7 @@ for fixed integers `Q > 0` and `c_j`. Each residue subsequence of a putative lin
 ## Traceability to the frozen panel
 
 - Rational survivors: `2`, `3/2`, `5/3`, and the low-slope control `1/2` are covered by the same arithmetic-progression proof and exact checker.
-- Irrational exclusions in the positive-density lane: `phi`, `sqrt(2)`, the plastic constant, the Salem quartic root, `e`, and the low-slope control `phi - 1` all fall under the irrational side of the theorem for arithmetic and finite-union selectors.
+- Irrational exclusions in the AP/FUAP lane: `phi`, `sqrt(2)`, the plastic constant, the Salem quartic root, `e`, and the low-slope control `phi - 1` all fall under the irrational side of the theorem for arithmetic and finite-union selectors.
 - Zero-density survivors are intentionally not upgraded here; they are handed off to `H2` or `H3` after the modular screen.
 
 ## Remaining proof obligations

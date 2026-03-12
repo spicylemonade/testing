@@ -2,15 +2,16 @@
 
 ## Verdict
 
-- Verdict: conditional pass.
-- The citation base now covers the required branches: Beatty/Sturmian/Ostrowski, Beatty model theory, linearly recurrent subshifts/S-adic structure, generalized polynomials/Pisot-Salem, Skolem-Mahler-Lech, uniform recurrence, and Beatty variants.
+- Verdict: pass after the peer-review revision.
+- The citation base covers the required branches: Beatty/Sturmian/Ostrowski, Beatty model theory, linearly recurrent subshifts/S-adic structure, generalized polynomials/Pisot-Salem, Skolem-Mahler-Lech, uniform recurrence, Beatty variants, and the Walnut/Pecan software-tool lane.
 
-## Blockers
+## What was repaired
 
-- `sources.bib` needed metadata normalization; the obvious year/venue mismatches were repaired, but software references (Walnut/Pecan) are still only documented in the literature snapshot and repository-search note, not yet cited in BibTeX form.
-- The raw lexical snapshot still contains noisy false positives, so outward-facing text should cite the curated branches rather than the raw `top_papers` list.
+- Corrected the peer-review mismatches for `gnaydin2020`, `byszewski2016`, `adamczewski2022`, `bell2005`, and `derksen2005` using publisher-grade DOI metadata.
+- Replaced Semantic Scholar URLs in `sources.bib` with canonical DOI or arXiv URLs wherever available.
+- Replaced the placeholder software entries with clean arXiv software-paper references: `mousavi2016walnut` and `oei2021pecan`.
 
-## Recommended Follow-Up
+## Remaining caution
 
-- Add formal software citations for Walnut and Pecan if they are mentioned in the final package.
-- When writing the final claim memo, cite the exact branch rows from `results/experiments/literature_baseline_comparison.md` rather than relying on broad umbrella citations.
+- The raw lexical watchlist is still a search artifact, not a citation source. Outward-facing text should keep citing the curated branch notes and comparison tables instead of the noisy `top_papers` snapshot.
+- Walnut and Pecan remain uncited in `research_paper.tex`; if the writer pass does not mention them, the final manuscript can simply omit those bibliography entries.

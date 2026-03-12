@@ -1,15 +1,16 @@
 # Research Context
 
-- Stage: post_writer
+- Stage: post_revision
 - Model: openai/gpt-5.4
 - OpenCode model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
-- Note: paper draft and compilation stage completed
-- Rubric progress: 25/25 completed
-- Known papers tracked: 255
+- Note: peer-review revision completed on citations, experiments, figures, and package synchronization; `research_paper.tex` was intentionally left untouched, so the remaining PDF layout warnings stay writer-side
+- Rubric progress: 31/31 completed
+- Known papers tracked: 266
 - `sources.bib` entries: 18
 - Swarm hypotheses: 3
 - Verification summary present: yes
+- Revision follow-up: exhaustive holdouts now run to `320`, fit-length sensitivity is logged, citations use canonical DOI/arXiv URLs, and the figure set has been regenerated with the seaborn styling stack
 
 ## Closest Prior Art
 - Louisville Seamount Trail: implications for geodynamic mantle flow models and the geochemical evolution of primary hotspots (2011)
@@ -18,8 +19,7 @@
 - A Data Prefetch Mechanism for Accelerating General-Purpose Computation (1994)
 
 ## Recent Semantic Scholar Activity
-- search :: "Addition and multiplication of beta-expansions in generalized Tribonacci base" (results=0, cache_hits=0, network_calls=0)
-- search :: Narayana Beatty sequence cubic Pisot (results=0, cache_hits=0, network_calls=1)
-- search :: "Linear recurrence sequence automata and the addition of abstract numeration systems" (results=1, cache_hits=0, network_calls=1)
-- search :: "Self-Matching Properties of Beatty Sequences" (results=5, cache_hits=1, network_calls=0)
-- bibtex :: dd21c5ecc0d3faaa83032b8725e7f8a8e0e8c375 (results=1, cache_hits=0, network_calls=1)
+- search :: "Pecan: An Automated Theorem Prover for Automatic Sequences using Buchi Automata" (results=1, cache_hits=0, network_calls=1)
+- search :: "Automatic Theorem Proving in Walnut" (results=10, cache_hits=0, network_calls=1)
+- bibtex :: 8bef3e9f39ca85ef4f80ddee3b1646d8a3f2d7ce (results=1, cache_hits=0, network_calls=1)
+- bibtex :: 7dfc8b5094ec8c934781a665258e183c38ae7eaf (results=1, cache_hits=0, network_calls=1)

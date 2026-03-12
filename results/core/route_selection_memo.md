@@ -17,7 +17,7 @@ This memo synthesizes the delegated comparison pass for rubric item `item_014`.
   - `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` gives exact holdout success for `phi` and `1 + sqrt(2)` under the frozen even-convergent construction.
 - Strongest evidence against:
   - `results/core/h2_pisot_backup.md` shows the mechanism is not Pisot-only: non-Pisot `sqrt(2)` also survives, while cubic Pisot `plastic` fails on exact holdout.
-  - Salem and transcendental controls fail in the same construction, so the live story is quadratic/periodic-CF rather than broad Pisot.
+  - Salem and transcendental controls fail in the same construction, so the live evidence is a narrow quadratic survivor set rather than a broad Pisot mechanism; that survivor set still remains empirical.
 
 ## H3 - Generalized-polynomial / LRS intersection rigidity
 - Verdict: `no_go`
@@ -29,7 +29,7 @@ This memo synthesizes the delegated comparison pass for rubric item `item_014`.
 ## Decision
 - Primary route: `H1`
 - Write theorem language only for the H1 obstruction core: arithmetic progressions and finite AP unions.
-- Keep zero-density selector results explicit as screened survivor lanes for H2/H3 follow-up, not as part of the main theorem.
+- Keep zero-density selector results explicit as screened survivor or leakage lanes for H2/H3 follow-up, not as part of the main theorem.
 
 ## Flip condition
 

@@ -18,27 +18,28 @@
 
 ## Main observations
 
-1. Positive-density theorem lane behaves as expected.
+1. Eventually-periodic-gap theorem lane behaves as expected.
    - Rational slopes now carry exact certificates across the full AP/FUAP lane, not only on denominator-compatible arithmetic progressions.
-   - Irrational slopes in the positive-density families collapse to `no_candidate`, `prefix_fit`, or `selector_shadow_failure`.
+   - Irrational slopes in those same AP/FUAP rows collapse to `no_candidate`, `prefix_fit`, or `selector_shadow_failure`.
 
-2. Quadratic survivor lane is real.
-   - `phi - 1`, `phi`, `sqrt(2)`, and `1 + sqrt(2)` now have exact certificates on `quadratic_convergent_even`.
-   - `results/experiments/claim_sensitive_ablation.json` shows that these order-2 recurrences persist through holdout lengths `40`, `80`, and `160`.
-   - This is the evidence base behind the H2 memo's conclusion that the surviving mechanism is quadratic/periodic-CF rather than broadly Pisot.
+2. Sparse exact certificates stay narrow.
+   - `phi - 1`, `phi`, `sqrt(2)`, and `1 + sqrt(2)` have exact certificates on `quadratic_convergent_even`.
+   - `results/experiments/claim_sensitive_ablation.json` shows that these order-2 recurrences persist through holdout lengths `40`, `80`, `160`, and `320`.
+   - No broader family statement is made from those four examples alone.
 
-3. Higher-degree backup lane stays negative in the frozen constructions.
+3. Higher-degree and control lanes stay negative at certificate level.
    - `plastic` has no order-`<=4` recurrence on `quadratic_convergent_even` and no exact survivor on `beta_endpoint_suffix_10`.
-   - Salem and transcendental controls also fail.
+   - Salem and transcendental controls also fail at the certificate level; the revision follow-up further shows that `salem_quartic / ost_suffix_001` breaks by holdout length `80`.
 
 4. Waivers are definition-driven, not convenience-driven.
    - Rational slopes waive Ostrowski and convergent-even selectors because those constructions require irrational continued-fraction structure.
    - Rational slopes waive `beta_endpoint_suffix_10` because that construction is only meaningful for irrational numeration bases.
 
-5. The beta-endpoint fairness repair stays negative.
-   - After extending `beta_endpoint_suffix_10` to the matched irrational controls, every executed endpoint case remains `no_candidate`, including `phi`, `1 + sqrt(2)`, `plastic`, `sqrt(2)`, the Salem quartic root, `e`, and `phi - 1`.
+5. The revision follow-up closes the stale-summary gap.
+   - `results/experiments/claim_sensitive_ablation.json` now extends all 15 `uncertified_exact_holdout` rows to `320` and adds a fit-length ablation over `8/12/16/24`.
+   - `results/experiments/falsifier_controls.md` and `results/experiments/evaluation_memo.md` are synchronized to the refreshed 28 rational exact cases, 4 irrational exact certificates, 12 sparse leaks at the 20-term screen, and the strengthened long-holdout results.
 
 ## Writer-stage follow-up
 
-- `results/experiments/metrics_full_panel.json` now publishes per-case `holdout_exact_20`, `exact_certificate_present`, `risk_tags`, and the nondegenerate exact-hit split.
-- `results/experiments/claim_sensitive_ablation.md` records the order-cap, holdout-length, and selector-variant ablations requested by verification.
+- `results/experiments/metrics_full_panel.json` publishes per-case `holdout_exact_20`, `exact_certificate_present`, `risk_tags`, and the nondegenerate exact-hit split.
+- `results/experiments/claim_sensitive_ablation.md` records the order-cap, fit-length, holdout-length, and selector-variant ablations requested by verification.

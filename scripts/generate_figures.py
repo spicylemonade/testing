@@ -8,8 +8,11 @@ import sys
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+from matplotlib import colors as mcolors
+from matplotlib.figure import Figure
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Patch
 import numpy as np
+import seaborn as sns
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -110,6 +113,7 @@ SELECTOR_LABELS = {
 
 
 def setup_style() -> None:
+    sns.set_theme(style="whitegrid", context="paper", font="DejaVu Serif")
     mpl.rcParams.update(
         {
             "figure.facecolor": "#fbfaf7",
@@ -121,19 +125,25 @@ def setup_style() -> None:
             "ytick.color": "#24313f",
             "grid.color": "#d7dde3",
             "font.family": "DejaVu Serif",
-            "font.size": 11,
-            "axes.titlesize": 15,
-            "axes.labelsize": 11,
-            "legend.fontsize": 9,
-            "figure.titlesize": 17,
+            "font.size": 10.5,
+            "axes.titlesize": 12,
+            "axes.titleweight": "semibold",
+            "axes.labelsize": 10,
+            "xtick.labelsize": 9,
+            "ytick.labelsize": 9,
+            "legend.fontsize": 8.5,
+            "figure.titlesize": 14,
+            "axes.titlepad": 8,
+            "axes.grid.axis": "y",
+            "grid.linewidth": 0.7,
         }
     )
 
 
-def save_figure(fig: mpl.figure.Figure, stem: str) -> None:
+def save_figure(fig: Figure, stem: str) -> None:
     FIG_DIR.mkdir(parents=True, exist_ok=True)
-    fig.savefig(FIG_DIR / f"{stem}.pdf", bbox_inches="tight")
-    fig.savefig(FIG_DIR / f"{stem}.png", dpi=600, bbox_inches="tight")
+    fig.savefig(FIG_DIR / f"{stem}.pdf", bbox_inches="tight", pad_inches=0.08)
+    fig.savefig(FIG_DIR / f"{stem}.png", dpi=300, bbox_inches="tight", pad_inches=0.08)
     plt.close(fig)
 
 
@@ -259,14 +269,15 @@ def fig3_difference_sequences() -> None:
 
 def fig4_full_panel_heatmap() -> None:
     matrix = classification_matrix()
-    cmap = mpl.colors.ListedColormap([STATUS_COLORS[INT_TO_STATUS[idx]] for idx in range(6)])
-    norm = mpl.colors.BoundaryNorm(np.arange(-0.5, 6.5, 1.0), cmap.N)
+    cmap = mcolors.ListedColormap([STATUS_COLORS[INT_TO_STATUS[idx]] for idx in range(6)])
+    norm = mcolors.BoundaryNorm(np.arange(-0.5, 6.5, 1.0), cmap.N)
 
-    fig, ax = plt.subplots(figsize=(14.5, 7.2))
+    fig, ax = plt.subplots(figsize=(13.2, 7.1))
+    fig.subplots_adjust(left=0.11, right=0.98, top=0.88, bottom=0.30)
     im = ax.imshow(matrix, cmap=cmap, norm=norm, aspect="auto")
-    ax.set_xticks(np.arange(len(SELECTOR_ORDER)), [SELECTOR_LABELS[key] for key in SELECTOR_ORDER], rotation=50, ha="right")
+    ax.set_xticks(np.arange(len(SELECTOR_ORDER)), [SELECTOR_LABELS[key] for key in SELECTOR_ORDER], rotation=35, ha="right")
     ax.set_yticks(np.arange(len(SLOPE_ORDER)), [SLOPE_LABELS[key] for key in SLOPE_ORDER])
-    ax.set_title("Full 145-case panel: classification by slope and selector")
+    ax.set_title("Full panel classifications", loc="left")
     ax.set_xlabel("selector template")
     ax.set_ylabel("slope")
 
@@ -275,15 +286,32 @@ def fig4_full_panel_heatmap() -> None:
     for j in range(matrix.shape[1] + 1):
         ax.axvline(j - 0.5, color="#fbfaf7", lw=0.8)
 
-    legend_handles = [mpl.patches.Patch(color=STATUS_COLORS[name], label=name.replace("_", " ")) for name in [
-        "exact_recurrence",
-        "sparse_subsequence_leak",
-        "prefix_fit",
-        "selector_shadow_failure",
-        "no_candidate",
-        "waived",
-    ]]
-    ax.legend(handles=legend_handles, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.16), frameon=False)
+    for boundary in [3.5, 6.5, 9.5, 13.5]:
+        ax.axvline(boundary, color="#fbfaf7", lw=2.2)
+
+    family_centers = [
+        (1.5, "AP"),
+        (5.0, "FUAP"),
+        (8.0, "LR"),
+        (11.5, "Ostrowski"),
+        (14.0, "beta"),
+    ]
+    for center, label in family_centers:
+        x_fraction = (center + 0.5) / len(SELECTOR_ORDER)
+        ax.text(x_fraction, -0.18, label, transform=ax.transAxes, ha="center", va="top", color="#4a5a6a", fontsize=8.5)
+
+    legend_handles = [
+        Patch(color=STATUS_COLORS[name], label=label)
+        for name, label in [
+            ("exact_recurrence", "exact"),
+            ("sparse_subsequence_leak", "sparse leak"),
+            ("prefix_fit", "prefix fit"),
+            ("selector_shadow_failure", "shadow fail"),
+            ("no_candidate", "none"),
+            ("waived", "waived"),
+        ]
+    ]
+    ax.legend(handles=legend_handles, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.28), frameon=False)
     save_figure(fig, "fig4_full_panel_heatmap")
 
 
@@ -336,7 +364,16 @@ def fig5_outcome_breakdown() -> None:
 
 
 def fig6_claim_sensitive_ablations() -> None:
-    fig, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(14.5, 6.5), gridspec_kw={"width_ratios": [1.0, 1.35]})
+    fig, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(13.5, 6.9), gridspec_kw={"width_ratios": [1.0, 1.18]})
+    fig.subplots_adjust(left=0.08, right=0.98, top=0.80, bottom=0.24, wspace=0.34)
+    fig.suptitle("Claim-sensitive ablations", x=0.08, y=0.95, ha="left", fontsize=14, fontweight="semibold")
+    fig.text(
+        0.08,
+        0.89,
+        "Higher-order fitting creates false candidates; longer holdouts keep only the certified quadratic identities and persistent empirical leaks.",
+        color="#4a5a6a",
+        fontsize=9.2,
+    )
 
     order_keys = ["d_leq_4", "d_leq_6", "d_leq_8"]
     statuses = ["exact_recurrence", "sparse_subsequence_leak", "prefix_fit", "selector_shadow_failure", "no_candidate"]
@@ -348,11 +385,11 @@ def fig6_claim_sensitive_ablations() -> None:
         bottoms += values
     ax_left.set_xticks(x, [r"$d\leq 4$", r"$d\leq 6$", r"$d\leq 8$"])
     ax_left.set_ylabel("executed cases")
-    ax_left.set_title("Higher-order search adds many short-window fits but no new exact certificates")
+    ax_left.set_title("Order-cap sensitivity")
     ax_left.grid(axis="y", linestyle=":", alpha=0.5)
     for idx, key in enumerate(order_keys[1:], start=1):
         flips = ABLATION["order_cap_ablation"][key]["flip_count_vs_d_leq_4"]
-        ax_left.text(idx, 142, f"{flips} flips", ha="center", color="#24313f")
+        ax_left.text(idx, 143.5, f"{flips} flips", ha="center", color="#24313f", fontsize=8.5)
 
     case_order = [
         "phi::quadratic_convergent_even",
@@ -363,9 +400,9 @@ def fig6_claim_sensitive_ablations() -> None:
         "phi_minus_1::fib_indices",
         "sqrt2::pell_indices",
         "one_plus_sqrt2::pell_indices",
+        "salem_quartic::ost_suffix_001",
         "plastic::ap_1_0",
         "plastic::union_mod3_01",
-        "plastic::union_mod6_013",
     ]
     case_labels = [
         r"$\varphi / q_{2k}$",
@@ -376,29 +413,29 @@ def fig6_claim_sensitive_ablations() -> None:
         r"$(\varphi-1)$/Fib",
         r"$\sqrt{2}$/Pell",
         r"$(1+\sqrt{2})$/Pell",
+        "Salem/O001",
         "plastic/AP",
         "plastic/U3",
-        "plastic/U6",
     ]
-    lengths = ["20", "40", "80", "160"]
+    lengths = [str(length) for length in ABLATION.get("holdout_lengths", [20, 40, 80, 160, 320])]
     heat = np.zeros((len(case_order), len(lengths)), dtype=int)
     for i, case_key in enumerate(case_order):
         for j, length in enumerate(lengths):
             heat[i, j] = STATUS_TO_INT[ABLATION["holdout_length_ablation"][case_key][length]["classification"]]
-    cmap = mpl.colors.ListedColormap([STATUS_COLORS[INT_TO_STATUS[idx]] for idx in range(6)])
-    norm = mpl.colors.BoundaryNorm(np.arange(-0.5, 6.5, 1.0), cmap.N)
+    cmap = mcolors.ListedColormap([STATUS_COLORS[INT_TO_STATUS[idx]] for idx in range(6)])
+    norm = mcolors.BoundaryNorm(np.arange(-0.5, 6.5, 1.0), cmap.N)
     ax_right.imshow(heat, cmap=cmap, norm=norm, aspect="auto")
     ax_right.set_xticks(np.arange(len(lengths)), lengths)
     ax_right.set_yticks(np.arange(len(case_order)), case_labels)
     ax_right.set_xlabel("exact holdout length")
-    ax_right.set_title("Longer holdouts stabilize the four named quadratic identities and break the plastic mirages")
+    ax_right.set_title("Long-holdout stability")
     for i in range(heat.shape[0] + 1):
         ax_right.axhline(i - 0.5, color="#fbfaf7", lw=0.8)
     for j in range(heat.shape[1] + 1):
         ax_right.axvline(j - 0.5, color="#fbfaf7", lw=0.8)
 
-    handles = [mpl.patches.Patch(color=STATUS_COLORS[name], label=name.replace("_", " ")) for name in statuses]
-    ax_left.legend(handles=handles, frameon=False, fontsize=8, loc="upper center", bbox_to_anchor=(1.15, -0.18), ncol=3)
+    handles = [Patch(color=STATUS_COLORS[name], label=name.replace("_", " ")) for name in statuses]
+    fig.legend(handles=handles, frameon=False, fontsize=8, loc="lower center", bbox_to_anchor=(0.5, 0.06), ncol=3)
     save_figure(fig, "fig6_claim_sensitive_ablations")
 
 
@@ -422,14 +459,23 @@ def fig7_variant_matrix() -> None:
                 annotations[i][j] = "7"
             elif coeffs:
                 annotations[i][j] = "fit"
-    cmap = mpl.colors.ListedColormap([STATUS_COLORS[INT_TO_STATUS[idx]] for idx in range(6)])
-    norm = mpl.colors.BoundaryNorm(np.arange(-0.5, 6.5, 1.0), cmap.N)
+    cmap = mcolors.ListedColormap([STATUS_COLORS[INT_TO_STATUS[idx]] for idx in range(6)])
+    norm = mcolors.BoundaryNorm(np.arange(-0.5, 6.5, 1.0), cmap.N)
 
-    fig, ax = plt.subplots(figsize=(10.5, 5.8))
+    fig, ax = plt.subplots(figsize=(10.2, 5.6))
+    fig.subplots_adjust(left=0.16, right=0.98, top=0.80, bottom=0.24)
+    fig.suptitle("Convergent-selector variants", x=0.16, y=0.95, ha="left", fontsize=14, fontweight="semibold")
+    fig.text(
+        0.16,
+        0.89,
+        "Only the certified even-convergent lane keeps exact identities; nearby variants remain empirical checks.",
+        color="#4a5a6a",
+        fontsize=9.2,
+    )
     ax.imshow(heat, cmap=cmap, norm=norm, aspect="auto")
-    ax.set_xticks(np.arange(len(variants)), ["even", "odd", "even+1", "every 3rd"])
+    ax.set_xticks(np.arange(len(variants)), ["even", "odd", "even +1", "every 3rd"])
     ax.set_yticks(np.arange(len(slopes)), [SLOPE_LABELS[key] for key in slopes])
-    ax.set_title("Nearby convergent-selector variants remain quadratic-only in the current panel")
+    ax.set_title("Variant matrix")
     ax.set_xlabel("convergent template")
     ax.set_ylabel("slope")
     for i in range(len(slopes)):
@@ -439,7 +485,7 @@ def fig7_variant_matrix() -> None:
         ax.axhline(i - 0.5, color="#fbfaf7", lw=0.8)
     for j in range(heat.shape[1] + 1):
         ax.axvline(j - 0.5, color="#fbfaf7", lw=0.8)
-    ax.text(0.01, -0.16, "Annotation = leading recurrence coefficient in the fitted low-order relation when a holdout survives.", transform=ax.transAxes, color="#4a5a6a")
+    ax.text(0.0, -0.18, "Annotation = leading recurrence coefficient for the fitted low-order relation when a holdout survives.", transform=ax.transAxes, color="#4a5a6a", fontsize=8.7)
     save_figure(fig, "fig7_variant_matrix")
 
 
@@ -469,7 +515,7 @@ def fig8_prior_art_matrix() -> None:
             [1, 1, 1, 1, 1],
         ]
     )
-    cmap = mpl.colors.ListedColormap(["#e8edf2", "#33658a"])
+    cmap = mcolors.ListedColormap(["#e8edf2", "#33658a"])
     fig, ax = plt.subplots(figsize=(11.5, 5.8))
     ax.imshow(matrix, cmap=cmap, aspect="auto", vmin=0, vmax=1)
     ax.set_xticks(np.arange(len(features)), features)

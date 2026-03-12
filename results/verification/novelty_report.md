@@ -34,7 +34,7 @@
 ### 3. Exact screening pipeline and "modular-shadow" layer
 
 - Claim: `research_paper.tex:95`, `research_paper.tex:366`, and `research_paper.tex:897` present an exact screening pipeline with certificates, holdouts, and modular-shadow diagnostics.
-- Closest prior art: Beatty/Ostrowski automata and exact-decision tooling (`baranwal2021`, `schaeffer2024`), plus Walnut/Pecan-style automata-assisted verification workflows (`mousavi2021walnut`, `oei2020pecan`), with Bell/Derksen as the recurrence-side obstruction language.
+- Closest prior art: Beatty/Ostrowski automata and exact-decision tooling (`baranwal2021`, `schaeffer2024`), plus Walnut/Pecan-style automata-assisted verification workflows (`mousavi2016walnut`, `oei2021pecan`), with Bell/Derksen as the recurrence-side obstruction language.
 - Distinctness judgment: useful artifact contribution, but not yet a clearly new mathematical result.
 - Concrete overlap signals:
   - `scripts/run_full_panel.py:31` fixes a short exact panel (`COUNT = 20`, `FIT_LENGTH = 12`, `MAX_ORDER = 4`).
@@ -65,7 +65,7 @@
 - Concrete overlap signals:
   - `results/core/h2_pisot_backup.md:31` already says the strong Pisot narrative is unsupported.
   - `special_numbers/beta_numeration.py:8` and `results/concept_evolve/tree/009_pisot_beta_endpoint_sampler/analysis.md:5` show that the negative Pisot evidence is against one rounded-power-basis proxy, not against the full beta-numeration or Rauzy-face literature suggested by `byszewski2023`.
-  - `results/verification/citation_audit.md:10` notes that software and method citations are still not fully normalized in the outward-facing package.
+  - The revision citation audit now normalizes the Walnut/Pecan references, so the remaining weakness is not metadata but the lack of a literature-separated argument that the workflow itself is a novelty-bearing contribution.
 - Missing gap evidence: there is no direct literature comparison establishing that the workflow-level `keep proof/certificate/evidence separate` contribution is itself novel in computer-assisted mathematics.
 - Novelty illusion: present both points as scope discipline and falsifier outcomes, not as co-equal mathematical contributions.
 

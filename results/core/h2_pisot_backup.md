@@ -2,7 +2,7 @@
 
 ## Trigger
 
-The H1 screen leaves irrational survivors in the quadratic lane, so the backup was activated instead of being waived.
+The H1 screen leaves irrational survivors in the sparse quadratic lane, so the backup was activated instead of being waived.
 
 ## Frozen construction used
 
@@ -32,9 +32,13 @@ The strong H2 statement "Pisot slopes form the first clean irrational positive f
 
 - It is **too weak** because the non-Pisot quadratic control `sqrt(2)` also survives.
 - It is **too strong** because the higher-degree Pisot test case (plastic constant) fails while the quadratic cases survive.
+- The revision holdout follow-up removes the strongest nonquadratic sparse anomaly (`salem_quartic / ost_suffix_001`), but the remaining sparse survivors still lack infinite certificates.
 
-The evidence therefore points to a **periodic-continued-fraction / quadratic mechanism**, not a broad Pisot mechanism, at least for this frozen construction.
+The frozen construction therefore leaves a narrow empirical survivor set confined to quadratic slopes, not a proved Pisot or quadratic family boundary.
 
 ## Consequence for the main claim
 
-H2 remains useful only as a narrow falsifier lane: it helped rule out the tempting but unsupported narrative that higher-degree Pisot numbers generically rescue the problem. Any remaining positive story beyond rationals should now be phrased as a quadratic periodic-CF phenomenon unless the separate beta-endpoint experiment produces a new exact survivor.
+H2 remains useful only as a falsifier lane: it rules out the tempting but unsupported story that higher-degree Pisot numbers generically rescue the problem.
+
+- The only safe positive statements beyond rationals are the four certified `quadratic_convergent_even` identities.
+- Any broader sparse narrative remains empirical until intercept controls, prefix-matched nonquadratic controls, and structural certificates for the surviving leaks are added.

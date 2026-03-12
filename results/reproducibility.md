@@ -18,6 +18,8 @@ This creates `.venv/` and installs the exact-arithmetic and plotting stack used 
 ```bash
 python3 .archivara/semantic_scholar.py search "\"Beatty Sequences for a Quadratic Irrational: Decidability and Applications\"" --limit 5 --json --save results/literature/ss_quadratic_beatty_decidability.json
 python3 .archivara/semantic_scholar.py search "\"Linearly recurrent subshifts have a finite number of non-periodic subshift factors\"" --limit 10 --json --save results/literature/ss_linearly_recurrent_subshifts_full.json
+python3 .archivara/semantic_scholar.py search '"Automatic Theorem Proving in Walnut"' --skip-known
+python3 .archivara/semantic_scholar.py search '"Pecan: An Automated Theorem Prover for Automatic Sequences using Büchi Automata"' --skip-known
 ```
 
 ## ConceptEvolve workflow
@@ -57,6 +59,23 @@ This regenerates:
 - `results/experiments/full_panel_results.json`
 - `results/experiments/full_panel_summary.csv`
 - the derived ablation and evaluation memos once the follow-up scripts are rerun.
+
+## Revision follow-up
+
+```bash
+./.venv/bin/python scripts/run_claim_sensitive_ablations.py
+./.venv/bin/python scripts/generate_figures.py
+```
+
+This refreshes the peer-review revision artifacts:
+- `results/experiments/claim_sensitive_ablation.json`
+- `results/experiments/claim_sensitive_ablation.md`
+- `figures/fig4_full_panel_heatmap.pdf`
+- `figures/fig4_full_panel_heatmap.png`
+- `figures/fig6_claim_sensitive_ablations.pdf`
+- `figures/fig6_claim_sensitive_ablations.png`
+- `figures/fig7_variant_matrix.pdf`
+- `figures/fig7_variant_matrix.png`
 
 ## Verification artifacts
 
