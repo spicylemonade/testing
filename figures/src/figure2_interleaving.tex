@@ -1,0 +1,51 @@
+
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\usetikzlibrary{arrows.meta,calc,positioning,backgrounds}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{HTML}{16324F}
+\definecolor{rowc}{HTML}{1B4965}
+\definecolor{colc}{HTML}{A44A3F}
+\definecolor{accent}{HTML}{D9A441}
+\definecolor{sage}{HTML}{4F6D5B}
+\definecolor{sand}{HTML}{E7DFC6}
+\definecolor{mist}{HTML}{F4F1EA}
+\definecolor{gridc}{HTML}{D7D3C8}
+\pagecolor{mist}
+\begin{document}
+
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=2 by 1, horizontal sep=1.8cm},
+  width=7.2cm,
+  height=6.2cm,
+  grid=major,
+  grid style={draw=gridc},
+  tick style={black},
+  xlabel near ticks,
+  ylabel near ticks,
+]
+\nextgroupplot[
+  title={A. Exact interleaving of the axis terms},
+  xlabel={index $n$},
+  ylabel={value},
+  legend style={draw=none, fill=none, at={(0.03,0.97)}, anchor=north west},
+]
+\addplot[rowc, very thick] table[x=n,y=row]{figures/data/figure2_interleaving.tsv};
+\addplot[colc, very thick] table[x=n,y=column]{figures/data/figure2_interleaving.tsv};
+\legend{$r_n$,$c_n$}
+
+\nextgroupplot[
+  title={B. Offset $\delta_n=c_n-r_n$ up to $n=10^6$},
+  xlabel={index $n$},
+  ylabel={offset},
+  xmode=log,
+]
+\addplot[ink, very thick] table[x=n,y=offset]{figures/data/figure2_offsets.tsv};
+\node[draw=gridc, fill=white, rounded corners=2pt, anchor=north west] at (rel axis cs:0.03,0.97)
+  {max offset $=24$};
+\end{groupplot}
+\end{tikzpicture}
+
+\end{document}

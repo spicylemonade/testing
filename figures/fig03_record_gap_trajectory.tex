@@ -1,0 +1,36 @@
+\documentclass[tikz,border=4pt]{standalone}
+\input{figure_preamble}
+\begin{document}
+\pgfplotstableread[col sep=tab]{../results/paper/baseline_record_trajectory.tsv}\basecurve
+\pgfplotstableread[col sep=tab]{../results/paper/row_immediate_record_trajectory.tsv}\rowcurve
+\pgfplotstableread[col sep=tab]{../results/paper/column_immediate_record_trajectory.tsv}\colcurve
+\pgfplotstableread[col sep=tab]{../results/paper/baseline_record_points.tsv}\basepts
+\pgfplotstableread[col sep=tab]{../results/paper/row_immediate_record_points.tsv}\rowpts
+\pgfplotstableread[col sep=tab]{../results/paper/column_immediate_record_points.tsv}\colpts
+\begin{tikzpicture}
+\begin{axis}[
+  width=14cm,
+  height=7cm,
+  xmode=log,
+  xlabel={step at which the new record appears},
+  ylabel={current record gap},
+  title={Record gaps keep increasing on the explored baseline and perturbation horizons},
+  legend pos=north west,
+]
+  \addplot[very thick,baseblue] table[x=step,y=record_gap]{\basecurve};
+  \addlegendentry{baseline}
+  \addplot[only marks,mark=*,mark size=1.7pt,baseblue] table[x=step,y=gap]{\basepts};
+  \addplot[very thick,altgreen,dashed] table[x=step,y=record_gap]{\rowcurve};
+  \addlegendentry{row\_immediate}
+  \addplot[only marks,mark=square*,mark size=1.6pt,altgreen] table[x=step,y=gap]{\rowpts};
+  \addplot[very thick,variantorange,dashdotted] table[x=step,y=record_gap]{\colcurve};
+  \addlegendentry{column\_immediate}
+  \addplot[only marks,mark=triangle*,mark size=2.0pt,variantorange] table[x=step,y=gap]{\colpts};
+  \node[anchor=south] at (axis cs:92320,25) {25};
+  \node[anchor=south] at (axis cs:247399,28) {28};
+  \node[anchor=south] at (axis cs:729353,30) {30};
+  \node[anchor=south] at (axis cs:464333,31) {31};
+\end{axis}
+\node[anchor=north west,font=\bfseries\Large] at (-0.6,7.9) {Record-Gap Trajectory};
+\end{tikzpicture}
+\end{document}

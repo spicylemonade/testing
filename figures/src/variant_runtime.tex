@@ -1,0 +1,85 @@
+
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage{xcolor}
+\usepackage{pagecolor}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepgfplotslibrary{groupplots}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,backgrounds,calc,decorations.pathreplacing,fit,matrix,positioning,shapes.geometric}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{HTML}{1F2937}
+\definecolor{teal}{HTML}{1D7874}
+\definecolor{rust}{HTML}{C75C36}
+\definecolor{gold}{HTML}{D9A441}
+\definecolor{sage}{HTML}{6C9A8B}
+\definecolor{berry}{HTML}{9E2A2B}
+\definecolor{sand}{HTML}{F3E9D2}
+\definecolor{mist}{HTML}{E7EEF3}
+\definecolor{charcoal}{HTML}{3C4858}
+\pagecolor{white}
+\color{ink}
+\pgfplotsset{paperaxis/.style={
+    font=\small,
+    tick label style={font=\small},
+    label style={font=\small},
+    title style={font=\small\bfseries},
+    every axis plot/.append style={line width=1.2pt},
+    grid=both,
+    major grid style={draw=mist},
+    minor grid style={draw=mist!60},
+    grid style={line width=0.2pt},
+    axis line style={draw=charcoal},
+    tick style={draw=charcoal},
+    legend style={draw=none, fill=white, font=\small, row sep=2pt, column sep=4pt}
+}}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=1 by 2, vertical sep=1.3cm},
+  paperaxis,
+  width=15cm,
+  height=5.0cm,
+  symbolic x coords={baseline,row-immediate,column-immediate},
+  xtick=data,
+  xticklabel style={rotate=8, anchor=east},
+]
+\nextgroupplot[
+  title={Tracked structural outputs by recurrence rule},
+  xlabel={rule},
+  ylabel={count},
+  ymin=0,
+  ymax=34,
+  ybar,
+  bar width=9pt,
+  enlarge x limits=0.18,
+  legend pos=north west
+]
+  \addplot+[fill=teal!85, draw=teal] table[x=label,y=largest_record_gap,col sep=tab] {figures/data/variant_summary.tsv};
+  \addlegendentry{largest record gap}
+  \addplot+[fill=gold!85, draw=gold] table[x=label,y=record_gap_count,col sep=tab] {figures/data/variant_summary.tsv};
+  \addlegendentry{record-gap count}
+
+\nextgroupplot[
+  title={Repeated million-step runtimes (mean $\pm$ 95\% CI)},
+  xlabel={rule},
+  ylabel={seconds},
+  ymin=8.8,
+  ymax=10.5
+]
+  \addplot+[
+    only marks,
+    mark=*,
+    mark size=3.0pt,
+    teal,
+    error bars/.cd,
+      y dir=both,
+      y explicit,
+  ] table[x=label,y=mean_seconds,y error=ci95_half_width_seconds,col sep=tab] {figures/data/variant_summary.tsv};
+\end{groupplot}
+\end{tikzpicture}
+\end{document}

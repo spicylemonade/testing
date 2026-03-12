@@ -1,0 +1,80 @@
+codex exec --json --color never --model gpt-5.4 -C /home/archivara/work/repo -c model_reasoning_effort="high" -c shell_environment_policy.inherit="all" -c web_search="live" ROLE: build
+You are a Codex child agent launched by ConceptEvolve.
+Codex multi-agent is enabled with explorer, worker, monitor, and integrator roles.
+If the task clearly parallelizes, you may use one child-agent layer and then synthesize the result yourself.
+Work only on the requested concept task and write the requested artifacts.
+
+You are a recurrent creativity agent with access to websearch, webfetch, semantic_scholar, bash, read, write, and edit tools.
+
+FOCUS PROBLEM:  First, decree that T(1,1) = 1. Then for n > 0, let S(n) = {(i,j) : 1 <= i <= n, 1 <= j <= n},
+and let
+
+T(1,n+1) = least positive integer not among T(i,j) for (i,j) in S(n);
+T(n+1,1) = least positive integer not among T(i,j) for (i,j) in S(n) and not (T,n+1);
+T(m,n+1) = T(m,1)*T(1,n+1).
+
+These rules generate an array T which starts out like this:
+
+T = [
+    [1, 2, 4, 7, 9, 13, 15, 18, 23, 25, 29],
+    [3, 6, 12, 21, 27, 39, 45, 54, 69, 75, 87],
+    [5, 10, 20, 35, 45, 65, 75, 90, 115, 125, 145],
+    [8, 16, 32, 56, 72, 104, 120, 144, 184, 200, 232],
+    [11, 22, 44, 77, 99, 143, 165, 198, 253, 275, 319]
+]
+
+Every prime is in row 1 of T or column 1, but not both.
+
+The difference sequence of row 1 starts with
+
+1,2,3,2,4,2,3,5,2,4,2,5,4,2,4,3,2,4,3,2,2,4,4,7,2,3,2,4,3,5,5,3,4.
+
+Here's the problem: prove (or disprove) that this difference sequence bounded.
+
+More terms of the array T and its first row are given at A129258 and A129259. 
+
+YOUR MISSION: update the concept search using the latest validation feedback so weak bridges are retired and strong bridges are promoted.
+
+READ FIRST IF PRESENT:
+- `results/research_context.md`
+- `results/concept_evolve/evolve_results.json`
+- `results/concept_evolve/probe_result.json`
+- `results/concept_evolve/reframings.json`
+- `results/swarm/falsifier.md`
+- `results/verification/novelty_report.md`
+- `results/verification/benchmark_report.md`
+- `results/verification/citation_audit.md`
+
+STEP 1 — FEEDBACK DIGEST
+Summarize the strongest negative signals from the falsifier / verifier artifacts.
+
+STEP 2 — BRIDGE RE-RANKING
+Produce bridge_candidates as an array of objects with:
+- bridge
+- novelty_signal
+- validation_plan
+- risk
+- promotion_decision  (promote / hold / retire)
+
+STEP 3 — DELTA
+Write `concept_delta.json` with keys:
+- focus
+- promoted_bridges
+- retired_bridges
+- next_experiments
+- feedback_used
+
+STEP 4 — RECURRENT STATE
+Write `recurrent_state.json` with keys:
+- focus
+- champion_bridge
+- iteration_notes
+- feedback_digest
+
+STEP 5 — FILES
+Write these files under /home/archivara/work/repo/results/concept_evolve:
+- bridge_candidates.json
+- concept_delta.json
+- recurrent_state.json
+
+All JSON must be valid JSON. Create directories first: mkdir -p /home/archivara/work/repo/results/concept_evolve

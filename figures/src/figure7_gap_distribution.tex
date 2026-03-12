@@ -1,0 +1,48 @@
+
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\usetikzlibrary{arrows.meta,calc,positioning,backgrounds}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{HTML}{16324F}
+\definecolor{rowc}{HTML}{1B4965}
+\definecolor{colc}{HTML}{A44A3F}
+\definecolor{accent}{HTML}{D9A441}
+\definecolor{sage}{HTML}{4F6D5B}
+\definecolor{sand}{HTML}{E7DFC6}
+\definecolor{mist}{HTML}{F4F1EA}
+\definecolor{gridc}{HTML}{D7D3C8}
+\pagecolor{mist}
+\begin{document}
+
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=2 by 1, horizontal sep=1.8cm},
+  width=7.15cm,
+  height=6.2cm,
+  grid=major,
+  grid style={draw=gridc},
+  xlabel near ticks,
+  ylabel near ticks,
+]
+\nextgroupplot[
+  title={A. Distribution of all first-row gaps up to $10^6$ steps},
+  xlabel={gap size},
+  ylabel={frequency},
+  ybar,
+  bar width=4.5pt,
+]
+\addplot[fill=sage, draw=sage] table[x=gap,y=count]{figures/data/figure7_gap_histogram.tsv};
+
+\nextgroupplot[
+  title={B. Empirical survival function of gap sizes},
+  xlabel={gap threshold},
+  ylabel={$\Pr(G\ge t)$},
+  ymode=log,
+  ymin=0.000001,
+]
+\addplot[ink, very thick, mark=*] table[x=gap,y=survival]{figures/data/figure7_gap_histogram.tsv};
+\end{groupplot}
+\end{tikzpicture}
+
+\end{document}

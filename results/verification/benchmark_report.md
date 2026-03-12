@@ -1,111 +1,133 @@
 # Benchmark Report
 
-## Status
+## Verdict
 
-Benchmark audit result: **PASS with explicit documented risks**.
+- Internal benchmark package: **PASS**
+- Publication-quality benchmark adequacy: **FAIL**
 
-The initial audit correctly identified that the old benchmark package mixed deterministic structural outputs with volatile timing and RSS data. That issue has been fixed by separating:
+The repo now has a correct reproducible baseline generator, machine-readable witness
+logs, one million-step experiment artifacts, and two logged perturbation runs. That is
+enough to support finite-horizon negative-result claims. It is not enough to support a
+publication-quality mechanism claim, asymptotic claim, or strong robustness claim.
 
-- `contract.json` for deterministic structural claims;
-- `performance.json` for volatile runtime/memory observations.
+## What The Current Benchmarks Actually Support
 
-## Pass/Fail Checks
+- The original recurrence is implemented reproducibly enough to clear the local contract
+  bar: the `11`-step prefix checks pass, repeated `30000`-step runs agree on
+  `structural_digest_sha256`, and the old-square update order is explicitly tested.
+- The baseline million-step run extends the record-gap trajectory from `21` to `25`,
+  `28`, and `30`, with exact commands and runtime metadata recorded under
+  `results/experiments/run_1000000/`.
+- `row_immediate` and the baseline agree on the tracked row-gap observables at
+  `10^6` steps: same final border values, same record-gap count, same largest record
+  gap, and identical `record_gap_summary.json` content. The structural digests differ,
+  so this supports equality of the tracked benchmark outputs, not full structural
+  identity.
+- `column_immediate` is a real perturbation: it changes the trajectory to `20` record
+  gaps and a largest record gap of `31`, while preserving the observed late-gap
+  negative-result features such as composite-only records and singleton-heavy coverage.
+- Selected full hypergraph exports validate stored multiplicities on baseline gaps
+  `21`, `25`, `28`, `30`, plus one late gap for each perturbation.
 
-### Correctness
+## Missing Baselines
 
-- **PASS**
-- `results/baseline_spec.md` and `scripts/prime_separator.py` agree on the critical old-square update order.
-- `tests/test_prime_separator.py` validates the known `11`-step prefix and now includes a nearby wrong-rule negative control.
-- `results/baseline/smoke_11/contract.json` reports all three prefix checks as `true`.
+- **No independent implementation baseline.**
+  All large-horizon claims come from one generator family. Repeated runs of the same
+  script catch nondeterminism, not shared logic bugs. A publication-quality package
+  needs one independently written checker at a smaller horizon such as `10^4` or
+  `10^5`.
+- **No large-horizon reproducibility baseline.**
+  Structural repeatability is documented for `30000` steps, not for the `1000000`-step
+  experiment or its perturbations. The million-step evidence is effectively single-run.
+- **No surrogate/null benchmark.**
+  There is still no comparison against size-matched generic product sets, surrogate
+  hypergraphs, or matched non-record windows. Without that control, the repo cannot
+  show that the observed witness structure is specific to the mex-coupled process
+  rather than generic local factor coverage.
 
-### Reproducibility
+## Missing Ablations And Controls
 
-- **PASS**
-- repeated `30000`-step runs are checked by `tests/test_prime_separator.py` and agree on `structural_digest_sha256`.
-- `results/baseline/run_30000/contract.json` now contains stable gap locations and a deterministic digest.
-- volatile performance fields were moved to `results/baseline/run_30000/performance.json`.
+- **Only one materially distinct ablation is present.**
+  `row_immediate` collapses back to the same tracked gap outputs as the baseline, so
+  the benchmark package contains only one perturbation that changes the measured
+  trajectory: `column_immediate`.
+- **The falsifier's requested controls are not fully covered.**
+  The current variants are staging/order perturbations. The package still lacks:
+  1. a same-snapshot explicit tie-rule control;
+  2. an admissibility perturbation that changes coverage rules rather than staging.
+- **Variant correctness evidence is thinner than baseline correctness evidence.**
+  The baseline contract records prefix-validation flags; the variant contracts do not.
+  That asymmetry weakens cross-run benchmark comparability.
 
-### Witness-Log Completeness
+## Missing Error Analysis
 
-- **PASS**
-- `results/baseline/run_30000/record_gaps.json` stores, for every record gap, every skipped integer together with:
-  - prime/composite status;
-  - witness multiplicity;
-  - one valid witness pair;
-  - offset metadata.
+- **Chosen-witness summaries are not canonicalization-robust.**
+  `scripts/prime_separator.py` stores the first witness seen for each skipped value, and
+  `scripts/summarize_record_gaps.py` builds signature statistics from that chosen
+  witness. Those summaries can shift under witness canonicalization even when
+  multiplicities stay fixed.
+- **Full hypergraph validation is only partial.**
+  The repo exports full witness sets for selected late gaps, not for every late record
+  gap and not for matched non-record intervals. That is enough to validate some stored
+  multiplicities, not enough to prove that the reported witness-taxonomy trends are
+  witness-selection invariant.
+- **No matched negative controls for mechanism metrics.**
+  Prime-free intervals, singleton-heavy coverage, balanced-factor growth, and the
+  axis-1 marker are reported only on record gaps. There is no benchmark against
+  equal-length non-record windows showing whether these features are actually
+  discriminative.
+- **H2 error analysis stops too early.**
+  The prime-support table is only analyzed on gaps `13`, `17`, `19`, `20`, and `21`.
+  It is not extended in the same form to baseline gaps `25`, `28`, `30` or to the late
+  perturbation gaps.
 
-### Stale Small-Horizon Refresh
+## Missing Stress Tests
 
-- **PASS**
-- the validated run goes beyond the stale `17`-gap horizon and reproduces:
-  - gap `19` at `38630 -> 38649` on step `8475`;
-  - gap `20` at `130699 -> 130719` on step `27676`;
-  - gap `21` at `139039 -> 139060` on step `29373`.
+- **No horizon sweep.**
+  The main experiment benchmark is pinned at `10^6` steps. There is no controlled sweep
+  across horizons such as `10^5`, `3 x 10^5`, `10^6`, `3 x 10^6` to show how record-gap
+  counts, largest gaps, singleton share, and offset statistics evolve.
+- **No reproducible scaling profile.**
+  The repo records one runtime and RSS observation per run, with no repeats, no machine
+  metadata, and no variance estimate. These numbers are observational only and cannot
+  support performance claims.
+- **Recurrence-mistake stress testing is still shallow.**
+  The test suite includes one nearby wrong-rule negative control, but not a broader
+  family of wrong-order, stale-state, or witness-accounting perturbations.
+- **Hypergraph stress testing is selective.**
+  Hypergraph exports check a few late records. They do not yet provide a systematic
+  rolling-horizon audit of all large gaps or any non-record controls.
 
-### Prime-Free Record Gaps
+## Publication-Quality Claim Boundary
 
-- **PASS**
-- the baseline already shows that gap `21` contains `0` skipped primes and `20` skipped composites.
-- the million-step run strengthens this rather than weakening it:
-  - gap `28` is composite-only;
-  - gap `30` is composite-only;
-  - the `column_immediate` perturbation also produces composite-only late records, including gap `31`.
+- The current package **can** claim:
+  - a validated recurrence implementation;
+  - reproducible finite-horizon record-gap growth through gap `30` in the baseline and
+    `31` in one perturbation;
+  - composite-only late record gaps;
+  - failure of the raw-witness compact-certificate story on the current corpus.
+- The current package **cannot** claim:
+  - boundedness or unboundedness of `T(1,n+1) - T(1,n)`;
+  - a T-specific mechanism separated from Ford-style local divisor/product coverage;
+  - robustness under nearby perturbations in any broad sense;
+  - statistical runtime or memory conclusions.
 
-Interpretation: prime-free record gaps are a validated feature of the package, not a hidden contradiction.
+## Falsifiable Next Checks
 
-### Brittle Single-Witness Coverage
-
-- **PASS**
-- in the gap-`21` interval, `16` of the `20` skipped values have multiplicity `1`;
-- in the million-step run, the late record gaps have singleton shares:
-  - gap `25`: `18/24`;
-  - gap `28`: `18/27`;
-  - gap `30`: `19/29`.
-
-Interpretation: brittle coverage remains present at larger horizons and is now explicitly benchmarked rather than buried.
-
-### Recurrence-Order Mistakes
-
-- **PASS**
-- the benchmark package now includes a negative control test for a nearby wrong axis-choice rule.
-- the deterministic digest test makes silent recurrence drift easier to catch than before.
-- the two nearby perturbation runs are logged separately under `results/experiments/row_immediate_1000000/` and `results/experiments/column_immediate_1000000/`, so the package no longer blurs the validated baseline with robustness experiments.
-- full-witness hypergraph exports validate multiplicity counts on:
-  - original gap `30`;
-  - `row_immediate` gap `30`;
-  - `column_immediate` gap `31`.
-
-### Stale Small-Horizon Claims
-
-- **PASS**
-- the package no longer stops at the old `21`-gap horizon.
-- `results/experiments/run_1000000/contract.json` extends the record-gap trajectory to `25`, `28`, and `30`.
-- `results/experiments/run_1000000/experiment_note.md` records the exact command and runtime.
-
-### Unsupported Benchmarks
-
-- **PASS**
-- the primary experiment, the two perturbation runs, and the late-gap hypergraph exports are all backed by exact commands recorded in:
-  - `results/experiments/run_1000000/experiment_note.md`;
-  - `results/experiments/variant_comparison.md`.
-- no claim in the current package relies on an uncaptured shell transcript or on a benchmark path that cannot be regenerated.
-
-## Allowed Non-Structural Perturbations
-
-No more than these two perturbations are allowed for later robustness work:
-
-1. Witness canonicalization:
-   - change which valid witness pair is stored for a skipped value, while preserving validity and multiplicity.
-2. Performance-only coverage tuning:
-   - vary `--initial-limit` or limit-growth policy, provided `contract.json` stays identical.
-
-## Residual Risks
-
-- The test suite is still lightweight and subprocess-based rather than property-heavy.
-- The negative control is a nearby wrong rule, not an exhaustive family of recurrence mistakes.
-- The `column_immediate` perturbation shows that some trajectory-level phenomena are sensitive to staging, even though the high-level negative-result conclusions survive.
-- Performance numbers remain environment dependent and should not be treated as structural evidence.
-
-## Sources
-
-See `results/verification/claim_source_matrix.md` and `sources.bib`.
+1. Add one independently written reference implementation and require agreement with the
+   baseline contract through at least `10^5` steps. If the contracts diverge, the large
+   run package is not trustworthy enough for publication.
+2. Run the two missing controls from the falsifier memo: a same-snapshot tie-rule
+   variant and an admissibility perturbation. If the qualitative conclusions break, the
+   current robustness story fails.
+3. Benchmark record-gap metrics against matched non-record windows and size-matched
+   surrogate product sets. If prime-free or singleton-heavy structure is equally common
+   there, kill the T-specific mechanism interpretation.
+4. Export full witness hypergraphs for every baseline record gap from `20` upward and
+   for every late perturbation record gap. If the high-level witness taxonomy changes
+   materially after removing chosen-witness bias, retract the current witness-summary
+   narrative.
+5. Run a horizon sweep with repeated digests and performance logs at fixed checkpoints
+   such as `10^5`, `3 x 10^5`, `10^6`, and `3 x 10^6`. If gap growth or qualitative
+   summaries plateau, reverse, or become unstable across checkpoints, state that
+   explicitly instead of extrapolating from one horizon.

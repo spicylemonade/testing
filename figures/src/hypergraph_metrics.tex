@@ -1,0 +1,91 @@
+
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage{xcolor}
+\usepackage{pagecolor}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepgfplotslibrary{groupplots}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,backgrounds,calc,decorations.pathreplacing,fit,matrix,positioning,shapes.geometric}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{HTML}{1F2937}
+\definecolor{teal}{HTML}{1D7874}
+\definecolor{rust}{HTML}{C75C36}
+\definecolor{gold}{HTML}{D9A441}
+\definecolor{sage}{HTML}{6C9A8B}
+\definecolor{berry}{HTML}{9E2A2B}
+\definecolor{sand}{HTML}{F3E9D2}
+\definecolor{mist}{HTML}{E7EEF3}
+\definecolor{charcoal}{HTML}{3C4858}
+\pagecolor{white}
+\color{ink}
+\pgfplotsset{paperaxis/.style={
+    font=\small,
+    tick label style={font=\small},
+    label style={font=\small},
+    title style={font=\small\bfseries},
+    every axis plot/.append style={line width=1.2pt},
+    grid=both,
+    major grid style={draw=mist},
+    minor grid style={draw=mist!60},
+    grid style={line width=0.2pt},
+    axis line style={draw=charcoal},
+    tick style={draw=charcoal},
+    legend style={draw=none, fill=white, font=\small, row sep=2pt, column sep=4pt}
+}}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=1 by 2, vertical sep=1.3cm},
+  paperaxis,
+  width=15cm,
+  height=5.3cm,
+  symbolic x coords={21,25,28,30},
+  xtick=data,
+]
+\nextgroupplot[
+  title={Full-witness pair-count histograms for late baseline records},
+  xlabel={record gap},
+  ylabel={skipped values},
+  ymin=0,
+  ymax=21,
+  ybar stacked,
+  bar width=11pt,
+  legend columns=4,
+  legend to name=pairlegend,
+  legend style={/tikz/every even column/.append style={column sep=4pt}}
+]
+  \addplot+[fill=teal!80, draw=teal] table[x=gap,y=pair1,col sep=tab] {figures/data/hypergraph_metrics.tsv};
+  \addlegendentry{1 pair}
+  \addplot+[fill=sage!90, draw=sage] table[x=gap,y=pair2,col sep=tab] {figures/data/hypergraph_metrics.tsv};
+  \addlegendentry{2 pairs}
+  \addplot+[fill=gold!90, draw=gold] table[x=gap,y=pair3,col sep=tab] {figures/data/hypergraph_metrics.tsv};
+  \addlegendentry{3 pairs}
+  \addplot+[fill=berry!85, draw=berry] table[x=gap,y=pair4plus,col sep=tab] {figures/data/hypergraph_metrics.tsv};
+  \addlegendentry{$\ge 4$ pairs}
+
+\nextgroupplot[
+  title={Factor reuse remains weak after full enumeration},
+  xlabel={record gap},
+  ylabel={count},
+  ymin=0,
+  ymax=46,
+  ybar,
+  bar width=7pt,
+  enlarge x limits=0.2,
+  legend pos=north west
+]
+  \addplot+[fill=teal!85, draw=teal] table[x=gap,y=total_full_pairs,col sep=tab] {figures/data/hypergraph_metrics.tsv};
+  \addlegendentry{total admissible pairs}
+  \addplot+[fill=rust!80, draw=rust] table[x=gap,y=distinct_row_factors_used,col sep=tab] {figures/data/hypergraph_metrics.tsv};
+  \addlegendentry{distinct row factors}
+  \addplot+[fill=gold!85, draw=gold] table[x=gap,y=distinct_column_factors_used,col sep=tab] {figures/data/hypergraph_metrics.tsv};
+  \addlegendentry{distinct column factors}
+\end{groupplot}
+\node at ($(group c1r2.south)!0.5!(group c1r1.north)$) [anchor=south, yshift=-0.2cm] {\pgfplotslegendfromname{pairlegend}};
+\end{tikzpicture}
+\end{document}

@@ -1,36 +1,25 @@
 # Research Context
 
-- Stage: post_verification_closeout
+- Stage: post_writer
 - Model: gpt-5.4
-- Rubric progress: 23/25 completed, 1 in progress, 1 pending
+- Codex model ref: openai/gpt-5.4
+- Reasoning effort: high
+- Note: paper draft and compilation stage completed
+- Rubric progress: 25/25 completed
+- Known papers tracked: 100
 - `sources.bib` entries: 15
-- Verification status: `still unresolved`
-- Selected hypothesis outcome:
-  - `H1_frontier_witness_certificate` -> pivoted to a narrow hypergraph-compression rescue line
-  - `H2_prime_support_fixed_point` -> killed
-- Strongest overlap risk: Ford multiplication-table / divisor-in-an-interval coverage
+- Swarm hypotheses: 3
+- Verification summary present: yes
 
-## Current Evidence State
+## Closest Prior Art
+- The Haros-Farey sequence at two hundred years. A survey. (2003)
+- EFFECTS OF EXPLICIT TEACHER INSTRUCTION ON AUTISM STUDENTS’ ACADEMIC PERFORMANCE AND RETENTION ABILITY IN DIRECTED NUMBERS AMONG JUNIOR SECONDARY SCHOOLS IN DAURA EDUCATION ZONE, KATSINA STATE, NIGERIA (2019)
+- Computational Social Science : Large-Scale Missing Data in a Widely-Published Reddit Corpus (2018)
+- Cotton (Gossypium hirsutum) Response to Simulated Repeated Damage by Helicoverpa spp. Larvae (2002)
 
-- Validated baseline to `1,000,000` steps with record gaps up to `30`
-- Nearby `column_immediate` perturbation reaches record gap `31`
-- Large composite-only record gaps are confirmed
-- Full witness hypergraphs are now exported for gaps `21`, `25`, `28`, and `30`
-
-## Active Bridge
-
-- Champion bridge after `iterate`:
-  - full witness hypergraphs -> hypergraph certificate complexity / invariant compression
-- Required control:
-  - size-matched surrogate product-set ablation to clear the Ford overlap branch
-
-## Retired Bridges
-
-- raw witness stream -> symbolic/automaton law
-- prime-support fixed point -> gap control
-- parking/jamming phenomenology as an active mechanism
-
-## Closing Note
-
-The repo now supports a strong negative-result / overlap-audit package and one bounded
-remaining rescue test. It does not support a proof or disproof of boundedness.
+## Recent Semantic Scholar Activity
+- search :: Stanley sequences greedy sequence mex (results=0, cache_hits=0, network_calls=0)
+- search :: "Stanley sequences" (results=0, cache_hits=0, network_calls=0)
+- bibtex :: f8b63d03bc185b019249849e00ef057dbb75eebb (results=1, cache_hits=0, network_calls=1)
+- bibtex :: 48a89afec71d2d1af2852db5a02b7b248435a526 (results=1, cache_hits=0, network_calls=1)
+- bibtex :: ceffab6ba62f2a0012a65306c6f1083e743e4d22 (results=1, cache_hits=0, network_calls=1)

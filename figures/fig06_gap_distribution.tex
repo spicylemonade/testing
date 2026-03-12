@@ -1,0 +1,47 @@
+\documentclass[tikz,border=4pt]{standalone}
+\input{figure_preamble}
+\begin{document}
+\pgfplotstableread[col sep=tab]{../results/paper/gap_window_summary.tsv}\summary
+\pgfplotstableread[col sep=tab]{../results/paper/gap_survivor.tsv}\survivor
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=1 by 2, vertical sep=1.4cm},
+  width=14cm,
+  height=5.6cm,
+]
+\nextgroupplot[
+  title={Deterministic five-number summaries of the one-step gaps},
+  symbolic x coords={le1e3,1e3to1e4,1e4to1e5,1e5to1e6},
+  xtick=data,
+  xticklabels={$n\le 10^3$,$10^3<n\le 10^4$,$10^4<n\le 10^5$,$10^5<n\le 10^6$},
+  xlabel={window},
+  ylabel={gap size},
+]
+  \addplot[baseblue,mark=*,very thick] table[x=window,y=median]{\summary};
+  \addlegendentry{median}
+  \addplot[gold,mark=square*,very thick] table[x=window,y=q1]{\summary};
+  \addlegendentry{$Q_1$}
+  \addplot[gold!80!black,mark=square*,very thick,dashed] table[x=window,y=q3]{\summary};
+  \addlegendentry{$Q_3$}
+  \addplot[slate,mark=triangle*,very thick,densely dotted] table[x=window,y=max]{\summary};
+  \addlegendentry{max}
+\nextgroupplot[
+  title={Tail probabilities within the same windows},
+  xlabel={threshold $t$},
+  ylabel={$\Pr(a_{n+1}-a_n\ge t)$},
+  ymode=log,
+  ymin=0.000001,
+  ymax=1,
+]
+  \addplot[very thick,baseblue] table[x=threshold,y=survivor,row predicate/.code={\ifnum\pdfstrcmp{\thisrow{window}}{le1e3}=0\else\pgfplotstableuserowfalse\fi}]{\survivor};
+  \addlegendentry{$n\le 10^3$}
+  \addplot[very thick,altgreen] table[x=threshold,y=survivor,row predicate/.code={\ifnum\pdfstrcmp{\thisrow{window}}{1e3to1e4}=0\else\pgfplotstableuserowfalse\fi}]{\survivor};
+  \addlegendentry{$10^3<n\le 10^4$}
+  \addplot[very thick,variantorange] table[x=threshold,y=survivor,row predicate/.code={\ifnum\pdfstrcmp{\thisrow{window}}{1e4to1e5}=0\else\pgfplotstableuserowfalse\fi}]{\survivor};
+  \addlegendentry{$10^4<n\le 10^5$}
+  \addplot[very thick,gold!80!black] table[x=threshold,y=survivor,row predicate/.code={\ifnum\pdfstrcmp{\thisrow{window}}{1e5to1e6}=0\else\pgfplotstableuserowfalse\fi}]{\survivor};
+  \addlegendentry{$10^5<n\le 10^6$}
+\end{groupplot}
+\node[anchor=north west,font=\bfseries\Large] at (-0.6,11.1) {Distributional View Of The Baseline Gap Process};
+\end{tikzpicture}
+\end{document}

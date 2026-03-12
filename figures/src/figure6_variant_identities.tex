@@ -1,0 +1,52 @@
+
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\usetikzlibrary{arrows.meta,calc,positioning,backgrounds}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{HTML}{16324F}
+\definecolor{rowc}{HTML}{1B4965}
+\definecolor{colc}{HTML}{A44A3F}
+\definecolor{accent}{HTML}{D9A441}
+\definecolor{sage}{HTML}{4F6D5B}
+\definecolor{sand}{HTML}{E7DFC6}
+\definecolor{mist}{HTML}{F4F1EA}
+\definecolor{gridc}{HTML}{D7D3C8}
+\pagecolor{mist}
+\begin{document}
+
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=2 by 1, horizontal sep=1.8cm},
+  width=7.1cm,
+  height=6.2cm,
+  grid=major,
+  grid style={draw=gridc},
+  xlabel near ticks,
+  ylabel near ticks,
+]
+\nextgroupplot[
+  title={A. The row-immediate rule is exactly identical},
+  xlabel={baseline term},
+  ylabel={row-immediate term},
+]
+\addplot[draw=gridc, dashed, domain=1:1400] {x};
+\addplot[only marks, mark=*, mark size=1.3pt, rowc] table[x=baseline_row,y=row_immediate_row]{figures/data/figure6_identities.tsv};
+\addplot[only marks, mark=square*, mark size=1.2pt, colc] table[x=baseline_col,y=row_immediate_col]{figures/data/figure6_identities.tsv};
+\node[draw=gridc, fill=white, rounded corners=2pt, anchor=south east] at (rel axis cs:0.98,0.03)
+  {$y=x$ in both clouds};
+
+\nextgroupplot[
+  title={B. The column-immediate rule is the axis swap},
+  xlabel={baseline term},
+  ylabel={column-immediate term},
+]
+\addplot[draw=gridc, dashed, domain=1:1400] {x};
+\addplot[only marks, mark=triangle*, mark size=1.6pt, colc] table[x=baseline_col,y=column_immediate_row]{figures/data/figure6_identities.tsv};
+\addplot[only marks, mark=diamond*, mark size=1.5pt, rowc] table[x=baseline_row,y=column_immediate_col]{figures/data/figure6_identities.tsv};
+\node[draw=gridc, fill=white, rounded corners=2pt, anchor=south east] at (rel axis cs:0.98,0.03)
+  {axis swap};
+\end{groupplot}
+\end{tikzpicture}
+
+\end{document}

@@ -1,0 +1,50 @@
+
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\usetikzlibrary{arrows.meta,calc,positioning,backgrounds}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{HTML}{16324F}
+\definecolor{rowc}{HTML}{1B4965}
+\definecolor{colc}{HTML}{A44A3F}
+\definecolor{accent}{HTML}{D9A441}
+\definecolor{sage}{HTML}{4F6D5B}
+\definecolor{sand}{HTML}{E7DFC6}
+\definecolor{mist}{HTML}{F4F1EA}
+\definecolor{gridc}{HTML}{D7D3C8}
+\pagecolor{mist}
+\begin{document}
+
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=2 by 1, horizontal sep=1.8cm},
+  width=7.15cm,
+  height=6.2cm,
+  grid=major,
+  grid style={draw=gridc},
+  xlabel near ticks,
+  ylabel near ticks,
+]
+\nextgroupplot[
+  title={A. Record-gap trajectory in the baseline run},
+  xlabel={step $n$},
+  ylabel={record gap $g_n$},
+  xmode=log,
+]
+\addplot[rowc, very thick, mark=*, mark size=1.8pt] table[x=step,y=gap]{figures/data/figure3_record_gaps.tsv};
+
+\nextgroupplot[
+  title={B. Waiting time between successive record gaps},
+  xlabel={record index},
+  ylabel={step increment},
+  ymode=log,
+  xtick=data,
+  xticklabels from table={figures/data/figure3_waits.tsv}{label},
+  x tick label style={rotate=45, anchor=east},
+  ymin=1,
+]
+\addplot[ybar, bar width=6pt, fill=sage, draw=sage] table[x=idx,y=wait]{figures/data/figure3_waits.tsv};
+\end{groupplot}
+\end{tikzpicture}
+
+\end{document}

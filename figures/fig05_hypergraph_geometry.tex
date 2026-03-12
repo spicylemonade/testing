@@ -1,0 +1,36 @@
+\documentclass[tikz,border=4pt]{standalone}
+\input{figure_preamble}
+\begin{document}
+\pgfplotstableread[col sep=tab]{../results/paper/hypergraph_gap21.tsv}\gapA
+\pgfplotstableread[col sep=tab]{../results/paper/hypergraph_gap25.tsv}\gapB
+\pgfplotstableread[col sep=tab]{../results/paper/hypergraph_gap28.tsv}\gapC
+\pgfplotstableread[col sep=tab]{../results/paper/hypergraph_gap30.tsv}\gapD
+\pgfplotstableread[col sep=tab]{../results/paper/hypergraph_gap31.tsv}\gapE
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=3 by 2, horizontal sep=1.0cm, vertical sep=1.0cm},
+  width=4.3cm,
+  height=4.0cm,
+  xmode=log,
+  ymode=log,
+  xlabel={row factor},
+  ylabel={column factor},
+  point meta=explicit,
+  colormap/viridis,
+]
+\nextgroupplot[title={gap 21}]
+  \addplot[scatter,only marks,mark size=0.8pt,scatter/use mapped color={draw opacity=0.85,fill opacity=0.85}] table[x=row_factor,y=column_factor,meta=value]{\gapA};
+\nextgroupplot[title={gap 25}]
+  \addplot[scatter,only marks,mark size=0.8pt,scatter/use mapped color={draw opacity=0.85,fill opacity=0.85}] table[x=row_factor,y=column_factor,meta=value]{\gapB};
+\nextgroupplot[title={gap 28}]
+  \addplot[scatter,only marks,mark size=0.8pt,scatter/use mapped color={draw opacity=0.85,fill opacity=0.85}] table[x=row_factor,y=column_factor,meta=value]{\gapC};
+\nextgroupplot[title={gap 30}]
+  \addplot[scatter,only marks,mark size=0.8pt,scatter/use mapped color={draw opacity=0.85,fill opacity=0.85}] table[x=row_factor,y=column_factor,meta=value]{\gapD};
+\nextgroupplot[title={gap 31 (variant)}]
+  \addplot[scatter,only marks,mark size=0.8pt,scatter/use mapped color={draw opacity=0.85,fill opacity=0.85}] table[x=row_factor,y=column_factor,meta=value]{\gapE};
+\nextgroupplot[axis lines=none, ticks=none, xlabel={}, ylabel={}, title={Interpretation}]
+  \node[align=left,text width=4.0cm] at (rel axis cs:0.02,0.95) {Each point is one admissible factor pair $(a,b)$ for a skipped value in the chosen record interval. The late gaps remain sparse and heterogeneous: factor reuse is weak, and the points do not collapse onto a small reusable grammar.};
+\end{groupplot}
+\node[anchor=north west,font=\bfseries\Large] at (-0.7,10.2) {Full Witness Hypergraphs};
+\end{tikzpicture}
+\end{document}

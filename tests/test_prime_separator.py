@@ -1,5 +1,6 @@
 import json
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -25,6 +26,14 @@ def reversed_axis_choice_terms(steps: int) -> tuple[list[int], list[int]]:
 
 
 class PrimeSeparatorTest(unittest.TestCase):
+    def _run_generator(self, command: list[str]) -> tuple[list[int], list[int]]:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_dir = Path(tmpdir)
+            subprocess.run(command + ["--out-dir", str(out_dir)], check=True)
+            row_terms = json.loads((out_dir / "row_terms.json").read_text())
+            column_terms = json.loads((out_dir / "column_terms.json").read_text())
+        return row_terms, column_terms
+
     def test_baseline_prefix(self) -> None:
         out_dir = Path("results/baseline/test_11")
         if out_dir.exists():
@@ -81,6 +90,40 @@ class PrimeSeparatorTest(unittest.TestCase):
         wrong_rows, wrong_cols = reversed_axis_choice_terms(11)
         self.assertNotEqual(wrong_rows[:11], [1, 2, 4, 7, 9, 13, 15, 18, 23, 25, 29])
         self.assertNotEqual(wrong_cols[:5], [1, 3, 5, 8, 11])
+
+    def test_row_immediate_matches_baseline(self) -> None:
+        baseline_rows, baseline_cols = self._run_generator(
+            ["python3", "scripts/prime_separator.py", "--steps", "200"]
+        )
+        variant_rows, variant_cols = self._run_generator(
+            [
+                "python3",
+                "scripts/prime_separator_variants.py",
+                "--variant",
+                "row_immediate",
+                "--steps",
+                "200",
+            ]
+        )
+        self.assertEqual(variant_rows, baseline_rows)
+        self.assertEqual(variant_cols, baseline_cols)
+
+    def test_column_immediate_swaps_axes(self) -> None:
+        baseline_rows, baseline_cols = self._run_generator(
+            ["python3", "scripts/prime_separator.py", "--steps", "200"]
+        )
+        variant_rows, variant_cols = self._run_generator(
+            [
+                "python3",
+                "scripts/prime_separator_variants.py",
+                "--variant",
+                "column_immediate",
+                "--steps",
+                "200",
+            ]
+        )
+        self.assertEqual(variant_rows, baseline_cols)
+        self.assertEqual(variant_cols, baseline_rows)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,34 @@
+\documentclass[tikz,border=4pt]{standalone}
+\input{figure_preamble}
+\begin{document}
+\pgfplotstableread[col sep=tab]{../results/paper/baseline_witness_metrics.tsv}\basedata
+\pgfplotstableread[col sep=tab]{../results/paper/column_immediate_witness_metrics.tsv}\coldata
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=2 by 2, horizontal sep=1.4cm, vertical sep=1.2cm},
+  width=6.4cm,
+  height=5.2cm,
+  xlabel={record gap magnitude},
+  ymin=0,
+  legend to name=metriclegend,
+  legend columns=2,
+]
+\nextgroupplot[ylabel={singleton share},title={Singleton share}]
+  \addplot[very thick,baseblue,mark=*] table[x=gap,y=singleton_share]{\basedata};
+  \addlegendentry{baseline}
+  \addplot[very thick,variantorange,mark=square*] table[x=gap,y=singleton_share]{\coldata};
+  \addlegendentry{column\_immediate}
+\nextgroupplot[ylabel={tiny-factor share},title={Tiny-factor share}]
+  \addplot[very thick,baseblue,mark=*] table[x=gap,y=tiny_share]{\basedata};
+  \addplot[very thick,variantorange,mark=square*] table[x=gap,y=tiny_share]{\coldata};
+\nextgroupplot[ylabel={balanced-factor share},title={Balanced-factor share}]
+  \addplot[very thick,baseblue,mark=*] table[x=gap,y=balanced_share]{\basedata};
+  \addplot[very thick,variantorange,mark=square*] table[x=gap,y=balanced_share]{\coldata};
+\nextgroupplot[ylabel={skipped primes},title={Skipped primes}]
+  \addplot[very thick,baseblue,mark=*] table[x=gap,y=skipped_primes]{\basedata};
+  \addplot[very thick,variantorange,mark=square*] table[x=gap,y=skipped_primes]{\coldata};
+\end{groupplot}
+\node[anchor=north west,font=\bfseries\Large] at (-0.5,11.6) {Witness Metrics Across Record Gaps};
+\node at (6.8,-0.7) {\pgfplotslegendfromname{metriclegend}};
+\end{tikzpicture}
+\end{document}

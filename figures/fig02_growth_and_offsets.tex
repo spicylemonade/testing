@@ -1,0 +1,30 @@
+\documentclass[tikz,border=4pt]{standalone}
+\input{figure_preamble}
+\begin{document}
+\pgfplotstableread[col sep=tab]{../results/paper/growth.tsv}\growthdata
+\pgfplotstableread[col sep=tab]{../results/paper/offset_quantiles.tsv}\offsetdata
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=1 by 2, vertical sep=1.5cm},
+  width=14cm,
+  height=6cm,
+  xmode=log,
+  xlabel={step $n$},
+]
+\nextgroupplot[ylabel={normalized border value},title={Border growth is close to linear on the explored horizon}]
+  \addplot[very thick,baseblue] table[x=n,y=row_ratio]{\growthdata};
+  \addlegendentry{$a_n/n$}
+  \addplot[very thick,variantorange] table[x=n,y=col_ratio]{\growthdata};
+  \addlegendentry{$b_n/n$}
+\nextgroupplot[ylabel={$b_n-a_n$},title={Row/column offsets stay small relative to the border scale}]
+  \addplot[name path=qlo,draw=none] table[x=n,y=q10]{\offsetdata};
+  \addplot[name path=qhi,draw=none] table[x=n,y=q90]{\offsetdata};
+  \addplot[gold!20] fill between[of=qlo and qhi];
+  \addplot[very thick,gold] table[x=n,y=q50]{\offsetdata};
+  \addlegendentry{median offset in log bins}
+  \addplot[altgreen,opacity=0.35] table[x=n,y=offset]{\growthdata};
+  \addlegendentry{raw offset}
+\end{groupplot}
+\node[anchor=north west,font=\bfseries\Large] at (-0.6,13.4) {Finite-Horizon Growth Of The Border Sequences};
+\end{tikzpicture}
+\end{document}

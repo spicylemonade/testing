@@ -1,0 +1,85 @@
+
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage{xcolor}
+\usepackage{pagecolor}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepgfplotslibrary{groupplots}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,backgrounds,calc,decorations.pathreplacing,fit,matrix,positioning,shapes.geometric}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{HTML}{1F2937}
+\definecolor{teal}{HTML}{1D7874}
+\definecolor{rust}{HTML}{C75C36}
+\definecolor{gold}{HTML}{D9A441}
+\definecolor{sage}{HTML}{6C9A8B}
+\definecolor{berry}{HTML}{9E2A2B}
+\definecolor{sand}{HTML}{F3E9D2}
+\definecolor{mist}{HTML}{E7EEF3}
+\definecolor{charcoal}{HTML}{3C4858}
+\pagecolor{white}
+\color{ink}
+\pgfplotsset{paperaxis/.style={
+    font=\small,
+    tick label style={font=\small},
+    label style={font=\small},
+    title style={font=\small\bfseries},
+    every axis plot/.append style={line width=1.2pt},
+    grid=both,
+    major grid style={draw=mist},
+    minor grid style={draw=mist!60},
+    grid style={line width=0.2pt},
+    axis line style={draw=charcoal},
+    tick style={draw=charcoal},
+    legend style={draw=none, fill=white, font=\small, row sep=2pt, column sep=4pt}
+}}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=1 by 3, vertical sep=1.25cm},
+  paperaxis,
+  width=15cm,
+  height=4.2cm,
+  xmin=0,
+  xmax=31,
+  xtick={1,5,10,15,20,25,30},
+  xlabel={record gap},
+]
+\nextgroupplot[
+  title={Singleton-heavy coverage persists},
+  ylabel={singleton share},
+  ymin=0.60,
+  ymax=0.95
+]
+  \addplot+[mark=*, mark size=2.2pt, teal]
+    table[x=gap,y=singleton_share,col sep=tab] {figures/data/baseline_gap_metrics.tsv};
+
+\nextgroupplot[
+  title={Tiny factors fade while balanced witnesses rise},
+  ylabel={share of skipped values},
+  ymin=0,
+  ymax=0.70,
+  legend pos=north east
+]
+  \addplot+[mark=square*, mark size=2.2pt, rust]
+    table[x=gap,y=tiny_share,col sep=tab] {figures/data/baseline_gap_metrics.tsv};
+  \addlegendentry{min factor $\le 10$}
+  \addplot+[mark=triangle*, mark size=2.4pt, gold]
+    table[x=gap,y=balanced_share,col sep=tab] {figures/data/baseline_gap_metrics.tsv};
+  \addlegendentry{min factor $>100$}
+
+\nextgroupplot[
+  title={Large records can be composite-only},
+  ylabel={skipped primes},
+  ymin=-0.2,
+  ymax=2.2
+]
+  \addplot+[ybar, bar width=6pt, fill=berry!75, draw=berry]
+    table[x=gap,y=skipped_prime_count,col sep=tab] {figures/data/baseline_gap_metrics.tsv};
+\end{groupplot}
+\end{tikzpicture}
+\end{document}

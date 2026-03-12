@@ -1,0 +1,68 @@
+
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage{xcolor}
+\usepackage{pagecolor}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepgfplotslibrary{groupplots}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,backgrounds,calc,decorations.pathreplacing,fit,matrix,positioning,shapes.geometric}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{HTML}{1F2937}
+\definecolor{teal}{HTML}{1D7874}
+\definecolor{rust}{HTML}{C75C36}
+\definecolor{gold}{HTML}{D9A441}
+\definecolor{sage}{HTML}{6C9A8B}
+\definecolor{berry}{HTML}{9E2A2B}
+\definecolor{sand}{HTML}{F3E9D2}
+\definecolor{mist}{HTML}{E7EEF3}
+\definecolor{charcoal}{HTML}{3C4858}
+\pagecolor{white}
+\color{ink}
+\pgfplotsset{paperaxis/.style={
+    font=\small,
+    tick label style={font=\small},
+    label style={font=\small},
+    title style={font=\small\bfseries},
+    every axis plot/.append style={line width=1.2pt},
+    grid=both,
+    major grid style={draw=mist},
+    minor grid style={draw=mist!60},
+    grid style={line width=0.2pt},
+    axis line style={draw=charcoal},
+    tick style={draw=charcoal},
+    legend style={draw=none, fill=white, font=\small, row sep=2pt, column sep=4pt}
+}}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+  paperaxis,
+  width=16cm,
+  height=9cm,
+  xmode=log,
+  log basis x=10,
+  xlabel={step $n$},
+  ylabel={record gap $a_{n+1}-a_n$},
+  ymin=0,
+  ymax=33,
+  xmin=1,
+  xmax=1100000,
+  legend pos=north west,
+  title={Record-gap growth through $10^6$ steps}
+]
+  \addplot+[only marks, mark=*, mark size=2.3pt, teal]
+    table[x=step,y=gap,col sep=tab] {figures/data/baseline_record_gaps.tsv};
+  \addlegendentry{baseline}
+  \addplot+[only marks, mark=square*, mark size=2.3pt, rust]
+    table[x=step,y=gap,col sep=tab] {figures/data/row_immediate_record_gaps.tsv};
+  \addlegendentry{row\_immediate}
+  \addplot+[only marks, mark=triangle*, mark size=2.6pt, gold]
+    table[x=step,y=gap,col sep=tab] {figures/data/column_immediate_record_gaps.tsv};
+  \addlegendentry{column\_immediate}
+\end{axis}
+\end{tikzpicture}
+\end{document}
