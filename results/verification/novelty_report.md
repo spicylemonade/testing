@@ -2,84 +2,65 @@
 
 ## Review scope
 
-- Round: `review_round_1`.
-- Audit basis: `research_paper.tex`, `results/final_claim_memo.md`, `results/core/h1_modular_shadow_memo.md`, `results/core/h2_pisot_backup.md`, `special_numbers/*.py`, `scripts/run_full_panel.py`, `scripts/run_claim_sensitive_ablations.py`, `results/research_context.md`, `results/literature/prior_art_watchlist.md`, `results/literature/prior_art_gap.md`, and `results/swarm/director_brief.md`.
-- Novelty must be argued from the curated gap notes in `results/literature/prior_art_gap.md` and `results/literature/gap_frontier.md`, not from `results/literature/prior_art_watchlist.md`, whose top entries are largely lexical false positives.
+- Round: `review_round_2`.
+- Audit basis: `results/research_context.md`, `results/literature/prior_art_watchlist.md`, `results/literature/prior_art_gap.md`, `results/swarm/director_brief.md`, `research_paper.tex`, `results/final_claim_memo.md`, `results/core/h1_modular_shadow_memo.md`, `results/core/h2_pisot_backup.md`, `results/experiments/literature_baseline_comparison.md`, `scripts/run_full_panel.py`, `scripts/run_claim_sensitive_ablations.py`, `special_numbers/baseline.py`, and `special_numbers/diagnostics.py`.
+- Novelty should be judged against the curated comparison branches in `results/literature/prior_art_gap.md`, not against the raw `results/literature/prior_art_watchlist.md`, whose top entries still include lexical false positives.
 
 ## Overall assessment
 
-- The package has a materially distinct core, but it is narrower than the five-item contribution list in `research_paper.tex:91`.
-- The defensible novelty anchor is the periodic-gap theorem for ordered Beatty-value subsequences under frozen selector classes.
-- The proof lemmas, modular-shadow pipeline, sparse quadratic identities, and quadratic-not-Pisot narrative are useful, but they are not equally separated from prior art.
-- Safe positioning: one narrow theorem, one exact verification workflow, and several non-anchor boundary examples.
+- The revised package now has one clear novelty-bearing contribution: the eventually-periodic-gap theorem for ordered Beatty-value recurrences.
+- That core claim is materially distinct from the closest nearby branches named in `results/literature/prior_art_gap.md`: Schaeffer-Shallit-Zorcic on quadratic Beatty decidability, Durand and Bucci-Puzynina-Zamboni on symbolic recurrence, Byszewski-Konieczny on generalised-polynomial value sets, and Bell-Derksen on zero sets of pre-existing recurrences.
+- The rest of the package is not equally new. The four quadratic identities sit close to self-matching/generalized-Beatty work, the modular-shadow layer is a verification discipline rather than a new theorem, and the sparse panel still lacks the controls needed for any quadratic-only or not-Pisot boundary claim.
+- On the current draft, the contribution is materially distinct if the paper keeps novelty centered on the periodic-gap theorem and treats the sparse lane as supporting evidence only.
 
-## Claim-by-claim assessment
+## Major-claim assessment
 
-### 1. Periodic-gap characterization
+### 1. Eventually periodic-gap characterization
 
-- Claim: `research_paper.tex:93` and `research_paper.tex:482` assert that `floor(n_k r)` satisfies a homogeneous integer recurrence for some eventually periodic-gap selector if and only if `r` is rational.
-- Closest prior art: the Beatty/Ostrowski decidability line, especially Schaeffer-Shallit-Zorcic, `Beatty Sequences for a Quadratic Irrational: Decidability and Applications` (`schaeffer2024`), with recurrence-side obstruction language from Bell's generalized Skolem-Mahler-Lech theorem (`bell2005`) and Derksen (`derksen2005`).
-- Distinctness judgment: materially distinct if kept exactly at ordered value recurrences and eventually periodic-gap selectors. `results/literature/prior_art_gap.md:49` and `results/literature/prior_art_gap.md:73` correctly note that the nearby papers solve Beatty definability or zero/intersection-set questions, not the Beatty-side existence problem under frozen selectors.
-- Weak differentiation: the rational direction is baseline, and the irrational direction packages standard ingredients: arithmetic subsequences of recurrence sequences, bounded integer recurrences are eventually periodic, and irrational Beatty differences are not eventually periodic. The novelty is the exact assembly for this locked problem, not a new recurrence-theoretic mechanism.
-- Gap status: acceptable but narrow. `results/literature/gap_frontier.md:8` says no saved paper in the current archive solves this exact ordered-value selector-family problem; that supports a modest distinctness claim, not a broad claim of literature exhaustion.
+- Claim: `research_paper.tex` and `results/final_claim_memo.md` assert that `floor(n_k r)` satisfies a homogeneous integer recurrence for some eventually periodic-gap selector if and only if `r` is rational.
+- Closest prior art: Schaeffer, Shallit, and Zorcic, *Beatty Sequences for a Quadratic Irrational: Decidability and Applications*; Bell, *A Generalised Skolem-Mahler-Lech Theorem for Affine Varieties*; Derksen, *A Skolem-Mahler-Lech theorem in positive characteristic and finite automata*; with Durand's symbolic linear-recurrence line as the main category-boundary comparison.
+- Distinctness judgment: materially distinct. Those lines study Beatty definability, automatic recognizability, symbolic linear recurrence, or zero/intersection sets of already-given recurrences. The present theorem asks the Beatty-side existence question for ordered numeric subsequences under frozen eventually periodic-gap selectors, exactly the distinction recorded in `results/literature/prior_art_gap.md` and `results/experiments/literature_baseline_comparison.md`.
+- Weak differentiation: the proof mechanism itself is not radically new. The rational direction is baseline, and the irrational direction is an assembly of standard recurrence facts plus Beatty-difference aperiodicity. The novelty lies in the locked formulation and the exact theorem-level synthesis, not in a new recurrence-theoretic engine.
+- Missing gap evidence: the gap note is comparative rather than exhaustive. The package still does not show a dedicated near-duplicate search proving that no earlier Beatty paper already states this exact selector-family theorem. That is a caution, not a blocker.
 
-### 2. Supporting lemmas as a claimed contribution
+### 2. Four certified quadratic-convergent identities
 
-- Claim: `research_paper.tex:94` presents the supporting lemmas as a separate contribution.
-- Closest prior art: classical linear-recurrence-sequence theory and mechanical/Sturmian folklore; the closest named comparison lines in the current package are Bell/Derksen on recurrence structure and Durand on symbolic linear recurrence (`durand1998`, `durand2000`, `durand2003`).
-- Distinctness judgment: weak. These lemmas are proof infrastructure, not the novelty-bearing part of the paper.
-- Novelty illusion: counting self-contained proofs of standard ingredients as one of the paper's five contributions inflates differentiation without a paper-specific gap note showing that these lemmas themselves were missing from prior work.
-- Recommended framing: keep them as completeness/exposition, not as a standalone novelty claim.
+- Claim: `research_paper.tex`, `results/final_claim_memo.md`, and `special_numbers/baseline.py` certify exact cases for `phi - 1`, `phi`, `sqrt(2)`, and `1 + sqrt(2)` along even convergent denominators.
+- Closest prior art: Masakova and Pelantova, *Self-Matching Properties of Beatty Sequences*; Allouche and Dekking, *Generalized Beatty sequences and complementary triples*; secondarily the quadratic Beatty/Ostrowski line of Schaeffer-Shallit-Zorcic.
+- Distinctness judgment: weak as a novelty anchor. These identities live inside an already active quadratic Beatty ecosystem.
+- Concrete overlap signals: `results/literature/prior_art_gap.md` already treats the quadratic lane as a comparison branch rather than the main novelty claim; `special_numbers/baseline.py` encodes the four certificates directly as named identities; `scripts/run_claim_sensitive_ablations.py` shows nearby convergent variants also keep long exact holdouts, so `quadratic_convergent_even` is not a sharply isolated frontier by itself.
+- Missing gap evidence: the package still does not show paper-by-paper that the displayed formulas are absent from the self-matching/generalized-Beatty literature.
+- Novelty illusion: presenting these examples as the main discovery, or as evidence of a new quadratic family theorem, would slide back into territory already occupied by `maskov2006` and `allouche2018`.
 
-### 3. Exact screening pipeline and "modular-shadow" layer
+### 3. Sparse panel and the "not broad Pisot" takeaway
 
-- Claim: `research_paper.tex:95`, `research_paper.tex:366`, and `research_paper.tex:897` present an exact screening pipeline with certificates, holdouts, and modular-shadow diagnostics.
-- Closest prior art: Beatty/Ostrowski automata and exact-decision tooling (`baranwal2021`, `schaeffer2024`), plus Walnut/Pecan-style automata-assisted verification workflows (`mousavi2016walnut`, `oei2021pecan`), with Bell/Derksen as the recurrence-side obstruction language.
-- Distinctness judgment: useful artifact contribution, but not yet a clearly new mathematical result.
-- Concrete overlap signals:
-  - `scripts/run_full_panel.py:31` fixes a short exact panel (`COUNT = 20`, `FIT_LENGTH = 12`, `MAX_ORDER = 4`).
-  - `special_numbers/diagnostics.py:57` and `special_numbers/diagnostics.py:71` implement finite modular replay and a conservative classification rule, not a proved semilinearity or p-adic theorem.
-  - `results/literature/prior_art_gap.md:73` already frames Bell as obstruction language rather than a solved Beatty theorem.
-- Weak differentiation: terms like `p-adic semilinearity barrier` or `modular-shadow obstruction` are stronger than the artifact support. The code shows a good verification filter, not a new theorem beyond the proved selector classes.
-- Missing gap evidence: there is no paper-specific comparison showing that this workflow itself is novel relative to existing Beatty/automata verification practice. Keep it as methodology, not as the main novelty claim.
+- Claim: in the frozen panel, only the four quadratic cases certify exactly; higher-degree Pisot, Salem, and transcendental controls do not.
+- Closest prior art: Byszewski and Konieczny, *Pisot numbers, Salem numbers, and generalised polynomials*; Byszewski and Konieczny, *Sparse generalised polynomials*; Adamczewski and Konieczny, *Bracket words*; plus the quadratic Beatty/Ostrowski line.
+- Distinctness judgment: useful as calibrated evidence, not as a major novelty claim.
+- Concrete overlap signals: `results/core/h2_pisot_backup.md` already says the strong Pisot-family story failed; `scripts/run_full_panel.py` and `results/verification/benchmark_report.md` show the control bank is still too thin for a family boundary, with no `floor(n r + beta)` intercept controls and no continued-fraction-prefix-matched nonquadratic controls.
+- Missing gap evidence: there is no literature-separated argument that these negative panel results correspond to a new structural theorem rather than a local experimental map.
+- Novelty illusion: "quadratic, not broad Pisot" is a falsifier outcome, not a theorem.
 
-### 4. Four certified quadratic-convergent identities
+### 4. Modular-shadow / certificate-first workflow
 
-- Claim: `research_paper.tex:96`, `research_paper.tex:550`, and `research_paper.tex:731` treat `phi - 1`, `phi`, `sqrt(2)`, and `1 + sqrt(2)` on even convergents as exact certified examples.
-- Closest prior art: Masakova-Pelantova, `Self-Matching Properties of Beatty Sequences` (`maskov2006`), and Allouche-Dekking, `Generalized Beatty sequences and complementary triples` (`allouche2018`), with Schaeffer-Shallit-Zorcic (`schaeffer2024`) as the nearby quadratic/Ostrowski line.
-- Distinctness judgment: exact and worthwhile as named examples, but weakly differentiated as a novelty anchor.
-- Concrete overlap signals:
-  - `results/literature/prior_art_gap.md:49` and `results/literature/gap_frontier.md:8` already warn that the quadratic lane overlaps with known quadratic Beatty phenomena and should not carry the paper's main novelty.
-  - `special_numbers/baseline.py:59` hard-codes the four named quadratic certificates; the code verifies specific identities rather than deriving a broader quadratic classification.
-  - `results/experiments/claim_sensitive_ablation.md:9` and `results/experiments/claim_sensitive_ablation.md:14` show nearby quadratic selectors also survive long exact holdouts, which weakens any attempt to portray `quadratic_convergent_even` as a sharply isolated new family theorem.
-- Missing gap evidence: there is no cited paper-by-paper demonstration that these exact convergent-sampled recurrences, especially the `phi - 1` case, are absent from the self-matching/generalized-Beatty literature. Without that, these should remain auxiliary exact examples.
-- Novelty illusion: do not turn `four certified quadratic examples` into `quadratics are the surviving irrational family`. `results/swarm/falsifier.md:16` explicitly warns that such a quadratic-special narrative is derivative and unstable.
-
-### 5. `Quadratic, not broad Pisot` and the procedural honesty claim
-
-- Claim: `research_paper.tex:96` and `research_paper.tex:899` suggest two further contributions: a quadratic-not-Pisot refinement and a broader procedural lesson about keeping proof, certificate, and empirical evidence separate.
-- Closest prior art: the mathematical neighbor is the generalized-polynomial/Pisot-Salem line (`byszewski2016`, `byszewski2023`, `adamczewski2022`); the procedural neighbor is automata-assisted exact verification tooling such as Walnut/Pecan.
-- Distinctness judgment:
-  - The `not broad Pisot` part is a falsifier result, not a new positive classification.
-  - The procedural part is good practice, but it is not literature-separated enough to count as a novelty-bearing research claim.
-- Concrete overlap signals:
-  - `results/core/h2_pisot_backup.md:31` already says the strong Pisot narrative is unsupported.
-  - `special_numbers/beta_numeration.py:8` and `results/concept_evolve/tree/009_pisot_beta_endpoint_sampler/analysis.md:5` show that the negative Pisot evidence is against one rounded-power-basis proxy, not against the full beta-numeration or Rauzy-face literature suggested by `byszewski2023`.
-  - The revision citation audit now normalizes the Walnut/Pecan references, so the remaining weakness is not metadata but the lack of a literature-separated argument that the workflow itself is a novelty-bearing contribution.
-- Missing gap evidence: there is no direct literature comparison establishing that the workflow-level `keep proof/certificate/evidence separate` contribution is itself novel in computer-assisted mathematics.
-- Novelty illusion: present both points as scope discipline and falsifier outcomes, not as co-equal mathematical contributions.
+- Claim: the package's exact fitting, holdout, and modular replay discipline prevents finite-prefix mirages from being misreported as theorem evidence.
+- Closest prior art: Walnut and Pecan theorem-proving workflows; Baranwal, Schaeffer, and Shallit on Ostrowski-automatic sequences; Schaeffer-Shallit-Zorcic on automata-assisted Beatty reasoning.
+- Distinctness judgment: good methodology, but not strongly differentiated as standalone research novelty.
+- Concrete overlap signals: `special_numbers/diagnostics.py` implements finite modular replay and conservative labeling, not a proved semilinearity or p-adic obstruction theorem; `results/literature/repository_search.md` already identifies Walnut and Pecan as the nearest reusable tooling line.
+- Missing gap evidence: no explicit comparison shows that this workflow, by itself, is novel relative to existing computer-assisted Beatty/automatic-sequence practice.
+- Novelty illusion: the phrase `p-adic semilinearity barrier` is stronger than what the current paper and code actually prove.
 
 ## Cross-cutting risks
 
-- `results/literature/prior_art_watchlist.md` is still a novelty trap. Its leading entries are geology, systems, and materials false positives, so it cannot support any novelty defense.
-- The main category-error risk remains word/value confusion. `results/literature/prior_art_gap.md:57` and `results/literature/prior_art_gap.md:15` correctly keep Durand and Bucci-Puzynina-Zamboni as comparison branches, not solution templates.
-- The theorem should stay at `eventually periodic-gap selectors`. `results/final_package_review.md:10` already flags the overreach of rephrasing it as all positive-density selectors.
-- Benchmark evidence is not gap closure. Long exact holdouts and modular replay help calibration, but they do not replace paper-specific prior-art separation.
+- `results/literature/prior_art_watchlist.md` is still not usable novelty evidence; most of its top entries are lexical false positives and should remain retired except as search-hygiene warnings.
+- The main category-error risk remains the word/value boundary. Durand and Bucci-Puzynina-Zamboni are genuinely close enough to create superficial overlap, but only at the symbolic level; `results/definition_lock.md` correctly blocks treating that literature as a solution to the ordered-value problem.
+- The paper stays novelty-safe only if the theorem remains stated for `eventually periodic-gap selectors` and the sparse lane remains explicitly auxiliary. Any return to all-positive-density, quadratic-family, periodic-CF, or zero-intercept language would reopen the same overlap problems flagged in `results/verification/benchmark_report.md` and `results/verification/verification_summary.md`.
+- The direct novelty case for the theorem is good but modest: it is a new result at a carefully frozen interface between nearby literatures, not a replacement for the broader Beatty, generalized-polynomial, or symbolic-recurrence lines.
 
 ## Bottom line
 
-- Materially distinct: the narrow periodic-gap theorem for ordered Beatty-value recurrences under frozen eventually periodic-gap selectors.
-- Distinct but not novelty-bearing on their own: the proof lemmas, the verification pipeline, the four quadratic exact examples, and the quadratic-not-Pisot negative.
-- Main required revision: keep the novelty hierarchy explicit and avoid presenting all five numbered contributions as equally new.
+- Materially distinct now: the periodic-gap theorem for ordered Beatty-value subsequences.
+- Weakly differentiated and non-anchor: the four quadratic exact identities, the sparse negative/control story, and the modular-shadow workflow.
+- Missing but non-fatal gap evidence: a tighter paper-by-paper exclusion note for near-duplicate theorems or formulas, especially around the quadratic identities.
 
-VERDICT: REVISE
+VERDICT: ACCEPT

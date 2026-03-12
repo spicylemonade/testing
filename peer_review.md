@@ -5,74 +5,71 @@
 - Completeness: 5/5
 - Technical Rigor: 4/5
 - Results Integrity: 4/5
-- Citation Accuracy: 1/5
-- Compilation: 4/5
+- Citation Accuracy: 2/5
+- Compilation: 5/5
 - Writing Quality: 4/5
-- Figure Quality: 3/5
+- Figure Quality: 4/5
 - Novelty & Creative Contribution: 3/5
 
 ## Assessment
 
-- The manuscript is structurally complete and the core theorem for eventually periodic-gap selectors is stated and proved clearly.
-- The main quantitative claims in the paper match the current result artifacts: `results/experiments/full_panel_results.json` and `results/experiments/metrics_full_panel.json` support 145 executed cases, 20 waivers, 32 exact-certified cases, and a 28 rational / 4 irrational exact split; `results/experiments/claim_sensitive_ablation.json` supports the reported holdout and order-cap ablations.
-- The package is not fully synchronized: `results/experiments/falsifier_controls.md` still reports stale counts (`7` exact rational positives and `13` sparse leaks), which do not match the refreshed metrics (`28` exact rational cases and `12` sparse leaks).
-- The PDF exists and I re-ran `pdflatex -> bibtex -> pdflatex -> pdflatex` plus one stabilizing `pdflatex`; the document builds successfully to 26 pages. However, the final compile still reports overfull/underfull boxes, especially around the holdout table and appendix summary table.
-- The figures are not default/plain Matplotlib output, but several are still crowded rather than publication-polished. In particular, `figures/fig6_claim_sensitive_ablations.png` has overlapping subplot titles, `figures/fig7_variant_matrix.png` uses oversized titling, and `figures/fig4_full_panel_heatmap.png` is dense at print scale.
+- The manuscript is structurally complete and mathematically focused. It contains a clear abstract, introduction, related-work section, method, theory, experimental setup, results, discussion, conclusion, appendix material, and bibliography.
+- The core quantitative claims check out against the repository artifacts. `results/experiments/metrics_full_panel.json` supports the reported 145 executed cases, 20 waivers, 32 exact-certified cases, 4 nondegenerate exact cases, and classification split `32/12/3/7/91`; `results/experiments/claim_sensitive_ablation.json` supports the reported 84 and 89 order-cap flips, the 87 extra false candidates at fit length 8, the 11 surviving 320-term leaks, the three plastic failures by 40, and the `salem_quartic / ost_suffix_001` failure by 80.
+- The figures are repository-backed and non-default. `scripts/generate_figures.py` rebuilds the panels from the experiment JSON files using a seaborn plus custom `rcParams` stack, and the rendered `figures/fig4_full_panel_heatmap.png`, `figures/fig5_outcome_breakdown.png`, `figures/fig6_claim_sensitive_ablations.png`, and `figures/fig7_variant_matrix.png` match the underlying counts. `figures/fig8_prior_art_matrix.png` is qualitative rather than empirical, but it is captioned that way.
+- `research_paper.pdf` exists and parses as a 27-page document. `research_paper.log` shows no fatal errors, no undefined citations or references, and a successful final PDF write.
+- The blocking issue is citation accuracy. I verified every bibliography entry via targeted web search plus DOI/arXiv resolution, and `khani2021` is incorrect: the cited paper's first author is Mohsen Khani, not Mohammad Khani. Under the stated zero-tolerance citation policy, this forces `REVISE`.
 
 ## Citation Verification Report
 
+In-text citation audit: all 18 `\cite` keys used in `research_paper.tex` exist in `sources.bib`, and all 18 bibliography entries are cited at least once.
+
 | Bib key | Status | Verification result |
 | --- | --- | --- |
-| `schaeffer2024` | Verified | arXiv/DOI `10.48550/arXiv.2402.08331` confirms title, Luke Schaeffer / Jeffrey Shallit / Stefan Zorcic, and year 2024. |
-| `hieronymi2021` | Verified | DOI `10.46298/lmcs-20(3:12)2024` confirms the LMCS article, authors, and year 2024. |
-| `baranwal2021` | Verified | DOI `10.1016/j.tcs.2021.01.018` confirms title, authors, venue, and year 2021. |
-| `gnaydin2020` | Incorrect | DOI `10.1016/j.apal.2021.103062` resolves to a 2022 `Annals of Pure and Applied Logic` article, not 2021. |
-| `khani2021` | Verified | DOI `10.1016/j.apal.2024.103493` confirms title, authors, venue, and year 2024. |
-| `bucci2013` | Verified | DOI `10.1017/etds.2013.69` confirms title, authors, venue, and year 2013. |
-| `durand2000` | Verified | DOI `10.1017/S0143385700000584` confirms title, author, venue, and year 2000. |
-| `durand2003` | Verified | DOI `10.1017/S0143385702001293` confirms title, author, venue, and year 2003. |
-| `durand1998` | Verified | DOI `10.1016/S0012-365X(97)00029-0` confirms title, author, venue, and year 1998. |
-| `byszewski2016` | Incorrect | DOI `10.1090/tran/7257` resolves to a 2018 `Transactions of the AMS` article, not 2016. |
-| `byszewski2023` | Verified | DOI `10.1016/j.jnt.2025.01.001` confirms title, authors, venue, and year 2025. |
-| `adamczewski2022` | Incorrect | DOI `10.1090/tran/8906` resolves to a 2023 `Transactions of the AMS` article, not 2022. |
-| `bell2005` | Incorrect | DOI `10.1112/S002461070602268X` resolves to a 2006 `Journal of the London Mathematical Society` article, not 2005. |
-| `derksen2005` | Incorrect | DOI `10.1007/S00222-006-0031-0` resolves to a 2007 `Inventiones Mathematicae` article, not 2005. |
-| `allouche2018` | Verified | DOI `10.2140/moscow.2019.8.325` confirms title, authors, venue, and year 2019. |
-| `maskov2006` | Verified | DOI `10.14311/924` confirms `Self-Matching Properties of Beatty Sequences`, Masakova/Pelantova, `Acta Polytechnica`, year 2007. |
-| `mousavi2021walnut` | Incorrect | DOI `10.48550/arXiv.1603.06017` is the 2016 arXiv paper `Automatic Theorem Proving in Walnut`; the BibTeX entry gives year 2021 and mixes the paper with a GitHub repo URL. |
-| `oei2020pecan` | Incorrect | URL resolves to the GitHub repository `ReedOei/Pecan`, not to a paper; the entry provides no DOI/publisher metadata, and the stated year 2020 is not supported by the repository metadata I could verify. |
-
-In-text citation audit: every `\cite` key used in `research_paper.tex` is present in `sources.bib`. The only uncited bibliography entries are `mousavi2021walnut` and `oei2020pecan`.
+| `schaeffer2024` | Verified | Semantic Scholar title search found the paper; the arXiv DOI page `10.48550/arXiv.2402.08331` resolves to *Beatty Sequences for a Quadratic Irrational: Decidability and Applications* by Luke Schaeffer, Jeffrey Shallit, and Stefan Zorcic, 2024, `arXiv`. |
+| `hieronymi2021` | Verified | Crossref title search and DOI page `10.46298/lmcs-20(3:12)2024` match *Decidability for Sturmian words*, authors Philipp Hieronymi, Dun Ma, Reed Oei, Luke Schaeffer, Christian Schulz, Jeffrey Shallit, year 2024, *Logical Methods in Computer Science*. |
+| `baranwal2021` | Verified | Crossref title search and DOI page `10.1016/j.tcs.2021.01.018` match *Ostrowski-automatic sequences: Theory and applications*, Aseem Baranwal, Luke Schaeffer, Jeffrey Shallit, 2021, *Theoretical Computer Science*. |
+| `gnaydin2020` | Verified | Crossref title search and DOI page `10.1016/j.apal.2021.103062` match *Expansions of the group of integers by Beatty sequences*, Ayhan Günaydın and Melissa Özsahakyan, 2022, *Annals of Pure and Applied Logic*. |
+| `khani2021` | Incorrect | Crossref title search, the DOI page `10.1016/j.apal.2024.103493`, and the arXiv page `2110.01673` all identify the first author as *Mohsen* Khani. `sources.bib` lists *Mohammad* Khani, so the author metadata does not match the actual paper. The title, year, venue, and DOI are otherwise consistent. |
+| `bucci2013` | Verified | Crossref title search and DOI page `10.1017/etds.2013.69` match *Central sets generated by uniformly recurrent words*, Michelangelo Bucci, Svetlana Puzynina, Luca Q. Zamboni, year 2013, *Ergodic Theory and Dynamical Systems*. |
+| `durand2000` | Verified | Crossref title search and DOI page `10.1017/S0143385700000584` match *Linearly recurrent subshifts have a finite number of non-periodic subshift factors*, Fabien Durand, 2000, *Ergodic Theory and Dynamical Systems*. |
+| `durand2003` | Verified | Crossref title search and DOI page `10.1017/S0143385702001293` match *Corrigendum and addendum to 'Linearly recurrent subshifts have a finite number of non-periodic factors'*, Fabien Durand, 2003, *Ergodic Theory and Dynamical Systems*. |
+| `durand1998` | Verified | Crossref title search and DOI page `10.1016/S0012-365X(97)00029-0` match *A characterization of substitutive sequences using return words*, Fabien Durand, 1998, *Discrete Mathematics*. |
+| `byszewski2016` | Verified | Crossref title search and DOI page `10.1090/tran/7257` match *Sparse generalised polynomials*, Jakub Byszewski and Jakub Konieczny, 2018, *Transactions of the American Mathematical Society*. The BibTeX key is stale, but the entry metadata is correct. |
+| `byszewski2023` | Verified | Crossref title search and DOI page `10.1016/j.jnt.2025.01.001` match *Pisot numbers, Salem numbers, and generalised polynomials*, Jakub Byszewski and Jakub Konieczny, 2025, *Journal of Number Theory*. |
+| `adamczewski2022` | Verified | Crossref title search and DOI page `10.1090/tran/8906` match *Bracket words: A generalisation of Sturmian words arising from generalised polynomials*, Boris Adamczewski and Jakub Konieczny, 2023, *Transactions of the American Mathematical Society*. |
+| `bell2005` | Verified | Crossref title search returns multiple Bell records with the same title, but the DOI page `10.1112/S002461070602268X` resolves to the cited article: *A Generalised Skolem-Mahler-Lech Theorem for Affine Varieties*, Jason P. Bell, 2006, *Journal of the London Mathematical Society*. |
+| `derksen2005` | Verified | Crossref title search and DOI page `10.1007/S00222-006-0031-0` match *A Skolem-Mahler-Lech theorem in positive characteristic and finite automata*, Harm Derksen, 2007, *Inventiones Mathematicae*. |
+| `allouche2018` | Verified | Crossref title search and DOI page `10.2140/moscow.2019.8.325` match *Generalized Beatty sequences and complementary triples*, Jean-Paul Allouche and F. Michel Dekking, 2019, *Moscow Journal of Combinatorics and Number Theory*. |
+| `maskov2006` | Verified | Crossref title search and DOI page `10.14311/924` match *Self-Matching Properties of Beatty Sequences*, Zuzana Masáková and Edita Pelantová, 2007, *Acta Polytechnica*. |
+| `mousavi2016walnut` | Verified | Semantic Scholar title search found the arXiv preprint; the arXiv DOI page `10.48550/arXiv.1603.06017` resolves to *Automatic Theorem Proving in Walnut* by Hamoon Mousavi, 2016, `arXiv`. |
+| `oei2021pecan` | Verified | Semantic Scholar title search found the arXiv preprint; the arXiv DOI page `10.48550/arXiv.2102.01727` resolves to *Pecan: An Automated Theorem Prover for Automatic Sequences using Büchi Automata* by Reed Oei, Dun Ma, Christian Schulz, and Philipp Hieronymi, 2021, `arXiv`. |
 
 ## Novelty Assessment
 
-The novelty is modest but real. The one clearly defensible new contribution is the periodic-gap characterization for ordered Beatty-value subsequences under eventually periodic-gap selectors: this is narrower than nearby Beatty decidability, symbolic linear recurrence, generalized-polynomial definability, or Skolem-Mahler-Lech zero-set results, and the current archive does not show a prior paper solving exactly that ordered-value selector-family problem. By contrast, the proof lemmas are standard infrastructure, the modular-shadow pipeline is a useful verification workflow rather than a new theorem, and the four quadratic certificates sit close to known self-matching/generalized Beatty phenomena and should not be sold as co-equal novelty anchors. The ConceptEvolve artifacts show genuine partial use (`005_convergent_hankel_detector`, `009_pisot_beta_endpoint_sampler`, and the H1 obstruction transfer), but most concept nodes remain deferred, so the cross-domain creative contribution is limited rather than sweeping.
+The novelty is real but modest. The paper's genuinely new contribution is the theorem-level characterization for ordered Beatty-value subsequences under eventually periodic-gap selectors: within that frozen selector class, the existence of a homogeneous constant-coefficient recurrence is equivalent to rationality of `r`. That is materially different from the nearby quadratic-Beatty decidability, symbolic linear-recurrence, generalized-polynomial, and Skolem-Mahler-Lech literatures reviewed in `results/literature/prior_art_gap.md` and `results/verification/novelty_report.md`. But the contribution is narrow. The proof ingredients are classical, the modular-shadow layer is a careful verification methodology rather than a new theorem, and the four quadratic exact identities sit close to known self-matching/generalized-Beatty phenomena and should not be sold as a second novelty anchor. The ConceptEvolve artifacts show some genuine follow-through (`005_convergent_hankel_detector`, `009_pisot_beta_endpoint_sampler`, and the H1 obstruction transfer), but most concept nodes remain deferred, so the cross-domain creative contribution is limited rather than sweeping. On a top-tier scale, this is a focused 3/5 novelty result, not a highly surprising 5/5 breakthrough.
 
-## Verdict
+## Overall Verdict
 
 REVISE
 
-The core theorem-backed direction is sound, but the package is not publication-ready because the bibliography fails a zero-tolerance audit, some artifacts are stale/inconsistent, and the sparse-lane framing still overstates what is actually proved.
+The research direction is sound, the theorem-backed lane is clear, and the experiment package appears honest and synchronized. However, the bibliography does not pass a zero-tolerance audit because `khani2021` has incorrect author metadata. That alone blocks acceptance under the stated rules.
 
 ## Actionable Feedback
 
-1. Repair `sources.bib` completely before resubmission.
-   - Fix the incorrect publication years for `gnaydin2020`, `byszewski2016`, `adamczewski2022`, `bell2005`, and `derksen2005`.
-   - Replace `mousavi2021walnut` and `oei2020pecan` with clean, citable software references or remove them if they are not cited in the manuscript.
-   - Replace Semantic Scholar URLs with canonical DOI / publisher / arXiv URLs wherever possible.
+1. Correct `sources.bib` immediately.
+   - Fix `khani2021` so the first author is `Mohsen Khani` rather than `Mohammad Khani`.
+   - After that edit, rerun a full citation audit to confirm there are no remaining metadata mismatches.
 
-2. Narrow the manuscript's contribution hierarchy.
-   - Keep the eventually periodic-gap theorem as the sole theorem-grade novelty claim.
-   - Demote the proof lemmas, modular-shadow workflow, and four quadratic examples to supporting roles.
-   - State more explicitly that the unrestricted problem from the title remains open.
+2. Keep the contribution hierarchy narrow and explicit.
+   - Continue presenting the eventually periodic-gap theorem as the sole theorem-grade novelty claim.
+   - Keep the four quadratic examples and the sparse lane as supporting exact examples and empirical holdouts, not as a family theorem.
 
-3. Synchronize the artifact package.
-   - Update `results/experiments/falsifier_controls.md` so that it matches the refreshed writer-stage metrics.
-   - Check for any other stale summaries that still describe the pre-refresh baseline rather than the current package.
+3. Tighten a few non-fatal presentation issues.
+   - Add a citation at the first terminology split around symbolic vs arithmetic linear recurrence.
+   - Either cite a standard mechanical-word source for the difference-word phrasing or weaken that sentence to the directly proved eventual-periodicity claim.
+   - Consider a brief note that the prior-art matrix figure is schematic/curated rather than an empirical benchmark panel.
 
-4. Clean the presentation details.
-   - Remove the overfull table/layout issues in the PDF.
-   - Regenerate `figures/fig6_claim_sensitive_ablations.png` and `figures/fig7_variant_matrix.png` with less crowded titling and more print-friendly typography.
-
-5. Keep the sparse quadratic lane explicitly empirical unless you add the missing controls flagged in `results/verification/benchmark_report.md`.
-   - In particular, the paper should not imply a quadratic-family boundary without intercept controls, stronger matched nonquadratic controls, and longer follow-up on unresolved cases such as `salem_quartic / ost_suffix_001`.
+4. If the authors want to push beyond `REVISE` toward a stronger final version, add the missing controls already identified in `results/verification/benchmark_report.md`.
+   - Same-slope intercept tests `floor(n r + beta)` for the certified quadratic examples.
+   - Continued-fraction-prefix-matched nonquadratic controls.
+   - Longer follow-up or structural certificates for the surviving 320-term sparse leaks.

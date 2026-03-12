@@ -2,62 +2,63 @@
 
 ## Round
 
-- Phase: `review_round_1`
+- Review round: `review_round_2`
 
 ## Verdict
 
-- Conditional pass for the theorem-backed rational AP/FUAP lane.
-- Not publication-ready for any broader sparse-irrational claim. The current benchmark does not yet justify `quadratic-specific`, `periodic-CF-specific`, or `zero-intercept-specific` language.
+- Conditional pass for the current narrow package: the benchmark is strong enough for the theorem-backed AP/FUAP rational lane and for the four isolated exact-certified `quadratic_convergent_even` examples.
+- Still not publication-ready for any broader sparse-family claim. The current outputs do not justify `quadratic-only`, `periodic-CF-only`, `zero-intercept-specific`, or `robust sparse-selector` language.
 
-## What the outputs actually show
+## What the benchmark now supports
 
-- `results/experiments/full_panel_results.json` covers 145 executed cases, 20 waivers, 11 slopes, and 15 selectors.
-- `results/experiments/metrics_full_panel.json` reports 32 exact recurrences, but 28 of them are rational AP/FUAP baselines; the only nondegenerate irrational exact certificates are the 4 `quadratic_convergent_even` cases for `phi`, `phi_minus_1`, `sqrt2`, and `one_plus_sqrt2`.
-- The pooled `exact_hit_rate = 0.2207` is not claim-calibrated: the case table implies 28/40 exact on rational rows versus only 4/105 exact on irrational rows.
-- `results/experiments/metrics_full_panel.json` still contains 15 `uncertified_exact_holdout` rows, including the nonquadratic control `salem_quartic / ost_suffix_001`.
-- `results/experiments/claim_sensitive_ablation.json` now extends long holdouts through `320` for all 15 `uncertified_exact_holdout` rows and adds a fit-length ablation over `8/12/16/24`.
+- `results/experiments/full_panel_results.json` and `results/experiments/metrics_full_panel.json` cover 145 executed cases with 20 justified waivers and 32 exact certificates.
+- The exact hits are heavily concentrated: 28 are rational AP/FUAP baselines, and only 4 are nondegenerate irrational exact cases (`phi - 1`, `phi`, `sqrt(2)`, `1 + sqrt(2)` on `quadratic_convergent_even`).
+- `results/experiments/ablation_summary.json` now cleanly separates the lanes: positive-density selectors give 28 exact cases, all rational; zero-density selectors give 4 exact cases, all from the same quadratic-convergent construction.
+- `results/experiments/claim_sensitive_ablation.json` materially improves round 1 by pushing all 15 `uncertified_exact_holdout` rows to length `320`: `salem_quartic / ost_suffix_001` fails by `80`, and all 3 plastic prefix fits fail by `40`.
+- That still leaves 11 unresolved long-holdout rows at `320`, split into 5 rational-trivial sparse leaks and 6 irrational quadratic leaks, so the sparse lane remains empirical rather than structural.
 
-## Benchmark blockers
+## Benchmark gaps
 
 ### Missing baselines
 
-- No inhomogeneous intercept baseline `floor(n r + beta)` appears in the current outputs. The selector `beta_endpoint_suffix_10` is not a substitute for the falsifier's requested intercept control, so zero-intercept specificity is untested.
-- The nonquadratic comparison lane is too thin for a family claim: there is one cubic Pisot (`plastic`), one Salem quartic, and one transcendental (`e`). That can reject a crude `all Pisot survive` story, but not support a sharp `quadratic is the boundary` story.
-- Coverage below `1` is also thin: only `1/2` and `phi_minus_1` are present. Any publication claim about general `0 < r < 1` behavior would outrun the benchmark.
+- No inhomogeneous baseline of the form `floor(n r + beta)` appears in the current outputs. `beta_endpoint_suffix_10` is a selector construction, not the falsifier's intercept control, so zero-intercept specificity remains untested.
+- The nonquadratic control bank is still too thin for any boundary claim: one cubic Pisot (`plastic`), one Salem quartic, and one transcendental (`e`) can reject a crude `all nonquadratics survive` story, but they cannot support a sharp `quadratic is the boundary` story.
+- There are still no continued-fraction-prefix-matched nonquadratic controls for the four quadratic winners, so the benchmark does not distinguish structural quadratic behavior from a long finite-prefix effect.
 
 ### Missing controls
 
-- There are no continued-fraction-prefix-matched nonquadratic controls. Current negatives (`plastic`, Salem quartic, `e`) do not test whether `quadratic_convergent_even` succeeds because of eventual periodicity or because a long finite prefix already imitates the same recurrence.
-- There are no density- and complexity-matched perturbation controls for the winning sparse selector. `quadratic_convergent_even` is compared to a few nearby templates, but not to de-convergent or randomized selectors with the same growth profile.
-- `results/experiments/metrics_full_panel.json` reports `false_positive_rate = 0.0`, but only on a small curated panel and without a confidence interval. That is not publication-grade calibration.
+- No same-slope intercept sweep is run on the four certified quadratic examples, so the package cannot claim that the sparse exact identities are specific to `floor(n r)` rather than to a nearby `floor(n r + beta)` problem.
+- No density-matched or growth-matched selector-jitter control is run to the same `320`-term standard around `quadratic_convergent_even`. The machine-readable `quadratic_variant_ablation` in `results/experiments/claim_sensitive_ablation.json` records only `count: 20` screens for `odd`, `even_shift1`, and `every_third`.
+- `results/experiments/metrics_full_panel.json` reports `false_positive_rate = 0.0`, but only on the curated frozen panel and without any uncertainty estimate or blind null bank. That is screening evidence, not publication-grade calibration.
 
-### Missing or weak ablations
+### Weak ablations
 
-- The new fit-length ablation shows that `fit_length = 8` creates 87 extra false candidates while `16` and `24` only remove weak shadow failures; that is useful calibration, but it still does not justify any broader sparse-family claim.
-- The strengthened long-holdout ablation resolves the strongest nonquadratic anomaly: `salem_quartic / ost_suffix_001` fails by length `80`, and all three plastic positive-density mirages fail by `40`. However, 11 uncertified rows still survive to `320`, so the sparse lane remains empirical rather than structural.
-- The selector-variant ablation is still local and one-sided. It probes variants near `quadratic_convergent_even`, but it does not apply the same perturbation family to matched nonquadratic continued-fraction controls.
-- The modulus ablation is still weakly informative: dropping `{7,11,25}` changes 0 of 49 candidate verdicts, which shows redundancy of the current modulus panel, not that modular shadows still separate positives from hard negatives under different prime choices.
+- The order-cap and fit-length ablations are useful overfitting checks, not mechanism tests: raising the cap to `d <= 6` or `d <= 8` adds 0 new exact cases but creates 84 and 89 classification flips, while `fit_length = 8` creates 87 extra false candidates.
+- The selector-family ablation is still coarse. It shows that the sparse story lives entirely in one construction family, but it does not test whether that family survives matched perturbations that preserve density and growth.
+- The modulus ablation is weakly informative: dropping `{7,11,25}` changes 0 of 49 candidate verdicts, which shows redundancy of the current panel, not robustness to alternative prime choices.
 
-### Missing error analysis
+### Incomplete error analysis
 
-- `results/experiments/evaluation_memo.md` now explains the strengthened holdout follow-up, including the failure of `salem_quartic / ost_suffix_001` at length `80`, but the unexplained risk pool is still larger: 15 `uncertified_exact_holdout`, 7 `selector_shadow_failure`, 21 `set_sequence_confusion`, and 43 `post_selection_leakage` tags in `results/experiments/metrics_full_panel.json`.
-- The current outputs still do not explain why `quadratic_convergent_even` certifies while same-slope Fibonacci/Pell/Ostrowski selectors on `phi`, `phi_minus_1`, `sqrt2`, and `one_plus_sqrt2` remain only long exact leaks.
+- `results/experiments/evaluation_memo.md` now explains the broken plastic and Salem anomalies, but it still does not explain the main unresolved pool: the 11 rows that keep exact holdouts through `320` without certificates.
+- The current outputs do not explain why `quadratic_convergent_even` certifies while same-slope `fib_indices`, `pell_indices`, and `ost_single_nonzero_digit` remain long exact leaks on the same four quadratic slopes.
+- The screen-level metric `holdout_exact_20` is not a calibrated proxy for final truth: 5 exact-certified rational FUAP rows still have `holdout_exact_20 = false`, so any benchmark table that mixes holdout-screen and certificate-level success needs a clearer error model.
 
 ### Missing stress tests
 
-- The revision now runs the full `uncertified_exact_holdout` pool to `320`, but no replay reaches `640`.
-- No slope-perturbation stress test uses nonquadratic irrationals sharing the same first continued-fraction digits as `phi` or `sqrt2`.
-- No intercept stress (`beta` sweep) or selector-jitter stress is run on the certified quadratic lane.
+- No replay pushes the 11 surviving uncertified rows from `320` to `640`.
+- No slope-perturbation stress test uses nonquadratic irrationals sharing the first 20 or 40 continued-fraction digits of `phi`, `phi - 1`, `sqrt(2)`, or `1 + sqrt(2)`.
+- No disjoint-prime modular-shadow replay replaces the current modulus set with a fresh panel such as `{13,17,19,29,49}`.
+
+## Where the evidence is still insufficient
+
+- Publication-quality support exists for: the rational AP/FUAP characterization, the negative long-holdout ruling-out of the strongest nonquadratic anomaly, and the four exact-certified quadratic-convergent examples as isolated constructions.
+- Publication-quality support does not exist for: a quadratic-family boundary, a periodic-continued-fraction boundary, a zero-intercept boundary, a robust sparse-selector phenomenon, or a calibrated `false_positive_rate = 0.0` claim.
 
 ## Falsifiable follow-ups
 
-- Add an intercept control panel for `floor(n r + beta)` with at least `beta = 1/2` and one irrational `beta` on the same sparse selectors. If the four certified `quadratic_convergent_even` hits survive unchanged, the mechanism is not zero-intercept-specific; if they disappear, the current narrative changes materially.
-- For each of `phi` and `sqrt2`, construct nonquadratic irrationals sharing the first 20 and 40 continued-fraction digits and rerun `quadratic_convergent_even`. If exact certificates still appear, the current quadratic evidence is likely prefix-driven rather than structural.
-- Push the 11 surviving uncertified rows from `320` to `640` and seek structural explanations or certificates, especially for the Fibonacci/Pell/Ostrowski leaks on the four quadratic slopes.
-- Add density-matched perturbation selectors around `quadratic_convergent_even` and matched nonquadratic controls. A publication-safe sparse claim should survive these changes without creating new nonquadratic exact certificates.
-- Expand the control bank with at least 3 additional nonquadratic algebraic slopes and 3 additional unbounded-type/transcendental slopes under the same selector families. If any exact certificate appears, the proposed boundary needs revision; if none do, the quadratic narrative becomes materially stronger.
-
-## Publication-safe claim boundary
-
-- Benchmark support is strong enough for: rational AP/FUAP baselines, the 4 exact-certified `quadratic_convergent_even` identities as isolated constructions, and the negative long-holdout follow-up showing that the strongest nonquadratic anomaly (`salem_quartic / ost_suffix_001`) fails by length `80`.
-- Benchmark support is not strong enough for: a quadratic-family characterization, a periodic-CF characterization, a zero-intercept characterization, or any claim that the sparse lane has been cleanly separated from matched nonquadratic controls.
+- Add an intercept panel `floor(n r + beta)` for the four certified quadratic slopes and matched controls with at least `beta = 1/2` and one irrational `beta`. If the certificates survive unchanged, drop any zero-intercept narrative; if they disappear, the sparse examples are intercept-sensitive and should be framed that way.
+- For each of `phi`, `phi - 1`, `sqrt(2)`, and `1 + sqrt(2)`, construct nonquadratic irrationals sharing the first 20 and 40 continued-fraction digits and rerun `quadratic_convergent_even`. If any exact certificate appears, `quadratic` is not the right boundary.
+- Extend `odd`, `even_shift1`, `every_third`, and one de-convergent jittered variant to the same `320`-term holdout and exact-certificate search used for the main winners. If any variant certifies, `quadratic_convergent_even` is not isolated.
+- Replace the modulus panel with a disjoint set on all 22 non-`no_candidate`, nonexact rows. If the shadow classifications change materially, the current modular-shadow evidence is panel-sensitive rather than robust.
+- Push the 11 surviving uncertified rows to `640` and either find structural certificates or force explicit breakpoints. If any of the 6 irrational quadratic leaks fail, the sparse narrative narrows further; if some certify, the claim boundary must widen and be rewritten.
+- Add a blind null-control bank of prefix-matched nonquadratic slopes and report a confidence interval for the false-positive rate. If any exact certificate appears, `false_positive_rate = 0.0` should be retired from the benchmark story.
