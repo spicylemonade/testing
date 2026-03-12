@@ -66,9 +66,9 @@
 \maketitle
 
 \begin{abstract}
-We study the following question: for which real numbers $r>0$ does the Beatty sequence $\floor{nr}$ contain an ordered subsequence satisfying a homogeneous constant-coefficient linear recurrence over $\Z$? The phrase \emph{linearly recurrent} is dangerously ambiguous in the surrounding literature, so we first lock the problem to ordered integer values rather than symbolic recurrence of gap words. Within this locked formulation we prove a complete classification for the largest selector family supported by theorem-level evidence: if the selector gaps are eventually periodic---in particular for arithmetic progressions and finite unions of arithmetic progressions---then such a subsequence exists if and only if $r$ is rational. The proof is fully explicit: bounded integer recurrence sequences have eventually periodic first differences, while eventual periodicity of $\floor{k\alpha+\beta}$ differences forces $\alpha\in\Q$. 
+We study the following question: for which real numbers $r>0$ does the Beatty sequence $\floor{nr}$ contain an ordered subsequence satisfying a homogeneous constant-coefficient linear recurrence over $\Z$? The phrase \emph{linearly recurrent} is dangerously ambiguous in the surrounding literature, so we first lock the problem to ordered integer values rather than symbolic recurrence of gap words. Within this locked formulation we prove a complete classification for the largest selector family currently supported by proof: if the selector gaps are eventually periodic---in particular for arithmetic progressions and finite unions of arithmetic progressions---then such a subsequence exists if and only if $r$ is rational. The proof is explicit: along an arithmetic selector the first-difference sequence is bounded, any bounded integer recurrence sequence is eventually periodic, and eventual periodicity of differences of $\floor{k\alpha+\beta}$ forces $\alpha\in\Q$. The unrestricted selector problem remains open.
 
-To map the remaining sparse-selector territory, we implement an exact arithmetic benchmark with structural certification, holdout verification, and modular-shadow screening over a pre-registered 145-case panel. After repairing the rational baseline and running the requested ablations, the benchmark yields 32 exact-certified cases: 28 rational periodic-gap baselines and 4 nondegenerate quadratic examples on the even-convergent selector, namely $r\in\{\varphi-1,\varphi,\sqrt2,1+\sqrt2\}$. Higher order fitting ($d\le 6,8$) adds no new certified case but greatly increases short-window false positives, while longer holdouts ($40/80/160$) preserve the four certified quadratic identities and destroy the plastic-control mirages. The result is a sharp separation between a proof-complete periodic-gap theorem and a sparse quadratic lane that remains only partly understood. 
+To calibrate the remaining sparse-selector territory, we implement an exact arithmetic benchmark with structural certification, holdout verification, and modular replay over a pre-registered 145-case panel with 20 justified waivers. After the revision-stage repairs, the benchmark yields 32 exact-certified cases: 28 rational AP/FUAP baselines and 4 isolated nondegenerate quadratic-convergent identities, namely $r\in\{\varphi-1,\varphi,\sqrt2,1+\sqrt2\}$. Raising the order cap to $d\le 6$ or $d\le 8$ and shrinking the fit window to $8$ terms create many additional short-window false candidates but no new certificate. Extending all 15 uncertified exact holdouts to length $320$ leaves 11 empirical leaks, while the strongest nonquadratic anomaly $\texttt{salem\_quartic / ost\_suffix\_001}$ fails by length $80$ and the three plastic prefix fits fail by length $40$. These sparse results are reported only as exact examples and empirical holdouts, not as a quadratic-family or zero-intercept theorem.
 \end{abstract}
 
 \section{Introduction}
@@ -86,16 +86,9 @@ The question becomes nontrivial only after disambiguation. In the symbolic-dynam
 \end{equation}
 The distinction matters: symbolic recurrence of a difference word does not automatically imply arithmetic recurrence of the sampled values.
 
-Our starting point is the observation that the unrestricted problem is likely too permissive. If one allows arbitrary selectors, sparse extraction can manufacture convincing finite-window recurrences without producing any theorem-grade infinite identity. We therefore follow the pre-registered plan in the repository and stratify the problem by selector complexity. This leads to a complete theorem for selectors with eventually periodic gaps, a rigorous exact benchmark for the pre-registered sparse families, and a clean separation between proof-backed content and empirical survivor patterns.
+Our starting point is the observation that the unrestricted problem is likely too permissive. If one allows arbitrary selectors, sparse extraction can manufacture convincing finite-window recurrences without producing any theorem-grade infinite identity. We therefore follow the pre-registered plan in the repository and stratify the problem by selector complexity.
 
-The paper makes five contributions.
-\begin{enumerate}
-  \item We prove a full characterization for eventually periodic-gap selectors: $\floor{n_k r}$ satisfies a homogeneous integer recurrence for some such selector if and only if $r\in\Q$.
-  \item We supply explicit proof lemmas that are strong enough to stand alone: bounded integer recurrence sequences are eventually periodic, arithmetic subsequences of recurrence sequences are again recurrence sequences, and eventual periodicity of differences of $\floor{k\alpha+\beta}$ forces $\alpha$ to be rational.
-  \item We formalize an exact arithmetic screening pipeline---nullspace-based relation discovery, structural certification, exact holdout verification, and modular-shadow diagnostics---and execute it on a fixed 145-case panel covering rational, quadratic irrational, higher-degree algebraic, Salem, and transcendental slopes.
-  \item We upgrade the sparse quadratic lane from three to four certified exact examples by resolving the previously open low-slope case $\varphi-1$, and we show by ablation that the four named even-convergent identities remain stable through holdout length $160$ while the plastic-control prefix fits collapse by length $40$.
-  \item We place the result honestly against prior work: the periodic-gap theorem is materially different from Beatty decidability, symbolic linear recurrence, generalized-polynomial definability, and Skolem--Mahler--Lech zero-set theory, whereas the sparse quadratic examples are treated as exact examples rather than a new full classification theorem.
-\end{enumerate}
+The paper is organized around three evidence levels rather than five co-equal contribution claims. First, the theorem-backed part proves a full characterization for eventually periodic-gap selectors: $\floor{n_k r}$ satisfies a homogeneous integer recurrence for some such selector if and only if $r\in\Q$. This is the paper's sole novelty-bearing mathematical claim. Second, the supporting exact layer isolates the elementary proof lemmas and records four certified quadratic-convergent identities as boundary examples, not as an additional classification theorem. Third, the empirical layer executes the fixed 145-case panel with 20 justified waivers, obtains the 28 rational AP/FUAP certificates plus the 4 certified quadratic identities, and extends all 15 uncertified exact holdouts to length $320$ without promoting them beyond empirical status. Throughout, the motivating unrestricted problem for arbitrary selectors remains open.
 
 \begin{figure}[t]
   \centering
@@ -128,7 +121,10 @@ Durand's program identifies symbolic linear recurrence via return words, substit
 Generalized-polynomial work of Byszewski, Konieczny, and Adamczewski explains when recurrence-value sets or bracket-word structures are definable in generalized-polynomial terms \citep{adamczewski2022,byszewski2016,byszewski2023}. Generalized and complementary Beatty constructions give a rich source of exact identities and selector heuristics \citep{allouche2018}. The self-matching literature for quadratic Beatty sequences is especially relevant for the sparse quadratic lane \citep{maskov2006}. For that reason we do \emph{not} sell the four certified quadratic examples as a novelty-bearing classification theorem. They are best viewed as exact sanity checks and boundary examples around the main obstruction theorem.
 
 \paragraph{Skolem--Mahler--Lech rigidity.}
-Bell and Derksen describe arithmetic-progression structure in zeros and intersections of recurrence sequences and affine-orbit systems \citep{bell2005,derksen2005}. Their work provides the right obstruction language for our modular-shadow screen, but again the logical direction is different. Those theorems begin with a recurrence sequence and analyze its exceptional set. We begin with a Beatty subsequence candidate and ask when it can instantiate a recurrence at all.
+Bell and Derksen describe arithmetic-progression structure in zeros and intersections of recurrence sequences and affine-orbit systems \citep{bell2005,derksen2005}. Their work provides the right recurrence-side obstruction language for our screening layer, but again the logical direction is different. Those theorems begin with a recurrence sequence and analyze its exceptional set. We begin with a Beatty subsequence candidate and ask when it can instantiate a recurrence at all.
+
+\paragraph{Automata-assisted exact verification.}
+Walnut and Pecan illustrate how exact theorem-proving tools can support automatic-sequence and numeration arguments \citep{mousavi2016walnut,oei2021pecan}. Our benchmark uses a much narrower computational role: exact recurrence fitting, structural certification, and holdout checking on a frozen Beatty panel. The pipeline is therefore methodology and calibration, not a second theorem claim.
 
 The upshot is exactly the one encoded in \Cref{fig:prior-art-matrix}: the theorem-grade contribution of this paper is narrow but materially distinct. It is a statement about ordered value recurrences in Beatty subsequences under explicitly structured selectors. Everything outside that scope is either comparative context or empirical evidence.
 
@@ -314,7 +310,7 @@ The computational pipeline is deliberately conservative. A case is promoted to \
     Positive-density selectors & four arithmetic progressions and three finite AP unions & Theorem lane \\
     Sparse selectors & Fibonacci, Pell, Padovan, three Ostrowski templates, even convergents, beta-endpoint suffix \texttt{10} & Empirical screen \\
     Baseline fit / holdout & fit length $12$, total length $20$, order cap $d\le 4$ & Main pre-registered screen \\
-    Ablations & order caps $d\le 6,8$; holdouts $40/80/160$; nearby convergent variants & Claim-sensitive stress tests \\
+    Ablations & order caps $d\le 6,8$; fit lengths $8/12/16/24$; holdouts $40/80/160/320$; nearby variants & Claim-sensitive stress tests \\
     Modular replay & moduli $2,3,5,7,11,25$ & Reject short-window and sparse mirages \\
     \bottomrule
   \end{tabularx}
@@ -418,7 +414,7 @@ This design choice is the central methodological guardrail of the paper. \Cref{f
 
 \subsection{Complexity and design rationale}
 
-Let $M$ be the total sample length and $d_{\max}$ the order cap. For each $d\le d_{\max}$, the nullspace computation in \Cref{alg:fit} acts on an $(m_{\mathrm{fit}}-d)\times(d+1)$ matrix over $\Q$. Exact Gaussian elimination therefore costs polynomial time in $d$ and in the bit lengths of the sample values; for fixed $m_{\mathrm{fit}}=12$ and $d_{\max}\le 8$ the arithmetic cost is negligible relative to exact floor evaluation. The modular-shadow replay costs $O(sMd)$ integer operations for $s=6$ moduli. Long-holdout ablations scale linearly in the holdout length.
+Let $M$ be the total sample length and $d_{\max}$ the order cap. For each $d\le d_{\max}$, the nullspace computation in \Cref{alg:fit} acts on an $(m_{\mathrm{fit}}-d)\times(d+1)$ matrix over $\Q$. Exact Gaussian elimination is therefore polynomial in $d$ and in the bit lengths of the sampled values. For the fixed panel sizes used here ($m_{\mathrm{fit}}=12$ and $d_{\max}\le 8$), this linear algebra remains small; the only growth parameter in the ablations is the exact floor-evaluation and verification window. The modular-shadow replay costs $O(sMd)$ integer operations for $s=6$ moduli, and the long-holdout ablations scale linearly in the holdout length.
 
 The more important design point is qualitative rather than asymptotic. The pipeline is intentionally \emph{certificate-first}. Exact sample agreement is treated as evidence, not as proof, unless a structural argument closes the infinite tail. This is the key safeguard against prefix-fitting and post-selection artifacts.
 
@@ -544,7 +540,7 @@ Therefore $r\in\Q$, proving (2).
 \end{proof}
 
 \begin{remark}
-\Cref{thm:periodic-gap} is the strongest theorem supported by both the proof archive and the refreshed benchmark. It is already enough to settle the entire positive-density lane of the pre-registered panel. \Cref{fig:heatmap-full} and \Cref{fig:outcome-breakdown} show the numerical side of the same split.
+\Cref{thm:periodic-gap} is the strongest theorem supported by both the proof archive and the refreshed benchmark. It is already enough to settle the AP/FUAP portion of the pre-registered panel. \Cref{fig:heatmap-full} and \Cref{fig:outcome-breakdown} show the numerical side of the same split.
 \end{remark}
 
 \subsection{Four exact quadratic-convergent identities}
@@ -755,7 +751,7 @@ The main panel evaluates 145 executed cases and 20 justified waivers. For each e
 The repository now includes three additional artifacts that did not exist in the first researcher pass.
 \begin{itemize}
   \item \texttt{results/experiments/metrics\_full\_panel.json} publishes full-run metrics, per-case holdout flags, certificate flags, risk tags, and the nondegenerate exact-hit split.
-  \item The claim-sensitive ablation artifact reruns the requested order-cap, holdout-length, and selector-variant checks.
+  \item The claim-sensitive ablation artifact reruns the requested order-cap and fit-length checks, extends all 15 uncertified exact holdouts through length $320$, and records the selector-variant follow-up.
   \item \texttt{results/experiments/full\_panel\_case\_audit.csv} provides a flat case table for exact reproduction and figure generation.
 \end{itemize}
 
@@ -765,7 +761,7 @@ The repository now includes three additional artifacts that did not exist in the
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig4_full_panel_heatmap.pdf}
-  \caption{Full benchmark heatmap. Rows are the 11 tested slopes and columns are the 15 selector templates, for a total of 165 cells; 20 irrational-only cells are definition-driven waivers and the remaining 145 cells are executed cases. The exact-certified region is sharply localized: the entire positive-density exact lane is rational, while the only sparse exact certificates occur on the even-convergent selector for $\varphi-1$, $\varphi$, $\sqrt2$, and $1+\sqrt2$. The figure is therefore a visual summary of the theorem/empirical split: periodic-gap selectors support a complete rational characterization, whereas sparse selectors exhibit a much narrower and more delicate survivor pattern.}
+  \caption{Full benchmark heatmap. Rows are the 11 tested slopes and columns are the 15 selector templates, for a total of 165 cells; 20 irrational-only cells are definition-driven waivers and the remaining 145 cells are executed cases. The exact-certified region is sharply localized: the entire AP/FUAP exact lane is rational, while the only sparse exact certificates occur on the even-convergent selector for $\varphi-1$, $\varphi$, $\sqrt2$, and $1+\sqrt2$. The figure is therefore a visual summary of the theorem/empirical split: periodic-gap selectors support a complete rational characterization, whereas sparse selectors exhibit a much narrower and explicitly non-classified survivor pattern.}
   \label{fig:heatmap-full}
 \end{figure}
 
@@ -788,16 +784,16 @@ The classification counts are:
   \item 7 \texttt{selector\_shadow\_failure}, and
   \item 91 \texttt{no\_candidate}.
 \end{itemize}
-By slope family this becomes: rationals contribute 28 exact-certified and 5 additional sparse exact holdouts; quadratics contribute 4 exact-certified, 6 sparse holdouts, and 50 negative or shadow-failure cases; the higher-degree and control family contributes no exact certificate at all.
+By slope family this becomes: rationals contribute 28 exact-certified and 5 additional sparse exact holdouts; quadratics contribute 4 exact-certified, 6 sparse holdouts, and 50 negative or shadow-failure cases; the higher-degree and control family contributes no exact certificate at all. The strengthened follow-up extends all 15 uncertified exact holdouts to length $320$: 11 remain empirical leaks, the three plastic prefix fits fail by length $40$, and the strongest nonquadratic anomaly $\texttt{salem\_quartic / ost\_suffix\_001}$ fails by length $80$.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig5_outcome_breakdown.pdf}
-  \caption{Outcome breakdown after the writer-stage repairs. Left: every positive-density exact certificate is rational, while the sparse exact lane contains only four certified cases. Right: classification mix by slope family. The theorem-backed rational lane is fully populated after the periodic-gap certificate refresh, whereas the higher-degree/control family produces only prefix fits, modular-shadow failures, and no-candidate outcomes. The four nondegenerate exact cases coincide exactly with the named quadratic-convergent examples in \Cref{cor:four-certified}.}
+  \caption{Outcome breakdown after the writer-stage repairs. Left: every AP/FUAP exact certificate is rational, while the sparse exact lane contains only four certified cases. Right: classification mix by slope family. The theorem-backed rational lane is fully populated after the periodic-gap certificate refresh, whereas the higher-degree/control family produces only prefix fits, modular-shadow failures, and no-candidate outcomes. The four nondegenerate exact cases coincide exactly with the named quadratic-convergent examples in \Cref{cor:four-certified}.}
   \label{fig:outcome-breakdown}
 \end{figure}
 
-The headline consequence is that the benchmark now supports the exact claim set advertised in \Cref{sec:theory}: the rational periodic-gap lane is fully repaired, and the sparse exact-certified lane contains exactly four nondegenerate examples.
+The headline consequence is that the benchmark now supports the exact claim set advertised in \Cref{sec:theory}: the rational periodic-gap lane is fully repaired, the sparse exact-certified lane contains exactly four nondegenerate examples, and every broader sparse statement remains explicitly empirical.
 
 \subsection{Exact-certified cases}
 
@@ -815,7 +811,7 @@ The headline consequence is that the benchmark now supports the exact claim set 
     Sparse quadratic & $1+\sqrt2$ & even convergents $q_{2k}$ & $x_{k+2}-6x_{k+1}+x_k=0$ & exact certified \\
     \bottomrule
   \end{tabularx}
-  \caption{All exact-certified cases after the writer-stage refresh. The 28 rational certificates are degenerate and belong to the mandatory baseline. The four quadratic certificates are nondegenerate and remain stable under the longer holdout ablations in \Cref{tab:holdouts,fig:ablations}.}
+  \caption{All exact-certified cases after the writer-stage refresh. The 28 rational certificates are degenerate and belong to the mandatory baseline. The four quadratic certificates are isolated nondegenerate exact examples; their stability under longer holdouts in \Cref{tab:holdouts,fig:ablations} does not upgrade the surrounding sparse lane to a family theorem.}
   \label{tab:exact-cases}
 \end{table}
 
@@ -826,55 +822,55 @@ Two features of \Cref{tab:exact-cases} are critical. First, the rational lane is
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig6_claim_sensitive_ablations.pdf}
-  \caption{Claim-sensitive ablations requested by the verification audit. Left: raising the search ceiling from $d\le 4$ to $d\le 6$ and $d\le 8$ adds no new exact-certified case, but it converts many former \texttt{no\_candidate} rows into higher-order short-window fits and modular-shadow failures. This is why the paper does not infer new mathematics from a larger order cap alone. Right: longer holdouts. The four certified quadratic-convergent identities remain exact through lengths $40$, $80$, and $160$; the unresolved Fibonacci/Pell quadratic cases also retain exact holdouts empirically; the three plastic prefix fits fail immediately once the holdout exceeds $20$.}
+  \caption{Claim-sensitive ablations requested by the verification audit. Left: raising the search ceiling from $d\le 4$ to $d\le 6$ and $d\le 8$ adds no new exact-certified case, but it converts many former \texttt{no\_candidate} rows into higher-order short-window fits and modular-shadow failures. This is why the paper does not infer new mathematics from a larger order cap alone. Right: longer holdouts. The four certified quadratic-convergent identities remain exact through lengths $40$, $80$, $160$, and $320$; the unresolved Fibonacci/Pell quadratic cases also retain exact holdouts empirically; the three plastic prefix fits fail by $40$, and $\texttt{salem\_quartic / ost\_suffix\_001}$ fails by $80$.}
   \label{fig:ablations}
 \end{figure}
 
 The order-cap ablation is striking. Moving from $d\le 4$ to $d\le 6$ flips 84 classifications, and moving to $d\le 8$ flips 89, yet the number of exact-certified cases remains fixed at 32. The additional fits are therefore not new exact structure; they are higher-order explanations of the same short sample windows. This validates the repository's certificate-first design.
 
-Longer holdouts tell the complementary story. The four exact-certified quadratic cases keep the same order-2 recurrence through 40, 80, and 160 samples. Meanwhile, the plastic positive-density prefix fits
+The fit-length ablation points in the same direction. Shrinking the fit window from 12 to 8 terms creates 87 extra false candidates, while enlarging it to 16 or 24 terms adds no new exact case and only removes weak shadow-failure rows. Longer holdouts then tell the complementary story. The four exact-certified quadratic cases keep the same order-2 recurrence through 40, 80, 160, and 320 samples. The strongest nonquadratic anomaly $\texttt{salem\_quartic / ost\_suffix\_001}$ survives to length $40$ but fails by $80$. Meanwhile, the plastic positive-density prefix fits
 \[
   (\text{plastic},\AP(1,0)),\quad (\text{plastic},\mathrm{U3}\{0,1\}),\quad (\text{plastic},\mathrm{U6}\{0,1,3\})
 \]
-all fail by holdout length 40. So the longer holdout ablation sharpens both sides of the story: it strengthens the named quadratic identities and weakens the temptingly broad nonquadratic near-misses.
+all fail by holdout length 40. So the strengthened ablations sharpen both sides of the story: they strengthen the named exact identities, weaken the temptingly broad nonquadratic near-misses, and still leave the surviving sparse holdouts outside theorem language.
 
 \begin{table}[t]
   \centering
+  \setlength{\tabcolsep}{4pt}
   \scriptsize
-  \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.30\linewidth} >{\raggedright\arraybackslash}p{0.20\linewidth} >{\centering\arraybackslash}p{0.07\linewidth} >{\centering\arraybackslash}p{0.07\linewidth} >{\centering\arraybackslash}p{0.07\linewidth} >{\centering\arraybackslash}p{0.07\linewidth} >{\raggedright\arraybackslash}X}
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\centering\arraybackslash}p{0.055\linewidth} >{\centering\arraybackslash}p{0.055\linewidth} >{\centering\arraybackslash}p{0.055\linewidth} >{\centering\arraybackslash}p{0.055\linewidth} >{\centering\arraybackslash}p{0.055\linewidth} >{\raggedright\arraybackslash}X@{}}
     \toprule
-    Case & Fitted recurrence & 20 & 40 & 80 & 160 & Interpretation \\
+    Case & Coeffs. & 20 & 40 & 80 & 160 & 320 & Interpretation \\
     \midrule
-    $\{\varphi-1,\varphi\}/q_{2k}$ & $x_{k+2}-3x_{k+1}+x_k=0$ & \Exact & \Exact & \Exact & \Exact & certified F-type \\
-    $\{\sqrt2,1+\sqrt2\}/q_{2k}$ & $x_{k+2}-6x_{k+1}+x_k=0$ & \Exact & \Exact & \Exact & \Exact & certified P-type \\
-    $\{\varphi-1,\varphi\}/\mathrm{Fib}$ & $(1,1,-2,-1,1)$ & \Hold & \Hold & \Hold & \Hold & empirical holdout \\
-    $\{\sqrt2,1+\sqrt2\}/\mathrm{Pell}$ & $(1,2,-2,-2,1)$ & \Hold & \Hold & \Hold & \Hold & empirical holdout \\
-    plastic/AP$(1,0)$ & $(1,-1,0,-1,1)$ & \Prefix & \Shadow & \Shadow & \Shadow & mirage \\
-    plastic/U3$\{0,1\}$ & $(1,-2,1)$ & \Prefix & \Shadow & \Shadow & \Shadow & mirage \\
-    plastic/U6$\{0,1,3\}$ & $(1,-1,0,-1,1)$ & \Prefix & \Shadow & \Shadow & \Shadow & mirage \\
+    $\{\varphi-1,\varphi\}/q_{2k}$ & $(1,-3,1)$ & \Exact & \Exact & \Exact & \Exact & \Exact & certified F-type \\
+    $\{\sqrt2,1+\sqrt2\}/q_{2k}$ & $(1,-6,1)$ & \Exact & \Exact & \Exact & \Exact & \Exact & certified P-type \\
+    $\{\varphi-1,\varphi\}/\mathrm{Fib}$ & $(1,1,-2,-1,1)$ & \Hold & \Hold & \Hold & \Hold & \Hold & empirical holdout \\
+    $\{\sqrt2,1+\sqrt2\}/\mathrm{Pell}$ & $(1,2,-2,-2,1)$ & \Hold & \Hold & \Hold & \Hold & \Hold & empirical holdout \\
+    $\texttt{salem\_quartic}/\texttt{ost\_001}$ & $(1,-1,0,-1,1)$ & \Hold & \Hold & \Shadow & \Shadow & \Shadow & strongest nonquadratic anomaly fails by $80$ \\
+    plastic/AP$(1,0)$ & $(1,-1,0,-1,1)$ & \Prefix & \Shadow & \Shadow & \Shadow & \Shadow & representative plastic mirage; all three fail by $40$ \\
     \bottomrule
   \end{tabularx}
-  \caption{Holdout-length ablation. Abbreviations: \Exact = exact certified, \Hold = exact holdout without structural certificate, \Prefix = positive-density prefix fit, \Shadow = selector-shadow failure. Grouped rows indicate that the two Fibonacci-type quadratic cases and the two Pell-type quadratic cases behave identically across all four holdout lengths.}
+  \caption{Representative holdout-length ablation. Abbreviations: \Exact = exact certified, \Hold = exact holdout without structural certificate, \Prefix = positive-density prefix fit, \Shadow = selector-shadow failure. Grouped rows indicate that the two Fibonacci-type quadratic cases and the two Pell-type quadratic cases behave identically across the full $20/40/80/160/320$ follow-up.}
   \label{tab:holdouts}
 \end{table}
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.88\linewidth]{figures/fig7_variant_matrix.pdf}
-  \caption{Selector-template ablation around the even-convergent lane. For each of the four quadratic slopes, nearby convergent templates (odd convergents, shifted even convergents, and every-third convergents) still exhibit exact finite holdouts; the annotations show the leading coefficients of the fitted low-order recurrences. However, because these variants have no structural certificates, they remain in the sparse empirical lane. In contrast, the matched nonquadratic controls plastic and $e$ remain modular-shadow failures across the same variant panel. The figure therefore supports two simultaneous claims: the quadratic lane is not a one-template accident, but its broader selector-level classification is still unproved.}
+  \caption{Selector-template ablation around the even-convergent lane. For each of the four quadratic slopes, nearby convergent templates (odd convergents, shifted even convergents, and every-third convergents) still exhibit exact finite holdouts; the annotations show the leading coefficients of the fitted low-order recurrences. However, because these variants have no structural certificates, they remain in the sparse empirical lane. In contrast, the matched nonquadratic controls plastic and $e$ remain modular-shadow failures across the same variant panel. The figure therefore supports only a narrow empirical statement: nearby templates can preserve long exact holdouts on the same four quadratic slopes, but the current evidence does not justify any quadratic-family or selector-family boundary claim.}
   \label{fig:variant-matrix}
 \end{figure}
 
 \subsection{What remains empirical}
 
-The strongest remaining empirical cases are not random. The exact-holdout survivors beyond the four certified identities are
+The strongest remaining empirical cases are not random. After extending every uncertified exact holdout to length $320$, the survivor pool still consists only of rational-trivial sparse selectors together with the same four quadratic slopes. Concretely, the long exact-holdout survivors beyond the four certified identities are
 \begin{itemize}
   \item $\varphi$ and $\varphi-1$ on Fibonacci indices,
   \item $\sqrt2$ and $1+\sqrt2$ on Pell indices,
   \item the equivalent Ostrowski-single-digit copies of the Fibonacci cases,
-  \item a single Salem Ostrowski holdout at 20 samples only.
+  \item the rational-trivial sparse selectors already quarantined by the baseline tags.
 \end{itemize}
-The quadratic Fibonacci/Pell cases persist through 160 samples, so they are serious empirical signals. But they are still only empirical signals. Given the direct connection to self-matching and generalized Beatty literature \citep{maskov2006,allouche2018}, elevating them to theorem language without a structural proof would be precisely the kind of overclaim the verification layer was designed to prevent.
+The only nonquadratic irrational case that survives beyond the 20-term screen is the Salem Ostrowski holdout \texttt{salem\_quartic}/\texttt{ost\_suffix\_001}; it fails by length $80$ and therefore drops out of the long-holdout pool. The quadratic Fibonacci/Pell/Ostrowski cases are thus serious empirical signals, but they are still only empirical signals. Given the direct connection to self-matching and generalized Beatty literature \citep{maskov2006,allouche2018}, elevating them to theorem language without a structural proof would be precisely the kind of overclaim the verification layer was designed to prevent. The current package also lacks intercept controls $\floor{nr+\beta}$ and continued-fraction-prefix-matched nonquadratic controls, so it does not support any quadratic-family, periodic-continued-fraction, or zero-intercept boundary claim.
 
 Finally, the beta-endpoint suffix-\texttt{10} selector remains negative on every executed irrational slope, including $\varphi$, $\varphi-1$, $1+\sqrt2$, plastic, the Salem quartic root, $\sqrt2$, and $e$. This is not a theorem against all beta-numeration constructions, but it is enough to rule out the most obvious higher-degree Pisot rescue mechanism in the frozen panel.
 
@@ -883,7 +879,7 @@ Finally, the beta-endpoint suffix-\texttt{10} selector remains negative on every
 
 The paper settles one natural structured version of the problem and leaves the unrestricted version open. The settled part is meaningful: eventually periodic-gap selectors are the largest selector class in the archive for which theorem-grade proof, benchmark evidence, and literature positioning all line up cleanly. Inside that class, rationality is the whole story.
 
-Three limitations remain.
+Four limitations remain.
 
 \paragraph{The unrestricted problem is still open.}
 Our theorems do not characterize all $r$ for arbitrary selectors, or even all zero-density selectors. The evidence strongly suggests that sparse extraction can support exact recurrences beyond the rational lane, but the current paper certifies only four such examples.
@@ -891,16 +887,18 @@ Our theorems do not characterize all $r$ for arbitrary selectors, or even all ze
 \paragraph{The sparse quadratic lane overlaps with known quadratic Beatty phenomena.}
 The exact examples for $\varphi$, $\varphi-1$, $\sqrt2$, and $1+\sqrt2$ fit naturally beside the self-matching and generalized Beatty literature \citep{maskov2006,allouche2018}. That is precisely why the novelty claim of this paper does not rest on them. Their role is to map the edge of the theorem lane, not to serve as a standalone discovery claim.
 
+\paragraph{Missing controls prevent boundary claims.}
+The current package has no intercept controls of the form $\floor{nr+\beta}$ and no continued-fraction-prefix-matched nonquadratic controls. The strengthened $320$-term follow-up and the failure of $\texttt{salem\_quartic / ost\_suffix\_001}$ by $80$ sharpen the empirical picture, but they still do not justify a quadratic-only, periodic-continued-fraction, or zero-intercept theorem.
+
 \paragraph{The nonquadratic negatives are only named-example negatives.}
 Plastic, Salem, and transcendental controls are enough to reject a broad Pisot-first narrative, but they do not imply a universal impossibility theorem for all higher-degree algebraic or transcendental slopes. Additional exact backends for large-index nonquadratic floor evaluation would make this part of the map sharper.
 
-The failure modes observed in the ablations are themselves informative. Higher-order fits on short windows behave exactly as a skeptic would fear: they generate many new relations without producing new certificates. Likewise, the plastic-control prefix fits show how convincing a false positive can look before the holdout or modular replay is extended. This suggests a broader methodological point for automated mathematics: empirical regularity in exact arithmetic is useful, but it must be reported in calibrated layers rather than collapsed into a binary true/false theorem verdict.
-
-The societal implications are correspondingly modest but real. Beatty subsequences are a low-stakes topic, yet the workflow here is representative of a larger issue in machine-assisted mathematics and formalizable scientific reasoning. Automated systems can generate genuine conjectural insight, but without hard separation between proof, certificate, and finite exact evidence they can also generate confident nonsense. The contribution of this paper is therefore not only mathematical. It is also procedural: it shows one way to keep a research pipeline honest when symbolic, arithmetic, and empirical notions of recurrence are easy to conflate.
+\paragraph{Methodological lesson.}
+The failure modes observed in the ablations are themselves informative. Higher-order fits on short windows behave exactly as a skeptic would fear: they generate many new relations without producing new certificates. Likewise, the plastic-control prefix fits show how convincing a false positive can look before the holdout or modular replay is extended. This suggests a broader lesson for automated mathematics: empirical regularity in exact arithmetic is useful, but it must be reported in calibrated layers rather than collapsed into a binary true/false theorem verdict. We do not count that reporting discipline as a separate novelty claim; it is simply the discipline required to keep the mathematical claim honest.
 
 \section{Conclusion}
 
-We gave a proof-complete answer to the structured Beatty-subsequence problem for selectors with eventually periodic gaps: such a selector supports a homogeneous integer recurrence in $\floor{n_k r}$ if and only if $r$ is rational. We then mapped the sparse-selector frontier with an exact arithmetic benchmark and certification layer. After repairing the rational baseline and running the requested ablations, the benchmark supports exactly four certified irrational examples, all in a quadratic even-convergent lane, and no certified higher-degree or transcendental survivor. The remaining sparse quadratic holdouts are strong empirical evidence but not yet theorems. The clean separation between these layers is the main message of the paper.
+We gave a proof-complete answer to the structured Beatty-subsequence problem for selectors with eventually periodic gaps: such a selector supports a homogeneous integer recurrence in $\floor{n_k r}$ if and only if $r$ is rational. We then mapped the sparse-selector frontier with an exact arithmetic benchmark and certification layer. After repairing the rational baseline and extending all 15 uncertified exact holdouts to length $320$, the benchmark supports exactly four certified irrational examples, all in a quadratic even-convergent lane, while 11 longer-lived holdouts remain empirical and the strongest nonquadratic anomaly fails by $80$. We do not infer a quadratic-family boundary or a zero-intercept theorem from these data. The main contribution remains the periodic-gap theorem; the rest of the paper records exact examples and calibrated negative evidence around the still-open unrestricted problem.
 
 \appendix
 
@@ -970,7 +968,7 @@ The repository implementation uses three exact floor backends.
     \qquad
     \floor{n\varphi}=\frac{n+\lfloor\sqrt{5n^2}\rfloor}{2},
   \]
-  which remain stable even for the 160-sample holdout lengths.
+  which remain stable even for the 320-sample holdout lengths.
   \item For plastic, the Salem quartic root, and $e$, it falls back to exact symbolic floor evaluation through SymPy.
 \end{enumerate}
 
@@ -978,29 +976,31 @@ The last backend is sufficient for the 20-sample main panel, but it is not yet a
 
 \section{Extended empirical tables}
 
-\begin{longtable}{>{\raggedright\arraybackslash}p{0.20\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth}}
-\caption{Certification summary used by the writer-stage figures and tables.}\label{tab:appendix-summary}\\
-\toprule
-Case & Classification & Holdout 20 & Certificate & Nondegenerate & Note \\
-\midrule
-\endfirsthead
-\toprule
-Case & Classification & Holdout 20 & Certificate & Nondegenerate & Note \\
-\midrule
-\endhead
-Rational AP/FUAP lane & exact recurrence & yes / mixed & yes & no & 28 baseline certificates, orders $2$--$7$ \\
-$\varphi-1$ on $q_{2k}$ & exact recurrence & yes & yes & yes & proved in \Cref{prop:fibonacci-identities} \\
-$\varphi$ on $q_{2k}$ & exact recurrence & yes & yes & yes & proved in \Cref{prop:fibonacci-identities} \\
-$\sqrt2$ on $q_{2k}$ & exact recurrence & yes & yes & yes & proved in \Cref{prop:pell-identities} \\
-$1+\sqrt2$ on $q_{2k}$ & exact recurrence & yes & yes & yes & proved in \Cref{prop:pell-identities} \\
-$\varphi$ on Fib & sparse leak & yes & no & no & exact holdout through $160$ \\
-$\varphi-1$ on Fib & sparse leak & yes & no & no & exact holdout through $160$ \\
-$\sqrt2$ on Pell & sparse leak & yes & no & no & exact holdout through $160$ \\
-$1+\sqrt2$ on Pell & sparse leak & yes & no & no & exact holdout through $160$ \\
-plastic on AP/U3/U6 & prefix fit / shadow failure & yes at $20$ only & no & no & fails by holdout $40$ \\
-beta-endpoint suffix \texttt{10} & no candidate & no & no & n/a & negative on every executed irrational slope \\
-\bottomrule
-\end{longtable}
+\begin{table}[p]
+  \centering
+  \setlength{\tabcolsep}{4pt}
+  \small
+  \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.13\linewidth} >{\centering\arraybackslash}p{0.10\linewidth} >{\centering\arraybackslash}p{0.09\linewidth} >{\centering\arraybackslash}p{0.11\linewidth} >{\raggedright\arraybackslash}X@{}}
+    \toprule
+    Case & Class. & H20 & Cert. & Nondeg. & Note \\
+    \midrule
+    Rational AP/FUAP & exact & mixed & yes & no & 28 baseline certificates; orders $2$--$7$ \\
+    $\varphi-1$ on $q_{2k}$ & exact & yes & yes & yes & proved in \Cref{prop:fibonacci-identities} \\
+    $\varphi$ on $q_{2k}$ & exact & yes & yes & yes & proved in \Cref{prop:fibonacci-identities} \\
+    $\sqrt2$ on $q_{2k}$ & exact & yes & yes & yes & proved in \Cref{prop:pell-identities} \\
+    $1+\sqrt2$ on $q_{2k}$ & exact & yes & yes & yes & proved in \Cref{prop:pell-identities} \\
+    $\varphi$ on Fib & leak & yes & no & no & exact holdout through $320$ \\
+    $\varphi-1$ on Fib & leak & yes & no & no & exact holdout through $320$ \\
+    $\sqrt2$ on Pell & leak & yes & no & no & exact holdout through $320$ \\
+    $1+\sqrt2$ on Pell & leak & yes & no & no & exact holdout through $320$ \\
+    $\texttt{salem\_quartic}$ on $\texttt{ost\_001}$ & leak $\to$ fail & yes & no & no & survives to $40$, fails by $80$ \\
+    plastic on AP/U3/U6 & fit $\to$ fail & yes & no & no & all three mirages fail by $40$ \\
+    beta-endpoint suffix \texttt{10} & negative & no & no & n/a & negative on every executed irrational slope \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Certification summary used by the writer-stage figures and tables. H20 denotes exact holdout on the 20-term panel.}
+  \label{tab:appendix-summary}
+\end{table}
 
 \section{Reproducibility summary}
 
