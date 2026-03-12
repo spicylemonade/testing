@@ -1,84 +1,101 @@
 # Item 016 Selection Memo
 
 Date: 2026-03-12
-Scope: core-research synthesis for `H1_multisource_cold_start`
-Status: PASS with one active champion and one kill-ready fallback
+Scope: one-champion and one-fallback freeze for `H1_multisource_cold_start`
+Status: PASS with narrowed architecture set
 
 ## Execution Note
 
-- Fresh item-specific child refresh was attempted, but it did not materialize dedicated `item016_*` note files before the parent run resumed.
-- This memo therefore synthesizes the saved role outputs already present in the repo plus the new iterate-state artifacts:
-  - research director: `results/swarm/director_brief.md`
-  - hypothesis scout: `results/concept_evolve/notes/hypothesis_scout_h1_cards.md`
-  - novelty checker: `results/concept_evolve/notes/novelty_checker_h1.md`
-  - falsifier: `results/swarm/falsifier.md`
-  - integrator: `results/concept_evolve/integrator_selection.md`
-  - iteration refresh: `results/concept_evolve/bridge_candidates.json`, `results/concept_evolve/concept_delta.json`, `results/concept_evolve/recurrent_state.json`
+- Attempted delegated role pass:
+  - `research_director`
+  - `hypothesis_scout`
+  - `novelty_checker`
+  - `falsifier`
+  - `integrator`
+- Attempted method:
+  - parallel `codex exec` child sessions from the repo root, each instructed to read the same frozen H1 evidence and write one role-local note
+- Observed blocker:
+  - all five child sessions hit the same responses-proxy failure seen earlier in the run:
+    - `stream disconnected before completion`
+  - no role-local note files were written
+- Parent fallback used here:
+  - preserve the required role structure below, but reconstruct each section directly from the same frozen inputs:
+    - `results/concept_evolve/bridge_candidates.json`
+    - `results/concept_evolve/concept_delta.json`
+    - `results/concept_evolve/recurrent_state.json`
+    - `results/concept_evolve/integrator_selection.md`
+    - `verification/claim_matrix.md`
+    - `verification/item011_signoff.md`
 
-## Research Director Input
+## Research Director
 
-- Keep the H1 lane active because it remains the best novelty-to-falsifiability trade in the saved swarm state.
-- Within H1, stay on the narrow startup-correctness thesis rather than broad multi-source PMU or efficiency language.
-- The next experiment gate remains the bounded `ngspice` startup matrix under weak heterogeneous sources.
+- Selected champion:
+  - `packet_scout_handoff_root::variant_01_rc_ranked_packet_gate`
+- Selected fallback:
+  - `dual_bucket_polarity_split_bootstrap`
+- Retired branches:
+  - `time_constant_ranked_arbiter` as a benchmark/control line only
+  - `tokenized_uvlo_handoff_gate` as a support block only
+  - `reverse_leakage_vote_or` as a retired standalone bridge
+  - `comparatorless_current_probe_bootstrap` as a retired standalone bridge
+- Why this is the correct freeze:
+  - the RC-ranked packet gate is the only implemented branch that still matches the claim boundary in `claim_matrix.md`: helper-free pre-arbitration source scouting under heterogeneous weak sources
+  - the dual-bucket branch is the only surviving fallback that opens a materially different mixed-polarity startup regime instead of collapsing into ordinary arbitration
 
-## Hypothesis Scout Input
+## Hypothesis Scout
 
-- `packet_scout_handoff_root` remains the only branch whose first experiment directly matches the H1 claim.
-- `dual_bucket_polarity_split_bootstrap` is the only alternative branch that still opens a materially different failure regime: mixed-polarity startup before safe rail merge.
-- `time_constant_ranked_arbiter` remains useful, but only as a lower-overhead comparison line.
+- Champion:
+  - keep `packet_scout_handoff_root` active because it is already netlisted and directly maps to the strongest surviving bridge in `bridge_candidates.json`
+- Fallback:
+  - keep `dual_bucket_polarity_split_bootstrap` because mixed-polarity startup remains the only nearby route that could widen the novelty moat if the champion underperforms
+- Why `003` is not the fallback:
+  - `time_constant_ranked_arbiter` remains useful, but only as the cleanest low-overhead source-awareness control; it is too close to ordinary RC arbitration to justify fallback status
 
-## Novelty Checker Input
+## Novelty Checker
 
-- `packet_scout_handoff_root` is the only headline-worthy H1 angle.
-- `dual_bucket_polarity_split_bootstrap` remains defensible only as a narrow fallback.
-- `time_constant_ranked_arbiter` is too close to ordinary adaptive arbitration to anchor the thesis.
-- `reverse_leakage_vote_or`, `tokenized_uvlo_handoff_gate`, and `comparatorless_current_probe_bootstrap` do not retain enough independent novelty margin.
+- Champion novelty boundary:
+  - valid only as source-aware startup sequencing before arbitration exists
+- Fallback novelty boundary:
+  - valid only if polarity-safe startup turns out to be the decisive unresolved failure mode
+- Retirements justified:
+  - `reverse_leakage_vote_or` is too easy to compress into expected anti-backdrive behavior
+  - `comparatorless_current_probe_bootstrap` still lacks evidence that it beats the RC-ranked branch without hidden bias or probe-as-helper behavior
+  - `tokenized_uvlo_handoff_gate` reads as a useful control primitive, not a thesis family
 
-## Falsifier Input
+## Falsifier
 
-- The champion survives only if mixed-polarity and `1:20` impedance cases show a real difference against both baselines.
-- The fallback survives only if its extra buckets do not become a hidden helper reservoir or leak away the benefit below `50 mV`.
-- Weak branches should be retired now rather than being allowed to inflate the apparent search space.
+- Main champion kill conditions:
+  - if mixed-polarity plus `1:20` impedance cases do not separate the champion from the nonaware baseline on `startup_ok`, `t_handoff`, or `e_backdrive`
+  - if the nonaware baseline keeps `e_backdrive` near zero across the main matrix, shrinking H1 to extra logic with slightly better accounting
+- Why the fallback is kill-ready:
+  - the dual-bucket branch has a fast, explicit failure mode
+  - below `50 mV`, bucket leakage and merge overhead should either show a clear polarity-safe startup benefit or kill the branch quickly
+- Retired branches:
+  - `reverse_leakage_vote_or`
+  - `comparatorless_current_probe_bootstrap`
+  - both are too vulnerable to hidden sensing overhead and process-sensitive behavior
 
-## Integrator Input
+## Integrator Decision
 
-- The canonical concept-tree ranking already narrowed the H1 family to:
-  - one active headline family: `001_packet_scout_handoff_root`
-  - one narrow fallback: `002_dual_bucket_polarity_split_bootstrap`
-  - one benchmark-only line: `003_time_constant_ranked_arbiter`
-- The iterate pass reinforces the same outcome:
-  - promoted bridges: `packet_scout_handoff_root`, `dual_bucket_polarity_split_bootstrap`
-  - retired bridges: `reverse_leakage_vote_or`, `comparatorless_current_probe_bootstrap`
+- Keep exactly one active champion:
+  - `packet_scout_handoff_root::variant_01_rc_ranked_packet_gate`
+- Keep exactly one kill-ready fallback:
+  - `dual_bucket_polarity_split_bootstrap`
+- Keep as non-headline controls or support blocks only:
+  - `time_constant_ranked_arbiter`
+  - `tokenized_uvlo_handoff_gate`
+- Retire from the architecture race:
+  - `reverse_leakage_vote_or`
+  - `comparatorless_current_probe_bootstrap`
 
-## Decision
+## Next Experiment Gate
 
-- Active champion:
-  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/champion/packet_scout_handoff/variant_01_rc_ranked_packet_gate/rc_ranked_packet_gate.cir`
-- Kill-ready fallback:
-  - `results/concept_evolve/tree/002_dual_bucket_polarity_split_bootstrap`
-
-## Why The Fallback Is Kill-Ready
-
-- It is the only remaining branch that attacks a different direct failure mode than the champion:
-  - polarity-safe startup and delayed rail merge under mixed-polarity weak sources
-- It already has a frozen concept folder, novelty guard, first experiment, and explicit failure mode.
-- If the champion collapses because source ranking does not separate from the nonaware baseline, the dual-bucket branch is the next H1 test that could still preserve a nontrivial mixed-polarity thesis.
-
-## Retired Or Downgraded Branches
-
-- Retired from the architecture race:
-  - `003_time_constant_ranked_arbiter`
-  - `004_reverse_leakage_vote_or`
-  - `005_tokenized_uvlo_handoff_gate`
-  - `006_comparatorless_current_probe_bootstrap`
-- Retirement rationale:
-  - `003` stays valuable only as an ablation or benchmark line
-  - `004` depends on fragile leakage-signature sensing with weak novelty margin
-  - `005` is a support block, not a distinct multi-source architecture
-  - `006` is at best an implementation detail inside the packet-scout family
-
-## Net Result
-
-- Exactly one H1 champion architecture remains active.
-- Exactly one H1 fallback remains available for activation if the champion fails its startup matrix.
-- All other H1 branches are retired from headline status before the experiment phase begins.
+- Run the frozen primary H1 matrix on the champion with both strong baselines:
+  - source voltages `20/50/100/300 mV`
+  - ramp rates `0.1/1/10/100 mV/s`
+  - impedance ratios `1:1/1:5/1:20`
+  - mandatory mixed-polarity cases
+- Do not activate the fallback unless one of these is true:
+  - the champion fails startup correctness or handoff in mixed-polarity cases
+  - the champion shows no meaningful separation from the nonaware baseline on back-drive or handoff
+  - the claim narrows so far that only polarity-safe startup remains defensible
