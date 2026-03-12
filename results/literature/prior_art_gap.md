@@ -180,3 +180,15 @@ Update this file throughout the run. If you discover a branch that is already we
   - `sources.bib` entry `lu2024tegassist`.
 - Pivot decision (if any):
   - Keep as a falsifier for hidden-helper behavior.
+
+## 15. H1 Claim-Matrix Consolidation (2026-03-12)
+- Why it matters:
+  - The saved swarm state required a narrow claim matrix before heavy execution because the original anchor set included unresolved surrogate titles and one direct-overlap family of 2023-2024 multi-input interfaces.
+- Consolidated decision:
+  - The H1 lane survives only as a helper-free, pre-arbitration startup-sequencing thesis under mixed polarity and impedance asymmetry.
+- Evidence artifact(s):
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/claim_matrix.md`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/experiment_spec.md`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/packet_scout_blocks.inc`
+- Pivot decision (if any):
+  - Downgrade all claims about absolute startup voltage, generic multi-source PMU novelty, and steady-state extraction efficiency until the experiment matrix shows a real startup-correctness advantage against both baselines.
