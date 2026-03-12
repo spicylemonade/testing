@@ -36,3 +36,7 @@ refuted`, but `still unresolved`.
 The package may claim stronger validated evidence and stronger negative mechanism
 results. It may **not** claim a proof or disproof of boundedness from the current
 artifacts.
+
+## Sources
+
+See `results/verification/claim_source_matrix.md` and `sources.bib`.

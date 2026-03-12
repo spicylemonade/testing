@@ -114,3 +114,7 @@ Compared with the literature, the current package says:
 - not strong enough to reopen the multiplicative-basis branch;
 - most naturally interpreted through constrained factorization / witness-hypergraph
   language, which is exactly the narrowed H1 rescue path left alive by the novelty round.
+
+## Sources
+
+See `results/verification/claim_source_matrix.md` and `sources.bib`.

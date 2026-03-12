@@ -83,3 +83,7 @@ This is evidence **against** a compact raw-witness certificate language, not for
 record gaps `19`, `20`, `21`, `25`, `28`, and `30`: singleton share stays high while
 the balanced-factor share rises and the tiny-factor share falls. That trend is
 consistent with witness-taxonomy failure rather than compression.
+
+## Sources
+
+See `results/verification/claim_source_matrix.md` and `sources.bib`.

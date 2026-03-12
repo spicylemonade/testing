@@ -108,3 +108,7 @@ The qualitative conclusions that survive all three runs are:
 
 The experiment therefore supports keeping the original negative-result interpretation and
 rejecting any robustness claim that depends on one exact admissibility ordering.
+
+## Sources
+
+See `results/verification/claim_source_matrix.md` and `sources.bib`.

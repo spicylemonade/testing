@@ -91,3 +91,7 @@ Update this file as the main differentiation ledger.
 - Differentiation hypothesis: none needed beyond marking it irrelevant.
 - Evidence artifact(s): `results/literature/prior_art_watchlist.md`.
 - Pivot decision (if any): false-positive branch; no further work.
+
+## Sources
+
+See `results/verification/claim_source_matrix.md` and `sources.bib`.

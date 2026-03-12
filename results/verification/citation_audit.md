@@ -4,54 +4,69 @@
 
 ### Strong
 
-- `oeisA129258`, `oeisA129259`, and `kimberling100conjectures` cover the core provenance line for the object and the public problem statement.
-- `ford2011multiplicationtable` and `ford2008divisorinterval` cover the two main overlap risks identified by the falsifier.
-- `results/baseline/run_30000/summary.json` and `results/baseline/run_30000/record_gaps.json` now cover the empirical claims that the baseline reaches record gaps `19`, `20`, and `21`, including the step-`29373` gap `139039 -> 139060` with zero skipped primes.
+- `sources.bib` currently contains `15` entries, which clears the minimum depth target.
+- The provenance baseline is covered by `oeisA129258`, `oeisA129259`, and
+  `kimberling100conjectures`.
+- The main overlap boundary is covered by `ford2011multiplicationtable` and
+  `ford2008divisorinterval`, with multiplicative-basis controls also present.
+- The final written artifacts now point to
+  `results/verification/claim_source_matrix.md`, which maps each major artifact to
+  bibliography keys and local evidence files.
+- The empirical claims used in the final package are backed by reproducible local
+  artifacts:
+  - `results/baseline/run_30000/contract.json`
+  - `results/baseline/run_30000/record_gaps.json`
+  - `results/experiments/run_1000000/contract.json`
+  - `results/experiments/run_1000000/experiment_note.md`
+  - `results/experiments/variant_comparison.md`
 
 ### Weak
 
-- The exact OEIS comment/reference material behind the prime split and bounded-difference phrasing is only indirectly represented by generic OEIS entries plus the Kimberling problem page.
-- `koukoulopoulos2010restrictedtables` and `brent2019algorithmsmultiplicationtable` remain secondary-metadata-only sources and should not carry core claims.
+- OEIS entries in `sources.bib` still use access-year style metadata and should be
+  treated as provenance references rather than polished bibliographic records.
+- Secondary-metadata items such as `koukoulopoulos2010restrictedtables` and
+  `brent2019algorithmsmultiplicationtable` remain overlap controls only, not
+  load-bearing sources.
 
-### Missing Or Deferred
+### Resolved During This Phase
 
-- A local claim-to-source matrix for every markdown artifact is still missing and should be completed in Phase 5.
-- If later drafts rely on exact OEIS comment wording, a local snapshot or more exact provenance artifact should be added.
-
-## Metadata Issues
-
-- The OEIS and Kimberling entries in `sources.bib` currently use access-year style metadata rather than original publication/update year.
-- Some snapshot years came from Semantic Scholar search records while `sources.bib` uses validated DOI metadata. The bibliography is more trustworthy where the two disagree.
-- Secondary metadata entries are quarantined as overlap controls only.
+- Removed stale references to deleted `summary.json` files.
+- Added a claim-to-source matrix that explicitly maps the final memo, outline, novelty
+  report, benchmark report, and literature comparison to bibliography keys and local
+  evidence.
+- Added explicit `sources.bib` / source-matrix pointers to the substantive written
+  artifacts used in the closing package.
 
 ## Claim-To-Source Map
 
-- Recurrence definition:
+Primary map: `results/verification/claim_source_matrix.md`
+
+Load-bearing final claims:
+
+- provenance of the object and open problem:
   - `oeisA129258`
   - `oeisA129259`
-  - `results/baseline_spec.md`
-  - `scripts/prime_separator.py`
-- Bounded-difference problem provenance:
   - `kimberling100conjectures`
-  - `oeisA129259`
-- Ford overlap boundary:
+- overlap boundary:
   - `ford2011multiplicationtable`
   - `ford2008divisorinterval`
-  - `ford2020roughdivisorinterval`
-- Multiplicative-basis overlap boundary:
   - `pach2017multiplicativebases`
-  - `pus1992multiplicativebases`
-  - `dressler1970newmultiplicativebases`
-  - `nathanson1987multiplicativerepresentations`
-- Baseline empirical claims:
-  - `results/baseline/run_30000/summary.json`
-  - `results/baseline/run_30000/record_gaps.json`
-  - `results/baseline/test_11/summary.json`
+- final empirical status:
+  - `results/experiments/run_1000000/contract.json`
+  - `results/experiments/run_1000000/experiment_note.md`
+  - `results/experiments/variant_comparison.md`
+  - `results/analysis/full_witness_hypergraphs_gap21_25_28_30.json`
 
 ## Audit Conclusion
 
-The repo now has a defensible provenance baseline for OEIS/Kimberling/Ford and a reproducible local artifact for the key empirical claims used by the falsifier. The remaining citation debt is mostly cleanup:
+The closing package now has a coherent citation trail:
 
-- tighten OEIS/Kimberling metadata;
-- keep secondary overlap sources non-load-bearing;
-- add final artifact-level claim tracing in Phase 5.
+- bibliography depth is adequate;
+- the named prior work used in comparisons is mapped consistently;
+- the final status memo is tied both to `sources.bib` and to concrete local evidence.
+
+Residual citation debt is modest:
+
+- improve OEIS/Kimberling metadata if preparing an external paper draft;
+- verify or quarantine the secondary multiplication-table records if they ever become
+  load-bearing.

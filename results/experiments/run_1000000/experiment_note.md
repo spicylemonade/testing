@@ -82,3 +82,7 @@ Interpretation:
 This keeps the current interpretation unchanged: the full witness export validates the
 stored multiplicities and slightly sharpens the negative result, but it does not yet
 produce a compact interval-level certificate.
+
+## Sources
+
+See `results/verification/claim_source_matrix.md` and `sources.bib`.

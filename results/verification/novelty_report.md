@@ -73,3 +73,7 @@ One further experiment is justified.
   low-description-length invariant that size-matched surrogate product sets do not.
 - If that rescue fails, kill H1 as well and conclude that the current hypothesis family
   does not support a novel positive mechanism claim.
+
+## Sources
+
+See `results/verification/claim_source_matrix.md` and `sources.bib`.

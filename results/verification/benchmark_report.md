@@ -105,3 +105,7 @@ No more than these two perturbations are allowed for later robustness work:
 - The negative control is a nearby wrong rule, not an exhaustive family of recurrence mistakes.
 - The `column_immediate` perturbation shows that some trajectory-level phenomena are sensitive to staging, even though the high-level negative-result conclusions survive.
 - Performance numbers remain environment dependent and should not be treated as structural evidence.
+
+## Sources
+
+See `results/verification/claim_source_matrix.md` and `sources.bib`.

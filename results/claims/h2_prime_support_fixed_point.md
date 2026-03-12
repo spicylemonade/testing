@@ -76,3 +76,7 @@ On the current shared corpus, H2 adds no explanatory power beyond H1.
 The backup line therefore remains demoted. If it is revisited later, it needs a new
 support observable that predicts record-gap behavior better than direct witness logs,
 not just another restatement of the prime split.
+
+## Sources
+
+See `results/verification/claim_source_matrix.md` and `sources.bib`.
