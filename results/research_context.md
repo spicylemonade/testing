@@ -160,6 +160,22 @@
 - Folder contract for all later H1 artifacts:
   - use `dependency_map.md` in the champion root as the source of truth for shared subcircuits, baselines, manifests, tables, and lane-local verification outputs.
 
+## Phase 3 Selection Freeze
+
+- Active H1 architecture:
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/champion/packet_scout_handoff/variant_01_rc_ranked_packet_gate/rc_ranked_packet_gate.cir`
+- Kill-ready H1 fallback:
+  - `results/concept_evolve/tree/002_dual_bucket_polarity_split_bootstrap`
+- Branches retired from the architecture race:
+  - `003_time_constant_ranked_arbiter`
+  - `004_reverse_leakage_vote_or`
+  - `005_tokenized_uvlo_handoff_gate`
+  - `006_comparatorless_current_probe_bootstrap`
+- Rationale:
+  - the packet-scout RC-ranked branch is the only active path that keeps the claim on helper-free, pre-arbitration source scouting
+  - the dual-bucket branch is the only fallback that still opens a materially different mixed-polarity failure regime
+  - the remaining branches stay useful only as controls or support blocks and no longer justify active architecture status
+
 ## Immediate Execution Priorities
 
 1. Run the mandatory `concept_evolve evolve` command against the user task, now that the launcher mismatch is repaired and the active lane is frozen.
