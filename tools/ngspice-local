@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+binary="$repo_root/.tools/ngspice/extracted/usr/bin/ngspice"
+
+if [[ ! -x "$binary" ]]; then
+  printf 'missing local ngspice binary: %s\n' "$binary" >&2
+  printf 'run ./tools/setup_ngspice_local.sh first\n' >&2
+  exit 1
+fi
+
+exec "$binary" "$@"

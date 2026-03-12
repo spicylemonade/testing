@@ -22,6 +22,14 @@ def load_rubric() -> dict:
 
 
 def save_rubric(payload: dict) -> None:
+    summary = status_summary(payload)
+    payload["summary"] = {
+        "total_items": sum(summary.values()),
+        "completed": summary["completed"],
+        "in_progress": summary["in_progress"],
+        "failed": summary["failed"],
+        "pending": summary["pending"],
+    }
     payload["updated_at"] = now()
     RUBRIC_PATH.write_text(json.dumps(payload, indent=2) + "\n")
 

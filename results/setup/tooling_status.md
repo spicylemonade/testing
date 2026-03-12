@@ -4,35 +4,40 @@ Generated: 2026-03-12
 
 ## Summary
 
-- `ngspice`: not installed on `PATH`
-- Rootless local install attempt: blocked by network/DNS resolution
+- `ngspice`: not installed on `PATH`, but available through `./tools/ngspice-local`
+- Rootless local install path: working via direct Debian package download plus `dpkg-deb -x`
 - `.archivara/concept_evolve.py evolve`: launcher repaired, broad-task run still low-signal
-- `.archivara/concept_evolve.py probe`: wrapper runs, child sub-agent fails to return artifacts
-- `.archivara/concept_evolve.py reframe`: wrapper runs, child sub-agent fails to return artifacts
+- `.archivara/concept_evolve.py probe`: launches, but reliable artifact production is still not guaranteed
+- `.archivara/concept_evolve.py reframe`: launches, but existing-artifact retry semantics still make the output quality check manual
 
 ## Working Commands
 
+- `./tools/setup_ngspice_local.sh`
+- `./tools/ngspice-local -v`
 - `python3 .archivara/concept_evolve.py --help`
 - `python3 .archivara/semantic_scholar.py --help`
 - `python3 .archivara/rubric_tool.py summary`
 
-## Blocking Defects
+## Remaining Defects
 
-### 1. `ngspice` missing
+### 1. Global `ngspice` package install unavailable
 
 - Symptom:
   - `command -v ngspice` returns nothing.
 - Attempted unblock:
   - Checked Debian package metadata with `apt-cache policy ngspice`.
-  - Attempted rootless local install with:
-    - `apt-get download ngspice`
-    - `dpkg-deb -x ngspice_*.deb extracted`
-- Failure:
-  - `Temporary failure resolving 'deb.debian.org'`
+  - Root install attempt:
+    - `apt-get update && apt-get install -y ngspice`
+  - Working user-space fallback:
+    - `./tools/setup_ngspice_local.sh`
+    - `./tools/ngspice-local -v`
+- Result:
+  - Root install is blocked by privilege limits.
+  - User-space `ngspice` execution is unblocked for this repo.
 - Owner:
-  - Environment / network access to Debian package hosts.
+  - Environment for system-wide install, researcher for repo-local wrapper.
 - Impact:
-  - Real `ngspice` experiment execution is currently blocked.
+  - No impact on planned repo-local experiments.
 
 ### 2. `concept_evolve.py evolve` artifact drift
 
@@ -47,33 +52,32 @@ Generated: 2026-03-12
   - `results/concept_evolve/tooling_blockers.md`
   - `results/concept_evolve/.state/latest_run.json`
 
-### 3. `concept_evolve.py probe` child failure
+### 3. `concept_evolve.py probe` reliability gap
 
 - Call site:
-  - `python3 .archivara/concept_evolve.py probe "What is the minimum-energy source-inference mechanism that still improves helper-free multi-source cold start under mixed polarity and 1:20 impedance asymmetry?"`
-- Failure:
-  - Both sub-agent attempts returned `rc=1`.
-  - `results/concept_evolve/probe_result.json` was written only as a `parse_error` placeholder.
+  - `python3 .archivara/concept_evolve.py probe "biggest blocker in helper-free source-aware cold start under mixed-polarity weak sources"`
+- Observed problem:
+  - The wrapper launches child work, but if `results/concept_evolve/probe_result.json` already exists, success still requires a semantic delta (`steering_directions`) that is not guaranteed by the child.
+  - The current run has retried because the saved artifact remained a stale parse-error placeholder.
 - Owner:
-  - External Codex responses proxy / child-agent connectivity.
+  - Helper wrapper semantics plus external Codex child runtime.
 - Impact:
-  - The structured probe wrapper exists, but it is not currently producing usable child-generated analysis.
+  - Probe output must be manually validated before it is treated as a research input.
 
-### 4. `concept_evolve.py reframe` child failure
+### 4. `concept_evolve.py reframe` reliability gap
 
 - Call site:
   - `python3 .archivara/concept_evolve.py reframe "Do electrical engineering research and discover something new/interesting. nontrivial and important. maybe you design a new circuit and use ng spice or something"`
-- Failure:
-  - Both sub-agent attempts returned `rc=1`.
-  - `results/concept_evolve/reframings.json` was created with an empty `framings` array.
-  - Latest run state recorded `turn.failed` with `stream disconnected before completion`.
+- Observed problem:
+  - The wrapper launches and can complete a child attempt, but existing artifact reuse means an empty prior `framings` array still requires a manual quality check before reuse.
+  - The current run is useful as an execution check, not yet as a trusted reframing artifact.
 - Evidence:
   - `results/concept_evolve/reframings.json`
-  - `results/concept_evolve/.state/latest_run.json`
+  - `results/concept_evolve/.state/reframe_latest.json`
 - Owner:
-  - External Codex responses proxy / child-agent connectivity.
+  - Helper wrapper semantics plus external Codex child runtime.
 
 ## Practical Conclusion
 
-- The run can continue on literature, concept definition, netlist authoring, and verification packaging.
-- Any rubric item that requires actual `ngspice` execution must either be unblocked by obtaining a working binary or be marked as blocked/failed with this note as the environment reference.
+- The run can proceed with netlist authoring, baseline implementation, and actual repo-local `ngspice` execution through `./tools/ngspice-local`.
+- `concept_evolve` helper output beyond `--help` and the repaired `evolve` path still requires human validation, so later phases should treat those artifacts as advisory until checked.

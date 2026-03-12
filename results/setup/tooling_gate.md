@@ -6,17 +6,18 @@
 ## Status Summary
 
 - `ngspice`
-  - `command -v ngspice` returned no path.
-  - `apt-cache policy ngspice` showed candidate version `39.3+ds-1` from Debian bookworm.
-  - Installation is currently blocked by environment constraints, not by package availability.
+  - `command -v ngspice` still returns no global path.
+  - A reproducible user-space install is now available through `./tools/setup_ngspice_local.sh`.
+  - `./tools/ngspice-local -v` executes the extracted local binary successfully.
 - `.archivara/concept_evolve.py`
   - `python3 .archivara/concept_evolve.py --help` works.
   - `evolve` launcher mismatch was repaired earlier in this run.
   - The mandatory broad-task `evolve` command launches but remains low-signal; the focused H1 workaround is documented in `results/concept_evolve/tooling_blockers.md`.
+  - `probe` and `reframe` launch, but their useful output still depends on external Codex child reliability; exact call sites are tracked in `results/setup/tooling_status.md`.
 - Shell/package environment
   - `sudo` is unavailable.
   - Current user is `uid=1000(archivara)`.
-  - Shell DNS resolution failed during package download attempts.
+  - Root package-manager install is blocked, but outbound HTTPS works for direct artifact download.
 
 ## Exact Commands And Outcomes
 
@@ -57,41 +58,41 @@ sudo -n true
 - Interpretation:
   - No privilege-escalation path is available from the shell.
 
-### User-space package download attempt
+### User-space install path
 
 ```bash
-apt-get download ngspice
+./tools/setup_ngspice_local.sh
 ```
 
 - Outcome:
-  - `Temporary failure resolving 'deb.debian.org'`
+  - Downloads `ngspice_39.3+ds-1_amd64.deb` directly from the Debian mirror over HTTPS.
+  - Extracts the package under `.tools/ngspice/extracted/`.
+  - Verifies the local binary by printing the `ngspice-39` banner.
 
-### Direct HTTP download attempt
-
-```python
-urllib.request.urlopen("http://deb.debian.org/debian/pool/main/n/ngspice/ngspice_39.3+ds-1_amd64.deb")
+```bash
+./tools/ngspice-local -v
 ```
 
 - Outcome:
-  - `URLError <urlopen error [Errno -3] Temporary failure in name resolution>`
+  - Local extracted `ngspice` binary executes successfully from the repo wrapper.
 
 ## Blockers And Owners
 
-- Blocker: no `ngspice` binary on `PATH`.
-  - Owner: environment / runner
 - Blocker: no root package-manager access.
   - Owner: environment / runner
-- Blocker: transient or persistent shell DNS failure while attempting user-space package download.
-  - Owner: environment / runner
+- Blocker: `concept_evolve` child reliability still depends on the external responses proxy and pre-existing artifact semantics.
+  - Owner: helper wrapper plus external Codex child runtime
 - Researcher-side mitigation:
-  - Continue with literature, concept tree, netlist structure, and baseline definitions.
-  - Retry user-space `ngspice` acquisition later if shell DNS recovers.
+  - Use the local `ngspice` wrapper for baseline and champion experiments.
+  - Keep `concept_evolve` failures documented and use focused local equivalents when a helper subcommand does not converge cleanly.
 
 ## Working Commands
 
 ```bash
+./tools/setup_ngspice_local.sh
+./tools/ngspice-local -v
 python3 .archivara/concept_evolve.py --help
 python3 .archivara/rubric_tool.py summary
 ```
 
-These local research helpers currently execute without additional dependencies.
+These commands are sufficient to begin netlist authoring and `ngspice` execution without root access.
