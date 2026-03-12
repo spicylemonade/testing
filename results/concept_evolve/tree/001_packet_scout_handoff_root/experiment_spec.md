@@ -52,9 +52,14 @@ This file freezes the source model and measurement contract before any baseline 
 
 Every netlist must expose the same node names and current-sense elements.
 
-- Required nodes:
+- Required observable source nodes:
   - `n_src_a`
   - `n_src_b`
+  - `n_src_a_p`
+  - `n_src_a_n`
+  - `n_src_b_p`
+  - `n_src_b_n`
+- Required system nodes:
   - `n_store`
   - `n_handoff`
   - `n_ctrl`
