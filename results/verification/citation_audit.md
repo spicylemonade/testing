@@ -2,224 +2,276 @@
 
 ## Scope
 
-- `research_paper.tex` is not present in this repo, so the audit applies to the current
-  note-style outputs rather than to a manuscript.
-- Primary inputs reviewed: `sources.bib`, `results/research_context.md`,
-  `results/literature/semantic_scholar_manifest.json`,
-  `results/verification/claim_source_matrix.md`,
-  `results/final_status_note.md`, `results/verification/verification_summary.md`,
-  `results/evaluation/literature_comparison.md`,
-  `results/research_note_outline.md`, and the supporting local experiment artifacts.
+- Review round: `review_round_1`.
+- Primary inputs reviewed:
+  - `research_paper.tex`
+  - `sources.bib`
+  - `results/research_context.md`
+  - `results/literature/semantic_scholar_manifest.json`
+- Additional repo spot-checks used for evidence traceability:
+  - `scripts/prime_separator.py`
+  - `scripts/prime_separator_variants.py`
+  - `scripts/make_paper_figures.py`
+  - `tests/test_prime_separator.py`
+  - `results/experiments/run_1000000/contract.json`
+  - `results/experiments/run_1000000/row_terms.json`
+  - `results/experiments/run_1000000/column_terms.json`
+  - `results/experiments/run_1000000/record_gap_summary.json`
+  - `results/analysis/full_witness_hypergraphs_gap21_25_28_30.json`
 - Focus: evidence traceability and citation support only.
 
 ## Overall Assessment
 
-- The provenance baseline is supported. OEIS `A129258`, OEIS `A129259`, and
-  Kimberling's problem page are the right sources for the array definition, first-row
-  problem statement, and public provenance.
-- The finite-horizon empirical claims are also supported, but mostly by local JSON/MD
-  artifacts rather than by literature citations. The strongest support comes from:
-  - `results/experiments/run_1000000/contract.json`
-  - `results/experiments/variant_comparison.md`
-  - `results/analysis/h1_h2_gap_summary.json`
-  - `results/analysis/full_witness_hypergraphs_gap21_25_28_30.json`
-- The weak point is citation placement and comparison discipline. Most final notes cite
-  only by indirection through `results/verification/claim_source_matrix.md`, and some
-  literature comparisons are broader than the cited sources actually justify.
+- The manuscript's theorem-level claims are mostly well supported internally. The exact recurrence identities, interleaving, unique column term, forced unit witness, prime separation, and variant identities are proved in `research_paper.tex`; these are not missing-citation problems.
+- The manuscript's main computational claims are also mostly supported. The million-step record-gap totals, late-record locations, offset maximum, witness shares, and late-gap hypergraph counts all trace to concrete local artifacts and are consistent with the repo's scripts and tests.
+- The main citation debt is in the literature-positioning language. The paper repeatedly presents novelty-boundary judgments and prior-art comparisons as if the cited literature itself proves those judgments. In most cases, the citations establish topic adjacency, not the stronger claims actually written.
+- No load-bearing cited source looks fabricated. The highest source-quality risk is instead two uncited metadata-only bibliography placeholders in `sources.bib`.
+
+## Key Claims That Are Supported
+
+### Provenance and public problem statement
+
+- `research_paper.tex:60`, `research_paper.tex:84-90`, and `research_paper.tex:107-108` are supported by `oeisA129258`, `oeisA129259`, and `kimberling100conjectures`.
+- These sources are the right support for:
+  - the array definition and initial block,
+  - the first-row sequence provenance,
+  - the statement that the bounded-difference question is already public.
+
+### Structural and variant claims
+
+- `research_paper.tex:95-97`, `research_paper.tex:227-376`, `research_paper.tex:423-429`, and `research_paper.tex:530-537` are internally supported by the paper's proofs.
+- Repo-level implementation support also exists:
+  - `scripts/prime_separator.py` defines the baseline recurrence, prefix validation, and structural digest.
+  - `scripts/prime_separator_variants.py` encodes the `row_immediate` and `column_immediate` runs.
+  - `tests/test_prime_separator.py` checks:
+    - exact baseline prefix reproduction,
+    - repeatable structural digest,
+    - exact equality of `row_immediate` with baseline over 200 steps,
+    - exact axis-swap behavior of `column_immediate` over 200 steps.
+
+### Quantitative computational claims
+
+- `research_paper.tex:439` is supported by direct scan of `results/experiments/run_1000000/row_terms.json` and `results/experiments/run_1000000/column_terms.json`:
+  - maximum observed offset `24`,
+  - attained at step `464334`.
+- `research_paper.tex:449-455` and Table 1 are supported by `results/experiments/run_1000000/contract.json`:
+  - `record_gap_count = 17`,
+  - `largest_record_gap = 30`,
+  - late record locations:
+    - gap `25` at step `92320`,
+    - gap `28` at step `247399`,
+    - gap `30` at step `729353`.
+- `research_paper.tex:494-503` and the supplementary table are supported by `results/experiments/run_1000000/record_gap_summary.json`:
+  - gap `19`: singleton `15/18`, balanced `1/18`,
+  - gap `20`: singleton `17/19`, balanced `1/19`,
+  - gap `21`: singleton `16/20`, balanced `3/20`,
+  - gap `25`: singleton `18/24`, balanced `7/24`,
+  - gap `28`: singleton `18/27`, balanced `9/27`,
+  - gap `30`: singleton `19/29`, balanced `13/29`.
+- `research_paper.tex:513-521` is supported by `results/analysis/full_witness_hypergraphs_gap21_25_28_30.json`:
+  - gap `30` has `29` skipped values,
+  - `43` full witness pairs,
+  - `39` distinct row factors,
+  - `41` distinct column factors,
+  - multiplicity histogram `19 x 1`, `8 x 2`, `1 x 3`, `1 x 5`.
 
 ## Priority Findings
 
-### 1. Missing claim-site citations in the final outputs
+### 1. High: the Ford-overlap claims are stronger than the citations support
+
+Affected text:
+
+- `research_paper.tex:90`
+- `research_paper.tex:110-112`
+- `research_paper.tex:174`
+- `research_paper.tex:580`
+
+Issue:
+
+- The Ford citations support that multiplication-table and divisor-in-interval problems are nearby mathematical territory.
+- They do not, by themselves, support stronger claims such as:
+  - this is the "nearest serious literature branch",
+  - this is the "correct overlap branch",
+  - local factor-coverage explanations would amount to a "renaming" of the Ford phenomenon,
+  - clearing the "Ford overlap boundary" is the decisive novelty test.
+- Those are author judgments about novelty and overlap, not direct consequences of the Ford papers.
+
+Why this matters:
+
+- This is the manuscript's main literature-positioning argument.
+- As written, it risks reading as source-backed prior-art exclusion when it is really a comparative assessment.
+
+Recommended fix:
+
+- Rephrase these sentences as explicit author judgments: "In our assessment...", "The closest overlap risk appears to be...", or "A plausible prior-art branch is...".
+- If the stronger boundary language is retained, cite the internal novelty artifacts at the claim site:
+  - `results/literature/prior_art_gap.md`
+  - `results/verification/novelty_report.md`
+- If "Ford and its descendants" remains, either cite the descendants actually meant or drop that phrase.
+
+### 2. High: novelty conclusions are presented as if OEIS/Kimberling themselves prove them
+
+Affected text:
+
+- `research_paper.tex:107`
+- `research_paper.tex:118`
+
+Issue:
+
+- The OEIS and Kimberling sources support public provenance.
+- They do not themselves prove the manuscript-level conclusions that:
+  - no paper on the object can claim novelty from reconstruction/reproduction alone,
+  - the present work adds exactly the three named items beyond OEIS/Kimberling.
+- Those are reasonable inferences, but still inferences.
+
+Why this matters:
+
+- The paper is disciplined about not overclaiming mathematically, but these novelty statements are currently stronger than the citations attached to them.
+
+Recommended fix:
+
+- Mark these as inference: "Accordingly, we do not treat reconstruction alone as novel."
+- Or attach the repo's internal novelty analysis directly at those sentences:
+  - `results/literature/prior_art_gap.md`
+  - `results/verification/novelty_report.md`
+
+### 3. Medium: the multiplicative-basis comparison is weakly cited and partly interpretive
+
+Affected text:
+
+- `research_paper.tex:114-118`
+
+Issue:
+
+- The cited multiplicative-basis papers support the existence of that literature class.
+- They do not directly support the stronger warning that adopting that framing would make the project "drift away from the actual recurrence and toward a different established topic."
+
+Why this matters:
+
+- This is another literature-pruning argument. It is plausible, but the current references support the domain, not the pruning decision.
+
+Recommended fix:
+
+- Soften to "would move the discussion toward a different comparison class" or similar.
+- Or add a direct citation to the internal novelty analysis where this pruning judgment is actually made.
+
+### 4. Medium: several load-bearing negative computational conclusions are supported by artifacts but not cited at their strongest claim sites
+
+Affected text:
+
+- `research_paper.tex:70`
+- `research_paper.tex:98-99`
+- `research_paper.tex:494-503`
+- `research_paper.tex:521`
+- `research_paper.tex:564`
+- `research_paper.tex:588`
+
+Issue:
+
+- The underlying support exists, but the strongest interpretive claims often appear in abstract/introduction/discussion/conclusion form with no direct artifact attached at the sentence level.
+- Example phrases:
+  - "composite-only large gaps persist",
+  - "singleton witnesses dominate",
+  - "balanced witnesses grow rather than compress",
+  - "the witness data do not compress into a compact frontier certificate",
+  - "prime obstruction is not the governing phenomenon".
+
+Why this matters:
+
+- These are among the most important takeaways of the paper.
+- The relevant artifacts are present, but a reader has to infer which dataset supports which conclusion.
+
+Recommended fix:
+
+- Add explicit artifact references when these claims first appear outside the detailed results section:
+  - `results/experiments/run_1000000/record_gap_summary.json`
+  - `results/analysis/full_witness_hypergraphs_gap21_25_28_30.json`
+  - the corresponding tables/figures already in the manuscript.
+
+### 5. Medium: "prediction" language for the rejected compact-certificate hypothesis is not sourced
+
+Affected text:
+
+- `research_paper.tex:494`
+- `research_paper.tex:503`
+- `research_paper.tex:526`
+
+Issue:
+
+- The data do support the observed trends.
+- What is not cited is the stronger comparative language about what a "compact tiny-factor certificate would predict" or what would count as a "low-description frontier certificate."
+
+Why this matters:
+
+- This is hypothesis language imported from the repo's internal program rather than from a cited external source.
+
+Recommended fix:
+
+- Either recast as internal hypothesis framing:
+  - "under the repository's compact-certificate hypothesis..."
+- Or cite the internal claim documents directly:
+  - `results/claims/h1_frontier_witness_certificate.md`
+  - `results/analysis/h1_h2_gap_summary.json`
+
+### 6. Low: `results/research_context.md` is not a reliable traceability summary
 
 Affected files:
 
-- `results/final_status_note.md:12-25`
-- `results/verification/verification_summary.md:11-21`
-- `results/evaluation/literature_comparison.md:17-35`
+- `results/research_context.md:14-25`
+- `results/literature/semantic_scholar_manifest.json:276-388`
 
 Issue:
 
-- These sections make concrete numerical and interpretive claims, but the only source
-  note is a generic end pointer to `claim_source_matrix.md` and `sources.bib`.
-- That is enough for internal traceability, but it is weak citation practice because the
-  reader cannot tell which claims come from OEIS/Kimberling, which come from Ford, and
-  which come from local experiment artifacts.
+- `results/research_context.md` lists obviously irrelevant "Closest Prior Art" items and reports only three BibTeX pulls in its activity summary.
+- The manifest records six `bibtex` fetches.
 
-Impact:
+Why this matters:
 
-- High. The claims are mostly supportable, but the support is not attached at the point
-  of use.
+- This does not directly break the paper's citations, but it weakens the pipeline's evidence ledger and makes traceability summaries harder to trust.
 
 Recommended fix:
 
-- Add direct local-artifact citations next to empirical claims.
-- Reserve bibliography citations for provenance and literature comparisons.
+- Treat `results/research_context.md` as stale metadata, not as an authoritative literature ledger.
+- If it remains in the pipeline, regenerate it from the manifest rather than from a lossy summary path.
 
-### 2. The Ford overlap comparison is under-cited and too coarse
+## Weak Citations And Likely Citation-Risk Entries
 
-Affected files:
-
-- `results/evaluation/literature_comparison.md:37-61`
-- `results/literature/prior_art_gap.md:31-46`
-- `results/verification/claim_source_matrix.md:14-17`
-
-Issue:
-
-- The repo repeatedly says the witness story is "Ford-like", "closer to
-  divisor/product coverage", or collapses toward the Ford branch.
-- The matrix maps these sections to `ford2011multiplicationtable` and
-  `ford2008divisorinterval`, but no claim is tied to a specific theorem, section, or
-  result from those papers.
-- As written, this is a valid research concern, but not a fully cited mathematical
-  comparison.
-
-Impact:
-
-- High. This is the main literature-overlap claim in the package.
-
-Recommended fix:
-
-- Either cite the exact Ford results being invoked, or soften the language to
-  "overlap risk / heuristic resemblance" rather than a source-backed comparison.
-- Promote `ford2006divisor2y` when the point is specifically local divisor coverage in
-  a short interval; that source is closer to the frontier-coverage language than the
-  multiplication-table paper alone.
-
-### 3. Section 4 of the literature memo contains uncited cross-domain comparisons
-
-Affected file:
-
-- `results/evaluation/literature_comparison.md:81-106`
-
-Issue:
-
-- The memo compares the data against nonunique factorization theory, combinatorics on
-  words / symbolic dynamics, Beatty/complementary-sequence framing, uniform mex
-  periodicity, and statistical-physics / adsorption language.
-- `results/verification/claim_source_matrix.md:14` does not map any sources for those
-  domains, and `sources.bib` contains none of them.
-
-Impact:
-
-- High for external-facing writing, medium for internal brainstorming.
-
-Recommended fix:
-
-- Remove these comparisons from any final paper/note unless they are backed by actual
-  references.
-- If the factorization framing is kept, add a real source for that domain; otherwise
-  present the section as internal pruning only, not literature comparison.
-
-### 4. The claim-source matrix is too coarse and sometimes mismatched
-
-Affected file:
-
-- `results/verification/claim_source_matrix.md:9-17`
-
-Issue:
-
-- The matrix is artifact-level, not claim-level.
-- Example: `results/final_status_note.md` is mapped to the Ford papers, but its most
-  important support is local evidence about gaps `25`, `28`, `30`, and variant gap `31`.
-- Example: the "strongest supported mechanism" in `results/final_status_note.md:20-25`
-  depends directly on the hypergraph and gap-summary exports, but those artifacts are
-  not named in the matrix row for that file.
-
-Impact:
-
-- Medium. The matrix helps, but it overstates precision.
-
-Recommended fix:
-
-- Split the matrix by claim family, not only by artifact.
-- For each claim family, list the exact local artifact and the exact literature source,
-  if any.
-
-### 5. Two bibliography entries are weak metadata placeholders
-
-Affected file:
-
-- `sources.bib:72-79`
-- `sources.bib:143-149`
-
-Issue:
-
-- `koukoulopoulos2010restrictedtables` is currently only a Semantic Scholar metadata
-  landing page.
-- `brent2019algorithmsmultiplicationtable` is also stored only as Semantic Scholar
-  metadata.
-- These entries are not obvious hallucinations, but they are weak bibliographic records
-  and should not be load-bearing.
-
-Impact:
-
-- Medium. They are currently peripheral, but they are the most plausible citation-risk
-  entries in the bibliography.
-
-Recommended fix:
-
-- Replace `koukoulopoulos2010restrictedtables` with a primary thesis/dissertation
-  citation for *Generalized and Restricted Multiplication Tables of Integers*.
-- Replace `brent2019algorithmsmultiplicationtable` with the actual arXiv and/or journal
-  record for *Algorithms for the Multiplication Table Problem*.
-
-## Supported Claims
-
-These claims do have identifiable support in the current repo.
-
-- Provenance of the object and target question:
-  supported by `oeisA129258`, `oeisA129259`, and `kimberling100conjectures`.
-- "Still unresolved" as the global status:
-  supported by the combination of the million-step baseline, the two nearby variants,
-  and the absence of any proof-level invariant in the stored claim sheets.
-- Large composite-only record gaps:
-  supported by `results/experiments/run_1000000/contract.json`,
-  `results/experiments/variant_comparison.md`, and
-  `results/analysis/full_witness_hypergraphs_gap21_25_28_30.json`.
-- Rejection of the strong raw-witness certificate claim:
-  supported by `results/claims/h1_frontier_witness_certificate.md`,
-  `results/analysis/h1_h2_gap_summary.json`, and the late-gap hypergraph export.
-- Rejection of H2 as an explanatory mechanism:
-  supported by `results/claims/h2_prime_support_fixed_point.md` and the shared-corpus
-  summaries in `results/analysis/h1_h2_gap_summary.json`.
-
-## Likely Hallucinations Or Weak Citations
-
-- No obvious hallucination appears among the load-bearing provenance and Ford entries.
-- The closest citation-risk items are the metadata-only placeholders:
-  - `koukoulopoulos2010restrictedtables`
+- No obvious citation hallucination appears among the ten bibliography entries actually cited in `research_paper.tex`.
+- The two clearest weak bibliography entries are uncited metadata-only placeholders:
+  - `sources.bib:72-79` — `koukoulopoulos2010restrictedtables`
+  - `sources.bib:143-149` — `brent2019algorithmsmultiplicationtable`
+- Both entries point only to Semantic Scholar landing pages, not primary records.
+- Five of the fifteen `sources.bib` entries are uncited:
   - `brent2019algorithmsmultiplicationtable`
-- The more immediate problem is not fabricated sources, but unsupported comparison
-  language and missing claim-site attribution.
+  - `ford2020roughdivisorinterval`
+  - `koukoulopoulos2010restrictedtables`
+  - `mehdizadeh2021smoothmultiplicationtable`
+  - `meisner2018functionfieldmultiplicationtable`
 
-## Most Important Sources To Add Or Promote
+## Most Important Concrete Sources To Add Or Promote
 
-1. Promote direct local evidence citations in the final outputs:
-   - `results/experiments/run_1000000/contract.json`
-   - `results/experiments/variant_comparison.md`
+1. Replace the metadata-only Koukoulopoulos placeholder with a primary record if the paper keeps "restricted/generalized multiplication table" descendant language.
+   Suggested source:
+   - Dimitris Koukoulopoulos, `On the number of integers in a generalized multiplication table` (arXiv:1102.3236; Journal fur die reine und angewandte Mathematik 689 (2014), 33-99).
+
+2. Replace the metadata-only Brent placeholder with the primary preprint or published record if algorithmic multiplication-table comparison remains in `sources.bib`.
+   Suggested source:
+   - Richard Brent, Carl Pomerance, David Purdum, Jonathan Webster, `Algorithms for the Multiplication Table Problem` (arXiv:1908.04251; later published in `INTEGERS` 21 (2021), Paper A92).
+
+3. If the manuscript keeps the phrase "Ford and its descendants," either cite or remove the descendants actually meant.
+   Already in `sources.bib` and available to promote:
+   - `ford2020roughdivisorinterval`
+   - `mehdizadeh2021smoothmultiplicationtable`
+
+4. If the compact-certificate rejection remains a central framing device, cite the repo's own hypothesis artifacts where that framing is introduced:
+   - `results/claims/h1_frontier_witness_certificate.md`
    - `results/analysis/h1_h2_gap_summary.json`
-   - `results/analysis/full_witness_hypergraphs_gap21_25_28_30.json`
-
-2. Promote `ford2006divisor2y` into the comparison memo when the argument is specifically
-   about short-interval divisor coverage near the frontier.
-
-3. Replace the metadata-only Koukoulopoulos entry with the primary thesis/dissertation
-   record for *Generalized and Restricted Multiplication Tables of Integers*.
-
-4. Replace the metadata-only Brent entry with the actual arXiv and/or journal record for
-   *Algorithms for the Multiplication Table Problem*.
-
-5. If `results/evaluation/literature_comparison.md:81-106` is kept, add real references
-   for whichever external framing survives; otherwise delete that comparison block from
-   any external-facing note.
 
 ## Bottom Line
 
-- The repo's key empirical and provenance claims are mostly supportable.
-- The main citation debt is structural:
-  - evidence is routed through a coarse source matrix instead of being cited at the
-    claim site;
-  - the Ford overlap comparison is broader than the current citations justify;
-  - the cross-domain comparison block is uncited.
-- Before any manuscript draft, tighten the comparison claims first and replace the two
-  metadata-only bibliography placeholders.
+- The paper's main mathematical and finite-horizon computational claims do have support.
+- The most important problems are not missing facts but overstated source roles:
+  - literature-comparison claims are stronger than the papers cited for them,
+  - novelty conclusions are written as if they are source-backed rather than inferred,
+  - the strongest negative computational conclusions need more explicit artifact references at first mention.
+- Before external circulation, the highest-value repair is to tighten the Ford/novelty language and attach claim-site evidence to the abstract/introduction/conclusion summaries.
