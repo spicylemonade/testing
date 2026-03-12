@@ -1,201 +1,196 @@
 [
   {
-    "rank": 1,
-    "symbolic_name": "impedance_ranked_packet_probe",
-    "description": "Probe each weak source with a nanowatt packet load, rank recovery slope without a helper rail, and grant the strongest source first access to the startup path before enabling the rest. The goal is source-aware cold start without a full MPPT controller.",
+    "symbolic_name": "packet_scout_handoff_root",
+    "description": "Comparatorless charge-packet scouting probes each source through forward and reverse startup paths, ranks viable inputs, accumulates one minimum energy packet, then enables the main arbiter only once a safe handoff condition is latched.",
     "domains": [
-      "energy_harvesting_pmic",
-      "startup_sequencing",
-      "analog_source_inference"
+      "analog power management",
+      "asynchronous startup control",
+      "weak-source system identification"
     ],
-    "key_mechanism": "Capacitive packet probe plus passive recovery-timing latch chooses the initial source path and delays multi-input arbitration until the reservoir can pay for it.",
-    "dependency_list": [
-      "source models",
-      "packet probe capacitor",
-      "recovery-slope detector",
-      "source-ranking latch",
-      "sequenced OR-ing network",
-      "startup reservoir"
+    "mathematical_formalization": "Choose source i maximizing \u0394V_store/\u0394Q_probe subject to I_backdrive_i <= I_limit and V_store >= V_handoff.",
+    "analogical_connections": [
+      "packet sniffing before link bring-up",
+      "speculative execution with commit only after validity"
     ],
-    "first_experiment": "Sweep 20/50/100/300 mV sources across 1:1, 1:5, and 1:20 impedance ratios and compare startup success, time-to-handoff, and startup-control energy against a fixed path and a non-source-aware multi-input baseline.",
-    "predicted_failure_mode": "Probe energy or ranking ambiguity under ultra-slow ramps erases the startup benefit.",
-    "novelty_rationale": "Closest surviving concept to the H1 thesis because it adds cheap source awareness before full arbitration instead of claiming generic multi-source harvesting.",
-    "closest_overlap_papers": [
-      {
-        "paperId": "78bca7d91e70d6a08b0b7aff9286695fa1b34e37",
-        "title": "Power management unit for multi-source energy harvesting in wearable electronics"
-      },
-      {
-        "paperId": "9fd5e15b325f8534ee928242f7e9507a01586677",
-        "title": "Single- and multi-source battery-less power management circuits for piezoelectric energy harvesting systems"
-      },
-      {
-        "paperId": "254a50d3d11f95e13c87d5b068a92e29fb0f2dee",
-        "title": "Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting"
-      }
-    ],
-    "novelty_signal": "high",
-    "kill_condition": "Retire if probe overhead plus sequencing delay eliminates the correctness gain or if it reduces to ordinary priority arbitration."
-  },
-  {
-    "rank": 2,
-    "symbolic_name": "dual_path_helperless_startup",
-    "description": "Use two helper-free startup engines that share one reservoir: a passive charge-stacking path for very high-impedance weak sources and a burst-transfer path for lower-impedance sources. A self-referenced selector activates only one engine until the reservoir can sustain arbitration overhead.",
-    "domains": [
-      "energy_harvesting_pmic",
-      "multi_mode_startup",
-      "weak_source_conversion"
-    ],
-    "key_mechanism": "Self-referenced mode selection between two startup paths before the main PMU comes alive.",
-    "dependency_list": [
-      "passive stacker",
-      "burst-transfer startup path",
-      "mode selector",
-      "startup reservoir",
-      "anti-backdrive OR-ing"
-    ],
-    "first_experiment": "Run the H1 matrix with asymmetric impedance and ramp-rate corners, logging whether the selected startup path matches the winning source regime and whether handoff time improves over a one-path startup.",
-    "predicted_failure_mode": "Duplicated startup-path parasitics and selector leakage dominate at 20-50 mV.",
-    "novelty_rationale": "Distinct from low-voltage single-source startup papers because the claim is about helper-free mode selection among heterogeneous weak sources.",
-    "closest_overlap_papers": [
+    "implementation_hypothesis": "Use mirrored subthreshold pulse injectors plus capacitor slew comparison to estimate polarity/strength without an always-on comparator.",
+    "experiment_seed": "Sweep mixed 20/50/100/300 mV sources, slow ramps, and 1:1/1:5/1:20 source impedances; compare startup success and back-drive loss against fixed-path and non-aware OR-ing baselines.",
+    "closest_prior_art": [
       {
         "paperId": "c75c82be2e98a8d66907742a89b886902c1a0162",
         "title": "Fully Integrated Startup at 70 mV of Boost Converters for Thermoelectric Energy Harvesting"
       },
       {
-        "paperId": "d9415d1253fb75da110cffc9d1ab87509010d30e",
-        "title": "A CMOS Startup Circuit for Thermoelectric Energy Harvesting Systems"
+        "paperId": "254a50d3d11f95e13c87d5b068a92e29fb0f2dee",
+        "title": "Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting"
+      },
+      {
+        "paperId": "0fd827923bda6369f44527bd52fdf7b4c60e4941",
+        "title": "Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements"
+      }
+    ],
+    "novelty_claim": "The claimed novelty is not lower startup voltage or better steady-state extraction; it is helper-free pre-arbitration source scouting under heterogeneous polarity and impedance before the main control loop exists.",
+    "differentiation": "Differs from single-source TEG startup by explicitly addressing multi-source wrong-way current paths, and differs from recent multi-input piezo interfaces by making startup ranking itself the control problem rather than the steady-state extraction path.",
+    "folder_plan": [
+      "netlists/",
+      "results/",
+      "tables/",
+      "README.md"
+    ],
+    "dependency_list": [
+      "dual probe capacitors",
+      "mirrored pulse injectors",
+      "startup OR-ing devices",
+      "handoff latch"
+    ],
+    "predicted_failure_mode": "Probe energy or mirror mismatch erases the gain, making it no better than a fixed startup path.",
+    "rank": 1
+  },
+  {
+    "symbolic_name": "dual_bucket_polarity_split_bootstrap",
+    "description": "Maintain two startup reservoirs, one for forward-chargeable sources and one for reverse-suspect sources, and merge them only after a polarity-safe latch confirms that no source will be back-driven during handoff.",
+    "domains": [
+      "analog power management",
+      "charge-domain isolation",
+      "mixed-polarity energy harvesting"
+    ],
+    "mathematical_formalization": "dV_pos/dt = \u03a3 I_pos/C_pos; dV_neg/dt = \u03a3 |I_neg|/C_neg; merge only if sign(source_i)*gate_i is safe for all i.",
+    "analogical_connections": [
+      "two-phase commit",
+      "quarantine buffer before main bus attach"
+    ],
+    "implementation_hypothesis": "Use separate isolation FET stacks and tiny sign-detection packets to hold ambiguous sources out of the main startup bus until safe.",
+    "experiment_seed": "Inject one positive and one inverted source with unequal source resistances and measure whether the architecture prevents wrong-way current while still reaching handoff.",
+    "closest_prior_art": [
+      {
+        "paperId": "6022e53796c25cba2130c9505c6e6c908fd43cb0",
+        "title": "A self-powered multi-input OSECE interface circuit for multiple piezoelectric transducers"
+      },
+      {
+        "paperId": "0fd827923bda6369f44527bd52fdf7b4c60e4941",
+        "title": "Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements"
       },
       {
         "paperId": "dfecac253dbefc0807d87edafe69873b2a45bfc1",
         "title": "A Thermoelectric Energy Harvesting System Assisted by a Piezoelectric Transducer Achieving 10-MV Cold-Startup and 82.7% Peak Efficiency"
       }
     ],
-    "novelty_signal": "medium_high",
-    "kill_condition": "Retire if one path silently behaves like a helper rail or if duplicated path overhead erases startup gains."
+    "novelty_claim": "Survives only if mixed-polarity startup is shown as a first-class failure mode instead of being hidden inside a helper-source or single-polarity experiment.",
+    "differentiation": "Closer to recent multi-input piezo work than the root concept, but still distinct if the emphasis stays on polarity-safe startup and not collaborative extraction after startup.",
+    "folder_plan": [
+      "netlists/",
+      "results/",
+      "README.md"
+    ],
+    "dependency_list": [
+      "positive startup bucket",
+      "negative startup bucket",
+      "merge clamp",
+      "polarity-safe latch"
+    ],
+    "predicted_failure_mode": "Extra bucket and merge overhead dominate the startup budget under the weakest ramps.",
+    "rank": 2
   },
   {
-    "rank": 3,
-    "symbolic_name": "polarity_split_dual_bucket_bootstrap",
-    "description": "Accumulate positive and negative or phase-skewed inputs into separate low-leakage scout buckets, then merge into the main reservoir only after one bucket can sustain isolation overhead. This converts mixed-polarity startup from a rectification problem into a staged-energy-aggregation problem.",
+    "symbolic_name": "time_constant_ranked_arbiter",
+    "description": "Infer which weak source should be granted the first startup shot by comparing its response through two RC windows with different time constants, giving a coarse impedance classification without a powered comparator.",
     "domains": [
-      "energy_harvesting_pmic",
-      "mixed_polarity_startup",
-      "anti_backdrive"
+      "analog power management",
+      "RC inference",
+      "startup arbitration"
     ],
-    "key_mechanism": "Dual scout buckets plus cross-coupled merge gating delay shared-reservoir exposure until startup is safe.",
-    "dependency_list": [
-      "positive scout bucket",
-      "negative scout bucket",
-      "merge gate",
-      "cross-coupled latch",
-      "main reservoir"
+    "mathematical_formalization": "rank_i = sgn((V_fast_i - V_slow_i)/(\u03c4_fast - \u03c4_slow)); choose argmax rank_i before arbitration enable.",
+    "analogical_connections": [
+      "multi-resolution sensing",
+      "coarse prefetch before full decode"
     ],
-    "first_experiment": "Mixed-polarity cases at 20-100 mV with 1:20 impedance asymmetry; compare back-drive loss and handoff success against a single-reservoir OR-ing baseline.",
-    "predicted_failure_mode": "Bucket leakage or merge-threshold overhead destroys net gain below 50 mV.",
-    "novelty_rationale": "Targets the exact mixed-polarity startup regime that most recovered overlap papers do not benchmark explicitly.",
-    "closest_overlap_papers": [
-      {
-        "paperId": "0fd827923bda6369f44527bd52fdf7b4c60e4941",
-        "title": "Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements"
-      },
-      {
-        "paperId": "6022e53796c25cba2130c9505c6e6c908fd43cb0",
-        "title": "A self-powered multi-input OSECE interface circuit for multiple piezoelectric transducers"
-      },
-      {
-        "paperId": "254a50d3d11f95e13c87d5b068a92e29fb0f2dee",
-        "title": "Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting"
-      }
-    ],
-    "novelty_signal": "medium",
-    "kill_condition": "Retire if the mixed-polarity advantage disappears once realistic leakages and merge-control energy are counted."
-  },
-  {
-    "rank": 4,
-    "symbolic_name": "source_signature_charge_packet_startup",
-    "description": "Transfer charge from each source in discrete packets only when a local envelope and recovery signature indicate that the source can recover before the next packet. The reservoir sees controlled packet arrivals instead of uncontrolled contention.",
-    "domains": [
-      "energy_harvesting_pmic",
-      "packetized_energy_transfer",
-      "source_signature_sensing"
-    ],
-    "key_mechanism": "Local recovery signature gates packet transfer into the shared reservoir.",
-    "dependency_list": [
-      "local envelope detector",
-      "packet switch",
-      "recovery timer",
-      "shared reservoir",
-      "handoff gate"
-    ],
-    "first_experiment": "Impedance-asymmetry and source-collapse falsifier cases comparing packetized versus always-connected startup paths.",
-    "predicted_failure_mode": "Local timing blocks consume more energy than the packetization saves.",
-    "novelty_rationale": "More adaptive than ordinary time-division multiplexing, but closer to existing multi-input extraction papers than the top three concepts.",
-    "closest_overlap_papers": [
-      {
-        "paperId": "254a50d3d11f95e13c87d5b068a92e29fb0f2dee",
-        "title": "Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting"
-      },
-      {
-        "paperId": "6022e53796c25cba2130c9505c6e6c908fd43cb0",
-        "title": "A self-powered multi-input OSECE interface circuit for multiple piezoelectric transducers"
-      }
-    ],
-    "novelty_signal": "medium",
-    "kill_condition": "Retire if it behaves like another packetized multi-input extraction scheme with rebranded sensing."
-  },
-  {
-    "rank": 5,
-    "symbolic_name": "anti_backdrive_latched_oring",
-    "description": "Keep startup OR-ing devices hard-off until a source-local latch has enough evidence to justify one-way conduction, then hold directionality through short reservoir droops. This makes reverse leakage an explicit startup design variable.",
-    "domains": [
-      "energy_harvesting_pmic",
-      "anti_backdrive",
-      "startup_isolation"
-    ],
-    "key_mechanism": "Source-local latch delays and direction-locks OR-ing devices during startup.",
-    "dependency_list": [
-      "source-local latch capacitor",
-      "ultra-low-leakage OR-ing switch",
-      "reverse-current monitor",
-      "startup reservoir"
-    ],
-    "first_experiment": "Run mixed-polarity, source-collapse, and UVLO-chatter cases while measuring back-drive loss versus ordinary diode-connected OR-ing.",
-    "predicted_failure_mode": "Latch set/reset chatter or monitor overhead makes it a useful sub-block but not a standalone thesis.",
-    "novelty_rationale": "Important enabling block for H1, but too narrow to carry the full claim alone.",
-    "closest_overlap_papers": [
+    "implementation_hypothesis": "A pair of passive time-constant sniffers plus dynamic sense switches can estimate whether a source is low-Z enough to survive a startup pulse.",
+    "experiment_seed": "Hold source voltages equal and sweep impedance 1:1 to 1:20 to see whether the ranker chooses the source that actually minimizes startup delay and back-drive loss.",
+    "closest_prior_art": [
       {
         "paperId": "9fd5e15b325f8534ee928242f7e9507a01586677",
         "title": "Single- and multi-source battery-less power management circuits for piezoelectric energy harvesting systems"
       },
       {
-        "paperId": "0fd827923bda6369f44527bd52fdf7b4c60e4941",
-        "title": "Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements"
+        "paperId": "254a50d3d11f95e13c87d5b068a92e29fb0f2dee",
+        "title": "Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting"
+      },
+      {
+        "paperId": "6461dab6cdfcd007d17f484bb2f28744f7b08c1c",
+        "title": "Multi-Source Energy Harvesting Systems Integrated in Silicon: A Comprehensive Review"
       }
     ],
-    "novelty_signal": "hold",
-    "kill_condition": "Retire as a headline if it only improves reverse leakage modestly without affecting startup correctness."
+    "novelty_claim": "Potentially novel only if the RC ranker materially improves cold-start correctness while costing less than active arbitration or full source comparators.",
+    "differentiation": "This is source ranking for startup, not a general MPPT controller and not another steady-state multi-source combiner.",
+    "folder_plan": [
+      "netlists/",
+      "results/",
+      "README.md"
+    ],
+    "dependency_list": [
+      "fast RC sniffer",
+      "slow RC sniffer",
+      "rank latch",
+      "grant gating"
+    ],
+    "predicted_failure_mode": "Under ultra-slow ramps the RC signatures collapse together and ranking becomes too noisy to matter.",
+    "rank": 3
   },
   {
-    "rank": 6,
-    "symbolic_name": "uvlo_deglitched_token_handoff",
-    "description": "Require a time-integrated token, not a single UVLO crossing, before waking the main control path. This trades a tiny analog state element for lower chatter under ultra-slow ramps and asynchronous source arrival.",
+    "symbolic_name": "reverse_leakage_vote_or",
+    "description": "Exploit leakage and subthreshold current signatures across startup OR-ing devices to vote on which source is truly sourcing energy versus being back-driven, then gate only the voted source into the startup path.",
     "domains": [
-      "energy_harvesting_pmic",
-      "handoff_control",
-      "uvlo_chatter_mitigation"
+      "analog power management",
+      "device leakage sensing",
+      "backdrive prevention"
     ],
-    "key_mechanism": "Token accumulator measures sustained energy margin before handoff.",
+    "mathematical_formalization": "vote_i = sign(Q_forward_i - Q_reverse_i) accumulated over N probe windows.",
+    "analogical_connections": [
+      "majority vote filter",
+      "direction-of-flow sensing in networking"
+    ],
+    "implementation_hypothesis": "Matched leakage windows around OR-ing FETs can turn unavoidable device leakage into a direction detector.",
+    "experiment_seed": "Run polarity mismatch and source collapse cases to see whether the vote suppresses wrong-way startup events better than a fixed ideal-diode path.",
+    "closest_prior_art": [
+      {
+        "paperId": "0fd827923bda6369f44527bd52fdf7b4c60e4941",
+        "title": "Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements"
+      },
+      {
+        "paperId": "6022e53796c25cba2130c9505c6e6c908fd43cb0",
+        "title": "A self-powered multi-input OSECE interface circuit for multiple piezoelectric transducers"
+      }
+    ],
+    "novelty_claim": "Interesting only if it avoids explicit comparator power and still predicts back-drive direction reliably enough to matter.",
+    "differentiation": "Leans into anti-backdrive sensing rather than extraction efficiency.",
+    "folder_plan": [
+      "netlists/",
+      "results/",
+      "README.md"
+    ],
     "dependency_list": [
-      "token integrator",
-      "window comparator",
-      "handoff gate",
-      "reset path"
+      "startup OR-ing FETs",
+      "leakage sample capacitors",
+      "vote latch"
     ],
-    "first_experiment": "Ultra-slow 0.1 and 1 mV/s ramps with source collapse near handoff; compare false starts and control energy against ordinary UVLO wakeup.",
-    "predicted_failure_mode": "Delay and integrator leakage make it useful only as an ablation switch, not the main novelty claim.",
-    "novelty_rationale": "High practical value for H1 experiments, but too incremental to headline by itself.",
-    "closest_overlap_papers": [
+    "predicted_failure_mode": "Leakage signatures are too process- and temperature-sensitive to be robust.",
+    "rank": 4
+  },
+  {
+    "symbolic_name": "tokenized_uvlo_handoff_gate",
+    "description": "Use a one-shot token chain to delay arbitration enable and anti-backdrive device turn-on until a minimum startup packet has definitely landed, suppressing UVLO chatter and half-on isolation states.",
+    "domains": [
+      "analog power management",
+      "asynchronous state sequencing",
+      "UVLO stabilization"
+    ],
+    "mathematical_formalization": "enable_main = token_2 AND (V_store >= V_min) AND NOT chatter_flag.",
+    "analogical_connections": [
+      "token ring access control",
+      "debounced state machine with analog commit"
+    ],
+    "implementation_hypothesis": "A pulse-latched token chain can replace always-on comparators in the earliest startup phase and prevent repeated half-enables.",
+    "experiment_seed": "Stress slow ramps and UVLO threshold oscillation to quantify chatter reduction and added control energy.",
+    "closest_prior_art": [
       {
         "paperId": "d30bff950b51bfb17324047f1b9193d837341002",
         "title": "A 220-mV Power-on-Reset Based Self-Starter With 2-nW Quiescent Power for Thermoelectric Energy Harvesting Systems"
@@ -205,7 +200,60 @@
         "title": "A CMOS Startup Circuit for Thermoelectric Energy Harvesting Systems"
       }
     ],
-    "novelty_signal": "hold",
-    "kill_condition": "Retire as a thesis if it only behaves like a more careful UVLO filter."
+    "novelty_claim": "Useful as a shared sub-block even if it is not the headline concept, because UVLO chatter is a direct kill-risk for H1.",
+    "differentiation": "Positioned as a control block inside the startup family rather than a standalone novelty claim.",
+    "folder_plan": [
+      "netlists/",
+      "results/",
+      "README.md"
+    ],
+    "dependency_list": [
+      "startup storage node",
+      "token chain",
+      "UVLO sense pulse",
+      "anti-chatter reset"
+    ],
+    "predicted_failure_mode": "The token chain becomes another hidden control rail and erases the energy advantage.",
+    "rank": 5
+  },
+  {
+    "symbolic_name": "comparatorless_current_probe_bootstrap",
+    "description": "Estimate source strength by injecting symmetric charge probes and reading only passive capacitor slew, avoiding explicit comparator bias until after the first viable source wins startup.",
+    "domains": [
+      "analog power management",
+      "charge-domain sensing",
+      "ultra-low-power startup"
+    ],
+    "mathematical_formalization": "strength_i \u2248 (\u0394V_probe_i / \u0394t) / Q_injected with comparator bias held at 0 during probe phase.",
+    "analogical_connections": [
+      "compressed sensing with passive front-end",
+      "minimum-energy scout before full wake-up"
+    ],
+    "implementation_hypothesis": "A purely charge-domain probe might be cheaper than RC rankers when ramps are extremely slow and source impedance is the main uncertainty.",
+    "experiment_seed": "Compare probe energy versus startup-time benefit against the time-constant ranker in the 1:5 and 1:20 impedance cases.",
+    "closest_prior_art": [
+      {
+        "paperId": "c75c82be2e98a8d66907742a89b886902c1a0162",
+        "title": "Fully Integrated Startup at 70 mV of Boost Converters for Thermoelectric Energy Harvesting"
+      },
+      {
+        "paperId": "9fd5e15b325f8534ee928242f7e9507a01586677",
+        "title": "Single- and multi-source battery-less power management circuits for piezoelectric energy harvesting systems"
+      }
+    ],
+    "novelty_claim": "This is the lowest-overhead source-awareness path; it survives only if the passive probe remains materially cheaper than explicit arbitration hardware.",
+    "differentiation": "Avoids helper rails and explicit comparator bias during the earliest startup stage.",
+    "folder_plan": [
+      "netlists/",
+      "results/",
+      "README.md"
+    ],
+    "dependency_list": [
+      "probe capacitor",
+      "charge injector",
+      "differential storage node"
+    ],
+    "predicted_failure_mode": "Capacitor mismatch and injected charge loss make the probe estimate too inaccurate to justify the complexity.",
+    "rank": 6
   }
 ]

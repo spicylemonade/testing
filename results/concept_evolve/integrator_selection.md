@@ -1,27 +1,31 @@
-# Integrator Selection Memo
+# Integrator Selection
 
-Parent synthesis after the focused child-agent codex pass failed with response-stream disconnects. The concept set below is synthesized directly from the repaired H1 literature snapshot, prior-art matrix, falsifier memo, and swarm lane freeze.
+Date: 2026-03-12
+Lane: H1_multisource_cold_start
 
 ## Top 3 Concept Folders
 
-1. `001_impedance_ranked_packet_probe`
-   - Best match to the frozen H1 claim because it adds minimal source awareness before arbitration without requiring a helper rail.
-   - Fastest go/kill signal: does startup success improve under impedance asymmetry after probe energy is counted?
-2. `002_dual_path_helperless_startup`
-   - Best fallback inside H1 if explicit probing is too expensive.
-   - Fastest go/kill signal: can mode selection between two startup engines outperform a one-path baseline without hidden helper behavior?
-3. `003_polarity_split_dual_bucket_bootstrap`
-   - Best adversarial differentiator branch because it directly targets mixed-polarity startup and back-drive suppression.
-   - Fastest go/kill signal: does it materially cut back-drive and false starts in mixed-polarity cases?
+1. `001_packet_scout_handoff_root`
+   - Keep active as the champion family.
+   - Why: It is the narrowest concept that directly targets helper-free pre-arbitration source scouting under heterogeneous weak sources.
+2. `002_dual_bucket_polarity_split_bootstrap`
+   - Keep as the first fallback / mixed-polarity specialist.
+   - Why: It best preserves novelty if polarity mismatch proves to be the main differentiator versus recent multi-input piezo work.
+3. `003_time_constant_ranked_arbiter`
+   - Keep as the low-overhead comparator / source-awareness ablation line.
+   - Why: It gives a cleaner path to equal-overhead comparison than the more speculative leakage-vote or charge-probe variants.
 
-## Retained But Not Headline Concepts
+## Retired Or Secondary Concepts
 
-- `004_source_signature_charge_packet_startup`: interesting but closer to existing packetized multi-input extraction work.
-- `005_anti_backdrive_latched_oring`: important enabling block, not a full thesis alone.
-- `006_uvlo_deglitched_token_handoff`: valuable ablation/control block, but too incremental as a headline concept.
+- `004_reverse_leakage_vote_or`
+  - Secondary only: valuable as a sub-block but too process-sensitive to lead the claim.
+- `005_tokenized_uvlo_handoff_gate`
+  - Secondary only: necessary control block, not strong enough as the headline novelty.
+- `006_comparatorless_current_probe_bootstrap`
+  - Secondary only until probe overhead is shown to beat the RC-ranker variant.
 
-## Immediate Recommendation
+## Integration Notes
 
-- Keep exactly one active champion for implementation in Phase 2: `001_impedance_ranked_packet_probe`.
-- Keep `002_dual_path_helperless_startup` as the kill-ready fallback inside H1.
-- Use `003_polarity_split_dual_bucket_bootstrap` as the branch that defines the strongest mixed-polarity claim boundary.
+- The broad-task `concept_evolve.py evolve` run was not used as the concept source because it produced no target artifacts and drifted off-lane.
+- The concept tree here is a focused H1 workaround grounded in the repaired literature snapshot and the prior-art gap matrix.
+- All later baseline, netlist, and verification artifacts should link back to `001_packet_scout_handoff_root` as the champion family root.
