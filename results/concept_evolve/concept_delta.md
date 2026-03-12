@@ -49,3 +49,44 @@ Focus: `H1_multisource_cold_start`
   - the iterate pass itself notes that `results/verification/novelty_report.md`, `benchmark_report.md`, and `citation_audit.md` are still absent, so bridge promotion is structural rather than performance-backed
 - Net effect:
   - H1 remains alive, but only as a narrow startup-correctness thesis that can still be killed quickly if the upcoming matrix fails to separate it from the nonaware baseline on `startup_ok`, `t_handoff`, or `e_backdrive`
+
+## DEEPEN Addendum
+
+Date: 2026-03-12
+Focus: `H1_confidence_gated_abstention`
+
+### Suggestion
+
+- Stop searching for a better winner-take-all selector.
+- Test whether the right startup behavior in near-tie regimes is to abstain from committing until separability clears, then hand off from the same packet-gated scaffold.
+
+### Implementation
+
+- Reconstructed `research_rubric.json` to restore the pre-DEEPEN ledger and add a new `Novelty Deepening` phase.
+- Froze the active lane from:
+  - `results/swarm/director_brief.md`
+  - `results/swarm/hypotheses.json`
+  - `results/swarm/tool_plan.md`
+- Ran:
+  - `python3 .archivara/concept_evolve.py probe "Can a low-energy confidence metric outperform blind packet gating on near-tie weak-source startup cases without hidden helper behavior?"`
+- The helper failed cleanly only up to a degraded artifact:
+  - `results/concept_evolve/probe_result.json`
+  - repeated Archivara responses-proxy disconnects prevented a full concept-worker return
+
+### Result
+
+- The useful surviving probe output is the recovered sub-problem:
+  - `What is the minimum-energy source-inference mechanism that still improves helper-free multi-source cold start under mixed polarity and 1:20 impedance asymmetry?`
+- That reframes the lane away from `smarter ranking` and toward `confidence-aware refusal to over-infer`.
+- The experiment freeze is now:
+  - compare `source_blind`, `time_constant_ranked`, and one confidence-gated fallback variant only on near-tie cases
+  - keep packet-gating claims bounded until a same-scaffold no-packet control runs under equal accounting
+
+### Novelty Delta
+
+- Stronger than the prior RC-ranked story:
+  - the proposed contribution is no longer generic source awareness or mixed-polarity startup, both of which the overlap set already crowds
+  - the new hypothesis asks whether analog startup logic should detect non-separability and intentionally defer ranking
+- Still fragile:
+  - the probe tooling did not return new bridge candidates, so the lane still depends on measured separation rather than concept-worker novelty support
+  - if the confidence node only reproduces `source_blind` with extra overhead, the lane dies immediately
