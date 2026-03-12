@@ -2,24 +2,35 @@
 
 ## Suggestion
 
-Use ConceptEvolve plus a bounded prior-art audit to keep the research direction pinned to provenance, witness-level frontier structure, and explicit overlap risks instead of generic mex or product-density storytelling.
+Use the post-verification ConceptEvolve loop to pivot away from failed raw-witness and
+prime-support stories and toward the only surviving bridge: full witness hypergraphs
+plus explicit surrogate controls against Ford-style overlap.
 
 ## Implementation
 
-- Patched `.archivara/concept_evolve.py` so the mandatory `evolve` command actually runs.
-- Executed the required `evolve` pass on the prime-separator-array problem statement.
-- Added live concept-tree roots for provenance, frontier certificates, prime-support dynamics, and Ford-overlap control.
-- Replaced the junk literature snapshot with a curated OEIS/Kimberling/Ford/multiplicative-basis boundary.
+- Executed the required `reframe` and `iterate` passes after the verification artifacts existed.
+- Added a million-step experiment package plus validated full-witness hypergraph exports.
+- Updated the concept tree so H1 is marked as pivoted, H2 as retired, witness taxonomy as a completed negative result, and robustness variants as completed.
+- Read and incorporated `concept_delta.json`, `recurrent_state.json`, and `bridge_candidates.json`.
 
 ## Result
 
-- `results/concept_evolve/tree/` is now initialized.
-- The live overlap boundary is explicit.
-- The baseline generator and witness-carrying record-gap corpus now give the concept tree a real empirical substrate.
+- The champion bridge is now explicit:
+  - full witness hypergraphs -> hypergraph certificate complexity / invariant compression.
+- The required overlap-control bridge is also explicit:
+  - mex-coupled frontier -> size-matched surrogate product-set ablation.
+- Three weaker bridges were retired:
+  - symbolic/automaton law on raw witnesses,
+  - prime-support fixed point,
+  - parking/jamming phenomenology as an active mechanism.
 
 ## Novelty Delta
 
-The run moved the project away from lexical false positives and toward a much sharper question:
+The project is now sharply positioned:
 
-- can witness-level frontier certificates say anything genuinely more specific than Ford-style divisor/product coverage,
-- and if not, can the prime-support abstraction explain the failures without collapsing into OEIS restatement?
+- not as a positive proof or asymptotic mechanism claim,
+- but as a validated negative-result / overlap-audit package with one bounded remaining
+  rescue path on full witness hypergraphs.
+
+If that rescue path fails against surrogate controls, the concept loop now says to stop
+rather than widen the search again.
