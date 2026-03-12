@@ -1,0 +1,43 @@
+{
+  "symbolic_name": "tokenized_uvlo_handoff_gate",
+  "description": "Use a one-shot token chain to delay arbitration enable and anti-backdrive device turn-on until a minimum startup packet has definitely landed, suppressing UVLO chatter and half-on isolation states.",
+  "domains": [
+    "analog power management",
+    "asynchronous state sequencing",
+    "UVLO stabilization"
+  ],
+  "mathematical_formalization": "enable_main = token_2 AND (V_store >= V_min) AND NOT chatter_flag.",
+  "analogical_connections": [
+    "token ring access control",
+    "debounced state machine with analog commit"
+  ],
+  "implementation_hypothesis": "A pulse-latched token chain can replace always-on comparators in the earliest startup phase and prevent repeated half-enables.",
+  "experiment_seed": "Stress slow ramps and UVLO threshold oscillation to quantify chatter reduction and added control energy.",
+  "closest_prior_art": [
+    {
+      "paperId": "d30bff950b51bfb17324047f1b9193d837341002",
+      "title": "A 220-mV Power-on-Reset Based Self-Starter With 2-nW Quiescent Power for Thermoelectric Energy Harvesting Systems"
+    },
+    {
+      "paperId": "d9415d1253fb75da110cffc9d1ab87509010d30e",
+      "title": "A CMOS Startup Circuit for Thermoelectric Energy Harvesting Systems"
+    }
+  ],
+  "novelty_claim": "Useful as a shared sub-block even if it is not the headline concept, because UVLO chatter is a direct kill-risk for H1.",
+  "differentiation": "Positioned as a control block inside the startup family rather than a standalone novelty claim.",
+  "folder_plan": [
+    "netlists/",
+    "results/",
+    "README.md"
+  ],
+  "dependency_list": [
+    "startup storage node",
+    "token chain",
+    "UVLO sense pulse",
+    "anti-chatter reset"
+  ],
+  "predicted_failure_mode": "The token chain becomes another hidden control rail and erases the energy advantage.",
+  "rank": 5,
+  "generated_at": "2026-03-12T07:50:00Z",
+  "project_folder": "results/concept_evolve/tree/005_tokenized_uvlo_handoff_gate"
+}

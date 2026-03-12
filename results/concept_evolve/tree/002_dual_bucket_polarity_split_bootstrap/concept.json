@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "dual_bucket_polarity_split_bootstrap",
+  "description": "Maintain two startup reservoirs, one for forward-chargeable sources and one for reverse-suspect sources, and merge them only after a polarity-safe latch confirms that no source will be back-driven during handoff.",
+  "domains": [
+    "analog power management",
+    "charge-domain isolation",
+    "mixed-polarity energy harvesting"
+  ],
+  "mathematical_formalization": "dV_pos/dt = \u03a3 I_pos/C_pos; dV_neg/dt = \u03a3 |I_neg|/C_neg; merge only if sign(source_i)*gate_i is safe for all i.",
+  "analogical_connections": [
+    "two-phase commit",
+    "quarantine buffer before main bus attach"
+  ],
+  "implementation_hypothesis": "Use separate isolation FET stacks and tiny sign-detection packets to hold ambiguous sources out of the main startup bus until safe.",
+  "experiment_seed": "Inject one positive and one inverted source with unequal source resistances and measure whether the architecture prevents wrong-way current while still reaching handoff.",
+  "closest_prior_art": [
+    {
+      "paperId": "6022e53796c25cba2130c9505c6e6c908fd43cb0",
+      "title": "A self-powered multi-input OSECE interface circuit for multiple piezoelectric transducers"
+    },
+    {
+      "paperId": "0fd827923bda6369f44527bd52fdf7b4c60e4941",
+      "title": "Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements"
+    },
+    {
+      "paperId": "dfecac253dbefc0807d87edafe69873b2a45bfc1",
+      "title": "A Thermoelectric Energy Harvesting System Assisted by a Piezoelectric Transducer Achieving 10-MV Cold-Startup and 82.7% Peak Efficiency"
+    }
+  ],
+  "novelty_claim": "Survives only if mixed-polarity startup is shown as a first-class failure mode instead of being hidden inside a helper-source or single-polarity experiment.",
+  "differentiation": "Closer to recent multi-input piezo work than the root concept, but still distinct if the emphasis stays on polarity-safe startup and not collaborative extraction after startup.",
+  "folder_plan": [
+    "netlists/",
+    "results/",
+    "README.md"
+  ],
+  "dependency_list": [
+    "positive startup bucket",
+    "negative startup bucket",
+    "merge clamp",
+    "polarity-safe latch"
+  ],
+  "predicted_failure_mode": "Extra bucket and merge overhead dominate the startup budget under the weakest ramps.",
+  "rank": 2,
+  "generated_at": "2026-03-12T07:50:00Z",
+  "project_folder": "results/concept_evolve/tree/002_dual_bucket_polarity_split_bootstrap"
+}

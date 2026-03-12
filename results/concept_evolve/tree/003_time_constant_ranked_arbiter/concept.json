@@ -1,0 +1,47 @@
+{
+  "symbolic_name": "time_constant_ranked_arbiter",
+  "description": "Infer which weak source should be granted the first startup shot by comparing its response through two RC windows with different time constants, giving a coarse impedance classification without a powered comparator.",
+  "domains": [
+    "analog power management",
+    "RC inference",
+    "startup arbitration"
+  ],
+  "mathematical_formalization": "rank_i = sgn((V_fast_i - V_slow_i)/(\u03c4_fast - \u03c4_slow)); choose argmax rank_i before arbitration enable.",
+  "analogical_connections": [
+    "multi-resolution sensing",
+    "coarse prefetch before full decode"
+  ],
+  "implementation_hypothesis": "A pair of passive time-constant sniffers plus dynamic sense switches can estimate whether a source is low-Z enough to survive a startup pulse.",
+  "experiment_seed": "Hold source voltages equal and sweep impedance 1:1 to 1:20 to see whether the ranker chooses the source that actually minimizes startup delay and back-drive loss.",
+  "closest_prior_art": [
+    {
+      "paperId": "9fd5e15b325f8534ee928242f7e9507a01586677",
+      "title": "Single- and multi-source battery-less power management circuits for piezoelectric energy harvesting systems"
+    },
+    {
+      "paperId": "254a50d3d11f95e13c87d5b068a92e29fb0f2dee",
+      "title": "Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting"
+    },
+    {
+      "paperId": "6461dab6cdfcd007d17f484bb2f28744f7b08c1c",
+      "title": "Multi-Source Energy Harvesting Systems Integrated in Silicon: A Comprehensive Review"
+    }
+  ],
+  "novelty_claim": "Potentially novel only if the RC ranker materially improves cold-start correctness while costing less than active arbitration or full source comparators.",
+  "differentiation": "This is source ranking for startup, not a general MPPT controller and not another steady-state multi-source combiner.",
+  "folder_plan": [
+    "netlists/",
+    "results/",
+    "README.md"
+  ],
+  "dependency_list": [
+    "fast RC sniffer",
+    "slow RC sniffer",
+    "rank latch",
+    "grant gating"
+  ],
+  "predicted_failure_mode": "Under ultra-slow ramps the RC signatures collapse together and ranking becomes too noisy to matter.",
+  "rank": 3,
+  "generated_at": "2026-03-12T07:50:00Z",
+  "project_folder": "results/concept_evolve/tree/003_time_constant_ranked_arbiter"
+}
