@@ -24,6 +24,12 @@
 3. Result: `phi` and `1 + sqrt(2)` survive with exact order-2 recurrences; plastic, Salem, and `e` only generate finite-window low-rank mirages that fail on holdout.
 4. Novel contribution: this turns convergent sampling into an exact survivor/falsifier front-end for Beatty subsequences rather than a heuristic signal-processing analogy.
 
+### 2. Pisot beta endpoint sampler
+1. CE suggestion: generate `G_n`, compute greedy beta expansions for small Pisot units, enumerate endpoint-constrained indices, and test the sampled Beatty values with exact Hankel and companion-matrix checks.
+2. What was implemented: `results/concept_evolve/tree/009_pisot_beta_endpoint_sampler/experiment.py` together with `special_numbers/beta_numeration.py`.
+3. Result: the concrete suffix-`10` endpoint proxy produced no exact low-order recurrence for `phi`, `1 + sqrt(2)`, `plastic`, or the matched controls `sqrt(2)`, Salem, and `e`.
+4. Novel contribution: this negative result narrows the higher-degree exception search by ruling out the most obvious executable beta-endpoint cylinder before more elaborate Rauzy-face refinements are attempted.
+
 ## Next experiments
 - Implement the exact beta-endpoint sampler for the plastic constant and matched controls.
 - Convert the H1 modular-shadow layer into a concept-specific experiment for folder `004_skolem_automatic_intersection_filter`.

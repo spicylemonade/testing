@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from special_numbers.beta_numeration import endpoint_indices
+from special_numbers.ostrowski import ostrowski_selector_indices
+from special_numbers.slopes import convergents
+
 
 @dataclass(frozen=True)
 class SelectorInstance:
@@ -46,6 +50,21 @@ def padovan_indices(count: int) -> SelectorInstance:
     while len(values) < count + 2:
         values.append(values[-2] + values[-3])
     return SelectorInstance("padovan_indices", "linear_recursive", values[2 : count + 2], {"template": "A_{k+3}"})
+
+
+def quadratic_convergent_even(slope_id: str, count: int) -> SelectorInstance:
+    indices = [q for index, _p, q in convergents(slope_id, max(2 * count + 8, 24)) if index % 2 == 0][:count]
+    return SelectorInstance("quadratic_convergent_even", "linear_recursive", indices, {"slope_id": slope_id})
+
+
+def ostrowski_selector(slope_id: str, template: str, count: int, max_n: int = 200000) -> SelectorInstance:
+    indices = ostrowski_selector_indices(slope_id, template=template, count=count, max_n=max_n)
+    return SelectorInstance(template, "ostrowski_definable", indices, {"slope_id": slope_id})
+
+
+def beta_endpoint_selector(slope_id: str, count: int, suffix: str = "10", max_n: int = 200000) -> SelectorInstance:
+    indices = endpoint_indices(slope_id, suffix=suffix, count=count, max_n=max_n)
+    return SelectorInstance("beta_endpoint_suffix_10", "linear_recursive", indices, {"slope_id": slope_id, "suffix": suffix})
 
 
 def smoke_selector_bank(count: int) -> dict[str, SelectorInstance]:

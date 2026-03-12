@@ -37,7 +37,7 @@ def run_case(slope_id: str) -> dict[str, object]:
     triples = convergents(slope_id, 40)
     even_denoms = [q for idx, _p, q in triples if idx % 2 == 0][:20]
     sampled = [floor_value(slope_id, q) for q in even_denoms]
-    candidate = find_exact_relation(sampled[:12], max_order=6)
+    candidate = find_exact_relation(sampled[:12], max_order=4)
     verification = verify_relation(sampled, candidate["coefficients"]) if candidate else None
     return {
         "slope_id": slope_id,

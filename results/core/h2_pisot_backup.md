@@ -10,7 +10,7 @@ The same construction was applied to all six test slopes:
 
 - take every second convergent denominator `q_{2k}` of the slope,
 - sample `x_k = floor(q_{2k} r)`,
-- recover an exact recurrence from the first 12 samples,
+- search only recurrence orders `d <= 4` from the frozen panel on the first 12 samples,
 - demand exact holdout survival on the first 20 samples.
 
 This is the convergent/Hankel front-end frozen in `results/baseline/panel_spec.md` and implemented in `results/concept_evolve/tree/005_convergent_hankel_detector/experiment.py`.
@@ -21,10 +21,10 @@ This is the convergent/Hankel front-end frozen in `results/baseline/panel_spec.m
 | --- | --- | --- | --- | --- |
 | `phi` | Pisot quadratic | `x_k - 3 x_{k+1} + x_{k+2} = 0` | success on 20 exact samples | `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` |
 | `1 + sqrt(2)` | Pisot quadratic | `x_k - 6 x_{k+1} + x_{k+2} = 0` | success on 20 exact samples | `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` |
-| plastic constant | Pisot cubic | order-6 prefix relation | fails exactly at holdout window 6 | `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` |
+| plastic constant | Pisot cubic | no order-`<=4` recurrence | failure | `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` |
 | `sqrt(2)` | non-Pisot quadratic control | `x_k - 6 x_{k+1} + x_{k+2} = 0` | success on 20 exact samples | `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` |
-| Salem quartic root | Salem control | order-6 prefix relation | fails exactly at holdout window 6 | `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` |
-| `e` | transcendental control | order-6 prefix relation | fails exactly at holdout window 6 | `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` |
+| Salem quartic root | Salem control | no order-`<=4` recurrence | failure | `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` |
+| `e` | transcendental control | no order-`<=4` recurrence | failure | `results/concept_evolve/tree/005_convergent_hankel_detector/results.json` |
 
 ## Verdict
 

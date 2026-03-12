@@ -34,5 +34,5 @@ Existing Pisot and generalized-polynomial work shows that some LRS value sets ar
 - Alignment: `H2`
 - Promotion status: promoted as the live higher-degree backup experiment.
 - Evidence links: `results/core/h2_pisot_backup.md`, `results/concept_evolve/probe_result.json`, `results/concept_evolve/steering_notes.md`
-- Current experiment status: the convergent-based backup falsified a broad Pisot-only claim, so this folder now carries the narrower task of checking whether endpoint-conditioned selectors rescue the plastic constant or any other higher-degree Pisot example.
-- Next experiment: implement the suffix-conditioned beta-endpoint sampler for `beta in {phi, 1+sqrt(2), plastic}` with matched non-Pisot controls and compare exact Hankel/companion certificates.
+- Current experiment status: executed and currently negative. `results/concept_evolve/tree/009_pisot_beta_endpoint_sampler/results.json` shows no exact low-order recurrence for the suffix-`10` endpoint selector on `phi`, `1 + sqrt(2)`, `plastic`, or the matched controls.
+- Decision: invalidate this concrete endpoint proxy as the missing higher-degree rescue mechanism; keep the geometric idea only as a possible future refinement.

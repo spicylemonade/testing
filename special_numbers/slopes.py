@@ -69,3 +69,9 @@ def convergents(slope_id: str, count: int) -> list[tuple[int, int, int]]:
         p_prev2, p_prev1 = p_prev1, p_n
         q_prev2, q_prev1 = q_prev1, q_n
     return triples
+
+
+def continued_fraction_terms(slope_id: str, count: int) -> list[int]:
+    expr = get_slope(slope_id).expr
+    iterator = sp.continued_fraction_iterator(expr)
+    return [int(next(iterator)) for _ in range(count)]
