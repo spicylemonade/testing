@@ -24,6 +24,7 @@ def main() -> None:
         evaluate_case("rational_3_over_2", selectors["ap_2_0"]),
         evaluate_case("phi", selectors["fib_indices"]),
         evaluate_case("plastic", selectors["union_mod3_01"]),
+        evaluate_case("plastic", selectors["ap_2_0"]),
     ]
     payload = {
         "purpose": "item_008 modular-shadow smoke run",

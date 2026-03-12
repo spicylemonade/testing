@@ -28,6 +28,20 @@ def verify_relation(sequence: list[int], coeffs: list[int]) -> dict[str, Any]:
     return {"holds": True, "failure_window": None, "failure_residual": 0}
 
 
+def verify_relation_mod(sequence: list[int], coeffs: list[int], modulus: int) -> dict[str, Any]:
+    order = len(coeffs) - 1
+    for start in range(len(sequence) - order):
+        lhs = sum(coeffs[idx] * sequence[start + idx] for idx in range(order + 1))
+        residual = lhs % modulus
+        if residual != 0:
+            return {
+                "holds": False,
+                "failure_window": start,
+                "failure_residual": residual,
+            }
+    return {"holds": True, "failure_window": None, "failure_residual": 0}
+
+
 def detect_period_tail(values: list[int], max_period: int = 12) -> dict[str, int | None]:
     if len(values) < 8:
         return {"period": None, "tail_start": None}
@@ -44,7 +58,7 @@ def residue_profiles(sequence: list[int], coeffs: list[int], moduli: list[int], 
     profiles: dict[str, Any] = {}
     for modulus in moduli + [prime_square]:
         residues = [value % modulus for value in sequence]
-        relation_check = verify_relation(residues, coeffs)
+        relation_check = verify_relation_mod(residues, coeffs, modulus)
         profiles[str(modulus)] = {
             "residues": residues,
             "relation_holds": relation_check["holds"],
