@@ -151,6 +151,15 @@
 - `Kill if the 2025 variable-impedance overlap collapses the novelty margin.`
 - `Kill if a simple hysteretic baseline matches the result once probe overhead is counted.`
 
+## Phase 2 Bindings
+
+- Tooling gate cleared:
+  - repo-local `ngspice` is available through `./tools/setup_ngspice_local.sh` and `./tools/ngspice-local`.
+- Canonical H1 implementation root:
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root`
+- Folder contract for all later H1 artifacts:
+  - use `dependency_map.md` in the champion root as the source of truth for shared subcircuits, baselines, manifests, tables, and lane-local verification outputs.
+
 ## Immediate Execution Priorities
 
 1. Run the mandatory `concept_evolve evolve` command against the user task, now that the launcher mismatch is repaired and the active lane is frozen.
