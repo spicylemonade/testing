@@ -1,91 +1,80 @@
 # Item 016 Selection Memo
 
 Date: 2026-03-12
-Scope: core-research synthesis for `H1_multisource_cold_start`
-Status: PASS with one active champion and one kill-ready fallback
+Scope: core research synthesis for the active H1 architecture set
+Status: PASS with one champion and one kill-ready fallback
 
 ## Execution Note
 
-- One parallel `spawn_agent` pass was launched for `research_director`, `hypothesis_scout`, `novelty_checker`, `falsifier`, and `integrator`.
-- No role-note files materialized under `results/swarm/` within the observation window.
+- Attempted delegated `research_director`, `hypothesis_scout`, `novelty_checker`, `falsifier`, and `integrator` child passes via `spawn_agent`.
+- Result:
+  - the child file-writing pass did not materialize the requested note files before timeout
+  - an interrupt redirect also returned only `Interrupted` notifications rather than usable role notes
 - Fallback used here:
-  - direct parent synthesis over the frozen H1 artifacts, with the role outputs preserved as explicit sections below so the gate is documented instead of skipped.
+  - direct parent synthesis over the same frozen evidence pack, preserving the five role outputs below as explicit sections so the architecture gate is documented instead of skipped
 
-## Research Director
+## Research Director View
 
-- Champion:
-  - `packet_scout_handoff_root::variant_01_rc_ranked_packet_gate`
-- Fallback:
-  - `dual_bucket_polarity_split_bootstrap`
-- Why:
-  - the RC-ranked packet gate is still the only branch that matches the director brief exactly: helper-free pre-arbitration source selection under heterogeneous weak-source conditions
-  - the dual-bucket branch is the only remaining backup that can widen the novelty moat if mixed-polarity startup proves to be the real unresolved failure mode
-- Budget consequence:
-  - do not fund any third headline branch before the RC-ranked matrix and the first mixed-polarity falsifier cases land
+- Active champion:
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/champion/packet_scout_handoff/variant_01_rc_ranked_packet_gate/rc_ranked_packet_gate.cir`
+- Kill-ready fallback:
+  - `results/concept_evolve/tree/002_dual_bucket_polarity_split_bootstrap`
+- Why this fallback is the only one still worth keeping:
+  - it is the only remaining branch that opens a materially different failure regime, namely mixed-polarity startup isolation, without collapsing all the way into ordinary RC arbitration or helper-assisted startup
+- Next experiment gate:
+  - run the bounded H1 startup matrix on the RC-ranked champion against both baselines first
+  - activate the dual-bucket fallback only if mixed-polarity cases remain unresolved or the champion fails its source-awareness kill rule
 
-## Hypothesis Scout
+## Hypothesis Scout View
 
-- No branch displaces the current champion.
-- Why `002` beats `003` as fallback:
-  - `003_time_constant_ranked_arbiter` is still useful, but it reads too much like ordinary low-overhead RC arbitration to carry the backup story
-  - `002_dual_bucket_polarity_split_bootstrap` stays more differentiated when polarity mismatch is central, even though it is riskier on overhead
-- Scout conclusion:
-  - keep `003` only as a control or ablation line
-  - do not reopen `004`, `005`, or `006` as independent architecture candidates
+- No branch displaces the current fallback.
+- `time_constant_ranked_arbiter` stays useful only as a control because its novelty guard is too close to ordinary RC ranking and benchmark-line arbitration.
+- `tokenized_uvlo_handoff_gate` stays useful only as a support block if later adversarial cases expose real UVLO chatter.
+- Final ranking remains:
+  - champion `variant_01_rc_ranked_packet_gate`
+  - fallback `dual_bucket_polarity_split_bootstrap`
 
-## Novelty Checker
+## Novelty Checker View
 
-- Active champion novelty boundary:
-  - valid only as helper-free source-aware startup sequencing before the main arbiter exists
-- Why the fallback survives:
-  - `002` remains materially different from the closest self-powered multi-input piezo family only when the claim is narrowed to polarity-safe startup isolation and merge timing
-- Branches retired on novelty grounds:
-  - `004_reverse_leakage_vote_or`
-    - too close to anti-backdrive hygiene around existing OR-ing devices
-  - `006_comparatorless_current_probe_bootstrap`
-    - too close to a sub-block optimization unless it proves a clear overhead win
-- Branches not active:
-  - `003_time_constant_ranked_arbiter`
-    - strong control line, weak headline novelty
-  - `005_tokenized_uvlo_handoff_gate`
-    - useful sub-block, not an architecture thesis
+- The RC-ranked champion remains materially different enough only under the narrow wording already frozen in `claim_matrix.md`:
+  - helper-free, pre-arbitration source scouting under heterogeneous weak sources
+- The dual-bucket fallback remains materially different enough only as a mixed-polarity contingency branch, not as a general multi-input PMU claim.
+- Retire now on novelty grounds:
+  - `reverse_leakage_vote_or`
+  - `comparatorless_current_probe_bootstrap`
+- Wording constraint:
+  - keep disallowing `first`, `novel`, `best`, `lowest-voltage`, and steady-state efficiency claims until the experiment matrix exists
 
-## Falsifier
+## Falsifier View
 
 - Fastest kill path for the champion:
-  - if the 24-case matrix does not show a clean improvement over both baselines on `startup_ok`, `t_handoff`, or `e_backdrive`, the RC-ranked branch collapses to extra startup logic with equal or worse accounting
+  - if the nonaware baseline shows negligible `e_backdrive` and similar `t_handoff` in mixed-polarity plus `1:20` cases, the RC-ranked branch compresses to extra logic with better accounting instead of a publishable new mechanism
 - Fastest kill path for the fallback:
-  - if bucket leakage or merge overhead dominates below `50 mV`, `002` becomes a helper-like detour rather than a defensible fallback
-- Why other branches are not active:
-  - `003` is too easy to accuse of being ordinary arbitration
-  - `004` depends on fragile leakage signatures
-  - `005` risks becoming a hidden control rail
-  - `006` already failed to gain new evidence from the focused probe pass
+  - if bucket leakage or merge overhead dominates below `50 mV`, the dual-bucket branch becomes a slower helper-like reservoir instead of a cleaner startup path
+- Branches not worth keeping active:
+  - `reverse_leakage_vote_or` because leakage signatures are too process-sensitive
+  - `comparatorless_current_probe_bootstrap` because the minimum-energy probe sub-question never produced new evidence and the overhead risk is still high
 
-## Integrator
+## Integrator Decision
 
-- Keep exactly one active champion:
-  - `packet_scout_handoff_root::variant_01_rc_ranked_packet_gate`
-- Keep exactly one kill-ready fallback:
+- Keep exactly one active H1 champion:
+  - `variant_01_rc_ranked_packet_gate`
+- Keep exactly one kill-ready H1 fallback:
   - `dual_bucket_polarity_split_bootstrap`
-- Hold as support or control only:
+- Demote from active architecture status:
   - `time_constant_ranked_arbiter`
+    - benchmark and ablation control only
   - `tokenized_uvlo_handoff_gate`
-- Retire as standalone branches:
+    - support block only if chatter is observed later
+- Retire from the active tree:
   - `reverse_leakage_vote_or`
   - `comparatorless_current_probe_bootstrap`
 
 ## Net Result
 
-- Active champion architecture:
-  - `packet_scout_handoff_root::variant_01_rc_ranked_packet_gate`
-- Kill-ready fallback:
-  - `dual_bucket_polarity_split_bootstrap`
-- Retired or downgraded branches:
-  - retire `reverse_leakage_vote_or`
-  - retire `comparatorless_current_probe_bootstrap`
-  - downgrade `time_constant_ranked_arbiter` to control status
-  - downgrade `tokenized_uvlo_handoff_gate` to support-block status
-- Next gate:
-  - run the bounded 24-case champion matrix first
-  - only activate the dual-bucket fallback if the champion fails the mixed-polarity or anti-backdrive gate
+- `item_016` is clear to proceed
+- The architecture race is now bounded tightly enough for the startup matrix:
+  - one champion
+  - one fallback
+  - two support-only branches
+  - two retired branches

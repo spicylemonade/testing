@@ -166,15 +166,17 @@
   - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/champion/packet_scout_handoff/variant_01_rc_ranked_packet_gate/rc_ranked_packet_gate.cir`
 - Kill-ready H1 fallback:
   - `results/concept_evolve/tree/002_dual_bucket_polarity_split_bootstrap`
-- Branches retired from the architecture race:
+- Support-only H1 branches:
   - `003_time_constant_ranked_arbiter`
-  - `004_reverse_leakage_vote_or`
   - `005_tokenized_uvlo_handoff_gate`
+- Branches retired from the architecture race:
+  - `004_reverse_leakage_vote_or`
   - `006_comparatorless_current_probe_bootstrap`
 - Rationale:
   - the packet-scout RC-ranked branch is the only active path that keeps the claim on helper-free, pre-arbitration source scouting
   - the dual-bucket branch is the only fallback that still opens a materially different mixed-polarity failure regime
-  - the remaining branches stay useful only as controls or support blocks and no longer justify active architecture status
+  - `003` stays as the benchmark-line source-awareness control and `005` stays as a support block only if later adversarial cases expose chatter
+  - `004` and `006` are no longer credible enough to keep in the active architecture race
 
 ## Immediate Execution Priorities
 
