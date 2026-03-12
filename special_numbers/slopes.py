@@ -22,6 +22,12 @@ SLOPES = {
     "rational_5_over_3": SlopeSpec("rational_5_over_3", "5/3", "rational", sp.Rational(5, 3)),
     "phi": SlopeSpec("phi", "phi", "quadratic_pisot", (sp.Integer(1) + sp.sqrt(5)) / 2),
     "sqrt2": SlopeSpec("sqrt2", "sqrt(2)", "quadratic_non_pisot", sp.sqrt(2)),
+    "one_plus_sqrt2": SlopeSpec(
+        "one_plus_sqrt2",
+        "1 + sqrt(2)",
+        "quadratic_pisot",
+        sp.Integer(1) + sp.sqrt(2),
+    ),
     "plastic": SlopeSpec("plastic", "plastic constant", "cubic_pisot", sp.RootOf(X**3 - X - 1, 0)),
     "salem_quartic": SlopeSpec(
         "salem_quartic",
@@ -47,3 +53,19 @@ def get_slope(slope_id: str) -> SlopeSpec:
 def floor_value(slope_id: str, n: int) -> int:
     expr = get_slope(slope_id).expr
     return int(sp.floor(sp.Integer(n) * expr))
+
+
+def convergents(slope_id: str, count: int) -> list[tuple[int, int, int]]:
+    expr = get_slope(slope_id).expr
+    iterator = sp.continued_fraction_iterator(expr)
+    p_prev2, p_prev1 = 0, 1
+    q_prev2, q_prev1 = 1, 0
+    triples: list[tuple[int, int, int]] = []
+    for index in range(count):
+        a_n = int(next(iterator))
+        p_n = a_n * p_prev1 + p_prev2
+        q_n = a_n * q_prev1 + q_prev2
+        triples.append((index, p_n, q_n))
+        p_prev2, p_prev1 = p_prev1, p_n
+        q_prev2, q_prev1 = q_prev1, q_n
+    return triples
