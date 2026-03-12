@@ -13,6 +13,14 @@ Update this file as the main differentiation ledger.
 - That means the current package differentiates itself, if at all, as a carefully
   validated negative-result and overlap-control dossier around Kimberling's open
   problem, not as a new asymptotic theorem in Ford's setting.
+- The phase-6 hypergraph audit added one more negative clarification: canonicalization-
+  stable factor-graph summaries do exist on the late record windows, but the strongest
+  candidates overlap heavily with matched non-record windows and the current affine
+  surrogate family is too weak to make a credible `T`-specific rigidity claim.
+- None of the tracked sources in this ledger reports a hypergraph-style leaf-fraction,
+  description-density, or Betti-defect invariant for Kimberling's array. The present
+  audit therefore records an internal failed search for such an invariant, not an
+  overlooked prior-art theorem.
 
 ## 1. OEIS A129258
 - Why it is close: this is the canonical public definition of the prime-separator array and the recurrence.
@@ -36,7 +44,7 @@ Update this file as the main differentiation ledger.
 - Why it is close: any coverage-based explanation of long gaps risks collapsing into multiplication-table density or distinct-product language.
 - Differentiation hypothesis: `H1` only survives if witness certificates depend essentially on the self-generated mex coupling and side assignment, not on generic product-set counting.
 - Evidence artifact(s): `results/swarm/hypotheses.json`, `results/swarm/falsifier.md`, `results/baseline/run_30000/record_gaps.json`, `results/claims/h1_frontier_witness_certificate.md`.
-- Pivot decision (if any): keep as highest overlap risk; the current evidence package is valuable mainly because it shows how quickly the witness story collapses toward Ford-style local coverage unless it is phrased as a failure mode.
+- Pivot decision (if any): keep as highest overlap risk; the current evidence package is valuable mainly because it shows how quickly the witness story collapses toward Ford-style local coverage unless it is phrased as a failure mode. The phase-6 hypergraph audit did not clear this boundary: the best leaf-fraction and description-density candidates still overlap matched true controls and do not isolate a mex-coupled rigidity law.
 
 ## 5. Kevin Ford, *The distribution of integers with a divisor in a given interval*
 - Why it is close: this is the nearest divisor-in-an-interval source for frontier coverage language.
