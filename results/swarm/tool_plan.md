@@ -1,134 +1,117 @@
 # Tool Plan
 
-## Routing Decision
+## Active Routing
 
-- Active champion lane: **H1_multisource_cold_start**.
-- Conditional backup lane: **H2_cryo_support_blocks**.
-- Reserve lane: **H3_dynamic_source_impedance** only if H1 is killed early and H2 is blocked on cryogenic model access.
-- Global governance rule: do not re-run broad searches. Only spend targeted literature budget when a blocker or direct-overlap question appears.
-- Global blocker: `results/swarm/hypothesis_bridge.md` and `results/swarm/hypothesis_negative_space.md` are missing. Repair that traceability gap with a narrow claim matrix before heavy execution.
+- Champion: `H1_confidence_gated_abstention`
+- Backup: `H1_restart_scrub_handoff`
+- Parked third: `H1_reverse_port_sentinel`
+- Parked bridge lanes: spread-spectrum admittance probing, cryogenic sequential-evidence support blocks, and high-temperature pilot-tone estimation
+- Governance:
+  - stay inside `H1_multisource_cold_start` until the champion and backup clear or fail their kill gates
+  - do not reopen broad literature search, generic MPPT work, or fresh architecture families
+  - keep one experimental lane active at a time
 
-## Phase Budget
+## Orchestrator
 
-- **Phase A: Champion go/kill gate**
-  - Envelope: `~40 hours` total.
-  - Goal: decide whether H1 survives direct-overlap checking and one first ngspice evidence matrix.
-- **Phase B: Backup activation gate**
-  - Envelope: `~24 hours` total, only if H1 survives but stalls or if H1 is killed after the prior-art gate.
-  - Goal: decide whether H2 has a credible model-backed path.
-- **Phase C: Reserve activation**
-  - Envelope: `~16 hours` total, only if H1 is killed and H2 is blocked on models.
-  - Goal: decide whether H3 still clears the 2025 overlap risk.
-
-## Role Routing
-
-### Orchestrator
-
-- Tools:
-  - repo reads via shell
-  - targeted literature lookup only if a blocker is triggered
-  - no broad search sweeps
+- Tool routing:
+  - shell repo reads
+  - existing manifests, notes, and tables
+  - targeted literature lookup only when a named blocker triggers it
 - Budget envelope:
-  - `4h` in Phase A
-  - `<=6` narrow queries per active lane
+  - `<=2h` synthesis and setup per gate decision
+  - `<=6` targeted queries or papers per active lane
   - `0` experiments
 - Responsibilities:
-  - freeze the active claim, baselines, metrics, and kill rule before execution starts
-  - stop any lane that drifts into generic MPPT, generic cryo references, or other cosmetic novelty
+  - freeze the claim, baselines, metrics, and kill rule before any run
+  - keep the champion active and the other lanes parked unless a formal kill or saturation decision is recorded
+  - resolve the `startup_ok` metric contract before any lane is promoted out of experiment mode
+  - stop any draft that drifts into generic startup, generic PMU, or generic anti-backdrive novelty
 
-### Researcher
+## Researcher
 
-- Tools:
+- Tool routing:
   - `ngspice`
-  - existing helper scripts already in the repo
-  - shell inspection tools
-  - no ILP/LP/theorem-search detours
+  - existing H1 netlists and helper scripts
+  - shell inspection
 - Budget envelope:
-  - H1: `20h`, one topology family, `<=24` startup cases, `2` strong baselines
-  - H2: `12h`, only after the cryogenic model gate passes, one macro-concept, `<=12` widened corners
-  - H3: `10h`, only if promoted from reserve, one interface concept, `<=18` cases
+  - champion: `<=12h`, `<=16` near-tie cases, `<=1` added confidence mechanism, `3` compared designs
+  - backup: `<=10h`, `<=12` repeated-collapse cases, `<=1` restart-scrub controller, `3` compared designs, only if activated
+  - parked third: `<=8h`, `<=12` parasitic cases, `<=1` sentinel variant, `3` compared designs, only if activated
 - Responsibilities:
-  - H1: test startup correctness, handoff, anti-backdrive loss, and control energy under heterogeneous weak-source stress
-  - H2: test monotonicity, power, and calibration stability under widened cryogenic uncertainty
-  - H3: test net delivered energy and sensor uptime after probe overhead, not raw peak efficiency
+  - reuse the existing packet-gated scaffold instead of starting a fresh PMU architecture
+  - maintain equal pre-handoff accounting across all compared designs
+  - stop when the pre-registered kill rule trips instead of widening the matrix
 
-### Falsifier
+## Falsifier
 
-- Tools:
-  - targeted prior-art checks
-  - adversarial benchmark review
-  - repo note review
+- Tool routing:
+  - adversarial repo review
+  - targeted overlap lookup
+  - benchmark and verification note review
 - Budget envelope:
-  - `8h` for H1
-  - `4h` for H2 or H3 if activated
-  - `<=8` papers per active lane
+  - champion: `<=4h`, `<=6` targeted papers or review sections
+  - backup: `<=3h`, `<=6` targeted papers or review sections, only if activated
+  - parked third: `<=3h`, `<=6` targeted papers or review sections, only if activated
 - Responsibilities:
-  - find the direct-overlap paper that would kill the claim fastest
-  - reject weak baselines, hidden-state leakage, and uncounted overhead
-  - block any result that wins only against fixed, open-loop, or one-feature baselines
+  - for the champion, try to show that `source_blind` already saturates the near-tie regime or that an abstention-like control is already covered
+  - for the backup, try to collapse the lane to known restart-safe intermittent-power supervisors
+  - for the parked third, try to show that a plain back-to-back switch or existing reverse-current-blocking literature already closes the gap
 
-### Writer
+## Writer
 
-- Tools:
+- Tool routing:
   - markdown only
-  - existing notes and approved result tables
+  - approved result tables and claim matrices
 - Budget envelope:
-  - `4h` after a lane clears its go/kill gate
-  - no expansion of scope
+  - `<=3h` after a lane clears its go/kill gate
 - Responsibilities:
-  - write only the champion or activated backup story
-  - keep the narrative tied to the actual failure mode, evidence matrix, and kill-rule outcome
+  - write only the surviving narrow claim
+  - include the kill-rule outcome and why the rejected storylines failed
+  - avoid unsupported words such as `first`, `best`, or `novel`
 
-### Reviewer
+## Reviewer
 
-- Tools:
+- Tool routing:
   - shell diff inspection
-  - result-table sanity checks
+  - evidence-note cross-check
 - Budget envelope:
-  - `4h` per drafted lane
+  - `<=3h` per drafted lane
 - Responsibilities:
-  - review for claim inflation, missing controls, and contradictions between summary and evidence
-  - send the work back if the contribution statement drifts broader than the validated result
+  - reject claim inflation or contradictions between summary and evidence
+  - block any writeup that confuses store-voltage proxies with explicit handoff or restart events
+  - send back any lane that lacks the required strong baseline
 
-### Citation Auditor
+## Citation Auditor
 
-- Tools:
-  - source-to-claim cross-check
-  - bibliography completeness checks
+- Tool routing:
+  - claim-to-source cross-check
+  - bibliography and claim-matrix review
 - Budget envelope:
-  - `3h` per active lane
-  - `<=12` audited claims per lane
+  - `<=2h` per active lane
+  - `<=10` audited claims per lane
 - Responsibilities:
-  - verify that every novelty, overlap, and benchmark statement maps to an actual source
-  - block unsupported wording such as "first", "novel", or "under-served" unless the source matrix justifies it
+  - verify every novelty, overlap, and benchmark sentence against an actual source or repo artifact
+  - block paper-level novelty wording on the backup or parked third until the targeted overlap blockers are closed
 
-### Benchmark Auditor
+## Benchmark Auditor
 
-- Tools:
+- Tool routing:
   - benchmark checklist review
-  - metrics and baseline audit
+  - manifest, hook, and baseline audit
 - Budget envelope:
-  - `6h` for H1
-  - `4h` for H2 or H3 if activated
+  - champion: `<=4h`
+  - backup: `<=3h`, only if activated
+  - parked third: `<=3h`, only if activated
 - Responsibilities:
-  - approve the baseline set before large sweeps start
-  - ensure H1 is compared against strong startup/arbitration baselines with equal overhead accounting
-  - ensure H2 is tested across widened cryogenic uncertainty rather than nominal corners only
-  - ensure H3 includes probing overhead and avoids fixed-Thevenin-only source families
+  - for the champion, require `source_blind`, `time_constant_ranked`, and one confidence-gated variant under equal `e_ctrl` accounting
+  - for the backup, require a fixed hysteretic scrub baseline plus explicit second-rise and re-arm metrics
+  - for the parked third, require a plain back-to-back switch baseline plus a bounded nonideal parasitic envelope
+  - stop any lane that relies only on store-threshold proxies when the written claim depends on explicit handoff or restart events
+  - block any packet-gating mechanism claim that does not either execute a same-scaffold no-packet control or stay explicitly bounded away from that causal claim
 
-## Lane-Specific Kill Rules
+## Exit Rules
 
-- **H1_multisource_cold_start**
-  - Kill if helper-free multi-source cold start with source-aware arbitration is already substantially covered by prior art.
-  - Kill if arbitration or anti-backdrive overhead erases the startup-correctness gain.
-- **H2_cryo_support_blocks**
-  - Kill if no credible cryogenic model path exists.
-  - Kill if the concept fails under widened low-frequency-noise, mismatch, and threshold-shift assumptions.
-- **H3_dynamic_source_impedance**
-  - Kill if the 2025 variable-impedance overlap collapses the novelty margin.
-  - Kill if a simple hysteretic baseline matches the result once probe overhead is counted.
-
-## Exit Rule
-
-- Do not advance a lane beyond its first gate unless the falsifier, benchmark auditor, and citation auditor all clear it.
-- If no lane clears the gate, stop and report the blocker rather than broadening the search.
+- If the champion does not beat `source_blind` on the pre-registered near-tie matrix, kill it and activate the backup.
+- If the champion saturates the matrix but still cannot support a differentiated claim, activate the backup instead of widening the search.
+- Activate the parked third only if both earlier lanes fail and the benchmark auditor confirms that the anti-backdrive question is still open under realistic parasitics.
+- If a targeted overlap screen closes the gap for any lane, stop and record the blocker instead of broadening the search.

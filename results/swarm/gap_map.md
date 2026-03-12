@@ -1,99 +1,155 @@
 # Gap Map
 
+Date: 2026-03-12
+Scope: negative-space mining around the active H1 lane, not a fresh broad EE idea hunt
+
 ## Selection Filter
 
-- The required repo artifacts were read first and were mostly bootstrap noise, not a usable EE frontier.
-- Broad Semantic Scholar re-querying was intentionally avoided after the seed watchlist proved off-target.
-- The final shortlist only keeps gaps that satisfy all three tests:
-  - a concrete circuit-level failure mode exists
-  - the operating regime is important but still under-served
-  - a plausible ngspice-first falsification path exists
+- Read first:
+  - `results/research_context.md`
+  - `results/literature/prior_art_watchlist.md`
+  - `results/literature/prior_art_gap.md`
+  - `results/literature/gap_frontier.md`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/claim_matrix.md`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item018_benchmark_note.md`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item019_falsifier_note.md`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item021_decision_memo.md`
+- Routing rule:
+  - stay inside `H1_multisource_cold_start`
+  - do not reactivate the old broad cryo/rad-hard/high-temperature branches here
+- Budget rule:
+  - prefer executed artifacts, manifests, netlists, and local literature notes over new search
+  - only keep gaps that are both technically sharp and still plausibly under-served after the repo's overlap screen
 
 ## Explicitly Deprioritized
 
-- Generic analog-AI, memristor, or CIM work without a sharply defined nonideality.
-- Generic GaN switching-loss or EMI tuning without an unusual operating regime.
-- Generic wearable-sensor demos that mainly change packaging or form factor.
-- Steady-state MPPT papers that never stress startup, source collapse, or intermittency.
+- Any claim framed as:
+  - `lower startup voltage`
+  - `better generic multi-source PMU`
+  - `better steady-state extraction efficiency`
+  - `first helper-free multi-source cold start`
+- Generic source-aware ranking as a headline mechanism:
+  - the executed lane already killed that story
+- Unrelated frontier pivots:
+  - cryogenic support blocks
+  - radiation-tolerant bias loops
+  - harsh-environment sensor interfaces
 
 ## Ranked Gaps
 
-### 1. Source-Adaptive Cold Start For Weak Multi-Source Harvesters Under Ultra-Slow Ramps
+### 1. Confidence-Aware Arbitration When The Sources Are Not Separably Rankable
 
-- **Why this looks genuinely under-served:** Cold start is still hard even for one weak source. The problem gets materially worse when multiple harvesters with different source impedances, polarities, and ramp rates share the same startup path, but much of the literature still evaluates one benign source at a time.
-- **Concrete failure mode:** The startup path chatters around UVLO, one source back-drives another, or the oscillator/control loop burns the entire startup budget before enough charge accumulates to hand over to the main converter.
-- **Evidence anchors:**
-  - *A fully integrated 28nm CMOS dual source adaptive thermoelectric and RF energy harvesting circuit with 110mV startup voltage* (2018) is the closest direct threat to any generic "adaptive dual-source startup" claim.
-  - *A Bipolar-Input Thermoelectric Energy-Harvesting Interface With Boost/Flyback Hybrid Converter and On-Chip Cold Starter* (2019) and *A High-Efficiency Dual-Polarity Thermoelectric Energy-Harvesting Interface Circuit With Cold Startup and Fast-Searching ZCD* (2022) narrow any polarity-handling novelty moat.
-  - *Multi-Source Energy Harvesting Systems Integrated in Silicon: A Comprehensive Review* (2025), together with *Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting* (2023), *Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements* (2024), and *A self-powered multi-input OSECE interface circuit for multiple piezoelectric transducers* (2024), capture the crowded modern multi-input interface family.
-- **Why it beats crowded decoys:** This is a hard power-interface problem, not another steady-state harvester-efficiency paper.
-- **Plausible circuit thesis:** An asynchronous startup front end that first infers source impedance and polarity, then chooses a kick-start mode and only enables arbitration/anti-backflow devices after a minimum energy packet is available.
-- **Fast falsifier:** If a tighter prior-art pass finds a fully integrated result that already cold-starts across mixed 20-300 mV sources with source-aware arbitration and no external helper supply, this gap should be downgraded.
-- **Executed outcome (2026-03-12):**
-  - The broad gap did not survive as an architecture-superiority claim.
-  - The repository now supports a narrower, more interesting result: packetized pre-handoff isolation helps, but explicit source ranking is not causal in the executed model because the blind packet-gate ablation matches the primary 24-case startup matrix and improves the expanded falsifier suite from `8/10` to `10/10`.
-  - The lower-overhead time-constant ranker preserves most of the benefit (`9/10` falsifier successes) while cutting median successful-case pre-handoff control energy from `2.37717e-13 J` to `1.11852e-13 J`.
+- Why this is the most interesting remaining gap:
+  - the executed result shows that packet-gated isolation survives, but explicit RC ranking is not causal
+  - `source_blind` matches the 24-case startup matrix and beats the RC-ranked champion on the falsifier suite (`10/10` vs `8/10`)
+- Why it still looks under-served:
+  - nearby work crowds generic startup and generic multi-input interfaces, but the repo record does not surface a strong comparator for pre-handoff confidence detection
+  - the open problem is now narrower and less fashionable: how to decide when *not* to trust analog source ranking
+- Concrete failure mode:
+  - under weak or near-tied sources, the selector commits to a noisy winner, spends control energy, and gives up the robustness that the blind packet gate gets by refusing to over-infer
+- Plausible circuit thesis:
+  - add a separability detector based on `|env_a - env_b|`, dual-window slope spread, or packet-to-packet consistency
+  - fall back to blind packet isolation until the evidence margin clears a threshold
+- Fast falsifier:
+  - if the confidence-gated version never beats `source_blind` on near-tie cases under equal `e_ctrl`, kill it
+- Evidence in repo:
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item021_decision_memo.md`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/ablation_summary.json`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/packet_scout_blocks.inc`
 
-### 2. Dynamic-Source-Impedance-Aware Harvest Interfaces For Self-Powered Sensors
+### 2. Restart-Safe Handoff Under Repeated Collapse, Recovery, And Partial-Store Memory
 
-- **Why this looks genuinely under-served:** Real harvesters are often not fixed Thevenin sources. Triboelectric, piezoelectric, electrochemical, and self-powered sensing sources can change their internal impedance with motion, contact state, bias history, or the measurand itself. Many control laws still assume the source model is stationary enough for fixed-threshold MPPT or one-time tuning.
-- **Concrete failure mode:** The interface tunes itself to the wrong load line, collapses the source during acquisition, or mistakes source dynamics for usable energy and wastes charge on reconfiguration.
-- **Evidence anchors:**
-  - *A Variable Impedance and Voltage Converter for Efficiently Harvesting Energy from Time-Varying Power Sources with Varying Internal Resistance* (2025) directly targets the fact that internal resistance can move enough to break conventional fixed-interface assumptions.
-  - *Mismatch Between Dynamic Input Impedance and Load Impedance Causes Poor Real-Time Power Supply from Triboelectric Nanogenerator* (2025) shows that dynamic impedance mismatch can materially degrade delivered power.
-  - *Effect of Energy Management Circuitry on Optimum Source Configuration in Vibration Energy Harvesting Systems* (2022) shows that the interface itself shifts the source optimum, which means source and converter cannot be treated as separable.
-- **Why it beats crowded decoys:** The missing piece is not “better MPPT” in the abstract; it is source-model uncertainty coupled back into the circuit.
-- **Plausible circuit thesis:** A source-probing interface that periodically estimates incremental source resistance or charge-delivery slope using charge-domain probes, then retunes the rectifier/converter loading without a digital supervisor.
-- **Fast falsifier:** If the adaptive scheme cannot beat a simple hysteretic controller once realistic probing overhead is included, this direction should be killed.
+- Why this looks under-served:
+  - most of the executed contract still centers on first successful handoff
+  - real batteryless nodes do not live in a single cold-start event; they brown out, reappear, and try again from a partially charged store
+- Concrete failure mode:
+  - a design reaches the first handoff threshold once, then source collapse or recovery windows drive a fall event, leave stale selector state behind, and turn the next startup into a warm-restart trap rather than a clean retry
+- Why the current repo does not close it:
+  - the measurement hook latches the first handoff event for pre-handoff energy accounting
+  - the falsifier summary records fall/rise2 events, but the current writeable conclusion still does not deeply characterize restart correctness after the first release
+- Plausible circuit thesis:
+  - a restart-safe scout and handoff controller that explicitly scrubs stale winner state, quarantines a collapsing source, and only re-enables ranking once the store and source ports both recover
+- Fast falsifier:
+  - if repeated-collapse cases are handled just as well by a simple fixed hysteretic path once equal control-energy accounting is restored, kill it
+- Evidence in repo:
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/measurement_hooks.inc`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_summary.json`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/falsifier_cases.json`
 
-### 3. Cryogenic Low-Frequency-Noise-Resilient Bias, Reference, Comparator, And ADC Support Blocks Below 10 K
+### 3. Device-Faithful Anti-Backdrive Under Real Leakage, Body Paths, And Nonideal Routing
 
-- **Why this looks genuinely under-served:** Cryogenic CMOS is now visible because of quantum-control systems, but the literature still skews toward RF, oscillators, and system narratives. The boring precision primitives that make a stack deployable at 4 K to sub-10 K are much thinner, especially under low-power constraints.
-- **Concrete failure mode:** Threshold-voltage shift, kink effects, altered mismatch, and defect-dominated low-frequency noise break room-temperature bias assumptions, so a reference or comparator that looks fine in nominal cryo corners either loses monotonicity, burns too much power, or becomes uncalibratable.
-- **Evidence anchors:**
-  - *A Review of Cryogenic CMOS Electronics for Quantum Computing* (2022) explicitly calls out analog signal processing and data conversion as less explored than RF front ends and oscillators.
-  - *Toward Cryogenic CMOS Electronics for Quantum Computing: An Updated Review of Cryogenic CMOS Technology for Quantum Computing* (2024) emphasizes that device behavior changes strongly below 10 K and that compact-model coverage remains limited.
-  - *Analysis of Low-Frequency Noise in 40-nm CMOS at Cryogenic Temperatures* (2023) reports cryogenic noise behavior that is not a trivial room-temperature extrapolation.
-  - *Design of 1 V sub-1 µW 5 ppm/C Voltage References in a 65nm Cryogenic CMOS PDK* (2024) is evidence that useful references are only starting to become practical and still occupy a narrow design space.
-- **Why it beats crowded decoys:** This is less fashionable than “cryo-CMOS for quantum computing” as a slogan, but it is closer to a real circuit moat.
-- **Plausible circuit thesis:** A PTAT-light charge-domain reference/comparator path that avoids classical bandgap assumptions, uses capacitor ratios plus sparse trimming, and explicitly targets graceful degradation under cryogenic model uncertainty.
-- **Fast falsifier:** If the concept only works under unrealistically gentle cryogenic corners and collapses when low-frequency noise and mismatch are widened, it is not a serious gap.
+- Why this looks under-served:
+  - anti-backdrive remains part of the surviving claim boundary, but the current executed models are still too clean to settle it
+  - the primary matrix reports zero back-drive for every design in every case, which is useful as a warning, not as closure
+- Concrete failure mode:
+  - a seemingly isolated branch still leaks through body paths, finite off-isolation, charge injection, or route asymmetry and quietly re-energizes the wrong source during startup
+- Why the current repo does not close it:
+  - `source_pair_models.inc` uses ideal behavioral sources plus resistors
+  - `startup_cells.inc` uses idealized switch models and near-infinite leakage unless the falsifier manually forces `RLEAK_ROUTE`
+  - the leak-path falsifier only probes a coarse stress point, not a device-faithful parasitic envelope
+- Plausible circuit thesis:
+  - source-referenced active clamps or back-to-back gated isolation devices with an explicit low-energy reverse-port detector
+- Fast falsifier:
+  - if the apparent win disappears once realistic parasitics and equal overhead accounting are introduced, or if a simpler back-to-back switch does the same job, kill it
+- Evidence in repo:
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/source_pair_models.inc`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/startup_cells.inc`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item018_benchmark_note.md`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/falsifier_cases.json`
 
-### 4. Restart-Safe Radiation-Tolerant Low-Power Regulators And Bias Loops For Cold-Redundant Or Intermittent Space Hardware
+### 4. Truly Asynchronous Heterogeneity: Independent Ramp Rates, Unequal VOC, And Late Source Arrival
 
-- **Why this looks genuinely under-served:** Radiation-hard literature is deep in digital logic and robust power conversion at a high level, but low-power analog restart behavior under both total ionizing dose and single-event disturbance is still patchier, especially for cold-redundant or intermittently awakened hardware.
-- **Concrete failure mode:** Dose-induced degradation in the auxiliary supply or startup chain shrinks margin until the converter or LDO fails to restart, while a single-event transient on a lightly biased internal node creates a long dropout or a stuck bias state.
-- **Evidence anchors:**
-  - *Radiation-Induced Degradation on the Cold-Redundant DC/DC Converter for Space Application* (2025) reports startup-margin loss because the auxiliary supply degrades under total ionizing dose.
-  - *SET-Hardened LDO for Single Event Mitigation* (2021) notes that single-event transients in on-chip LDOs are less studied than digital SEU effects and proposes explicit hardening.
-  - *Single-Event Transient Effects in On-Chip Low-Dropout Voltage Regulators Designed for Space Applications* (2020) shows that regulator internal nodes can be a real analog weak point under radiation.
-- **Why it beats crowded decoys:** The novelty is not generic rad-hard design. The narrow gap is self-recovery and restart correctness in low-power analog power loops.
-- **Plausible circuit thesis:** A dual-path startup and bias network with transient-aware clamps, state scrubbing, and a self-checking restart sequencer that guarantees recovery after TID-shifted bias points or SET hits.
-- **Fast falsifier:** If the proposed hardening only improves transient rejection in one nominal operating point but still fails after realistic dose-shifted startup margins, drop it.
+- Why this looks under-served:
+  - the live lane is about heterogeneous weak sources, but most of the executed matrix still gives both sources the same ramp law and the same nominal `VOC`
+  - only two falsifier cases introduce unequal `VOC`, and the shared source model has one global `RAMP_MVPS`
+- Concrete failure mode:
+  - a weak early source wins the scout phase, then a stronger late-arriving source appears after partial charging and destabilizes the startup path
+  - or a late opposite-polarity source lands after state has already been committed and forces a reclassification penalty
+- Why it matters:
+  - this is closer to how ambient harvesters actually coexist than a perfectly synchronous two-source ramp
+  - it is also a setting where blind packet isolation may stop being enough
+- Plausible circuit thesis:
+  - per-source event windows, stale-winner timeouts, and a late-arrival quarantine gate before handoff is released
+- Fast falsifier:
+  - if simply increasing `C_STORE` or delaying handoff matches the benefit without any smarter logic, kill it
+- Evidence in repo:
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/experiment_spec.md`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/source_pair_models.inc`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/falsifier_cases.json`
 
-### 5. Greater-Than-225 C Sensor Interfaces With In-Situ Co-Drift And Parasitic Compensation
+### 5. Helper-Free Startup Beyond The Two-Source Linear-Thevenin Abstraction
 
-- **Why this looks genuinely under-served:** High-temperature sensing is real, but much of the literature still emphasizes sensors, packaging, or discrete signal conditioning. Integrated readout that jointly compensates sensor drift, circuit drift, leakage, and package/lead parasitics across repeated thermal cycles is much thinner.
-- **Concrete failure mode:** The sensor element remains functional, but the readout chain loses accuracy because leakage rises, offsets drift, contacts age, and long interconnects or package parasitics swamp the signal.
-- **Evidence anchors:**
-  - *Electronic Sensors and Circuits for High-Temperature Dynamic Pressure Monitoring: A Review* argues that high-temperature electronics remain a system bottleneck rather than a solved support problem.
-  - *High-Temperature Stable Silicon-on-Insulator Precision Low-Power Analog Front-End Amplifier for SiC MEMS Accelerometer* demonstrates that even useful front ends in this area are specialized and sparse.
-  - *Compensation Techniques for Improving Accuracy in Sensor Circuits Over Wide Temperature Range* (2025) confirms that active compensation is still a live problem, not a closed chapter.
-  - *Silicon Carbide MEMS Sensors for Harsh Radiation Extreme Environments* (2024) adds that contacts, leakage, isolation, and packaging stability remain practical blockers in harsh settings.
-- **Why it beats crowded decoys:** This is not “another harsh-environment sensor.” The gap is the co-designed interface circuit that keeps the sensor useful after the environment attacks everything around it.
-- **Plausible circuit thesis:** A leakage-balanced chopper or incremental sigma-delta readout with on-line parasitic identification and periodic thermal-cycle recalibration, built to survive above 225 C without relying on remote room-temperature conditioning.
-- **Fast falsifier:** If a larger reservoir, remote conditioner, or periodic factory recalibration solves the same problem with less complexity, this direction loses force.
+- Why this still matters:
+  - the current result is structurally tied to a floating two-source Thevenin model
+  - that is useful for isolating mechanism, but it is not yet the same problem as real mixed-source harvesting where the source law can be charge-limited, AC-originated, history-dependent, or dynamically impedance-shifting
+- Why it is under-served but risky:
+  - the repo's own reserve lane `H3_dynamic_source_impedance` exists because this frontier is more novel than generic MPPT, but it also has overlap risk if phrased too broadly
+  - the defensible niche is helper-free *pre-arbitration startup correctness* across source families, not another dynamic-impedance harvester paper
+- Concrete failure mode:
+  - a scout signal that works on a linear Thevenin source misreads a triboelectric, piezoelectric, or bursty RF-like source and spends more energy probing than the source can safely deliver
+- Plausible circuit thesis:
+  - a charge-domain scout that estimates `dQ/dV` or packet yield instead of assuming a fixed resistive source law
+  - or a source-family front end that normalizes unlike inputs before they reach the shared startup gate
+- Fast falsifier:
+  - if a simple blind packet gate or hysteretic baseline matches the result once probing overhead is counted, kill it
+- Evidence in repo:
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/source_pair_models.inc`
+  - `results/swarm/tool_plan.md`
+  - `results/literature/prior_art_gap.md`
 
-## Priority For Follow-On Work
+## Priority Order
 
-1. **Gap 1** if the near-term goal is a publishable ngspice-first PMIC concept with a clean falsification path.
-2. **Gap 3** if access to cryogenic models or collaborators exists and the goal is a higher-moat analog block.
-3. **Gap 2** if the program wants a more novel harvester problem than plain MPPT.
-4. **Gap 4** if the target program has a space-electronics angle and can support radiation validation later.
-5. **Gap 5** if the team can tolerate a longer device-and-packaging tail.
+1. Gap 1 if the goal is a new circuit idea that grows directly out of the executed negative result.
+2. Gap 2 if the goal is a stronger reliability paper with a clean falsifier path.
+3. Gap 3 if the team wants the most defensible measurement-and-modeling moat.
+4. Gap 4 if the next experiments should make the source model more realistic without leaving H1.
+5. Gap 5 only if the program is ready to widen the source family and absorb the added overlap risk.
 
 ## Best Immediate Bet
 
-- **Most simulation-ready:** Gap 1.
-- **Most likely under-served but still important:** Gap 3.
-- **Most surprising without drifting into hype:** Gap 2.
+- Most specific and non-obvious:
+  - Gap 1
+- Most important if the eventual target is a real batteryless node:
+  - Gap 2
+- Most likely to overturn the current optimistic simulator boundary:
+  - Gap 3

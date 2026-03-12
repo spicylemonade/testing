@@ -2,31 +2,54 @@
 
 ## Champion
 
-- **H1_multisource_cold_start**: Source-Adaptive Cold Start for Weak Multi-Source Harvesters Under Ultra-Slow Ramps.
+- `H1_confidence_gated_abstention` is the champion direction.
 
-This is the best novelty-to-falsifiability trade in the current material. It is not directly entangled with the falsifier memo's near-dead branches, it targets a concrete circuit failure mode that matters in practice, and `gap_map.md` already flags it as the most simulation-ready ngspice-first route. The claim is narrow enough to verify cleanly: startup correctness under heterogeneous weak sources before normal arbitration is alive.
+This is the best novelty-to-falsifiability trade in the scout set. The repo already killed the broad "better ranker" story and preserved `source_blind` as the strongest same-family baseline. That creates a sharper question: when should the startup front end refuse to rank at all? The lane stays inside the active H1 scaffold, avoids the crowded claims that the falsifier memo already rejects, and has the cleanest go/kill test.
+
+- Why it wins:
+  - highest novelty per added circuit complexity
+  - fastest falsifier: it dies as soon as `source_blind` matches it on the near-tie matrix
+  - clearest verification: one small matrix on the existing packet-gated scaffold can answer the question
 
 ## Backup
 
-- **H2_cryo_support_blocks**: Cryogenic low-frequency-noise-resilient bias/reference/comparator support blocks below 10 K.
+- `H1_restart_scrub_handoff` is the backup.
 
-This is the backup because its raw novelty moat is stronger than H3, but its first verification gate is worse. If validated cryogenic models or a collaborator path already exist, this lane becomes much more attractive. Without that model gate, it is too easy to write a plausible brief and too hard to generate an early, credible go/kill result.
+This is more important for real batteryless nodes than the parked third lane and still has a disciplined kill path, but its novelty margin is less secure because the scout set does not yet resolve restart-safe intermittent-power overlap. Keep it inactive unless the champion saturates or dies early.
 
-## Reserve
+- Why it is second:
+  - practical importance is high
+  - the metrics are clean: `rise2_ok`, restart latency, and restart-control energy
+  - overlap is still an unresolved blocker, so it should not outrank the champion
 
-- **H3_dynamic_source_impedance** remains the reserve lane.
+## Parked Third
 
-It has a fast falsifier and good ngspice fit, but the 2025 variable-impedance overlap narrows the headline novelty margin enough that it should not outrank H2 unless cryogenic model access is absent and H1 dies early.
+- `H1_reverse_port_sentinel` stays parked.
 
-## Why The Other Branches Lost
+It is useful as a realism and benchmarking moat, but it is not the lead research claim unless device-faithful parasitics actually open a gap that plain back-to-back isolation cannot close. Until then it reads more like a modeling correction than a new circuit thesis.
 
-- Do not reopen oscillator-based interleaving as a lead claim; `prior_art_gap.md` already records that pivot away.
-- Do not use the falsifier memo's metaphor-heavy branches as backups. Reaction-diffusion gate meshes, converter-ringing reservoir framing, exceptional-point gate probes, ferroionic observers, electrocaloric tile drivers, and phased strain-wave meshes all carry higher rehash or accounting risk than the shortlisted directions.
+## Out Of Scope For This Budget
 
-## Blocker And Handoff
+- Do not activate the bridge-memo lanes in this pass:
+  - spread-spectrum admittance probing
+  - cryogenic sequential-evidence support blocks
+  - high-temperature pilot-tone channel estimation
 
-- `results/swarm/hypothesis_bridge.md` and `results/swarm/hypothesis_negative_space.md` are missing, so the scout chain is not fully auditable. The surviving selection therefore relies on `gap_map.md`, `falsifier.md`, and the prior-art notes that are present.
+They may still matter later, but they would force fresh literature or model gates before the H1 negative-space shortlist is resolved.
+
+## Blockers And Handoff
+
+- The scout set is sufficient to choose a champion and a backup, but not to claim paper-level novelty on the parked lanes without a tighter overlap screen.
+- Benchmark blocker 1:
+  - `startup_ok` still drifts between the written contract and the current measurement hooks, so any next-slice success metric must be reconciled with explicit handoff events before promotion
+- Benchmark blocker 2:
+  - there is still no executed same-scaffold no-packet control, so any packet-gating mechanism claim has to stay bounded and cannot be promoted as a settled causal story
+- Unresolved blocker 3:
+  - the restart-safe lane still lacks an exact prior-art claim matrix for intermittent-power supervisors and brownout recovery
+- Unresolved blocker 4:
+  - the reverse-port lane depends on device-faithful parasitic modeling that the current decks do not yet provide
+
 - Exact next experiment for the researcher on the champion:
-  - Run one go/kill ngspice cold-start matrix covering source voltages `20/50/100/300 mV`, ramp rates `0.1/1/10/100 mV/s`, impedance ratios `1:1/1:5/1:20`, and mixed-polarity cases; report startup success, time-to-handoff, back-drive loss, and startup-control energy against two strong baselines.
-- Exact next experiment for the researcher on the backup:
-  - Only if validated cryogenic models exist, run one widened-corner sweep on a charge-domain reference/comparator macro-concept from `300 K` down to `4 K` with widened threshold-shift, mismatch, and low-frequency-noise assumptions; kill the lane if monotonicity or power budget collapses.
+  - run one near-tie matrix on the existing packet-gated scaffold with `source_blind`, `time_constant_ranked`, and one confidence-gated fallback variant; sweep small `VOC` offsets, `1:1` to `1:3` impedance spread, and unequal or late-arrival ramps; report `startup_ok`, `t_handoff`, `e_ctrl`, and abstain-to-commit transitions under equal accounting
+- Exact next experiment for the researcher on the backup, only if the champion is killed or saturates:
+  - extend the falsifier deck beyond first handoff, force repeated collapse and recovery with partial-store memory, and compare one restart-scrub controller against `source_blind` and a fixed hysteretic scrub baseline on `startup_ok`, `fall_count`, `rise2_ok`, restart latency, and restart-control energy
