@@ -22,7 +22,7 @@ RUNLOG_PATH = LANE_ROOT / "results" / "manifests" / "deepen_near_tie_runlog.json
 RAW_ROOT = LANE_ROOT / "results" / "raw" / "deepen"
 TABLE_PATH = LANE_ROOT / "tables" / "deepen_results.csv"
 SUMMARY_PATH = LANE_ROOT / "tables" / "deepen_summary.json"
-FIGURE_PATH = REPO_ROOT / "figures" / "h1_deepen_confidence_tradeoff.svg"
+FIGURE_STEM = REPO_ROOT / "figures" / "h1_deepen_confidence_tradeoff"
 DESIGN_ORDER = ["confidence_gated", "source_blind", "time_constant_ranked", "blind_packet_merge"]
 PALETTE = {
     "confidence_gated": "#1d6b57",
@@ -30,6 +30,14 @@ PALETTE = {
     "time_constant_ranked": "#b35c1e",
     "blind_packet_merge": "#9c2f2f",
 }
+
+
+def save_figure(fig: plt.Figure) -> None:
+    FIGURE_STEM.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIGURE_STEM.with_suffix(".png"), dpi=600, bbox_inches="tight")
+    fig.savefig(FIGURE_STEM.with_suffix(".pdf"), bbox_inches="tight")
+    fig.savefig(FIGURE_STEM.with_suffix(".svg"), bbox_inches="tight")
+    plt.close(fig)
 
 
 def utc_now() -> str:
@@ -244,7 +252,7 @@ def summarize(rows: list[dict]) -> dict:
         "manifest_path": str(MANIFEST_PATH.relative_to(REPO_ROOT)),
         "table_path": str(TABLE_PATH.relative_to(REPO_ROOT)),
         "runlog_path": str(RUNLOG_PATH.relative_to(REPO_ROOT)),
-        "figure_path": str(FIGURE_PATH.relative_to(REPO_ROOT)),
+        "figure_path": str(FIGURE_STEM.with_suffix(".pdf").relative_to(REPO_ROOT)),
         "families": families,
         "pairwise": pairwise,
         "controls": controls,
@@ -271,6 +279,9 @@ def plot(rows: list[dict], summary: dict) -> None:
             "axes.titlesize": 11,
             "axes.labelsize": 10,
             "figure.dpi": 160,
+            "axes.facecolor": "#fbfaf7",
+            "figure.facecolor": "#fbfaf7",
+            "savefig.facecolor": "#fbfaf7",
         }
     )
     fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.8))
@@ -339,9 +350,7 @@ def plot(rows: list[dict], summary: dict) -> None:
     axes[1].set_xlim(left=-0.05)
 
     fig.tight_layout()
-    FIGURE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(FIGURE_PATH, bbox_inches="tight")
-    plt.close(fig)
+    save_figure(fig)
 
 
 def main() -> int:
@@ -363,7 +372,7 @@ def main() -> int:
                 "case_count": len(cases),
                 "table_path": str(TABLE_PATH.relative_to(REPO_ROOT)),
                 "summary_path": str(SUMMARY_PATH.relative_to(REPO_ROOT)),
-                "figure_path": str(FIGURE_PATH.relative_to(REPO_ROOT)),
+                "figure_path": str(FIGURE_STEM.with_suffix(".pdf").relative_to(REPO_ROOT)),
                 "survives_vs_source_blind_gate": summary["decision"]["survives_vs_source_blind_gate"],
             },
             indent=2,

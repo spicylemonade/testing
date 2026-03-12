@@ -3,11 +3,15 @@
 \usepackage[margin=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
 \usepackage{graphicx}
+\graphicspath{{figures/}}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{longtable}
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage{siunitx}
 \usepackage{enumitem}
 \usepackage{subcaption}
@@ -15,7 +19,8 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc,fit,shapes.geometric,backgrounds}
 \usepackage[numbers,sort&compress]{natbib}
-\usepackage[colorlinks=true,linkcolor=teal!50!black,citecolor=red!50!black,urlcolor=blue!60!black]{hyperref}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=teal!50!black,citecolor=red!55!black,urlcolor=blue!55!black]{hyperref}
 
 \definecolor{ink}{HTML}{1F2933}
 \definecolor{tealaccent}{HTML}{0B7285}
@@ -25,30 +30,40 @@
 
 \setlength{\parskip}{4pt}
 \setlength{\parindent}{0pt}
-\setlist[itemize]{leftmargin=1.3em}
+\setlist[itemize]{leftmargin=1.25em}
 \setlist[enumerate]{leftmargin=1.5em}
-\sisetup{detect-all,exponent-product=\times,group-minimum-digits=4}
+\emergencystretch=1em
+\sisetup{detect-all,group-minimum-digits=4,exponent-product=\times}
 
 \newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
 \newtheorem{proposition}{Proposition}
 \newtheorem{corollary}{Corollary}
-\newtheorem{lemma}{Lemma}
 \newtheorem{definition}{Definition}
 
-\newcommand{\Ectrl}{E_{\mathrm{ctrl}}}
-\newcommand{\Eback}{E_{\mathrm{back}}}
-\newcommand{\thandoff}{t_{\mathrm{handoff}}}
-\newcommand{\vstore}{v_{\mathrm{store}}}
-\newcommand{\vdead}{V_{\mathrm{dead}}}
-\newcommand{\Gp}{G_{\mathrm{pump}}}
-\newcommand{\etap}{\eta_{\mathrm{pump}}}
-\newcommand{\RCRanked}{\textsc{RC-Ranked}}
-\newcommand{\TCRanked}{\textsc{TC-Ranked}}
+\newcommand{\Confidence}{\textsc{Confidence-Gated}}
 \newcommand{\Blind}{\textsc{Blind Packet}}
+\newcommand{\Merge}{\textsc{Blind Merge}}
+\newcommand{\TCRanked}{\textsc{TC-Ranked}}
+\newcommand{\RCRanked}{\textsc{RC-Ranked}}
 \newcommand{\Fixed}{\textsc{Fixed}}
 \newcommand{\Nonaware}{\textsc{Nonaware}}
 
-\title{Archivara Agent: Minimal Packet Gating Falsifies Pre-Handoff Source Ranking in Weak Multi-Source Cold Start}
+\newcommand{\thandoff}{t_{\mathrm{handoff}}}
+\newcommand{\tcommit}{t_{\mathrm{commit}}}
+\newcommand{\Ectrl}{E_{\mathrm{ctrl}}}
+\newcommand{\Eback}{E_{\mathrm{back}}}
+\newcommand{\vstore}{v_{\mathrm{store}}}
+\newcommand{\vdead}{V_{\mathrm{dead}}}
+\newcommand{\vhand}{V_{\mathrm{handoff}}}
+\newcommand{\vhandfall}{V_{\mathrm{handoff,fall}}}
+\newcommand{\taus}{\tau_{\mathrm{s}}}
+\newcommand{\tauc}{\tau_{\mathrm{c}}}
+\newcommand{\Gscout}{G_{\mathrm{scout}}}
+\newcommand{\Gconf}{G_{\mathrm{conf}}}
+\newcommand{\laneroot}{\path{results/concept_evolve/tree/001_packet_scout_handoff_root}}
+
+\title{Archivara Agent: Confidence-Gated Abstention Reveals a Temporal-Separability Law for Helper-Free Multi-Source Cold Start}
 \author{Archivara Agent \\ Codex CLI Research Pipeline}
 \date{March 12, 2026}
 
@@ -56,524 +71,789 @@
 \maketitle
 
 \begin{abstract}
-Cold start from simultaneous weak energy sources is usually attacked by adding more elaborate source-aware arbitration ahead of the main power-management loop. This paper tests that assumption directly. We built five helper-free \texttt{ngspice}-39 topologies sharing one source model, one handoff threshold pair, and one repaired pre-handoff energy contract: a fixed single-branch startup path, a nonaware joined-input baseline, an RC-ranked packet gate, a source-blind packet gate, and a lower-overhead time-constant-ranked arbiter. Across a 24-case primary startup matrix, all five designs are tied at $17/24$ startup successes with zero measured pre-handoff back-drive. Across an expanded 10-case falsifier suite containing collapse, mixed polarity, unequal open-circuit voltage, leak-path, and real UVLO-chatter stress, the blind packet gate achieves $10/10$ startups, outperforming the original RC-ranked design at $8/10$, the fixed baseline at $7/10$, and the nonaware baseline at $5/10$. A time-constant-ranked arbiter retains $9/10$ falsifier startups while reducing the median successful-case pre-handoff control energy from $2.37717\times 10^{-13}\,\mathrm{J}$ to $1.11852\times 10^{-13}\,\mathrm{J}$, a $52.9\%$ reduction relative to the RC-ranked design. We prove that pre-handoff control energy is governed exactly by effective control conductance in the implemented netlists and that only the nonaware baseline contains an explicit pre-handoff branch-joining path. Robustness runs with 24 randomized samples per design-case confirm that the fixed baseline remains $0/24$ on the source-collapse case \texttt{fa\_001}, the nonaware baseline remains $0/24$ on the mixed-conflict case \texttt{fa\_005}, and the packet-gated family remains $24/24$ on both. The main result is negative but important: in this helper-free weak-source model, packet-gated isolation matters, explicit pre-handoff source ranking does not.
+Cold start from multiple weak harvesters is often framed as a pre-handoff source-ranking problem: before the main power-management loop wakes up, the front end is expected to infer the best source and favor it aggressively. We test that assumption inside one helper-free two-source packet-gated startup family implemented in \texttt{ngspice-39}, repair the measurement contract where needed, and then design the smallest new mechanism that survives the corrected evidence pack. The study has four layers: (i) a 24-case primary startup matrix over voltage, ramp, polarity, and impedance asymmetry; (ii) a 10-case adversarial falsifier suite; (iii) a 24-sample robustness rerun on four context cases; and (iv) a bounded DEEPEN near-tie matrix with 12 core cases plus 4 same-scaffold no-packet controls. The repaired context pack rejects both universal stories. All five legacy designs are tied at $17/24$ startups on the primary matrix, while the falsifier suite yields a frontier rather than a champion: \TCRanked reaches $9/10$, \RCRanked reaches $8/10$, \Fixed reaches $7/10$, and both \Blind and \Nonaware reach $5/10$. We then introduce a \Confidence controller that stays near the blind packet posture until a normalized separability integrator clears threshold. On static near ties, the new controller and the blind baseline are both $6/6$, the controller commits $0/6$ times, and the median handoff difference is only $-0.000545\,\mathrm{s}$. On late-arrival near ties, both are again $6/6$, but the controller commits $6/6$ times with median $\tcommit = 1.02799\,\mathrm{s}$ and improves median handoff time by $0.30882\,\mathrm{s}$. A same-scaffold \Merge control is faster still at $4.67638\,\mathrm{s}$, but it reopens $1.54753\times 10^{-9}\,\mathrm{J}$ of wrong-way energy, whereas \Confidence maintains zero measured backdrive. The sampled robustness rerun preserves the corrected separators: \Fixed remains $0/24$ on the source-collapse separator \texttt{fa\_001}, while \Blind remains $0/24$ on the mixed-conflict separator \texttt{fa\_005}. We prove explicit abstention, commitment-latency, and monitor-path control-energy bounds directly from the implemented netlists. The resulting contribution is narrow but useful: in this family, startup should stay blind on static ambiguity and commit only when temporal separability appears.
 \end{abstract}
 
 \section{Introduction}
-Batteryless sensor nodes increasingly aggregate multiple weak transducers because no single harvester is reliable enough across all environmental states. That design choice shifts the burden from steady-state extraction to startup correctness: when several weak sources ramp slowly, collapse asynchronously, or arrive with opposite polarity, the startup path must accumulate the first useful packet of charge without a hidden helper rail and without letting one source damage the other \citep{goppert2016startup70mv,das2017selfstarter,gogolou2025multisourcereview}. The standard response is to add more pre-handoff intelligence: adaptive dual-source startup, polarity detection, branch ranking, or autonomous multi-input routing \citep{tang2018dualsource,cao2019bipolarinput,kuai2022dualpolarityjssc,li2022multiinputplatform}.
+Batteryless sensor nodes increasingly aggregate several harvesters because no single transducer is reliable across every environmental state. The hard problem is therefore often not steady-state extraction but pre-regulation startup: the interface must accumulate enough energy to wake the main power path while sources are weak, ramps are slow, impedances are mismatched, and one source may arrive or collapse before another \citep{goppert2016startup70mv,das2017selfstarter,gogolou2025multisourcereview}. This startup interval is the least forgiving part of the design. The regulator is not yet alive, the energy budget is smallest, and any unnecessary pre-handoff control burden is paid exactly when the system can least afford it.
 
-That intuition is plausible, but the literature rarely closes the same-family ablation loop. It is common to compare a new startup selector against an open-loop baseline or a weakly isolated merge path. It is much less common to execute the nearby ``do less'' alternative that keeps the same isolation topology but removes the explicit selector. For simultaneous weak-source cold start, that omission matters: if packet-gated isolation is the real load-bearing feature, then complex pre-handoff ranking may add area, tuning burden, and energy without increasing the reachable startup envelope.
+The usual response is to add more source awareness before handoff. Dual-source tracking, polarity detection, and autonomous multi-input routing all embody the same intuition: the startup front end should identify the stronger source early and then favor it aggressively \citep{tang2018dualsource,liu2018,cao2019bipolarinput,kuai2022dualpolarityjssc,li2022multiinputplatform}. That intuition is plausible, but it has a methodological weakness. Many papers compare a new source-aware controller against a weak open-loop baseline, a different topology, or a fully integrated platform with several changes at once. It is rarer to execute the same-family ``do less'' alternative that keeps the isolation scaffold but removes the ranking logic.
 
-This paper began as a conventional champion-design study around an RC-ranked packet gate. The executed evidence overturned that story. A source-blind packet gate that retains the same isolated topology but fixes the branch weights at $0.5/0.5$ matches the RC-ranked design on every primary startup-matrix case and outperforms it on the expanded falsifier suite. The interesting result is therefore not ``the new selector wins.'' The interesting result is that explicit pre-handoff source ranking is unnecessary in the tested helper-free model, while a simpler packet-gated isolator is enough to preserve the adversarial startup boundary.
+This project began with exactly that more conventional story. The first champion was an \RCRanked packet-gated startup path. The repaired context evidence overturned any one-winner narrative. Across the 24-case primary matrix, five designs are tied at $17/24$ startups. Across the repaired 10-case falsifier suite, \TCRanked is strongest at $9/10$, \RCRanked reaches $8/10$, \Fixed reaches $7/10$, and both \Blind and \Nonaware reach $5/10$. The sampled 24-run robustness pack preserves the same split on its decisive separators: \Fixed remains $0/24$ on \texttt{fa\_001}, whereas \Blind and \Nonaware remain $0/24$ on \texttt{fa\_005}. The correct conclusion is therefore neither ``always rank early'' nor ``stay blind always.'' Startup behavior in this family is regime-dependent.
 
-The paper makes four contributions.
+That corrected frontier sharpened the next question. If the front end should neither rank universally nor remain blind universally, when \emph{should} it move away from the blind packet posture? The DEEPEN lane answered that question with one bounded new mechanism: a \Confidence controller that integrates a normalized separability metric, stays near the blind packet posture while the evidence is ambiguous, and commits only after the margin persists long enough to clear threshold. The key discovery is not a new general power-management platform. It is a more specific design law: static ambiguity should trigger abstention, while temporal asymmetry can justify commitment.
 
+The paper makes five contributions.
 \begin{enumerate}
-\item We define and execute a unified helper-free weak-source benchmark with corrected pre-handoff accounting, a 24-case startup matrix, a 10-case falsifier suite, and a 24-sample robustness study on four load-bearing cases.
-\item We show experimentally that the primary startup matrix is a null result: all five designs start in $17/24$ cases and all five exhibit zero measured pre-handoff back-drive on that matrix.
-\item We falsify the original mechanism hypothesis: a source-blind packet gate is $10/10$ on the falsifier suite, compared with $8/10$ for the original RC-ranked design, while a time-constant-ranked arbiter preserves $9/10$ falsifier successes at roughly half the pre-handoff control energy.
-\item We prove two structural facts about the implemented netlists: pre-handoff control energy is exactly determined by effective control conductance and the nonaware baseline is the only design with an explicit pre-handoff branch-joining path. The first theorem predicts the measured energy ordering, while the second predicts the failure localization seen in the leak-path and mixed-conflict falsifiers.
+\item We reconstruct a causally cleaner startup evidence pack with repaired explicit-handoff timing, equal pre-handoff accounting, and an executed same-scaffold no-packet control, all distributed in \laneroot.
+\item We show experimentally that the broad ranking story and the broad blind story both fail: the primary startup matrix is a five-way tie at $17/24$, the repaired falsifier suite produces no perfect row, and the 24-sample robustness reruns preserve that regime split on the decisive separators.
+\item We design and execute a bounded 12-case near-tie matrix plus 4 decisive controls for a single new controller, \Confidence, and demonstrate a regime split that was absent from the earlier paper story: no benefit on static near ties, but a $0.30882\,\mathrm{s}$ median handoff gain over \Blind on late-arrival near ties with zero measured backdrive.
+\item We prove, directly from the implemented netlists, three structural properties of the \Confidence deck: an abstention bound under sub-threshold separability, a commitment-latency bound under sustained asymmetry, and a dynamic monitor-path control-energy bound relative to the blind baseline.
+\item We place the result honestly within the literature boundary recovered during the overlap audit: the contribution is not a new adaptive tracking architecture, not a new general multi-input PMU, and not a measured superiority claim against prior silicon. It is a bounded operating-regime result for helper-free startup.
 \end{enumerate}
 
-The rest of the paper proceeds from prior art to model definition, method, proofs, experiments, and limitations. The key theme is deliberate restraint: the final claim is not that a new source-aware architecture wins broadly, but that a minimal packet-gated isolator is sufficient and that explicit pre-handoff ranking should be treated as a falsifiable hypothesis rather than a default assumption.
+The rest of the paper proceeds from related work and model definition to method, proofs, experiments, and limitations. The central claim is intentionally narrow: in this executed family, startup should stay blind on unresolved near ties and commit only when temporal separability appears.
 
 \section{Related Work}
-Integrated low-voltage startup for energy harvesters is mature enough that broad ``weak-source cold start'' language no longer provides a novelty moat. Fully integrated startup below \SI{100}{\milli\volt} has been demonstrated repeatedly for thermoelectric harvesters and self-starters \citep{goppert2016startup70mv,das2017selfstarter,quintero2019cmosstartup,coustans2019coldstart60mv}. Those papers establish that low-voltage startup is difficult, but they are mostly single-input or effectively single-input at startup.
+\label{sec:related}
+\subsection{Weak-Source Startup and Polarity Handling}
+Weak-source startup is already a mature design domain. Integrated thermoelectric startup below \SI{100}{\milli\volt} has been demonstrated repeatedly with careful charge-pump or boost-converter front ends \citep{goppert2016startup70mv,das2017selfstarter,quintero2019cmosstartup,coustans2019coldstart60mv}. Those papers establish the difficulty of cold start, but they do not create a novelty moat for any new paper that merely says weak sources are hard.
 
-The closest architectural overlap on dual-source awareness is the adaptive dual-source startup line typified by Tang et al. \citep{tang2018dualsource}. Once the claim is phrased as ``adaptive'' or ``source-aware'' startup, the overlap becomes immediate. Likewise, polarity handling itself is not fresh. Bipolar-input and dual-polarity interfaces already integrate polarity detection or polarity-tolerant front ends with cold start \citep{cao2019bipolarinput,kuai2022dualpolarityjssc,alhawari2017polaritydetection}. Any new paper must therefore do something more specific than ``handle mixed polarity.''
+Likewise, mixed-polarity handling is not a new claim by itself. Bipolar-input and dual-polarity thermoelectric interfaces already integrate polarity detection or polarity-tolerant startup structures \citep{alhawari2017polaritydetection,cao2019bipolarinput,kuai2022dualpolarityjssc}. In the present paper, mixed polarity is therefore used as a stress regime, not as the novelty basis.
 
-The broader multi-input and autonomous platform literature further narrows the space. Batteryless multi-source piezoelectric PMUs, autonomous multi-input cold-start platforms, and recent self-powered multi-input interface circuits already cover many combinations of routing, self-powering, and isolation \citep{alghisi2017batteryless,li2022multiinputplatform,wang2023serialstack,chen2024collaborative,weng2024osece}. Review articles now treat multi-source integration, intermittency, and interface complexity as an active but crowded design family rather than an empty frontier \citep{gogolou2025multisourcereview}.
+\subsection{Adaptive Source Tracking}
+The closest direct overlap for any source-aware startup story is the adaptive dual-source line. Tang et al.\ demonstrate a dual-source thermoelectric/RF startup circuit with adaptive source handling \citep{tang2018dualsource}. Liu et al.\ go further and present cycle-by-cycle source tracking with adaptive peak-inductor-current control \citep{liu2018}. Those papers already occupy the conceptual space ``startup should infer the stronger source and act on that inference.'' Any paper that claimed another generally better pre-handoff ranking controller would therefore enter a crowded and already competent literature family.
 
-What is not well represented in that literature is an explicit falsification study of pre-handoff ranking inside one tightly controlled helper-free family. The paper does not claim a better platform than those prior interfaces. It claims something narrower: when all designs share the same source model, the same handoff contract, and the same packet-gated isolation topology, explicit RC-style source ranking is not the ingredient that preserves startup under the executed adversarial stresses.
+This is exactly why the surviving claim here is different. The executed controller does not try to optimize source ranking continuously. It does something more conditional: refuse to rank until the margin is persistent enough to justify a commitment. The contribution survives only as that abstain-to-commit rule.
+
+\subsection{Autonomous Multi-Input Platforms}
+The overlap becomes even sharper at the PMU level. Battery-less multi-source interfaces, self-powered piezoelectric front ends, and autonomous multi-input platforms already cover routing, energy sharing, cold startup, and distributed power management at system scale \citep{alghisi2017batteryless,wang2023serialstack,chen2024collaborative,weng2024osece,li2022multiinputplatform,liu2024,liu2024distributedpmu}. Review articles now treat multi-source integration as an active and crowded design family rather than an open architectural vacuum \citep{gogolou2025multisourcereview}. Helper-assisted ultra-low-voltage startup also exists, which blocks any simplistic claim that helper-free operation or low voltage alone is the novelty \citep{lu2024tegassist}.
+
+The present work is therefore intentionally narrower than a new PMU paper. It is a two-source same-scaffold startup study with one behavioral controller added to an existing packet-gated family. The paper makes no claim about steady-state extraction efficiency, multi-rail management, or all-rail autonomy.
+
+\subsection{Novelty Boundary}
+Table~\ref{tab:priorwork} summarizes the claim boundary. One extra note matters because the repository that produced this run began from a very broad natural-language task. The automated seed retrieval initially surfaced several nontechnical false neighbors, including \emph{Leading change} (organizational change), a STEAM pedagogy review, an AI/consciousness paper, and an architectural heritage study. Those items were retained in the novelty audit only as negative controls and play no role in the technical comparison. The actual overlap spine for the paper is the circuit and PMU literature summarized in Table~\ref{tab:priorwork}.
 
 \begin{table}[t]
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{p{0.18\linewidth}p{0.29\linewidth}p{0.22\linewidth}p{0.23\linewidth}}
+\begin{tabular}{p{0.17\linewidth}p{0.27\linewidth}p{0.19\linewidth}p{0.27\linewidth}}
 \toprule
-Family & Representative papers & What is established & What this paper adds \\
+Family & Representative work & What it already establishes & What remains here \\
 \midrule
-Weak-source integrated startup & \citep{goppert2016startup70mv,das2017selfstarter,quintero2019cmosstartup,coustans2019coldstart60mv} & Low-voltage integrated cold start is practical but fragile. & No new low-voltage claim; only a simultaneous-source falsification study. \\
-Adaptive dual-source startup & \citep{tang2018dualsource} & Adaptive multi-source startup is already known. & Shows that explicit ranking can be unnecessary inside one helper-free isolated family. \\
-Bipolar / dual-polarity interfaces & \citep{cao2019bipolarinput,kuai2022dualpolarityjssc,alhawari2017polaritydetection} & Mixed-polarity handling can be integrated with startup. & Does not claim new polarity handling; uses polarity stress to test whether ranking helps. \\
-Autonomous multi-input interfaces & \citep{alghisi2017batteryless,li2022multiinputplatform,wang2023serialstack,chen2024collaborative,weng2024osece,gogolou2025multisourcereview} & Self-powered multi-input routing is crowded and important. & Contributes a negative-result boundary: isolation matters, explicit ranking does not. \\
+Weak-source integrated startup & \citep{goppert2016startup70mv,das2017selfstarter,quintero2019cmosstartup,coustans2019coldstart60mv} & Low-voltage cold start is possible but fragile. & No new low-voltage claim; only a same-family startup-control study. \\
+Adaptive dual-source startup & \citep{tang2018dualsource,liu2018} & Early source tracking and adaptive startup control. & A controller that can abstain from ranking when evidence is not yet separable. \\
+Bipolar or dual-polarity interfaces & \citep{alhawari2017polaritydetection,cao2019bipolarinput,kuai2022dualpolarityjssc} & Integrated mixed-polarity handling during startup. & Mixed polarity is used only as stress, not as novelty. \\
+Autonomous multi-input PMUs & \citep{alghisi2017batteryless,wang2023serialstack,chen2024collaborative,weng2024osece,li2022multiinputplatform,liu2024,liu2024distributedpmu,gogolou2025multisourcereview} & Multi-input autonomy, energy sharing, self-powered routing, and PMU-scale control. & A bounded two-source pre-arbitration startup law, not a new PMU platform. \\
+Helper-assisted extreme startup & \citep{lu2024tegassist} & Very low startup voltage with cross-source assistance. & The present work stays helper-free and treats helper-assisted startup as an overlap bound, not a target. \\
 \bottomrule
 \end{tabular}
-\caption{Relation to the closest prior-art families. The paper is intentionally narrower than a new-platform claim. It lives at the intersection of helper-free startup, simultaneous weak sources, and same-family ablation.}
+\caption{Prior-work boundary used in the final paper. The key literature comparison is not with the repository's false-neighbor seed watchlist; it is with adaptive dual-source startup and autonomous multi-input PMU work. The honest surviving sentence is therefore modest: the recovered overlap set did not reveal a close same-family abstention-like pre-handoff controller, but it did reveal several strong families that block any broader architecture claim.}
 \label{tab:priorwork}
 \end{table}
 
 \section{Background and Preliminaries}
 \subsection{Source Model and Symbols}
-We study two floating Thevenin sources, indexed by $i\in\{A,B\}$, that feed a common cold-start front end. Source $i$ has open-circuit ceiling $V_i>0$, source resistance $R_i>0$, polarity $p_i\in\{+1,-1\}$, and common ramp slope $S>0$. The source-pair include implements
+We study two floating Thevenin sources indexed by $i\in\{A,B\}$ feeding a common startup front end. Source $i$ has open-circuit ceiling $V_i>0$, series resistance $R_i>0$, polarity $p_i\in\{+1,-1\}$, and a linear open-circuit ramp with slope $S>0$. The implemented source model is
 \begin{equation}
-  v_i^{\mathrm{oc}}(t)=p_i\,\min\{V_i,St\}\,c_i(t),
+  v_i^{\mathrm{oc}}(t)=p_i \min\{V_i,St\}\gamma_i(t),
+  \label{eq:source-model}
 \end{equation}
-where $c_i(t)$ is a collapse-and-recovery window equal to one during nominal operation and reduced to a user-set scale factor during falsifier events. The collapse windows are generated by smooth hyperbolic-tangent transitions so that the resulting netlists remain differentiable in transient analysis.
+where $\gamma_i(t)\in[0,1]$ is a case-specific window that represents collapse, recovery, or delayed arrival.
 
-The routed differential at the local branch bus is denoted by $u_i(t)=V(b_{i,p}(t),b_{i,n}(t))$. The shared forward router \texttt{fw\_router} flips a negative input when necessary so that $u_i(t)$ is the oriented branch voltage presented to downstream startup logic. The startup dead-zone is \(\vdead=\SI{5}{\milli\volt}\) unless overridden by a falsifier or robustness sample.
-
-The store capacitor voltage is \(\vstore(t)=V(n_{\mathrm{store}}(t))\). The main handoff threshold pair is \((V_{\mathrm{handoff}},V_{\mathrm{handoff,fall}})=(\SI{1.2}{\volt},\SI{1.0}{\volt})\) in the primary matrix and is tightened to \((\SI{0.8}{\volt},\SI{0.7}{\volt})\) in the chatter falsifier. Startup is declared successful if \(\vstore(t)\) reaches \(V_{\mathrm{handoff}}\) before the case-specific stop time.
-
-For packet-gated topologies, define the available branch drive
+The forward router flips a negative input when necessary and presents the oriented routed branch voltage
+\begin{equation}
+  u_i(t)=V(b_{i,p}(t),b_{i,n}(t)).
+\end{equation}
+The startup dead zone is
+\begin{equation}
+  \vdead=\SI{5}{\milli\volt},
+\end{equation}
+unless a falsifier overrides it. The branch drive available to the startup pump is
 \begin{equation}
   x_i(t)=\max\{u_i(t)-\vdead,0\}.
+  \label{eq:xi}
 \end{equation}
-The shared pump abstraction then injects storage current proportional to a weighted combination of \(x_A\) and \(x_B\).
+The store node voltage is
+\begin{equation}
+  \vstore(t)=V(n_{\mathrm{store}}(t)).
+\end{equation}
 
-\subsection{Topology Family}
-All five studied designs reuse the same source model, handoff latch, and measurement hooks, but they differ in how the two routed branches are connected before handoff.
+Most deterministic cases use a handoff threshold pair
+\begin{equation}
+  (\vhand,\vhandfall)=(\SI{1.2}{\volt},\SI{1.0}{\volt}),
+\end{equation}
+while the repaired chatter falsifier uses $(\SI{0.8}{\volt},\SI{0.7}{\volt})$ to induce a real rise-fall-rise sequence. The repaired measurement hooks declare
+\begin{equation}
+  \mathrm{startup\_ok} = \mathbf{1}\{\vstore(T_{\mathrm{stop}})\ge \vhand\}\mathbf{1}\{\texttt{handoff\_seen\_final}\ge 0.5\}.
+  \label{eq:startupok}
+\end{equation}
+The second factor is important. Startup is not counted solely from the store-voltage proxy; the explicit handoff latch must also be observed.
+
+\subsection{Design Family}
+Two design sets appear in the paper. The context pack compares five earlier designs
+\begin{equation}
+  \mathcal{D}_{\mathrm{ctx}}=\{\RCRanked,\Fixed,\Nonaware,\Blind,\TCRanked\},
+\end{equation}
+and the DEEPEN pack compares three core designs plus one same-scaffold control
+\begin{equation}
+  \mathcal{D}_{\mathrm{deep}}=\{\Confidence,\Blind,\TCRanked,\Merge\}.
+\end{equation}
+
+All packet-gated designs share one pump abstraction:
+\begin{equation}
+  i_{\mathrm{store}}(t)=\eta_{\mathrm{pump}}G_{\mathrm{pump}}\left(x_A(t)w_A(t)+x_B(t)w_B(t)\right),
+  \label{eq:storecurrent}
+\end{equation}
+with $w_A,w_B\in[0,1]$ and $w_A+w_B=1$. What changes between designs is the pre-handoff coupling and the weight law.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{h1_topology_contrast.pdf}
+  \caption{Programmatic topology comparison of the three pre-handoff connection strategies that matter most for the final claim. Left: \Fixed, where only one routed branch enters the startup pump. Center: \Nonaware or merge-like behavior, where branches are explicitly joined before the pump and can therefore load or back-drive each other. Right: the packet-gated family, where the branches remain isolated and only weighted pump current is combined at the store node. The executed paper result lives entirely inside the right-hand family: the broad ranking story failed there, and the surviving \Confidence result asks when that isolated family should abstain from ranking rather than which fully new topology should replace it.}
+  \label{fig:topologies}
+\end{figure}
 
 \begin{table}[t]
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{p{0.18\linewidth}p{0.35\linewidth}p{0.20\linewidth}p{0.15\linewidth}}
+\begin{tabular}{p{0.14\linewidth}p{0.19\linewidth}p{0.19\linewidth}p{0.13\linewidth}p{0.22\linewidth}}
 \toprule
-Design & Pre-handoff connection strategy & Selector law & $G_{\mathrm{ctrl}}$ \\
+Design & Evidence set & Pre-handoff coupling & Explicit join? & Selector or control law \\
 \midrule
-\Fixed & Only routed branch A feeds the startup pump. Branch B is present in the source model but not in the startup path. & none & \SI{37.5}{\nano\siemens} \\
-\Nonaware & Routed branches A and B are hard-joined through milliohm ties into one startup bus. & none & \SI{50}{\nano\siemens} \\
-\RCRanked & Each branch remains isolated; branch weights come from matched scout RC probes and a hyperbolic-tangent selector. & dynamic & \SI{40}{\nano\siemens} \\
-\Blind & Same isolated packet-gated topology as \RCRanked, but branch weights are fixed at $0.5/0.5$. & constant & \SI{40}{\nano\siemens} \\
-\TCRanked & Same isolated packet-gated topology, but the selector uses a fast-slow time-constant contrast instead of the original single scout window. & dynamic & \SI{18}{\nano\siemens} \\
+\Fixed & context & only branch A participates & no & no source comparison; $G_{\mathrm{ctrl}}=\SI{37.5}{\nano\siemens}$ \\
+\Nonaware & context & both branches routed and hard-joined & yes & no selector; $G_{\mathrm{ctrl}}=\SI{50}{\nano\siemens}$ \\
+\RCRanked & context & packet-isolated & no & scout RC windows and $\tanh$ selector; $G_{\mathrm{ctrl}}=\SI{40}{\nano\siemens}$ \\
+\Blind & context + DEEPEN & packet-isolated & no & fixed $w_A=w_B=0.5$; $G_{\mathrm{ctrl}}=\SI{40}{\nano\siemens}$ \\
+\TCRanked & context + DEEPEN & packet-isolated & no & fast-slow time-constant selector; $G_{\mathrm{ctrl}}=\SI{18}{\nano\siemens}$ \\
+\Confidence & DEEPEN & packet-isolated & no & blind fallback plus confidence-gated commit; dynamic $G_{\mathrm{ctrl}}\in[\SI{42}{\nano\siemens},\SI{48}{\nano\siemens}]$ \\
+\Merge & DEEPEN control & branch buses merged through \SI{5}{\ohm} ties & yes & no packet isolation; $G_{\mathrm{ctrl}}=\SI{40}{\nano\siemens}$ \\
 \bottomrule
 \end{tabular}
-\caption{Design family summary extracted directly from the netlists. The effective control conductance $G_{\mathrm{ctrl}}$ is derived formally in Theorem~\ref{thm:ctrl}.}
+\caption{Design family used in the paper. The packet-isolated subgroup shares the same source model, the same handoff latch, and the same measurement hooks; this is what makes the same-family ablations informative. The \Confidence conductance range comes from the implemented term $G_{\mathrm{scout}} + G_{\mathrm{conf}}(0.25 + 0.75m(t))$ with $G_{\mathrm{scout}}=\SI{40}{\nano\siemens}$, $G_{\mathrm{conf}}=\SI{8}{\nano\siemens}$, and commit signal $m(t)\in[0,1]$.}
 \label{tab:designs}
 \end{table}
 
-The fixed baseline uses only one routed branch and therefore represents the strongest ``do almost nothing'' startup path. The nonaware baseline routes both inputs and then hard-joins them onto a common startup bus through four \SI{1}{\milli\ohm} resistors. The three packet-gated designs never hard-join the two routed branches; instead they feed branch-local current sources that inject charge into the common store node.
-
-For the packet-gated family, the generic storage current has the form
+The \Confidence controller is defined by three nested state variables. First, each branch passes through a scout filter:
 \begin{equation}
-  i_{\mathrm{store}}(t)=\etap\Gp\bigl(x_A(t)w_A(t)+x_B(t)w_B(t)\bigr),
-  \label{eq:storecurrent}
+  \taus \dot q_A(t)+q_A(t)=u_A(t),\qquad
+  \taus \dot q_B(t)+q_B(t)=u_B(t),
+  \label{eq:scout}
 \end{equation}
-where \(w_A,w_B\in[0,1]\) and \(w_A+w_B=1\). The three packet-gated implementations differ only in the weight law.
-
-For \RCRanked, scout states \(q_A\) and \(q_B\) satisfy matched first-order probe dynamics with time constant \(\tau_{\mathrm{scout}}=R_{\mathrm{scout}}C_{\mathrm{scout}}\), and the weight is
+with
 \begin{equation}
-  w_A(t)=\frac{1+\tanh\bigl(k_{\mathrm{sel}}(q_A(t)-q_B(t))\bigr)}{2},\qquad w_B(t)=1-w_A(t).
+  \taus = R_{\mathrm{scout}}C_{\mathrm{scout}} = \SI{150}{\kilo\ohm}\cdot\SI{5}{\nano\farad}=\SI{0.75}{\milli\second}.
 \end{equation}
-For \Blind, the weights are fixed at \(w_A=w_B=\tfrac12\). For \TCRanked, each branch is filtered by a fast and a slow window; the selector applies a hyperbolic tangent to the difference of fast-slow contrasts plus a small fast-window tie term.
+Second, the raw separability metric is
+\begin{equation}
+  r(t)=\mathbf{1}\{|q_A(t)|+|q_B(t)|>V_{\mathrm{floor}}\}
+       \min\!\left\{1,\frac{|q_A(t)-q_B(t)|}{\epsilon + |q_A(t)|+|q_B(t)|}\right\},
+  \label{eq:rawconfidence}
+\end{equation}
+with $V_{\mathrm{floor}}=\SI{10}{\milli\volt}$ and $\epsilon=\SI{1}{\milli\volt}$. Third, the confidence accumulator satisfies
+\begin{equation}
+  \tauc \dot c(t)+c(t)=r(t),
+  \qquad
+  \tauc=R_{\mathrm{conf}}C_{\mathrm{conf}}=\SI{100}{\kilo\ohm}\cdot\SI{500}{\nano\farad}=\SI{50}{\milli\second},
+  \label{eq:confidenceode}
+\end{equation}
+and the commit state is
+\begin{equation}
+  m(t)=\frac{1+\tanh\!\bigl(k_{\mathrm{c}}(c(t)-\Theta)\bigr)}{2},
+  \label{eq:commit}
+\end{equation}
+with $k_{\mathrm{c}}=30$ and $\Theta=0.08$.
+
+The winner preference is still computed from the signed scout margin,
+\begin{equation}
+  a(t)=\frac{1+\tanh\!\bigl(k_{\mathrm{s}}(q_A(t)-q_B(t))\bigr)}{2},
+  \qquad
+  k_{\mathrm{s}}=20,
+\end{equation}
+but the actual packet weight is blended between blind allocation and winner-take-more allocation:
+\begin{equation}
+  w_A(t)=\frac{1-m(t)}{2}+m(t)a(t),
+  \qquad
+  w_B(t)=1-w_A(t).
+  \label{eq:confidenceweights}
+\end{equation}
+When $m(t)$ is small, the controller stays near the blind packet posture. When $m(t)$ approaches one, the controller approaches the winner preference $a(t)$.
 
 \subsection{Measurement Contract}
-The measurement include exports four load-bearing quantities:
+The repaired measurement include exports four quantities that carry the paper's actual claims.
 \begin{enumerate}
-\item \textbf{Startup success.} \(\mathrm{startup\_ok}=1\) if \(\vstore\) reaches \(V_{\mathrm{handoff}}\) before \(T_{\mathrm{stop}}\).
-\item \textbf{First handoff time.} \(\thandoff\) is the first rising threshold crossing of \(\vstore\) at \(V_{\mathrm{handoff}}\).
-\item \textbf{Pre-handoff back-drive energy.} \(\Eback\) is the sum of the negative port-power integrals seen at the two source measurement elements before the handoff latch closes.
-\item \textbf{Pre-handoff control energy.} \(\Ectrl\) is the energy drawn through the dedicated control monitor source before the same handoff latch closes.
+\item \textbf{Startup success:} Eq.~\eqref{eq:startupok}.
+\item \textbf{Explicit handoff timing:} $\thandoff$, plus fall and second-rise diagnostics when a chatter case induces them.
+\item \textbf{Pre-handoff backdrive energy:} $\Eback$, the sum of the negative source-port power integrals before the handoff latch closes.
+\item \textbf{Monitor-path pre-handoff control energy:} $\Ectrl$, the energy drawn through \texttt{VCTRL\_MON} while the handoff latch is open.
 \end{enumerate}
-The repaired measurement hook also exports full-window diagnostics \(\Ectrl^{\mathrm{full}}\) and \(\Eback^{\mathrm{full}}\), but those are treated as diagnostics rather than headline metrics. Figure~\ref{fig:accounting} shows why that distinction matters.
 
-\begin{figure}[t]
-\centering
-\begin{subfigure}[t]{0.31\linewidth}
-\centering
-\begin{tikzpicture}[>=Stealth, node distance=4.5mm, every node/.style={font=\scriptsize}, src/.style={draw=ink, circle, fill=oliveaccent!12, minimum size=4.4mm}, box/.style={draw=ink, rounded corners=2pt, fill=tealaccent!10, minimum width=14mm, minimum height=6mm}, store/.style={draw=ink, rounded corners=2pt, fill=sandaccent!16, minimum width=15mm, minimum height=6mm}]
-\node[src] (a) {A};
-\node[src, below=8mm of a] (b) {B};
-\node[box, right=6mm of a] (ra) {Router};
-\node[box, right=6mm of b, fill=gray!12] (ib) {Idle};
-\node[box, right=8mm of ra] (pump) {Pump};
-\node[store, right=8mm of pump] (store) {$C_{\mathrm{store}}$};
-\draw[->, very thick, tealaccent] (a) -- (ra);
-\draw[->, very thick, tealaccent] (ra) -- (pump);
-\draw[->, very thick, tealaccent] (pump) -- (store);
-\draw[->, dashed, gray!70!black] (b) -- (ib);
-\end{tikzpicture}
-\caption{\Fixed}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.31\linewidth}
-\centering
-\begin{tikzpicture}[>=Stealth, node distance=4.5mm, every node/.style={font=\scriptsize}, src/.style={draw=ink, circle, fill=oliveaccent!12, minimum size=4.4mm}, box/.style={draw=ink, rounded corners=2pt, fill=redaccent!10, minimum width=14mm, minimum height=6mm}, store/.style={draw=ink, rounded corners=2pt, fill=sandaccent!16, minimum width=15mm, minimum height=6mm}]
-\node[src] (a) {A};
-\node[src, below=8mm of a] (b) {B};
-\node[box, right=6mm of a] (ra) {Router};
-\node[box, right=6mm of b] (rb) {Router};
-\node[box, right=8mm of ra, minimum width=16mm] (join) {Join};
-\node[box, right=8mm of join] (pump) {Pump};
-\node[store, right=8mm of pump] (store) {$C_{\mathrm{store}}$};
-\draw[->, very thick, redaccent] (a) -- (ra);
-\draw[->, very thick, redaccent] (b) -- (rb);
-\draw[->, very thick, redaccent] (ra) -- (join);
-\draw[->, very thick, redaccent] (rb) -- (join);
-\draw[->, very thick, redaccent] (join) -- (pump);
-\draw[->, very thick, redaccent] (pump) -- (store);
-\end{tikzpicture}
-\caption{\Nonaware}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.35\linewidth}
-\centering
-\begin{tikzpicture}[>=Stealth, node distance=4.5mm, every node/.style={font=\scriptsize}, src/.style={draw=ink, circle, fill=oliveaccent!12, minimum size=4.4mm}, box/.style={draw=ink, rounded corners=2pt, fill=tealaccent!10, minimum width=14mm, minimum height=6mm}, store/.style={draw=ink, rounded corners=2pt, fill=sandaccent!16, minimum width=15mm, minimum height=6mm}]
-\node[src] (a) {A};
-\node[src, below=8mm of a] (b) {B};
-\node[box, right=6mm of a] (ra) {Router};
-\node[box, right=6mm of b] (rb) {Router};
-\node[box, right=8mm of ra, minimum width=17mm] (gate) {Packet gate};
-\node[box, below=6mm of gate, minimum width=17mm, fill=gray!14] (ctrl) {Handoff + control};
-\node[store, right=8mm of gate] (store) {$C_{\mathrm{store}}$};
-\draw[->, very thick, tealaccent] (a) -- (ra);
-\draw[->, very thick, tealaccent] (b) -- (rb);
-\draw[->, very thick, tealaccent] (ra) -- (gate);
-\draw[->, very thick, tealaccent] (rb) -- (gate);
-\draw[->, very thick, tealaccent] (gate) -- (store);
-\draw[->, thick, gray!80!black] (ctrl) -- (gate);
-\draw[->, thick, gray!80!black] (ctrl) -- (store);
-\end{tikzpicture}
-\caption{Packet-gated family}
-\end{subfigure}
-\caption{Pre-handoff connection strategies. \Fixed routes only one source into the startup pump. \Nonaware routes both sources and then hard-joins the buses before the pump, creating an explicit pre-handoff source-to-source connection. The packet-gated family keeps the routed branches isolated and only combines branch-weighted pump current at the store node. The three packet-gated designs differ only in their selector law and control conductance; the executed ablations therefore isolate whether ranking itself matters.}
-\label{fig:topologies}
-\end{figure}
+The measurement file also records full-window versions of the energy integrals, but those are diagnostics rather than headline metrics. They deliberately continue to count post-handoff activity and therefore cannot be used to support claims about pre-handoff controller burden. Because \texttt{VCTRL\_MON} sees only the explicit control sink, $\Ectrl$ is exact for the monitored control branch but is not claimed as the total selector overhead of every auxiliary behavioral element.
 
 \section{Method}
-\subsection{Simulation Pipeline}
-Every deterministic case is rendered from one of five template netlists, simulated in batch mode with \texttt{ngspice-39}, and parsed through a shared log extractor. The design list is
-\[
-\mathcal{D}=\{\Fixed,\Nonaware,\RCRanked,\Blind,\TCRanked\}.
-\]
-The primary startup manifest contains 24 cases chosen to cover each voltage, ramp, impedance-ratio, and polarity level at least once. The resulting matrix is intentionally budgeted rather than factorial; it is a coverage matrix, not a causal design of experiments. The falsifier manifest contains 10 adversarial cases spanning source collapse, mixed polarity, unequal open-circuit voltage, finite off-isolation leak, and one deliberately repaired UVLO-chatter case.
+\subsection{Evidence Pipeline}
+The experimental workflow uses the repository's runner scripts directly:
+\begin{itemize}
+\item \texttt{tools/run\_h1\_matrix.py} for the 24-case primary startup matrix,
+\item \texttt{tools/run\_h1\_falsifier.py} for the 10-case adversarial suite,
+\item \texttt{tools/run\_h1\_robustness.py} for the 24-sample randomized reruns,
+\item \texttt{tools/run\_h1\_deepen.py} for the near-tie DEEPEN matrix and the same-scaffold \Merge controls,
+\item \texttt{tools/analyze\_h1\_results.py} for the context figures and summary tables.
+\end{itemize}
+Each runner renders a parameterized netlist, executes \texttt{ngspice} in batch mode, parses the measured quantities, and stores both raw and summarized artifacts under \laneroot.
 
 \begin{figure}[t]
 \small
 \fbox{%
 \begin{minipage}{0.96\linewidth}
-\textbf{Algorithm 1: Deterministic sweep and measurement extraction}\\
-\textbf{Input:} design set $\mathcal{D}$, case manifest $\mathcal{C}$, shared measurement hooks\\
+\textbf{Algorithm 1: Reproducible startup evidence pipeline}\\
+\textbf{Input:} design set $\mathcal{D}$, case manifest $\mathcal{C}$, measurement hooks, optional robustness seed map\\
 \textbf{for} each design $d\in\mathcal{D}$ \textbf{do}\\
 \hspace*{1em}\textbf{for} each case $c\in\mathcal{C}$ \textbf{do}\\
-\hspace*{2em}render the parameterized netlist for $(d,c)$\\
+\hspace*{2em}render the parameterized netlist for $(d,c)$ from the shared H1 scaffold\\
 \hspace*{2em}run \texttt{ngspice} transient analysis with case-specific $T_{\mathrm{stop}}$ and step size\\
-\hspace*{2em}parse \texttt{startup\_ok}, $\thandoff$, fall/rise2 chatter events, $\Eback$, $\Ectrl$, and full-window diagnostics\\
-\hspace*{2em}append the result row to the raw and tabulated artifact pack\\
+\hspace*{2em}parse \texttt{startup\_ok}, $\thandoff$, fall/rise2 events, $\Eback$, $\Ectrl$, and controller-specific observables\\
+\hspace*{2em}append the result row to raw JSON, CSV, and run-log artifacts\\
 \hspace*{1em}\textbf{end for}\\
 \textbf{end for}\\
-aggregate grouped summaries, pairwise comparisons, and publication figures
+aggregate family medians, pairwise comparisons, and publication figures\\[3pt]
+\textbf{Specialization for DEEPEN:}\\
+use $\mathcal{D}=\{\Confidence,\Blind,\TCRanked\}$ on the 12-case near-tie matrix and add \Merge only on the 4 decisive control cases.
 \end{minipage}}
-\caption{Reproducible deterministic simulation pipeline implemented by the runner scripts. The total transient-analysis cost is $\mathcal{O}(|\mathcal{D}|\,|\mathcal{C}|\,N_t)$, where $N_t$ is the number of time steps consumed by one batch transient. The parsing overhead is linear in the number of measurements and negligible compared with the transient solve.}
+\caption{Repository-native pipeline used for every claim in the paper. The broad context pack and the DEEPEN pack differ only in their manifests and active design sets, not in their accounting or parsing logic. This reuse is deliberate: it prevents the bounded positive result from depending on a new measurement contract.}
 \label{fig:algorithm}
 \end{figure}
 
-The case stop time follows the contract
+The total transient-analysis cost is
 \begin{equation}
-  T_{\mathrm{stop}}=\max\left\{1.25\,\frac{V_{\mathrm{level}}}{S},\; 8\min\{R_A,R_B\}C_{\mathrm{store}}\right\}.
+  \mathcal{O}(|\mathcal{D}|\,|\mathcal{C}|\,N_t),
 \end{equation}
-This rule guarantees enough dwell time for very slow ramps without wasting runtime on obviously dead cases.
+where $N_t$ is the number of transient steps per rendered netlist. Parsing and table aggregation are linear in the number of measured outputs and negligible relative to the circuit solve. The robustness study simply multiplies the cost by the number of randomized samples.
 
-\subsection{Expanded Falsifier Suite}
-The expanded suite differs from the original narrow package in three ways. First, it adds unequal-\(V_{\mathrm{OC}}\) cases with \((V_A,V_B)=(\SI{20}{\milli\volt},\SI{50}{\milli\volt})\) and \((\SI{100}{\milli\volt},\SI{300}{\milli\volt})\). Second, it adds finite off-isolation leak-path cases by forcing the router leak resistance down to \SI{1}{\kilo\ohm}. Third, it repairs the chatter case so that the handoff threshold and the collapse windows actually create a first handoff, a fall event, and a second rise in the vulnerable designs. Those changes matter because a falsifier that never induces the advertised failure mode cannot support a mechanism claim.
+\subsection{Lane Narrowing and Design Rationale}
+The paper is intentionally not an open-ended architecture search. The repository's verified plan constrained the work to the existing H1 packet-gated scaffold, permitted only one new confidence mechanism, and parked restart-safe, reverse-port, and bridge hypotheses instead of reopening broad PMU or MPPT searches. That design discipline matters because it changes the research question. The goal was not ``find any topology that looks new.'' The goal was ``identify what the existing evidence actually leaves open.''
 
-\subsection{Robustness Protocol}
-The robustness study evaluates the four load-bearing cases \texttt{fa\_001}, \texttt{fa\_004}, \texttt{fa\_005}, and \texttt{sm\_015}. For each case-design pair, the script draws 24 independent samples with seed
-\begin{equation}
-  s = 20260312 + 10000\,o_c + 1000\,o_d + n,
-\end{equation}
-where \(o_c\) is the case offset, \(o_d\) the design offset, and \(n\in\{0,\dots,23\}\) the sample index. The randomized parameters are:
-\begin{itemize}
-\item source resistances: multiplicative Gaussian variation with standard deviation $8\%$ and floor factor $0.6$;
-\item store capacitance: multiplicative Gaussian variation with standard deviation $10\%$ and floor factor $0.5$;
-\item startup dead-zone: multiplicative Gaussian variation with standard deviation $12\%$, clipped to \SIrange{1}{15}{\milli\volt};
-\item RC-ranked and blind packet controls: scout $R$, scout $C$, and control conductance with standard deviations $12\%$, $12\%$, and $10\%$;
-\item time-constant-ranked control: fast/slow $R$ and $C$ values with standard deviation $12\%$, plus $10\%$ control-conductance variation;
-\item leak resistance: $15\%$ multiplicative Gaussian variation in the leak-path cases;
-\item collapse timing: additive Gaussian jitter with standard deviation \SI{0.12}{\second};
-\item collapse scales: additive Gaussian jitter with standard deviation $0.04$, clipped to $[0,1]$.
-\end{itemize}
-Wilson \(95\%\) intervals are reported for startup probability. Since the study is simulation-only, those intervals quantify only the scripted parameter uncertainty, not fabrication variation or model inadequacy.
+The executed context evidence left exactly one live question. The repaired falsifier suite did not crown a global champion; instead it exposed a frontier in which always-ranking controllers survive some heavy-load separators better, blind packet isolation survives others, and merged or fixed structures fail on different edges. The \Confidence deck is the answer the paper tests. It adds one normalized separability integrator, keeps the blind packet weights as the default posture, and pays its extra monitor-path control cost through the same \texttt{VCTRL\_MON} path used for every other design.
 
-\subsection{Software and Compute Environment}
-The experiments were executed on a Linux x86-64 workstation with 20 logical CPUs, Python~3.10.17, and \texttt{ngspice-39}. The artifact bundle, netlists, figures, and manifests are stored in the repository snapshot cited as \citep{archivara2026repo}. All deterministic and robustness scripts are included in the same workspace.
+\subsection{Why a Bounded Positive Result Is Legitimate}
+Three conditions were imposed before the DEEPEN lane could be written up as a real contribution.
+\begin{enumerate}
+\item The same-scaffold no-packet control had to be executed, so that any ``packet isolation matters'' statement was not resting on unmatched topologies.
+\item Explicit handoff timing had to be repaired, so that pre-handoff metrics were tied to an actual latch event rather than to a store-voltage proxy.
+\item The confidence-gated controller had to beat \Blind on the pre-registered late-arrival near-tie family without broadening the claim to a new best-overall selector.
+\end{enumerate}
+All three conditions were met, but only narrowly. That is why the paper's central result is a design law about temporal separability rather than a new universal winner.
 
 \section{Theoretical Results and Proofs}
-This section proves three statements directly from the implemented netlists. They are intentionally modest. The paper does not attempt a transistor-level proof of startup probability. It proves the structural facts that are actually available from the model and then tests the remaining claims experimentally.
+The theoretical section proves only the statements that the implemented behavioral netlists actually support. It does \emph{not} attempt a theorem for startup probability across the full nonlinear transient system. The resulting proofs are narrower but exact.
 
-\begin{proposition}[Symmetry reduction of \RCRanked to \Blind]
-\label{prop:symmetry}
-Assume the two routed branch voltages satisfy
-\begin{equation}
-  u_A(t)=u_B(t)\qquad\text{for all }t\in[0,T],
-\end{equation}
-and that the scout networks in the RC-ranked gate use identical component values and zero initial charge. Then, on $[0,T]$, the RC-ranked packet gate is dynamically identical to the blind packet gate: its branch weights satisfy \(w_A(t)=w_B(t)=\tfrac12\), and its pump and storage current equations reduce exactly to the blind-packet equations.
-\end{proposition}
+\begin{lemma}[Confidence-state dynamics]
+\label{lem:dynamics}
+Let $q_A(t)$ and $q_B(t)$ denote the scout capacitor voltages and let $c(t)$ denote the confidence-accumulator voltage in the implemented \Confidence deck. Then
+\begin{align}
+  \taus \dot q_A(t)+q_A(t) &= u_A(t), \\
+  \taus \dot q_B(t)+q_B(t) &= u_B(t), \\
+  \tauc \dot c(t)+c(t) &= r(t),
+\end{align}
+with $\taus=\SI{0.75}{\milli\second}$, $\tauc=\SI{50}{\milli\second}$, and $0\le r(t)\le 1$ for all $t$.
+\end{lemma}
 
 \begin{proof}
-Let \(q_A(t)\) and \(q_B(t)\) denote the scout capacitor voltages \texttt{a\_probe} and \texttt{b\_probe}. Because the two probe branches use the same \texttt{SCOUT\_R} and \texttt{SCOUT\_C} values, each obeys the same first-order linear differential equation with the corresponding routed source voltage as input:
-\begin{align}
-  R_{\mathrm{scout}}C_{\mathrm{scout}}\,\dot q_A(t) + q_A(t) &= u_A(t), \\
-  R_{\mathrm{scout}}C_{\mathrm{scout}}\,\dot q_B(t) + q_B(t) &= u_B(t).
-\end{align}
-Subtract the second equation from the first and define \(z(t)=q_A(t)-q_B(t)\). Then
+In the shared netlist, scout node $q_A$ is implemented by the resistor-capacitor pair \texttt{RSCOUT\_A} and \texttt{CSCOUT\_A}. The ideal observation source \texttt{EOBS\_A} enforces $V(a_{\mathrm{obs}})=u_A(t)$. The resistor current from the observation node into the scout capacitor is therefore
 \begin{equation}
-  R_{\mathrm{scout}}C_{\mathrm{scout}}\,\dot z(t) + z(t) = u_A(t)-u_B(t).
+  i_{R_A}(t)=\frac{u_A(t)-q_A(t)}{R_{\mathrm{scout}}}.
 \end{equation}
-By assumption, the right-hand side is identically zero on $[0,T]$. The scout capacitors are initialized equally at zero, so \(z(0)=0\). The homogeneous linear differential equation with zero initial condition has the unique solution \(z(t)=0\) for all \(t\in[0,T]\). Therefore \(q_A(t)=q_B(t)\) for all \(t\in[0,T]\).
+The scout capacitor current is
+\begin{equation}
+  i_{C_A}(t)=C_{\mathrm{scout}}\dot q_A(t).
+\end{equation}
+Kirchhoff's current law at the scout node gives $i_{R_A}(t)=i_{C_A}(t)$, hence
+\begin{equation}
+  C_{\mathrm{scout}}\dot q_A(t)=\frac{u_A(t)-q_A(t)}{R_{\mathrm{scout}}}.
+\end{equation}
+Multiplying by $R_{\mathrm{scout}}$ yields
+\begin{equation}
+  R_{\mathrm{scout}}C_{\mathrm{scout}}\dot q_A(t)+q_A(t)=u_A(t).
+\end{equation}
+Since $\taus=R_{\mathrm{scout}}C_{\mathrm{scout}}$, the first equation follows. The equation for $q_B$ is identical by symmetry.
 
-The RC-ranked selector law is
+For the confidence state, the source \texttt{BCONF\_RAW} fixes node \texttt{conf\_raw} at the voltage $r(t)$ defined in Eq.~\eqref{eq:rawconfidence}. The resistor \texttt{RCONF} connects \texttt{conf\_raw} to the accumulator node \texttt{conf\_acc}, whose voltage is $c(t)$, and \texttt{CCONF} connects \texttt{conf\_acc} to ground. The resistor current into the accumulator is therefore
 \begin{equation}
-  w_A(t)=\frac{1+\tanh\bigl(k_{\mathrm{sel}}(q_A(t)-q_B(t))\bigr)}{2},
-  \qquad
-  w_B(t)=1-w_A(t).
+  i_{R_c}(t)=\frac{r(t)-c(t)}{R_{\mathrm{conf}}},
 \end{equation}
-Since \(q_A(t)-q_B(t)=0\), the argument of the hyperbolic tangent is zero. Because \(\tanh(0)=0\), we obtain
+and the capacitor current is
 \begin{equation}
-  w_A(t)=\frac{1+0}{2}=\frac12,
-  \qquad
-  w_B(t)=1-\frac12=\frac12.
+  i_{C_c}(t)=C_{\mathrm{conf}}\dot c(t).
 \end{equation}
-Substituting these weights into the RC-ranked branch current expressions gives
-\begin{align}
-  i_{\mathrm{store}}(t)
-   &= \etap\Gp\left(x_A(t)\frac12+x_B(t)\frac12\right), \\
-  i_{A,\mathrm{in}}(t)
-   &= \Gp\,x_A(t)\frac12,
-  \qquad
-  i_{B,\mathrm{in}}(t)
-   = \Gp\,x_B(t)\frac12,
-\end{align}
-which are exactly the blind-packet equations. The control branch and the handoff latch are already shared between the two designs, so the full netlist dynamics coincide on $[0,T]$.
+Applying Kirchhoff's current law at the accumulator node yields
+\begin{equation}
+  C_{\mathrm{conf}}\dot c(t)=\frac{r(t)-c(t)}{R_{\mathrm{conf}}},
+\end{equation}
+or equivalently
+\begin{equation}
+  R_{\mathrm{conf}}C_{\mathrm{conf}}\dot c(t)+c(t)=r(t).
+\end{equation}
+Since $\tauc=R_{\mathrm{conf}}C_{\mathrm{conf}}$, the third state equation follows.
+
+It remains to show $0\le r(t)\le 1$. The factor
+\begin{equation}
+  \mathbf{1}\{|q_A(t)|+|q_B(t)|>V_{\mathrm{floor}}\}
+\end{equation}
+is either $0$ or $1$. The ratio
+\begin{equation}
+  \frac{|q_A(t)-q_B(t)|}{\epsilon + |q_A(t)|+|q_B(t)|}
+\end{equation}
+is nonnegative because numerator and denominator are nonnegative and the denominator is strictly positive since $\epsilon>0$. The outer minimum with $1$ therefore returns a value in $[0,1]$. Multiplying by the indicator preserves the interval $[0,1]$. Hence $0\le r(t)\le 1$.
 \end{proof}
 
-Proposition~\ref{prop:symmetry} does not imply that the two packet-gated designs are always identical, because many cases intentionally violate branch symmetry. It does show, however, that explicit ranking cannot create a difference in any operating regime where the routed branch histories are already matched.
-
-\begin{theorem}[Exact pre-handoff control-energy law]
-\label{thm:ctrl}
-For each implemented design $d$, the repaired pre-handoff control energy is exactly
+\begin{theorem}[Static-abstention bound]
+\label{thm:abstention}
+Fix a time horizon $T>0$ and suppose the raw confidence obeys $r(t)\le \rho$ for every $t\in[0,T]$, where $0\le \rho<\Theta$ and $\Theta=0.08$ is the implemented commit threshold. Assume $c(0)=0$. Then, for every $t\in[0,T]$,
 \begin{equation}
-  \Ectrl^{(d)} = G_{\mathrm{ctrl}}^{(d)}\int_0^{\tau_d} \vstore(t)^2\,dt,
+  c(t)\le \rho\left(1-e^{-t/\tauc}\right)<\Theta.
+  \label{eq:cupper}
 \end{equation}
-where \(\tau_d\) is the first handoff-latch time (or \(T_{\mathrm{stop}}\) if no handoff occurs) and the effective control conductance is
-\begin{align}
-  G_{\mathrm{ctrl}}^{(\Fixed)} &= \frac{1}{40\,\mathrm{M\Omega}}+\frac{1}{80\,\mathrm{M\Omega}} = \SI{37.5}{\nano\siemens}, \\
-  G_{\mathrm{ctrl}}^{(\Nonaware)} &= \frac{1}{40\,\mathrm{M\Omega}}+\frac{1}{80\,\mathrm{M\Omega}}+\frac{1}{80\,\mathrm{M\Omega}} = \SI{50}{\nano\siemens}, \\
-  G_{\mathrm{ctrl}}^{(\RCRanked)} &= G_{\mathrm{ctrl}}^{(\Blind)} = \SI{40}{\nano\siemens}, \\
-  G_{\mathrm{ctrl}}^{(\TCRanked)} &= \SI{18}{\nano\siemens}.
-\end{align}
+Consequently, the commit state
+\begin{equation}
+  m(t)=\frac{1+\tanh\!\bigl(k_{\mathrm{c}}(c(t)-\Theta)\bigr)}{2}
+\end{equation}
+satisfies
+\begin{equation}
+  m(t)\le m_{\rho}\coloneqq \frac{1+\tanh\!\bigl(k_{\mathrm{c}}(\rho-\Theta)\bigr)}{2}<\frac12,
+\end{equation}
+and the selector remains within
+\begin{equation}
+  \left|w_A(t)-\frac12\right| \le \frac{m_{\rho}}{2},
+  \qquad
+  \left|w_B(t)-\frac12\right| \le \frac{m_{\rho}}{2}
+  \label{eq:blinddeviation}
+\end{equation}
+of the blind packet weights.
 \end{theorem}
 
 \begin{proof}
-We proceed design by design. In every design, the control-monitor element \texttt{VCTRL\_MON} is an ideal zero-volt source from \texttt{n\_store} to \texttt{n\_ctrl}. Therefore the source enforces
+Lemma~\ref{lem:dynamics} gives the linear state equation
 \begin{equation}
-  V(n_{\mathrm{ctrl}}(t)) = V(n_{\mathrm{store}}(t)) = \vstore(t)
-  \label{eq:vctrl-equals-vstore}
+  \tauc \dot c(t)+c(t)=r(t),\qquad c(0)=0.
 \end{equation}
-for all $t$ in the transient analysis.
+The variation-of-constants formula for this first-order linear differential equation is
+\begin{equation}
+  c(t)=e^{-t/\tauc}c(0)+\frac{1}{\tauc}\int_0^t e^{-(t-s)/\tauc}r(s)\,ds.
+  \label{eq:variation}
+\end{equation}
+Substituting $c(0)=0$ yields
+\begin{equation}
+  c(t)=\frac{1}{\tauc}\int_0^t e^{-(t-s)/\tauc}r(s)\,ds.
+\end{equation}
+Since $r(s)\le \rho$ for every $s\in[0,t]$, we obtain
+\begin{equation}
+  c(t)\le \frac{\rho}{\tauc}\int_0^t e^{-(t-s)/\tauc}\,ds.
+\end{equation}
+The integral can be evaluated exactly:
+\begin{align}
+  \frac{1}{\tauc}\int_0^t e^{-(t-s)/\tauc}\,ds
+   &= \frac{1}{\tauc}\int_0^t e^{-u/\tauc}\,du \qquad (u=t-s) \\
+   &= \frac{1}{\tauc}\left[-\tauc e^{-u/\tauc}\right]_{u=0}^{u=t} \\
+   &= 1-e^{-t/\tauc}.
+\end{align}
+Therefore
+\begin{equation}
+  c(t)\le \rho\left(1-e^{-t/\tauc}\right).
+\end{equation}
+Because $0\le 1-e^{-t/\tauc}<1$ and $\rho<\Theta$, we obtain the strict bound $c(t)<\Theta$, which proves Eq.~\eqref{eq:cupper}.
 
-The measurement hook defines
+The hyperbolic tangent is strictly increasing, so $c(t)\le \rho$ implies
 \begin{equation}
-  p_{\mathrm{ctrl}}(t) = \max\{\vstore(t)\,I(\texttt{VCTRL\_MON})(t),0\}
+  \tanh\!\bigl(k_{\mathrm{c}}(c(t)-\Theta)\bigr)\le \tanh\!\bigl(k_{\mathrm{c}}(\rho-\Theta)\bigr).
 \end{equation}
-and then multiplies it by the pre-handoff factor \(1-\ell_d(t)\), where \(\ell_d(t)\in[0,1]\) is the nondecreasing handoff latch. Since every control branch draws current from \texttt{n\_ctrl} to ground and \(\vstore(t)\ge 0\) throughout the startup interval, the current through \texttt{VCTRL\_MON} is nonnegative whenever the control network is active. The outer maximum is therefore inactive, so
+Adding $1$ to both sides and dividing by $2$ preserves the inequality, hence
 \begin{equation}
-  p_{\mathrm{ctrl}}(t)=\vstore(t)\,I(\texttt{VCTRL\_MON})(t).
-  \label{eq:pctrl-no-pos}
+  m(t)\le \frac{1+\tanh\!\bigl(k_{\mathrm{c}}(\rho-\Theta)\bigr)}{2}=m_{\rho}.
 \end{equation}
+Because $\rho-\Theta<0$ and $\tanh(x)<0$ for every negative $x$, we have $m_{\rho}<1/2$.
 
-For the fixed design, the control network consists of two resistors from \texttt{n\_ctrl} to ground: \texttt{RCTRL\_OSC} = \SI{40}{\mega\ohm} and \texttt{RCTRL\_PATH} = \SI{80}{\mega\ohm}. By Ohm's law and \eqref{eq:vctrl-equals-vstore}, the current through the monitor source is
+It remains to bound the deviation from the blind packet weights. Define
 \begin{equation}
-  I(\texttt{VCTRL\_MON})(t)=\frac{\vstore(t)}{40\,\mathrm{M\Omega}}+\frac{\vstore(t)}{80\,\mathrm{M\Omega}}=G_{\mathrm{ctrl}}^{(\Fixed)}\,\vstore(t).
+  a(t)=\frac{1+\tanh\!\bigl(k_{\mathrm{s}}(q_A(t)-q_B(t))\bigr)}{2}.
 \end{equation}
-Substitute this into \eqref{eq:pctrl-no-pos} to obtain
+Since $\tanh$ maps $\mathbb{R}$ into $(-1,1)$, it follows that $a(t)\in(0,1)$ for every $t$. The implemented weight law is
 \begin{equation}
-  p_{\mathrm{ctrl}}^{(\Fixed)}(t)=G_{\mathrm{ctrl}}^{(\Fixed)}\,\vstore(t)^2.
+  w_A(t)=\frac{1-m(t)}{2}+m(t)a(t).
 \end{equation}
-Integrating only while the handoff latch is open yields
+Subtracting $1/2$ gives
 \begin{equation}
-  \Ectrl^{(\Fixed)}=\int_0^{T_{\mathrm{stop}}} p_{\mathrm{ctrl}}^{(\Fixed)}(t)(1-\ell_{\mathrm{fix}}(t))\,dt = G_{\mathrm{ctrl}}^{(\Fixed)}\int_0^{\tau_{\mathrm{fix}}} \vstore(t)^2\,dt.
+  w_A(t)-\frac12 = m(t)\left(a(t)-\frac12\right).
 \end{equation}
-
-The nonaware design adds one extra \SI{80}{\mega\ohm} branch, so the monitor current becomes
+Taking absolute values yields
 \begin{equation}
-  I(\texttt{VCTRL\_MON})(t)=\left(\frac{1}{40\,\mathrm{M\Omega}}+\frac{1}{80\,\mathrm{M\Omega}}+\frac{1}{80\,\mathrm{M\Omega}}\right)\vstore(t)=G_{\mathrm{ctrl}}^{(\Nonaware)}\vstore(t),
+  \left|w_A(t)-\frac12\right| = m(t)\left|a(t)-\frac12\right|.
 \end{equation}
-and the same integration step gives the claimed expression for \(\Ectrl^{(\Nonaware)}\).
-
-The RC-ranked and blind packet-gated designs use a single behavioral control sink of the form
+Since $a(t)\in(0,1)$, we have $|a(t)-1/2|\le 1/2$, so
 \begin{equation}
-  I_{\mathrm{ctrl}}(t)=G_{\mathrm{scout}}\,V(n_{\mathrm{ctrl}}(t))=G_{\mathrm{scout}}\,\vstore(t)
+  \left|w_A(t)-\frac12\right| \le \frac{m(t)}{2}\le \frac{m_{\rho}}{2}.
 \end{equation}
-with \(G_{\mathrm{scout}}=\SI{40}{\nano\siemens}\). Therefore
+Finally, $w_B(t)=1-w_A(t)$ implies
 \begin{equation}
-  p_{\mathrm{ctrl}}^{(\RCRanked)}(t)=p_{\mathrm{ctrl}}^{(\Blind)}(t)=G_{\mathrm{scout}}\,\vstore(t)^2,
+  \left|w_B(t)-\frac12\right| = \left|\frac12-w_A(t)\right| = \left|w_A(t)-\frac12\right| \le \frac{m_{\rho}}{2}.
 \end{equation}
-and integrating to the respective handoff latch times yields the stated formulas.
-
-The time-constant-ranked design has the same structure, but its control sink is \texttt{BCTRL\_TC} with conductance \(G_{\mathrm{TC}}=\SI{18}{\nano\siemens}\). Hence
-\begin{equation}
-  p_{\mathrm{ctrl}}^{(\TCRanked)}(t)=G_{\mathrm{TC}}\,\vstore(t)^2,
-\end{equation}
-which integrates to the claimed result.
-
-All cases therefore share the same generic law
-\begin{equation}
-  \Ectrl^{(d)} = G_{\mathrm{ctrl}}^{(d)} \int_0^{\tau_d}\vstore(t)^2\,dt.
-\end{equation}
-This completes the proof.
+This proves Eq.~\eqref{eq:blinddeviation}.
 \end{proof}
 
-\begin{corollary}[Matched-trajectory energy ratio]
-\label{cor:matched}
-If two designs $d_1$ and $d_2$ satisfy \(\vstore^{(d_1)}(t)=\vstore^{(d_2)}(t)\) for all \(t\in[0,\tau]\) and hand off at the same time \(\tau\), then
+\begin{theorem}[Commitment-latency bound under sustained separability]
+\label{thm:latency}
+Let $t_0\ge 0$ and assume that $r(t)\ge \rho$ for every $t\in[t_0,T]$, where $\rho>\Theta$. Let $c_0=c(t_0)$. Then, for every $t\in[t_0,T]$,
 \begin{equation}
-  \frac{\Ectrl^{(d_1)}}{\Ectrl^{(d_2)}} = \frac{G_{\mathrm{ctrl}}^{(d_1)}}{G_{\mathrm{ctrl}}^{(d_2)}}.
+  c(t)\ge \rho - (\rho-c_0)e^{-(t-t_0)/\tauc}.
+  \label{eq:clower}
 \end{equation}
-In particular, a matched \TCRanked trajectory should consume only \(18/40=0.45\) of the \RCRanked pre-handoff control energy.
+In particular, if $c_0<\Theta$, then every time
+\begin{equation}
+  t \ge t_0 + \tauc \ln\!\left(\frac{\rho-c_0}{\rho-\Theta}\right)
+  \label{eq:commitbound}
+\end{equation}
+satisfies $c(t)\ge \Theta$, and therefore $m(t)\ge 1/2$.
+\end{theorem}
+
+\begin{proof}
+Starting from Eq.~\eqref{eq:variation}, but now using $t_0$ as the initial time, we obtain
+\begin{equation}
+  c(t)=e^{-(t-t_0)/\tauc}c_0+\frac{1}{\tauc}\int_{t_0}^t e^{-(t-s)/\tauc}r(s)\,ds
+  \qquad \text{for } t\ge t_0.
+\end{equation}
+Since $r(s)\ge \rho$ on $[t_0,t]$,
+\begin{equation}
+  c(t)\ge e^{-(t-t_0)/\tauc}c_0+\frac{\rho}{\tauc}\int_{t_0}^t e^{-(t-s)/\tauc}\,ds.
+\end{equation}
+The integral evaluates exactly as before:
+\begin{equation}
+  \frac{1}{\tauc}\int_{t_0}^t e^{-(t-s)/\tauc}\,ds = 1-e^{-(t-t_0)/\tauc}.
+\end{equation}
+Substituting this identity yields
+\begin{align}
+  c(t)
+   &\ge e^{-(t-t_0)/\tauc}c_0+\rho\left(1-e^{-(t-t_0)/\tauc}\right) \\
+   &= \rho - (\rho-c_0)e^{-(t-t_0)/\tauc},
+\end{align}
+which proves Eq.~\eqref{eq:clower}.
+
+Now assume $c_0<\Theta<\rho$. Because $\rho-\Theta>0$ and $\rho-c_0>0$, the logarithm in Eq.~\eqref{eq:commitbound} is well defined. If
+\begin{equation}
+  t \ge t_0 + \tauc \ln\!\left(\frac{\rho-c_0}{\rho-\Theta}\right),
+\end{equation}
+then dividing by $\tauc$ and exponentiating the negated inequality gives
+\begin{equation}
+  e^{-(t-t_0)/\tauc} \le \frac{\rho-\Theta}{\rho-c_0}.
+\end{equation}
+Multiplying both sides by the positive factor $\rho-c_0$ yields
+\begin{equation}
+  (\rho-c_0)e^{-(t-t_0)/\tauc} \le \rho-\Theta.
+\end{equation}
+Subtracting both sides from $\rho$ gives
+\begin{equation}
+  \rho-(\rho-c_0)e^{-(t-t_0)/\tauc} \ge \Theta.
+\end{equation}
+Combining this inequality with Eq.~\eqref{eq:clower} yields $c(t)\ge \Theta$. The commit signal is
+\begin{equation}
+  m(t)=\frac{1+\tanh\!\bigl(k_{\mathrm{c}}(c(t)-\Theta)\bigr)}{2}.
+\end{equation}
+Since $c(t)-\Theta\ge 0$ and $\tanh(x)\ge 0$ for every $x\ge 0$, it follows that $m(t)\ge 1/2$.
+\end{proof}
+
+\begin{theorem}[Dynamic monitor-path control-energy law]
+\label{thm:ctrl}
+Let $\ell(t)$ denote the exported handoff latch on $[0,T_{\mathrm{stop}}]$, and define the repaired monitor-path control energy by
+\begin{equation}
+  \Ectrl =
+  \int_0^{T_{\mathrm{stop}}}
+  \operatorname{pos}\!\bigl(\vstore(t)I(\texttt{VCTRL\_MON})(t)\bigr)\bigl(1-\ell(t)\bigr)\,dt.
+  \label{eq:ctrlmetric}
+\end{equation}
+Then the blind packet deck satisfies
+\begin{equation}
+  \Ectrl^{(\Blind)} = \Gscout \int_0^{T_{\mathrm{stop}}} \vstore(t)^2\bigl(1-\ell(t)\bigr)\,dt,
+  \qquad
+  \Gscout = \SI{40}{\nano\siemens}.
+  \label{eq:blindenergy}
+\end{equation}
+For the \Confidence deck,
+\begin{equation}
+  \Ectrl^{(\Confidence)} =
+  \int_0^{T_{\mathrm{stop}}}
+  \left[\Gscout + \Gconf\left(0.25 + 0.75m(t)\right)\right]\vstore(t)^2\bigl(1-\ell(t)\bigr)\,dt,
+  \qquad
+  \Gconf = \SI{8}{\nano\siemens}.
+  \label{eq:confenergy}
+\end{equation}
+Consequently,
+\begin{equation}
+  42\,\mathrm{nS}\int_0^{T_{\mathrm{stop}}}\vstore(t)^2\bigl(1-\ell(t)\bigr)\,dt
+  \le
+  \Ectrl^{(\Confidence)}
+  \le
+  48\,\mathrm{nS}\int_0^{T_{\mathrm{stop}}}\vstore(t)^2\bigl(1-\ell(t)\bigr)\,dt.
+  \label{eq:energyband}
+\end{equation}
+If a run closes once and never reopens, then $\ell(t)=0$ before the closure time and $\ell(t)=1$ afterward, so Eqs.~\eqref{eq:blindenergy}--\eqref{eq:energyband} reduce to the simpler pre-first-handoff integrals over $[0,\tau]$.
+\end{theorem}
+
+\begin{proof}
+Equation~\eqref{eq:ctrlmetric} is the repaired measurement contract. The ideal zero-volt source \texttt{VCTRL\_MON} forces
+\begin{equation}
+  V(n_{\mathrm{ctrl}}(t)) = V(n_{\mathrm{store}}(t)) = \vstore(t).
+  \label{eq:ctrlstoreequal}
+\end{equation}
+We evaluate the current through \texttt{VCTRL\_MON} by inspecting each deck's control branch.
+
+For the blind packet gate, the only control sink is
+\begin{equation}
+  I_{\mathrm{blind}}(t)=\Gscout V(n_{\mathrm{ctrl}}(t)).
+\end{equation}
+Substituting Eq.~\eqref{eq:ctrlstoreequal} gives
+\begin{equation}
+  I_{\mathrm{blind}}(t)=\Gscout \vstore(t).
+\end{equation}
+This current is nonnegative because $\Gscout>0$ and $\vstore(t)\ge 0$ throughout the simulated startup interval. Therefore the outer $\operatorname{pos}$ operator is inactive and
+\begin{equation}
+  p_{\mathrm{ctrl}}^{(\Blind)}(t)=\Gscout \vstore(t)^2(1-\ell(t)).
+\end{equation}
+Integrating from $0$ to $T_{\mathrm{stop}}$ yields Eq.~\eqref{eq:blindenergy}.
+
+For the \Confidence deck, the blind packet sink is still present, and the implementation adds
+\begin{equation}
+  I_{\mathrm{conf,extra}}(t)=\Gconf V(n_{\mathrm{ctrl}}(t))\left(0.25+0.75m(t)\right).
+\end{equation}
+Again substituting Eq.~\eqref{eq:ctrlstoreequal} gives
+\begin{equation}
+  I_{\mathrm{conf,extra}}(t)=\Gconf \vstore(t)\left(0.25+0.75m(t)\right).
+\end{equation}
+The total control current is therefore
+\begin{equation}
+  I_{\mathrm{conf,total}}(t)=
+  \left[\Gscout + \Gconf\left(0.25+0.75m(t)\right)\right]\vstore(t).
+\end{equation}
+Since $\Gscout>0$, $\Gconf>0$, and $m(t)\in[0,1]$, the bracketed coefficient is nonnegative. Hence the $\operatorname{pos}$ operator is again inactive and
+\begin{equation}
+  p_{\mathrm{ctrl}}^{(\Confidence)}(t)=
+  \left[\Gscout + \Gconf\left(0.25+0.75m(t)\right)\right]\vstore(t)^2(1-\ell(t)).
+\end{equation}
+Integrating from $0$ to $T_{\mathrm{stop}}$ yields Eq.~\eqref{eq:confenergy}.
+
+Finally, because $m(t)\in[0,1]$,
+\begin{equation}
+  0.25 \le 0.25+0.75m(t)\le 1.
+\end{equation}
+Multiplying by $\Gconf=\SI{8}{\nano\siemens}$ and adding $\Gscout=\SI{40}{\nano\siemens}$ gives
+\begin{equation}
+  \SI{42}{\nano\siemens}\le \Gscout+\Gconf\left(0.25+0.75m(t)\right)\le \SI{48}{\nano\siemens}.
+\end{equation}
+Multiplying the inequality by the nonnegative quantity $\vstore(t)^2(1-\ell(t))$ and integrating from $0$ to $T_{\mathrm{stop}}$ yields Eq.~\eqref{eq:energyband}. If $\ell(t)$ makes exactly one transition from $0$ to $1$, then the factor $(1-\ell(t))$ is the indicator of $[0,\tau)$, which gives the stated single-close reduction.
+\end{proof}
+
+\begin{corollary}[Matched-trajectory control-energy ratio band]
+\label{cor:ratio}
+Suppose a \Confidence run and a \Blind run share the same store-voltage trajectory $v(t)$ and the same latch trace $\ell(t)$ on $[0,T_{\mathrm{stop}}]$, and suppose
+\begin{equation}
+  \int_0^{T_{\mathrm{stop}}} v(t)^2\bigl(1-\ell(t)\bigr)\,dt > 0.
+\end{equation}
+Then
+\begin{equation}
+  1.05 \le \frac{\Ectrl^{(\Confidence)}}{\Ectrl^{(\Blind)}} \le 1.20.
+  \label{eq:ratioband}
+\end{equation}
 \end{corollary}
 
 \begin{proof}
-Under the stated assumptions, the two integrals \(\int_0^{\tau}\vstore(t)^2dt\) are identical. Dividing the expressions from Theorem~\ref{thm:ctrl} immediately yields the conductance ratio. Substituting \(G_{\mathrm{ctrl}}^{(\TCRanked)}=\SI{18}{\nano\siemens}\) and \(G_{\mathrm{ctrl}}^{(\RCRanked)}=\SI{40}{\nano\siemens}\) gives $18/40=0.45$.
+Under the matched-trajectory assumption, Eq.~\eqref{eq:blindenergy} gives
+\begin{equation}
+  \Ectrl^{(\Blind)} = 40\,\mathrm{nS}\int_0^{T_{\mathrm{stop}}} v(t)^2\bigl(1-\ell(t)\bigr)\,dt,
+\end{equation}
+and Eq.~\eqref{eq:energyband} gives
+\begin{equation}
+  42\,\mathrm{nS}\int_0^{T_{\mathrm{stop}}} v(t)^2\bigl(1-\ell(t)\bigr)\,dt
+  \le
+  \Ectrl^{(\Confidence)}
+  \le
+  48\,\mathrm{nS}\int_0^{T_{\mathrm{stop}}} v(t)^2\bigl(1-\ell(t)\bigr)\,dt.
+\end{equation}
+Dividing all three terms by the positive denominator $\Ectrl^{(\Blind)}=40\,\mathrm{nS}\int_0^{T_{\mathrm{stop}}} v(t)^2(1-\ell(t))\,dt$ yields
+\begin{equation}
+  \frac{42}{40}\le \frac{\Ectrl^{(\Confidence)}}{\Ectrl^{(\Blind)}} \le \frac{48}{40},
+\end{equation}
+which is exactly Eq.~\eqref{eq:ratioband}.
 \end{proof}
 
-\begin{proposition}[Only \Nonaware contains an explicit pre-handoff branch-joining path]
-\label{prop:isolation}
-Before handoff, the nonaware netlist contains finite-resistance paths from the routed branch-A bus to the routed branch-B bus, while the fixed and all three packet-gated netlists do not.
+\begin{proposition}[Only merge-style decks create an explicit pre-handoff branch join]
+\label{prop:merge}
+Among the DEEPEN decks $\{\Confidence,\Blind,\TCRanked,\Merge\}$, only \Merge contains a finite-resistance pre-handoff path from the routed branch-A bus to the routed branch-B bus.
 \end{proposition}
 
 \begin{proof}
-We inspect each implementation directly.
-
-\textbf{Nonaware.} The nonaware netlist includes
-\begin{align}
-  &\texttt{RJOIN\_A\_P } n_{A,p} \leftrightarrow n_{\mathrm{start},p} \quad (\SI{1}{\milli\ohm}), \\
-  &\texttt{RJOIN\_B\_P } n_{B,p} \leftrightarrow n_{\mathrm{start},p} \quad (\SI{1}{\milli\ohm}), \\
-  &\texttt{RJOIN\_A\_N } n_{A,n} \leftrightarrow n_{\mathrm{start},n} \quad (\SI{1}{\milli\ohm}), \\
-  &\texttt{RJOIN\_B\_N } n_{B,n} \leftrightarrow n_{\mathrm{start},n} \quad (\SI{1}{\milli\ohm}).
-\end{align}
-Therefore the positive buses are connected by the explicit resistor chain
+In the \Merge implementation, the positive buses are connected by two explicit resistors:
 \begin{equation}
-  n_{A,p} \longleftrightarrow n_{\mathrm{start},p} \longleftrightarrow n_{B,p}
+  a_p \xleftrightarrow{R_{\mathrm{merge}}=\SI{5}{\ohm}} \mathrm{merge}_p
+  \xleftrightarrow{R_{\mathrm{merge}}=\SI{5}{\ohm}} b_p.
 \end{equation}
-with total resistance \SI{2}{\milli\ohm}, and the negative buses are connected by the analogous \SI{2}{\milli\ohm} chain. These are finite, direct, pre-handoff branch-joining paths.
+Therefore the positive routed buses are connected by a finite-resistance chain of total resistance \SI{10}{\ohm}. The negative buses are connected by the analogous \SI{10}{\ohm} chain. Hence \Merge has an explicit pre-handoff branch join.
 
-\textbf{Fixed.} The fixed design routes only source A into the startup pump. Source B is present in the source model and in the measurement hooks, but there is no resistor, switch, or pump input connecting the branch-B routed bus to the startup path. Hence there is no explicit pre-handoff branch-A to branch-B conductive path.
-
-\textbf{Packet-gated family.} In the RC-ranked, blind, and time-constant-ranked netlists, the routed buses of A and B appear only as input arguments to separate behavioral current sources. Each branch injects current into the common store node through its own current source expression, but there is no resistor, switch, or explicit bus-join element connecting branch A to branch B. A current source from branch A to the store node and a second current source from branch B to the same store node do not create a finite-resistance branch-to-branch path, because the constitutive law of each source depends on its local terminal voltage and not on a direct conductive link to the other branch bus.
-
-Consequently, before handoff, only \Nonaware contains an explicit finite branch-joining path between the routed inputs. The fixed and packet-gated designs do not.
+For \Blind, \Confidence, and \TCRanked, the routed branch nodes appear only in three places: observer sources that copy local branch voltage, local current-source pump terms that depend on the same branch voltage, and the shared store node. No resistor, switch, or other finite-conductance element directly connects branch A to branch B before handoff. A controlled current source that injects current based on $V(a_p,a_n)$ does not create a finite-resistance path to the branch-B bus, because its constitutive law depends only on the local branch voltage and the store node, not on a direct branch-to-branch conduction channel. Therefore none of the packet-isolated DEEPEN decks contains a finite-resistance branch join.
 \end{proof}
 
-Proposition~\ref{prop:isolation} does not prove that \Nonaware must fail every adversarial case. It proves the structural asymmetry that makes \Nonaware uniquely vulnerable to branch-loading and leak-path stress. The experimental sections test whether that structural difference is large enough to matter in the chosen weak-source regime.
-
 \section{Experimental Setup}
-\subsection{Primary Startup Matrix}
-The deterministic startup matrix spans four nominal open-circuit voltages \(\{\SI{20}{\milli\volt},\SI{50}{\milli\volt},\SI{100}{\milli\volt},\SI{300}{\milli\volt}\}\), four ramp rates \(\{\SI{0.1}{\milli\volt\per\second},\SI{1}{\milli\volt\per\second},\SI{10}{\milli\volt\per\second},\SI{100}{\milli\volt\per\second}\}\), three impedance ratios \(\{1,5,20\}\), and two polarity modes (same and mixed). The executed matrix contains 24 cases rather than the full 96-point cross, so each level is represented but not independently crossed inside every block. That choice keeps the runtime within the lane budget but limits causal interpretation.
+\label{sec:experiments}
+\subsection{Context Suites}
+The context evidence that motivated DEEPEN uses two deterministic suites and one robustness suite.
 
-All primary cases use \(C_{\mathrm{store}}=\SI{10}{\micro\farad}\), \(R_{\mathrm{load}}=\SI{100}{\mega\ohm}\), \(R_A=\SI{1}{\kilo\ohm}\), and \(R_B\in\{\SI{1}{\kilo\ohm},\SI{5}{\kilo\ohm},\SI{20}{\kilo\ohm}\}\). Same-polarity cases use \((p_A,p_B)=(+1,+1)\); mixed-polarity cases use \((+1,-1)\).
+\textbf{Primary startup matrix.} The 24-case matrix spans nominal open-circuit voltages $\{20,50,100,300\}\,\mathrm{mV}$, ramp rates $\{0.1,1,10,100\}\,\mathrm{mV/s}$, impedance ratios $\{1,5,20\}$, and same or mixed polarity. It is a budgeted coverage matrix, not a full factorial. The active designs are $\mathcal{D}_{\mathrm{ctx}}$.
 
-\subsection{Expanded Falsifier Suite}
-The falsifier suite contains ten cases.
+\textbf{Falsifier suite.} The 10-case deterministic falsifier pack targets source collapse, mixed polarity, unequal open-circuit voltage, finite off-isolation leak, and repaired UVLO chatter. The cases are \texttt{fa\_001} through \texttt{fa\_010}, and Appendix~\ref{app:cases} gives the detailed manifest.
+
+\textbf{Robustness suite.} Four context cases are rerun under randomized perturbations: \texttt{fa\_001}, \texttt{fa\_004}, \texttt{fa\_005}, and \texttt{sm\_015}. Each design-case pair uses 24 independent samples. The executed design set is $\mathcal{D}_{\mathrm{ctx}}$ plus \Merge and \Confidence, so that the corrected context frontier and the new controller appear under the same sampled separators. The randomized parameters include source resistances, store capacitance, startup dead zone, controller $RC$ values, leak resistance in leak-path cases, collapse timing, and collapse scales. The seed formula is
+\begin{equation}
+  s = 20260312 + 10000\,o_c + 1000\,o_d + n,
+\end{equation}
+where $o_c$ is the case offset, $o_d$ is the design offset, and $n\in\{0,\dots,23\}$ is the sample index.
+
+\subsection{DEEPEN Near-Tie Matrix}
+The DEEPEN matrix is intentionally small. Its purpose is not to redraw the full startup envelope, but to answer one sharply bounded question: when does a confidence-gated controller help relative to the blind packet baseline?
+
+The 12 core cases are the Cartesian product of
+\begin{enumerate}
+\item family: static or late arrival,
+\item voltage pair: $(100,101)\,\mathrm{mV}$, $(100,103)\,\mathrm{mV}$, or $(100,105)\,\mathrm{mV}$,
+\item impedance ratio: $1:1$ or $1:3$,
+\item same polarity and ramp rate \SI{10}{\milli\volt\per\second}.
+\end{enumerate}
+In the late family, source $B$ is suppressed until \SI{4}{\second}. The core compared designs are $\{\Confidence,\Blind,\TCRanked\}$. Four additional decisive controls add \Merge on the two $V_B-V_A=\SI{3}{\milli\volt}$ cases at both impedance ratios and both temporal families.
+
+\subsection{Hardware, Software, and Reproduction State}
+All simulations were executed on a Linux x86-64 workstation with 20 logical CPUs, Python~3.10.17, and \texttt{ngspice-39}. The raw netlists, logs, CSV tables, manifests, and figure scripts are stored under \laneroot\ and the repository-level \path{figures/} and \path{tools/} directories. The specific files used by the final paper are:
 \begin{itemize}
-\item \texttt{fa\_001}: same-polarity source collapse with moderate impedance asymmetry.
-\item \texttt{fa\_002}: mixed-polarity source collapse with ratio 1:20.
-\item \texttt{fa\_003}: mixed-polarity low-voltage asymmetry without explicit collapse.
-\item \texttt{fa\_004}: real UVLO chatter with lowered handoff thresholds and delayed dual collapse.
-\item \texttt{fa\_005}: mixed-polarity conflict with a heavy load and collapse of one source.
-\item \texttt{fa\_006}: dual collapse under mixed polarity and heavy load.
-\item \texttt{fa\_007} and \texttt{fa\_008}: unequal open-circuit voltage cases in same and mixed polarity.
-\item \texttt{fa\_009} and \texttt{fa\_010}: same and mixed-polarity leak-path cases with router leak resistance forced to \SI{1}{\kilo\ohm}.
+\item \path{tables/startup_results.csv}, \path{tables/startup_summary.json},
+\item \path{tables/falsifier_results.csv}, \path{tables/falsifier_summary.json},
+\item \path{tables/robustness_results.csv}, \path{tables/robustness_summary.json},
+\item \path{tables/deepen_results.csv}, \path{tables/deepen_summary.json},
+\item \path{results/manifests/deepen_near_tie_manifest.json},
+\item the shared netlists under \path{netlists/shared/} and design-specific decks under \path{netlists/champion/} and \path{netlists/ablations/}.
 \end{itemize}
-Appendix~\ref{app:cases} gives the complete numeric manifest.
 
-\subsection{Result Aggregation and Confidence Intervals}
-The primary matrix and falsifier suite are deterministic. Their counts are exact within the simulated model and are therefore reported as counts rather than as estimated means. The robustness study adds Wilson \(95\%\) intervals on startup probability for the selected cases. Because all 24-sample runs in a success-only group have identical observed probability, the lower bound for those groups is \(0.8620\) rather than 1.0, reflecting finite sample size.
+One implementation repair matters for the final paper. The \Blind deck now binds its load resistor to the manifest parameter \texttt{R\_LOAD} rather than a hard-coded \SI{100}{\mega\ohm} value, and all blind falsifier and robustness numbers reported here were regenerated after that fix. The DEEPEN near-tie matrix used the default load and was numerically unchanged by this repair.
+
+The DEEPEN robustness rerun was intentionally \emph{not} executed for every separator case, so the final paper does not claim confidence-gated robustness intervals beyond the deterministic near-tie matrix. That omission is a real limitation and is discussed explicitly in Section~\ref{sec:discussion}.
 
 \section{Results}
-\subsection{Primary Startup Matrix: a Null Result}
-Figure~\ref{fig:primary} is the first major result, and it is a null. Every row is identical. All five designs start in $17/24$ cases. All five achieve the same grouped counts: $8$ mixed-polarity successes and $9$ same-polarity successes; ratio-group counts of $6$, $5$, and $6$; and ramp-group counts of $6$, $6$, $4$, and $1$ for \SIlist{0.1;1;10;100}{\milli\volt\per\second}. The startup envelope in the chosen 24-case matrix is therefore dominated by the source model and the load/storage contract, not by the selector law.
+\subsection{Context Evidence Rejects the Broad Ranking Story}
+The first result is negative. Figure~\ref{fig:primary} shows the grouped 24-case primary startup matrix. Every row is identical. All five context designs start in exactly $17/24$ cases. The global startup envelope is therefore not expanded by adding packet gating, by hard-joining the inputs, or by changing the pre-handoff ranking law.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{figures/h1_primary_matrix_heatmap.pdf}
-  \caption{Grouped success counts for the 24-case primary startup matrix. Each row corresponds to one design and each column group to one factor family. Every row is identical: the entire five-design pack is tied at $17/24$ startups. This figure is intentionally a null result. It shows that the global startup envelope in the chosen matrix is unchanged by adding packet gating, by joining both inputs, or by changing the pre-handoff selector law.}
+  \includegraphics[width=\linewidth]{h1_primary_matrix_heatmap.pdf}
+  \caption{Grouped success counts for the 24-case primary startup matrix. Each row is one design from $\mathcal{D}_{\mathrm{ctx}}$, and each column block groups the same deterministic cases by polarity, impedance ratio, or ramp rate. Every row contains the same aggregate outcome: $17/24$ startups. This figure is important precisely because it is a null result. It rules out any honest claim that the earlier source-aware controllers widened the startup envelope of the chosen helper-free model.}
   \label{fig:primary}
 \end{figure}
 
-Table~\ref{tab:headline} quantifies the tie. The median successful-case handoff times are similar, ranging from \SI{18.2124}{\second} to \SI{18.5637}{\second}. Even the source-blind and time-constant-ranked variants do not change the startup-matrix success count. That null result matters because it kills any honest attempt to sell the paper as a broad improvement in startup envelope.
+The falsifier suite then shows that the corrected context pack is a frontier rather than a one-line verdict. Table~\ref{tab:context} and Figure~\ref{fig:falsifier} report the deterministic adversarial results. \TCRanked reaches $9/10$ startups, the original \RCRanked design reaches $8/10$, \Fixed reaches $7/10$, and both \Blind and \Nonaware reach $5/10$. No row is perfect. All five designs fail the dual-collapse stress \texttt{fa\_006}; \Fixed alone collapses on the source-collapse separator \texttt{fa\_001}; and \Blind plus \Nonaware both fail the heavy-load mixed-conflict and leak-path separators \texttt{fa\_005}, \texttt{fa\_009}, and \texttt{fa\_010}. Packet isolation still matters, but blind packet isolation by itself is not sufficient.
 
 \begin{table}[t]
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccp{0.18\linewidth}}
 \toprule
-Design & Startup matrix & Falsifier & Median successful & Median successful \\
- & successes & successes & $\thandoff$ (s) & $\Ectrl$ (J) \\
+Design & Startup matrix & Falsifier & Median & Median monitor-path & Interpretation \\
+ & successes & successes & $\thandoff$ (s) & $\Ectrl$ (J) & \\
 \midrule
-\RCRanked & $17/24$ & $8/10$ & 18.5461 & $2.37717\times 10^{-13}$ \\
-\Fixed & $17/24$ & $7/10$ & 18.2124 & $2.13446\times 10^{-13}$ \\
-\Nonaware & $17/24$ & $5/10$ & 18.2711 & $2.91240\times 10^{-13}$ \\
-\Blind & $17/24$ & $10/10$ & 18.5637 & $2.37717\times 10^{-13}$ \\
-\TCRanked & $17/24$ & $9/10$ & 18.3911 & $1.11852\times 10^{-13}$ \\
+\RCRanked & $17/24$ & $8/10$ & 18.5461 & $2.37717\times 10^{-13}$ & original source-aware champion; no startup-envelope gain and sub-\TCRanked adversarial count \\
+\Fixed & $17/24$ & $7/10$ & 18.2124 & $2.13446\times 10^{-13}$ & one-branch baseline; broken on the source-collapse separator \\
+\Nonaware & $17/24$ & $5/10$ & 18.2711 & $2.91240\times 10^{-13}$ & explicit pre-handoff join is fragile on mixed-conflict and leak stresses \\
+\Blind & $17/24$ & $5/10$ & 18.5637 & $2.37717\times 10^{-13}$ & blind packet isolation alone fails the heavy-load mixed-conflict and leak separators \\
+\TCRanked & $17/24$ & $9/10$ & 18.3911 & $1.11852\times 10^{-13}$ & strongest context falsifier count and lowest monitor-path control burden, but still no envelope gain \\
 \bottomrule
 \end{tabular}
-\caption{Headline quantitative summary from the deterministic evidence pack. The startup-matrix tie is exact. The expanded falsifier suite overturns the original mechanism story by placing the blind packet gate above the RC-ranked design.}
-\label{tab:headline}
+\caption{Context evidence that motivated the DEEPEN lane. The startup-matrix tie kills any broad envelope-expansion claim. The repaired falsifier suite exposes a frontier rather than a champion: no design clears all ten attacks, and all five fail the dual-collapse case \texttt{fa\_006}. The numbers in this table are exact within the simulated model because the underlying runs are deterministic rather than sampled.}
+\label{tab:context}
 \end{table}
-
-\subsection{Expanded Falsifiers Overturn the Original Hypothesis}
-Figure~\ref{fig:falsifier} is the paper's central experimental figure. It overturns the original RC-ranked story in two independent ways.
-
-First, \Blind reaches $10/10$ deterministic startups, while \RCRanked reaches only $8/10$. The only cases that separate those two designs are \texttt{fa\_002} and \texttt{fa\_006}, both of which are won by the blind packet gate. This means the executed same-family ablation does more than ``match'' the champion. It dominates it.
-
-Second, the failure localization lines up with Proposition~\ref{prop:isolation}. The \Nonaware design uniquely fails both leak-path cases (\texttt{fa\_009} and \texttt{fa\_010}) and the mixed-conflict case \texttt{fa\_005}. The fixed design avoids the explicit join failure but still fails the same-polarity collapse case \texttt{fa\_001}. Packet-gated isolation therefore explains the surviving boundary more parsimoniously than explicit ranking does.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{figures/h1_falsifier_boundary.pdf}
-  \caption{Expanded 10-case falsifier matrix. Green cells denote successful startup; red cells denote failure. Text within each cell reports measured pre-handoff back-drive energy or chatter events. The important pattern is row-wise, not column-wise: the blind packet gate is the only design that reaches $10/10$ and the only one that avoids the measured fall/rise2 chatter event in \texttt{fa\_004}. The nonaware design fails both leak-path cases, the mixed-conflict case, and remains weaker on collapse, consistent with its explicit pre-handoff branch join.}
+  \includegraphics[width=\linewidth]{h1_falsifier_boundary.pdf}
+  \caption{Expanded 10-case falsifier matrix for the context pack. Each cell reports deterministic startup success or failure and the load-bearing diagnostic for that case. The row pattern is the important one. \TCRanked is strongest at $9/10$, but no design is perfect and all five fail the dual-collapse case \texttt{fa\_006}. \Blind and \Nonaware both collapse on the mixed-conflict and leak-path separators, while \Fixed alone breaks on \texttt{fa\_001}. This context figure is why the final paper does not ask ``which fixed ranking law is best overall?'' but instead asks whether there is any bounded regime in which a controller should rank at all.}
   \label{fig:falsifier}
 \end{figure}
 
-Two case studies are especially informative.
-\begin{itemize}
-\item \textbf{\texttt{fa\_001}.} The fixed design fails deterministically, \Nonaware starts late at \SI{10.9359}{\second} with nonzero back-drive, and the three packet-gated designs start near \SI{5.2}{\second}--\SI{5.4}{\second} with zero back-drive. This is the cleanest fixed-baseline separator.
-\item \textbf{\texttt{fa\_004}.} The repaired chatter case finally measures what it was supposed to measure. \RCRanked, \Fixed, \Nonaware, and \TCRanked all show a first handoff near \SI{7}{\second}, a fall near \SI{11.2}{\second}, and a second rise near \SI{15.9}{\second}. \Blind starts earlier at \SI{3.83739}{\second} and never falls back through the threshold. The blind packet gate therefore does not merely preserve startup; it removes the measured chatter event within this model.
-\end{itemize}
-
-\subsection{Corrected Metric Accounting Restores Interpretability}
-The repaired measurement hook is not cosmetic. Figure~\ref{fig:accounting} shows that full-window control-energy integration inflates all medians by a factor of approximately $1.08\times 10^{10}$ and largely obscures the distinctions that matter before handoff. Under corrected pre-handoff accounting, \RCRanked and \Blind have the same successful-case median control energy, as predicted by Theorem~\ref{thm:ctrl}, while \TCRanked is substantially lower.
+The measurement repair is equally important. Figure~\ref{fig:accounting} compares the old full-window control-energy integral with the repaired pre-handoff metric. The full-window integral keeps counting post-handoff activity and exaggerates every design by roughly ten orders of magnitude. The repaired pre-handoff metric restores interpretability and confirms that the context results are not artifacts of post-handoff bookkeeping.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{figures/h1_metric_accounting.pdf}
-  \caption{Median control energy under the repaired pre-handoff contract and the legacy full-window diagnostic. The full-window integral exaggerates every design by about $1.08\times 10^{10}$ because it continues to count post-handoff activity. The repaired metric exposes the actual pre-handoff ordering: \RCRanked and \Blind are equal on the startup matrix, \Nonaware is the largest, and \TCRanked is the smallest. Theorem~\ref{thm:ctrl} explains this ordering through effective control conductance.}
+  \includegraphics[width=\linewidth]{h1_metric_accounting.pdf}
+  \caption{Metric-contract repair for the context pack. The gray bars are the legacy full-window integrals, which continue to count controller activity after handoff and are therefore not appropriate for startup claims. The green bars are the repaired pre-handoff integrals used in this paper. The repair matters conceptually and numerically: it restores the correct ordering and allows the later DEEPEN controller to be compared under the same accounting path.}
   \label{fig:accounting}
 \end{figure}
 
-Corollary~\ref{cor:matched} predicts that a matched \TCRanked trajectory should consume only 45\% of the \RCRanked control energy. The measured successful-case median ratio is
-\begin{equation}
-  \frac{1.11852\times 10^{-13}}{2.37717\times 10^{-13}} = 0.4705,
-\end{equation}
-which is close enough to the ideal conductance ratio to support the claim that the energy reduction is mechanistic, not accidental. The remaining gap is explained by small differences in the actual store-voltage trajectories and handoff times.
+Taken together, Table~\ref{tab:context} and Figures~\ref{fig:primary}--\ref{fig:accounting} justify the paper's shift in emphasis. The remaining live question is no longer whether source-aware ranking or blind packet isolation is broadly helpful in every regime. The remaining live question is whether there exists a bounded startup regime in which a controller should rank only after the evidence becomes temporally separable.
 
-\subsection{Ablation Tradeoffs and Design Guidance}
-Figure~\ref{fig:tradeoff} compresses the entire evidence pack into four panels. The top-left panel shows the startup-matrix tie. The top-right panel shows why the paper exists: the falsifier ranking is reversed relative to the original hypothesis. The bottom-left panel shows that handoff-time differences inside the startup matrix are minor. The bottom-right panel shows the engineering compromise. If one insists on keeping explicit source awareness inside the packet-gated family, then \TCRanked is the only defensible version. If one cares most about adversarial correctness in the executed model, \Blind is the dominant design.
+\subsection{Near-Tie Matrix Reveals a Temporal-Separability Law}
+The DEEPEN near-tie matrix answers that question directly. Table~\ref{tab:deepen-core} and Figure~\ref{fig:deepen} show a clear regime split.
+
+On \emph{static} near ties, the new controller behaves almost exactly like the blind baseline. Both \Confidence and \Blind start all $6/6$ cases. The median handoff-time difference is only $-0.000545\,\mathrm{s}$, and the controller commits in $0/6$ cases. Theorem~\ref{thm:abstention} is the right interpretation here: when the normalized separability signal stays sub-threshold, the selector is provably confined near the blind packet posture.
+
+On \emph{late-arrival} near ties, the story changes. Again both designs start all $6/6$ cases, but \Confidence now commits in $6/6$ cases with median $\tcommit=1.02799\,\mathrm{s}$ and improves median handoff time by $0.30882\,\mathrm{s}$ relative to \Blind. Theorem~\ref{thm:latency} explains why that behavior is expected: the delayed source creates a persistent separability window while source $A$ is active alone, so the integrator has time to cross threshold before the second source arrives.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{0.12\linewidth}lcccc}
+\toprule
+Family & Design & Successes & Median $\thandoff$ (s) & Median monitor-path $\Ectrl$ (J) & Commit count / median $\tcommit$ \\
+\midrule
+static & \Confidence & $6/6$ & 4.668195 & $5.28058\times10^{-8}$ & $0/6$ / --- \\
+static & \Blind & $6/6$ & 4.667650 & $5.01102\times10^{-8}$ & $0/6$ / --- \\
+static & \TCRanked & $6/6$ & 4.652090 & $2.24100\times10^{-8}$ & $0/6$ / --- \\
+\midrule
+late & \Confidence & $6/6$ & 5.028505 & $5.14936\times10^{-8}$ & $6/6$ / 1.02799 \\
+late & \Blind & $6/6$ & 5.337345 & $4.35393\times10^{-8}$ & $0/6$ / --- \\
+late & \TCRanked & $6/6$ & 4.673435 & $2.23952\times10^{-8}$ & $0/6$ / --- \\
+\bottomrule
+\end{tabular}
+\caption{DEEPEN near-tie core matrix. The design law is encoded row-by-row. On static near ties, \Confidence effectively stays blind. On late-arrival near ties, it commits and recovers part of the delay paid by the blind baseline. \TCRanked remains faster in both families, which blocks any best-overall claim.}
+\label{tab:deepen-core}
+\end{table}
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{figures/h1_ablation_tradeoff.pdf}
-  \caption{Ablation tradeoffs across the deterministic evidence pack. Startup-matrix success is identical for all five designs, so the global envelope is unchanged. The expanded falsifier suite then becomes the deciding discriminator, where \Blind is best and \TCRanked is second. The control-energy panel shows why \TCRanked remains valuable as a secondary result: it achieves nearly the same adversarial boundary with the lowest pre-handoff control cost.}
-  \label{fig:tradeoff}
+  \includegraphics[width=\linewidth]{h1_deepen_confidence_tradeoff.pdf}
+  \caption{Central DEEPEN figure. Left panel: median explicit handoff times for the static and late near-tie families. The labels above the \Confidence bars report commit counts. Static near ties produce $0/6$ commits and essentially no gain over \Blind; late-arrival near ties produce $6/6$ commits and a substantial median gain. Right panel: decisive same-scaffold control frontier on the four $V_B-V_A=\SI{3}{\milli\volt}$ cases. \Merge is fastest but incurs measurable wrong-way energy, \Blind is slowest but leak-free, and \Confidence occupies the middle of the frontier while preserving zero measured backdrive. The figure is the paper's core empirical result: the useful regime is temporal separability, not static ranking.}
+  \label{fig:deepen}
 \end{figure}
 
-\subsection{Robustness: the Boundary Survives Randomized Perturbation}
-Figure~\ref{fig:robustness} and Table~\ref{tab:robustness} show the uncertainty-qualified version of the load-bearing cases. All success-only groups have the same Wilson lower bound of 0.8620 because they are based on 24/24 successes. The informative cases are the failure groups.
+The negative edge of the result is equally important. \TCRanked remains faster than \Confidence in both families. The median gap is $0.01611\,\mathrm{s}$ in the static family and $0.355075\,\mathrm{s}$ in the late family. The paper is therefore not a champion-benchmark paper, and it would be inaccurate to present \Confidence as the best overall selector in the executed family.
 
-\begin{itemize}
-\item In \texttt{fa\_001}, the fixed design remains at $0/24$ with a Wilson interval of $[0,0.138]$, while \Nonaware remains at $21/24$ with interval $[0.690,0.957]$. The packet-gated designs remain $24/24$.
-\item In \texttt{fa\_005}, \Nonaware remains $0/24$, while the other four designs remain $24/24$.
-\item In \texttt{sm\_015}, all five designs remain $24/24$, which confirms that the primary-matrix null stays a null under the scripted perturbation.
-\end{itemize}
+\subsection{The Same-Scaffold No-Packet Control Exposes the Frontier}
+The near-tie result becomes scientifically useful only because the same-scaffold no-packet control was executed. Table~\ref{tab:frontier} reports the four decisive control cases. \Merge is fastest, with median $\thandoff=4.67638\,\mathrm{s}$, but it reopens measurable backdrive at $1.54753\times 10^{-9}\,\mathrm{J}$. \Blind is slower, with median $\thandoff=5.01093\,\mathrm{s}$, but it preserves zero measured backdrive. \Confidence sits between them at $4.85884\,\mathrm{s}$ and zero measured backdrive. Proposition~\ref{prop:merge} explains why \Merge is the only deck that can reopen that explicit conductive path.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccp{0.22\linewidth}}
+\toprule
+Design & Cases & Median $\thandoff$ (s) & Median monitor-path $\Ectrl$ (J) & Median $\Eback$ (J) & Interpretation \\
+\midrule
+\Merge & 4 & 4.67638 & $4.99426\times10^{-8}$ & $1.54753\times10^{-9}$ & fastest, but leaks energy across the merged pre-handoff path \\
+\Confidence & 4 & 4.85884 & $5.22113\times10^{-8}$ & 0 & partial speed recovery without reopening backdrive \\
+\Blind & 4 & 5.01093 & $4.69177\times10^{-8}$ & 0 & safest blind baseline on the decisive cases \\
+\bottomrule
+\end{tabular}
+\caption{Decisive same-scaffold control frontier. These rows use only the four DEEPEN control cases where \Merge was explicitly executed. The frontier is the strongest bounded tradeoff supported by the paper: packet isolation preserves zero backdrive, while removing it buys speed at the cost of wrong-way energy.}
+\label{tab:frontier}
+\end{table}
+
+\subsection{Theory and Measurement Agree on What the Controller Is Paying For}
+Theoretical predictions from Section~5 line up with the measured data in a way that is too structured to be accidental.
+
+First, Theorem~\ref{thm:ctrl} and Corollary~\ref{cor:ratio} predict that, for matched trajectories, \Confidence must pay between $1.05\times$ and $1.20\times$ the monitor-path pre-handoff control energy of \Blind. The static-family median ratio is
+\begin{equation}
+  \frac{5.28058\times10^{-8}}{5.01102\times10^{-8}} = 1.0538,
+\end{equation}
+which is essentially the lower edge of the matched-trajectory band. This is exactly what one would expect from Theorem~\ref{thm:abstention}: static near ties rarely activate the extra confidence burden beyond its minimum. The late-family median ratio is
+\begin{equation}
+  \frac{5.14936\times10^{-8}}{4.35393\times10^{-8}} = 1.1827,
+\end{equation}
+which remains inside the $[1.05,1.20]$ band and moves toward the upper edge, consistent with sustained commitment activity.
+
+Second, Theorem~\ref{thm:latency} predicts that commitment occurs only after the raw separability signal stays above threshold long enough to charge the confidence node. The measured late-family median $\tcommit=1.02799\,\mathrm{s}$ is qualitatively consistent with that mechanism: commitment occurs early enough to help handoff, but not instantaneously. The controller is integrating evidence, not acting on a single transient excursion.
+
+The agreement is not perfect and should not be oversold. The theorems are structural netlist theorems, whereas the reported ratios are family medians over deterministic cases with slightly different store trajectories. The claim is therefore modest: the measured numbers occupy the regions that the implemented equations say they should occupy.
+
+\subsection{Sampled Robustness Preserves the Corrected Separators}
+The robustness study predates DEEPEN and should be interpreted accordingly. It does \emph{not} establish confidence-gated robustness on every near-tie separator. What it does show is that the corrected context frontier survives moderate parameter jitter instead of collapsing into a single winner.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{figures/h1_robustness_ci.pdf}
-  \caption{Startup probability with Wilson 95\% intervals from 24 randomized runs per design-case. \texttt{fa\_001} remains a clean separator against \Fixed, and \texttt{fa\_005} remains a clean separator against \Nonaware. \texttt{fa\_004} and \texttt{sm\_015} show that all five designs are robust in the chatter-repair case and in a representative primary-matrix null case. The packet-gated family therefore preserves its advantage under modest parameter jitter.}
+  \includegraphics[width=\linewidth]{h1_robustness_ci.pdf}
+  \caption{Wilson 95\% intervals for four context cases rerun with 24 randomized samples per design-case. The figure is not a full DEEPEN robustness claim; the near-tie matrix was not rerun under the same Monte Carlo envelope. Instead, it verifies that the corrected context separators survive modest scripted parameter jitter. \Fixed remains broken on \texttt{fa\_001}, \Blind and \Nonaware remain broken on \texttt{fa\_005}, \TCRanked and \RCRanked remain intact on both sampled separators, and \Merge exhibits additional fragility despite its faster deterministic frontier point.}
   \label{fig:robustness}
 \end{figure}
 
@@ -581,71 +861,186 @@ Figure~\ref{fig:robustness} and Table~\ref{tab:robustness} show the uncertainty-
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{p{0.12\linewidth}p{0.13\linewidth}p{0.20\linewidth}p{0.18\linewidth}p{0.18\linewidth}}
+\begin{tabular}{p{0.12\linewidth}p{0.16\linewidth}p{0.18\linewidth}p{0.18\linewidth}p{0.18\linewidth}}
 \toprule
 Case & Design & Startup rate & Wilson 95\% interval & Median $\thandoff$ on successful runs (s) \\
 \midrule
-\texttt{fa\_001} & \Fixed & $0/24 = 0.000$ & $[0.000, 0.138]$ & --- \\
-\texttt{fa\_001} & \Nonaware & $21/24 = 0.875$ & $[0.690, 0.957]$ & 9.76317 \\
-\texttt{fa\_001} & Packet-gated family & $24/24 = 1.000$ & $[0.862, 1.000]$ & 5.11--5.41 \\
-\texttt{fa\_005} & \Nonaware & $0/24 = 0.000$ & $[0.000, 0.138]$ & --- \\
-\texttt{fa\_005} & Other four designs & $24/24 = 1.000$ & $[0.862, 1.000]$ & 4.71--18.05 \\
-\texttt{sm\_015} & All five designs & $24/24 = 1.000$ & $[0.862, 1.000]$ & 17.89--19.92 \\
+\texttt{fa\_001} & \Fixed & $0/24$ & $[0.000, 0.138]$ & --- \\
+\texttt{fa\_001} & \Nonaware & $21/24$ & $[0.690, 0.957]$ & 9.87076 \\
+\texttt{fa\_001} & \Blind & $24/24$ & $[0.862, 1.000]$ & 6.22730 \\
+\texttt{fa\_001} & \TCRanked & $24/24$ & $[0.862, 1.000]$ & 5.15737 \\
+\texttt{fa\_005} & \Nonaware & $0/24$ & $[0.000, 0.138]$ & --- \\
+\texttt{fa\_005} & \Blind & $0/24$ & $[0.000, 0.138]$ & --- \\
+\texttt{fa\_005} & \RCRanked & $24/24$ & $[0.862, 1.000]$ & 18.16760 \\
+\texttt{fa\_005} & \TCRanked & $24/24$ & $[0.862, 1.000]$ & 18.06530 \\
 \bottomrule
 \end{tabular}
-\caption{Selected robustness summary. Grouped rows are used when multiple designs share identical startup probability. The deterministic boundary remains visible after parameter jitter.}
+\caption{Selected robustness summary for the two decisive sampled separators. These intervals should be read as model-uncertainty summaries for the scripted perturbations, not as fabrication-yield estimates. They reinforce the corrected context frontier rather than a blind-wins or rank-wins story.}
 \label{tab:robustness}
 \end{table}
 
+Figure~\ref{fig:robustness} and Table~\ref{tab:robustness} show that the corrected separators remain visible after random perturbation. On \texttt{fa\_001}, \Fixed remains $0/24$, \Nonaware drops to $21/24$, \Merge drops to $16/24$, and the ranked or packet-isolated controllers \RCRanked, \Blind, \TCRanked, and \Confidence all remain $24/24$. On \texttt{fa\_005}, the split flips: \Blind, \Nonaware, and \Merge are all $0/24$, while \RCRanked, \Fixed, \TCRanked, and \Confidence are all $24/24$. The sampled context result is therefore not collapsing under modest parameter variation. The paper simply refuses to overextend that fact into a claim that \Confidence itself has been fully robustness-validated on every decisive near-tie separator. It has not.
+
 \section{Discussion}
-The paper's most important message is methodological. The same-family ablation should have been the first experiment, not the last. Once the blind packet gate is executed, the architectural story changes immediately. The correct conclusion is no longer ``a smarter selector improves startup.'' The correct conclusion is ``the selector was never the real ingredient; the isolation topology was.'' That is a stronger engineering insight precisely because it is negative.
+\label{sec:discussion}
+The paper's main message is not that another source-aware controller wins. The main message is that startup-control research benefits from a tighter causal ladder. First execute the same-family ``do less'' ablation. Then execute the same-scaffold no-packet control. Then rerun the fragile rows after implementation repairs and sampled perturbations. Only after that should a new mechanism be granted a live niche. In this repository, that ladder changed the conclusion completely. Neither the original \RCRanked story nor the earlier blind-only story survived. A narrower \Confidence result did.
 
-The evidence also suggests a practical design rule. If the design goal is adversarial startup robustness inside this helper-free model, then a blind packet gate is sufficient and often better. If the design goal includes tighter control-energy budget without giving up most adversarial robustness, then a time-constant-ranked arbiter is the only source-aware variant that remains worth considering. In contrast, the original RC-ranked selector now appears to combine the cost of explicit ranking with none of the falsifier advantage that motivated it.
+That surviving result is scientifically useful because it is not just a null and not just an unconstrained frontier plot. It isolates a design law that an analog designer can actually act on:
+\begin{enumerate}
+\item If weak sources remain statically ambiguous, stay close to the blind packet posture. The controller should not spend startup energy pretending to know what the evidence does not support.
+\item If one source is present early and the other arrives later, commit during that separability window. The controller can recover part of the blind baseline's delay without reopening the backdrive of a merged startup path.
+\item If the dominant stress is heavy-load mixed conflict or leak, blind packet isolation alone is not enough; the repaired context pack favors ranked packet-isolated controllers such as \TCRanked or \RCRanked on those separators.
+\item If absolute speed matters more than isolation, a merged path is still faster, but the wrong-way energy is no longer zero and must be accounted for explicitly.
+\item If a ranked controller is desired independent of abstention, the lower-overhead \TCRanked deck remains faster than \Confidence in the executed matrix, so the paper does not support promoting \Confidence to a universal default.
+\end{enumerate}
 
-Several limitations matter.
+Several limitations are important and should not be hidden.
 \begin{itemize}
-\item The primary startup matrix is aliased. It is useful for coverage but not for causal factor attribution.
-\item The study is simulation-only and uses behavioral startup pumps rather than a full transistor-level switched-converter realization.
-\item The literature comparison is structural, not measured. We did not implement a literature-faithful autonomous multi-input silicon comparator.
-\item The robustness study covers four load-bearing cases rather than the full deterministic manifest.
+\item The study is simulation-only and uses behavioral current-source abstractions for the startup pump. The paper therefore offers a circuit-family mechanism result, not a silicon demonstration.
+\item The DEEPEN matrix is intentionally small: 12 core cases plus 4 control cases. That is enough to support a bounded operating-regime claim, but not a field-wide envelope map.
+\item No literature-faithful external comparator was executed under the repaired hooks. The paper therefore makes no measured superiority claim against prior silicon.
+\item The confidence node remains a behavioral macro, not a transistor-level implementation. Silicon relevance requires a future hardware-plausible analog realization.
+\item The robustness study was not rerun for every DEEPEN separator case. The context boundary is robustness-qualified; the confidence-gated late-arrival result is not yet.
 \end{itemize}
-These limitations are serious enough to block a broad architecture paper, but they do not invalidate the narrower falsification result.
 
-The societal implication is modest but real. Weak-source energy-harvesting interfaces are often discussed only through positive-result narratives: a new circuit, a new minimum startup voltage, a new efficiency peak. This paper argues for a more disciplined alternative. Publishing negative design-space results can reduce wasted complexity in batteryless sensing, especially when startup robustness matters more than nominal efficiency. The result is not that intelligence is useless. The result is that intelligence should earn its keep against the simplest nearby alternative, not against only the weakest baseline.
+These limitations matter because they bound what the paper is allowed to claim. The work is not a new PMU platform. It is not a first-of-its-kind proof that the literature lacks abstention. It is not a best-overall selector paper. The accurate statement is narrower: the recovered overlap set did not reveal a close same-family abstention-like pre-handoff controller, and the executed evidence shows that abstention is useful only when ambiguity resolves over time.
+
+The broader implication is methodological. Circuit papers often reward only positive stories: lower startup voltage, higher efficiency, more autonomy. This project shows the value of publishing a bounded negative-to-positive refinement instead. The negative part removes unsupported complexity. The positive part tells the designer when a little extra complexity is actually justified. For intermittent and batteryless systems, that kind of disciplined simplification can be more valuable than one more loosely benchmarked architecture claim.
 
 \section{Conclusion}
-A helper-free RC-ranked packet gate does not win the weak multi-source cold-start problem in the tested model. The primary startup matrix is a five-way tie at $17/24$ successes. The executed same-family ablation then overturns the original hypothesis: a blind packet gate reaches $10/10$ startups on the expanded falsifier suite, while the RC-ranked design reaches only $8/10$. A lower-overhead time-constant-ranked arbiter remains worthwhile as a secondary point, achieving $9/10$ falsifier startups at $52.9\%$ lower successful-case pre-handoff control energy than the RC-ranked design. The engineering conclusion is clear. Packet-gated isolation matters. Explicit pre-handoff source ranking does not.
+The executed helper-free packet-gated startup family does not support a broad ``smarter pre-handoff ranking wins'' story, but it also does not support a universal blind story. The context pack is a five-way tie at $17/24$ startups on the primary matrix, the repaired falsifier suite yields a frontier with \TCRanked at $9/10$ and \Blind at $5/10$, and the sampled robustness pack preserves the same decisive separators. The surviving positive result is narrower and more useful. A confidence-gated abstention controller should stay near the blind packet posture on static near ties, but commit when temporal separability appears. In the DEEPEN matrix, that rule produces no benefit on static ambiguity, a $0.30882\,\mathrm{s}$ median handoff gain over \Blind on late-arrival near ties, and zero measured backdrive on the decisive same-scaffold controls. The resulting contribution is not a new PMU architecture. It is a design law for when helper-free startup should stay blind and when it should act.
 
 \appendix
-\section{Extended Proof Details}
-\subsection{Why the scout-state difference remains zero under symmetry}
-The proof of Proposition~\ref{prop:symmetry} relied on uniqueness of a first-order linear differential equation. For completeness, write the homogeneous solution explicitly:
-\begin{equation}
-  z(t)=z(0)\exp\left(-\frac{t}{R_{\mathrm{scout}}C_{\mathrm{scout}}}\right).
-\end{equation}
-Since \(z(0)=0\), the solution is identically zero. No hidden branch state can break that equality because the two scout capacitors are the only dynamic elements in the selector law.
 
-\subsection{Detailed conductance derivation}
-The conductance values in Table~\ref{tab:designs} follow directly from parallel combination.
+\section{Extended Proof Consequences and Hyperparameter Sensitivity}
+\label{app:sensitivity}
+This appendix provides the additional analytical sensitivity material required for exact reproduction and interpretation.
+
+\subsection{Commit-Latency Sensitivity}
+The bound in Theorem~\ref{thm:latency} can be written as
+\begin{equation}
+  t_{\mathrm{commit}}^{\max}(\rho,\Theta,\tauc,c_0)
+  =
+  t_0 + \tauc \ln\!\left(\frac{\rho-c_0}{\rho-\Theta}\right).
+  \label{eq:tmax}
+\end{equation}
+Differentiating Eq.~\eqref{eq:tmax} with respect to its parameters yields exact monotonicity statements.
+
+\begin{proposition}[Sensitivity of the commitment bound]
+\label{prop:commit-sensitivity}
+Assume $c_0<\Theta<\rho$. Then
 \begin{align}
-  G_{\mathrm{ctrl}}^{(\Fixed)} &= \frac{1}{40\,\mathrm{M\Omega}} + \frac{1}{80\,\mathrm{M\Omega}} = 25\,\mathrm{nS}+12.5\,\mathrm{nS}=37.5\,\mathrm{nS}, \\
-  G_{\mathrm{ctrl}}^{(\Nonaware)} &= 25\,\mathrm{nS}+12.5\,\mathrm{nS}+12.5\,\mathrm{nS}=50\,\mathrm{nS}.
+  \frac{\partial t_{\mathrm{commit}}^{\max}}{\partial \tauc}
+    &= \ln\!\left(\frac{\rho-c_0}{\rho-\Theta}\right) > 0, \\
+  \frac{\partial t_{\mathrm{commit}}^{\max}}{\partial \Theta}
+    &= \frac{\tauc}{\rho-\Theta} > 0, \\
+  \frac{\partial t_{\mathrm{commit}}^{\max}}{\partial \rho}
+    &= \tauc\left(\frac{1}{\rho-c_0}-\frac{1}{\rho-\Theta}\right)
+     = \tauc \frac{c_0-\Theta}{(\rho-c_0)(\rho-\Theta)} < 0.
 \end{align}
-The packet-gated conductances are literal parameter values from the behavioral sinks. Thus the observed successful-case median ratio
-\begin{equation}
-  \frac{\Ectrl^{(\TCRanked)}}{\Ectrl^{(\RCRanked)}} = \frac{1.11852\times 10^{-13}}{2.37717\times 10^{-13}} \approx 0.4705
-\end{equation}
-is close to the ideal conductance ratio \(18/40=0.45\), while the observed ratio
-\begin{equation}
-  \frac{\Ectrl^{(\Nonaware)}}{\Ectrl^{(\Fixed)}} \approx 1.364
-\end{equation}
-is close to the ideal ratio \(50/37.5 = 1.333\). Those near-matches support the interpretation that pre-handoff control energy is being measured coherently after the metric repair.
+\end{proposition}
 
-\section{Detailed Case Manifest}
+\begin{proof}
+Because $c_0<\Theta<\rho$, the fraction $(\rho-c_0)/(\rho-\Theta)$ is greater than one, so its logarithm is positive. This proves the first derivative statement. Differentiating Eq.~\eqref{eq:tmax} with respect to $\Theta$ while holding the other parameters fixed gives
+\begin{equation}
+  \frac{\partial t_{\mathrm{commit}}^{\max}}{\partial \Theta}
+  = \tauc \frac{\partial}{\partial \Theta}
+    \left[-\ln(\rho-\Theta)\right]
+  = \tauc \frac{1}{\rho-\Theta},
+\end{equation}
+which is positive because $\rho>\Theta$.
+
+For the derivative with respect to $\rho$,
+\begin{align}
+  \frac{\partial t_{\mathrm{commit}}^{\max}}{\partial \rho}
+   &= \tauc \frac{\partial}{\partial \rho}
+      \left[\ln(\rho-c_0)-\ln(\rho-\Theta)\right] \\
+   &= \tauc\left(\frac{1}{\rho-c_0}-\frac{1}{\rho-\Theta}\right) \\
+   &= \tauc \frac{(\rho-\Theta)-(\rho-c_0)}{(\rho-c_0)(\rho-\Theta)} \\
+   &= \tauc \frac{c_0-\Theta}{(\rho-c_0)(\rho-\Theta)}.
+\end{align}
+The denominator is positive because $\rho>c_0$ and $\rho>\Theta$. The numerator is negative because $c_0<\Theta$. Hence the derivative is negative.
+\end{proof}
+
+The proposition formalizes the intuitive design tradeoffs. Increasing the integrator time constant $\tauc$ or the commit threshold $\Theta$ delays commitment and makes the controller more conservative. Increasing the sustained separability floor $\rho$ accelerates commitment.
+
+\subsection{Control-Energy Sensitivity}
+Theorem~\ref{thm:ctrl} shows that the incremental monitor-path control-energy cost of \Confidence is linear in $\Gconf$ once the store trajectory, latch trace, and commit history are fixed.
+
+\begin{proposition}[Sensitivity of control energy to the extra confidence sink]
+\label{prop:conf-sensitivity}
+For a fixed startup trajectory $\vstore(t)$, fixed commit trace $m(t)$, and fixed latch trace $\ell(t)$ over $[0,T_{\mathrm{stop}}]$,
+\begin{equation}
+  \frac{\partial \Ectrl^{(\Confidence)}}{\partial \Gconf}
+  =
+  \int_0^{T_{\mathrm{stop}}}\left(0.25+0.75m(t)\right)\vstore(t)^2\bigl(1-\ell(t)\bigr)\,dt > 0.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Equation~\eqref{eq:confenergy} is affine in $\Gconf$:
+\begin{equation}
+  \Ectrl^{(\Confidence)}
+  =
+  \Gscout \int_0^{T_{\mathrm{stop}}} \vstore(t)^2\bigl(1-\ell(t)\bigr)\,dt
+  +
+  \Gconf
+  \int_0^{T_{\mathrm{stop}}} \left(0.25+0.75m(t)\right)\vstore(t)^2\bigl(1-\ell(t)\bigr)\,dt.
+\end{equation}
+Differentiating with respect to $\Gconf$ immediately yields the stated integral. The integrand is nonnegative because $m(t)\in[0,1]$, $\vstore(t)^2\ge 0$, and $1-\ell(t)\ge 0$. It is strictly positive on every successful startup interval because $\vstore(t)$ is positive over a set of nonzero measure while the latch is still open, and the factor $(0.25+0.75m(t))$ is bounded below by $0.25$.
+\end{proof}
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{0.18\linewidth}p{0.15\linewidth}p{0.25\linewidth}p{0.27\linewidth}}
+\toprule
+Parameter & Nominal value & Appears in & Monotone effect on the implemented controller \\
+\midrule
+$R_{\mathrm{scout}}C_{\mathrm{scout}}=\taus$ & \SI{0.75}{\milli\second} & Eq.~\eqref{eq:scout} & larger value smooths the scout margin more heavily before confidence is computed \\
+$R_{\mathrm{conf}}C_{\mathrm{conf}}=\tauc$ & \SI{50}{\milli\second} & Eq.~\eqref{eq:confidenceode} & larger value delays commitment by Proposition~\ref{prop:commit-sensitivity} \\
+$\Theta$ & $0.08$ & Eq.~\eqref{eq:commit} & larger value delays or suppresses commitment by Proposition~\ref{prop:commit-sensitivity} \\
+$V_{\mathrm{floor}}$ & \SI{10}{\milli\volt} & Eq.~\eqref{eq:rawconfidence} & larger value postpones confidence accumulation until scouts have larger amplitude \\
+$\Gconf$ & \SI{8}{\nano\siemens} & Eq.~\eqref{eq:confenergy} & larger value raises pre-handoff control energy linearly by Proposition~\ref{prop:conf-sensitivity} \\
+$G_{\mathrm{TC}}$ & \SI{18}{\nano\siemens} & \TCRanked control branch & smaller value lowers control burden but does not create abstention behavior \\
+\bottomrule
+\end{tabular}
+\caption{Hyperparameter sensitivity summary for the implemented controller family. The table is analytical, not fitted: every statement follows from the explicit netlist equations proved in the main text and appendix.}
+\label{tab:sensitivity}
+\end{table}
+
+\section{Additional Experimental Details}
 \label{app:cases}
-Table~\ref{tab:falsifiers} summarizes the expanded falsifier suite.
+Table~\ref{tab:deepen-manifest} gives the exact DEEPEN manifest. The broader falsifier suite is summarized after it.
 
-\begin{longtable}{p{0.11\linewidth}p{0.25\linewidth}p{0.13\linewidth}p{0.12\linewidth}p{0.28\linewidth}}
+\begin{longtable}{p{0.14\linewidth}p{0.11\linewidth}p{0.18\linewidth}p{0.11\linewidth}p{0.11\linewidth}p{0.19\linewidth}}
+\toprule
+Case & Family & $(V_A,V_B)$ (mV) & Ratio & Delay of $B$ (s) & Active designs \\
+\midrule
+\endfirsthead
+\toprule
+Case & Family & $(V_A,V_B)$ (mV) & Ratio & Delay of $B$ (s) & Active designs \\
+\midrule
+\endhead
+\texttt{static\_r1\_v101} & static & $(100,101)$ & $1:1$ & 0 & \Confidence, \Blind, \TCRanked \\
+\texttt{static\_r1\_v103} & static & $(100,103)$ & $1:1$ & 0 & \Confidence, \Blind, \TCRanked, \Merge \\
+\texttt{static\_r1\_v105} & static & $(100,105)$ & $1:1$ & 0 & \Confidence, \Blind, \TCRanked \\
+\texttt{static\_r3\_v101} & static & $(100,101)$ & $1:3$ & 0 & \Confidence, \Blind, \TCRanked \\
+\texttt{static\_r3\_v103} & static & $(100,103)$ & $1:3$ & 0 & \Confidence, \Blind, \TCRanked, \Merge \\
+\texttt{static\_r3\_v105} & static & $(100,105)$ & $1:3$ & 0 & \Confidence, \Blind, \TCRanked \\
+\texttt{late\_r1\_v101} & late & $(100,101)$ & $1:1$ & 4 & \Confidence, \Blind, \TCRanked \\
+\texttt{late\_r1\_v103} & late & $(100,103)$ & $1:1$ & 4 & \Confidence, \Blind, \TCRanked, \Merge \\
+\texttt{late\_r1\_v105} & late & $(100,105)$ & $1:1$ & 4 & \Confidence, \Blind, \TCRanked \\
+\texttt{late\_r3\_v101} & late & $(100,101)$ & $1:3$ & 4 & \Confidence, \Blind, \TCRanked \\
+\texttt{late\_r3\_v103} & late & $(100,103)$ & $1:3$ & 4 & \Confidence, \Blind, \TCRanked, \Merge \\
+\texttt{late\_r3\_v105} & late & $(100,105)$ & $1:3$ & 4 & \Confidence, \Blind, \TCRanked \\
+\bottomrule
+\caption{Exact DEEPEN manifest implemented by \texttt{tools/run\_h1\_deepen.py}. All cases use same polarity and a ramp of \SI{10}{\milli\volt\per\second}.}
+\label{tab:deepen-manifest}
+\end{longtable}
+
+\begin{longtable}{p{0.11\linewidth}p{0.27\linewidth}p{0.12\linewidth}p{0.11\linewidth}p{0.26\linewidth}}
 \toprule
 Case & Stress class & Polarity & Ratio & Key overrides \\
 \midrule
@@ -654,31 +1049,51 @@ Case & Stress class & Polarity & Ratio & Key overrides \\
 Case & Stress class & Polarity & Ratio & Key overrides \\
 \midrule
 \endhead
-\texttt{fa\_001} & source collapse & same & 1:5 & $R_{\mathrm{load}}=\SI{1}{\mega\ohm}$, source A collapses to 5\% at \SI{4.2}{\second} \\
-\texttt{fa\_002} & source collapse & mixed & 1:20 & $R_{\mathrm{load}}=\SI{1}{\mega\ohm}$, source A collapses to 5\% at \SI{4.4}{\second} \\
-\texttt{fa\_003} & polarity mismatch & mixed & 1:20 & no collapse; low-voltage mixed-polarity stress \\
-\texttt{fa\_004} & UVLO chatter & same & 1:1 & $V_{\mathrm{handoff}}=\SI{0.8}{\volt}$, $V_{\mathrm{handoff,fall}}=\SI{0.7}{\volt}$, delayed dual collapse, $R_{\mathrm{load}}=\SI{100}{\kilo\ohm}$ \\
-\texttt{fa\_005} & mixed conflict & mixed & 1:1 & $R_{\mathrm{load}}=\SI{50}{\kilo\ohm}$, source A collapses fully at \SI{4.6}{\second} and recovers at \SI{6.0}{\second} \\
-\texttt{fa\_006} & dual collapse & mixed & 1:20 & heavy load, both sources collapse fully at different times \\
-\texttt{fa\_007} & unequal $V_{\mathrm{OC}}$ & same & 1:5 & $(V_A,V_B)=(\SI{20}{\milli\volt},\SI{50}{\milli\volt})$ \\
-\texttt{fa\_008} & unequal $V_{\mathrm{OC}}$ & mixed & 1:1 & $(V_A,V_B)=(\SI{100}{\milli\volt},\SI{300}{\milli\volt})$ \\
-\texttt{fa\_009} & leak path & same & 1:5 & router leak forced to \SI{1}{\kilo\ohm} \\
-\texttt{fa\_010} & leak path & mixed & 1:20 & router leak forced to \SI{1}{\kilo\ohm} \\
+\texttt{fa\_001} & source collapse & same & $1:5$ & $R_{\mathrm{load}}=\SI{1}{\mega\ohm}$, source $A$ collapses to 5\% at \SI{4.2}{\second} \\
+\texttt{fa\_002} & source collapse & mixed & $1:20$ & source $A$ collapses to 5\% at \SI{4.4}{\second} \\
+\texttt{fa\_003} & polarity mismatch & mixed & $1:20$ & no collapse; low-voltage mixed-polarity stress \\
+\texttt{fa\_004} & UVLO chatter & same & $1:1$ & $(\vhand,\vhandfall)=(\SI{0.8}{\volt},\SI{0.7}{\volt})$, delayed dual collapse, $R_{\mathrm{load}}=\SI{100}{\kilo\ohm}$ \\
+\texttt{fa\_005} & mixed conflict & mixed & $1:1$ & $R_{\mathrm{load}}=\SI{50}{\kilo\ohm}$, source $A$ collapses fully then recovers \\
+\texttt{fa\_006} & dual collapse & mixed & $1:20$ & heavy load, both sources collapse fully at different times \\
+\texttt{fa\_007} & unequal $V_{\mathrm{OC}}$ & same & $1:5$ & $(V_A,V_B)=(\SI{20}{\milli\volt},\SI{50}{\milli\volt})$ \\
+\texttt{fa\_008} & unequal $V_{\mathrm{OC}}$ & mixed & $1:1$ & $(V_A,V_B)=(\SI{100}{\milli\volt},\SI{300}{\milli\volt})$ \\
+\texttt{fa\_009} & leak path & same & $1:5$ & router leak forced to \SI{1}{\kilo\ohm} \\
+\texttt{fa\_010} & leak path & mixed & $1:20$ & router leak forced to \SI{1}{\kilo\ohm} \\
 \bottomrule
-\caption{Expanded falsifier manifest used in the paper. The suite broadens the original collapse-only package to include real chatter, unequal-source heterogeneity, and finite off-isolation leakage.}
+\caption{Expanded falsifier suite used to establish the context boundary before DEEPEN.}
 \label{tab:falsifiers}
 \end{longtable}
 
 \section{Implementation and Reproduction Notes}
-The artifact bundle includes the shared netlist fragments, the deterministic manifests, the robustness script, and all generated figures \citep{archivara2026repo,archivara2026experimentspec}. The paper-level regeneration sequence is:
+The full regeneration sequence used for the final paper is:
 \begin{enumerate}
-\item run \texttt{python3 tools/run\_h1\_matrix.py run --designs champion,fixed,nonaware,source\_blind,time\_constant\_ranked};
-\item run \texttt{python3 tools/run\_h1\_falsifier.py run --designs champion,fixed,nonaware,source\_blind,time\_constant\_ranked};
-\item run \texttt{python3 tools/run\_h1\_robustness.py --samples 24};
-\item run \texttt{python3 tools/analyze\_h1\_results.py};
-\item compile this manuscript with \texttt{pdflatex}, \texttt{bibtex}, and two final \texttt{pdflatex} passes.
+\item \texttt{python3 tools/run\_h1\_matrix.py run --designs champion,fixed,nonaware,source\_blind,time\_constant\_ranked}
+\item \texttt{python3 tools/run\_h1\_falsifier.py run --designs champion,fixed,nonaware,source\_blind,time\_constant\_ranked}
+\item \texttt{python3 tools/run\_h1\_robustness.py --samples 24}
+\item \texttt{python3 tools/run\_h1\_deepen.py}
+\item \texttt{python3 tools/analyze\_h1\_results.py}
+\item \texttt{pdflatex research\_paper.tex}
+\item \texttt{bibtex research\_paper}
+\item \texttt{pdflatex research\_paper.tex}
+\item \texttt{pdflatex research\_paper.tex}
 \end{enumerate}
-All claim-bearing numeric values reported in the manuscript are taken from the generated tables rather than transcribed from raw logs.
+
+The \Blind falsifier and robustness rows in this final sequence were regenerated after repairing the deck so that \texttt{RLOAD} honors the manifest-level \texttt{R\_LOAD} override. Earlier blind-heavy falsifier claims are intentionally discarded.
+
+All claim-bearing numbers in the paper were taken from the generated CSV or JSON summaries rather than transcribed manually from raw logs. The key generated figures used in the paper are:
+\begin{itemize}
+\item \path{figures/h1_topology_contrast.pdf},
+\item \path{figures/h1_primary_matrix_heatmap.pdf},
+\item \path{figures/h1_falsifier_boundary.pdf},
+\item \path{figures/h1_metric_accounting.pdf},
+\item \path{figures/h1_deepen_confidence_tradeoff.pdf},
+\item \path{figures/h1_robustness_ci.pdf}.
+\end{itemize}
+
+\section{Novelty-Boundary Audit Notes}
+The repository that launched this run began from a deliberately broad natural-language task. As a result, the earliest automated watchlist included several nontechnical false neighbors: \emph{Leading change} (organizational change), \emph{Fostering STEAM through challenge-based learning, robotics, and physical devices} (education review), \emph{Artificial Intelligence, Cognitive Robotics and Nature of Consciousness}, and \emph{The north wing of the Musin-Pushkin estate in Moscow}. These items were retained only as audit artifacts showing why the seed query had to be cleaned. They are not part of the technical prior-art boundary and were not used to justify the paper's claim.
+
+The actual novelty boundary is therefore the one stated in Table~\ref{tab:priorwork} and in Section~\ref{sec:related}: strong overlap exists with adaptive dual-source startup and autonomous multi-input PMUs, but the recovered overlap set did not reveal a close same-family abstention-like pre-handoff controller. That sentence is intentionally scoped. It is a retrieval result for the recovered overlap set, not a field-wide absence proof.
 
 \bibliographystyle{plainnat}
 \bibliography{sources}
