@@ -2,165 +2,274 @@
 
 ## Scope
 
-Adversarial pass on the likely hypothesis family around `A129258` / `A129259`: bounded first-row differences via frontier coverage, prime-side assignment, valuation-space structure, or larger computation.
+Adversarial pass on the active hypothesis family for the prime-separator array with
+`T(1,1) = 1`. The goal here is not to invent a new mechanism. It is to enumerate the
+fastest ways the current claims fail, the nearest prior-art branches that make weak
+claims look derivative, and the missing controls that would invalidate any stronger
+story.
 
-## Bottom line
+## Bottom Line
 
-The easiest way to fail here is to mistake "interesting mechanism" for "new mathematics." OEIS already contains the construction, the prime-split observation, and the bounded-difference problem statement. A weak paper that mainly regenerates terms, plots gaps, or rephrases the mex rule will read like a gloss on Kimberling's open problem, not a contribution.
+The easiest attack is no longer "boundedness is probably false." The easier and much
+stronger attack is this:
 
-The easiest way to overclaim is to infer boundedness from small data. A local rerun of the greedy process already pushes the first-row record gap past the previously logged `17`:
+- OEIS `A129258`, OEIS `A129259`, and Kimberling already define the object, state the
+  prime split, and pose the bounded-difference question.
+- The current repo evidence still does not separate a positive mechanism claim from
+  Ford-style local divisor/product coverage.
+- The latest internal evidence is already mostly negative:
+  - strong-form `H1` fails on the stored corpus;
+  - current-form `H2` adds no explanatory power;
+  - `H3` remains overlap-heavy and should stay demoted.
 
-- gap `19` at `38630 -> 38649` (step `8475`)
-- gap `20` at `130699 -> 130719` (step `27676`)
-- gap `21` at `139039 -> 139060` (step `29373`)
+So the current package survives best as a validated negative-result dossier around an
+open problem, not as a new bounded-gap mechanism.
 
-That last record interval has no skipped primes at all, and `16` of its `20` skipped values had only a single visible factor witness from the current border sets. So any story that leans on ordinary prime-gap heuristics or generic density language is immediately suspect: long row-1 jumps can arise with zero prime obstruction in the skipped block and with mostly brittle coverage.
+## Fastest Failure Modes By Hypothesis
 
-## Fastest failure modes by hypothesis
+### 1. H1: Frontier witness certificates
 
-### 1. Frontier-coverage / multiplication-table hypothesis
+Weak claim:
+- Long first-row gaps are controlled by a compact witness language specific to the
+  mex-coupled border sets.
 
-Weak form:
-- "Large row-1 gaps come from covered intervals in `A_n B_n`."
+Fastest falsifier:
+- The chosen-witness corpus already points the wrong way, and the million-step
+  extension makes that worse rather than better.
+- Beyond the old 30k horizon, the baseline adds record gaps `25`, `28`, and `30`.
+  Across `21 -> 30`, singleton share falls from `16/20` to `19/29`, while the
+  `min factor > 100` bucket rises from `3/20` to `13/29`.
+- Full-witness hypergraphs do not rescue the story. Gap `30` has `29` skipped values
+  but only `43` admissible witness pairs, using `39` distinct row factors and `41`
+  distinct column factors. That is weak reuse, not compression.
 
-Falsifier response:
-- That is probably true but not new. It is almost a restatement of the recurrence.
-- If the proof technology is "treat `A_n B_n` like a restricted multiplication table" without exploiting the endogenous way `A_n` and `B_n` are generated, the work risks collapsing into multiplication-table / divisor-in-interval folklore.
-- If the argument only counts products or invokes average density, it misses the hard part: consecutive local coverage near the mex.
+Why this will be accused of rehashing prior art:
+- If the claim reduces to "the skipped interval is covered by local products from
+  `A_n B_n`," it is too close to multiplication-table / divisor-in-an-interval
+  language.
+- If the claim is only that every skipped value has some local factor pair, it is
+  nearly a restatement of the mex rule.
 
-What would invalidate a weak claim:
-- failure to distinguish local interval coverage from global distinct-product counts;
-- failure to show why existing divisor-in-an-interval machinery does not already subsume the claimed mechanism;
-- no witness-level analysis of how each skipped integer is covered.
+What would invalidate a weak H1 claim immediately:
+- no matched non-record-window baseline;
+- no size-matched surrogate product-set or hypergraph baseline;
+- no recomputation of the headline taxonomy from full hypergraphs under multiple witness
+  canonicalizations;
+- no explanation of why Ford-style local coverage does not already subsume the claim.
 
-### 2. Prime-side assignment hypothesis
+Current adversarial verdict:
+- Strong H1 is rejected on the stored corpus.
+- The only live rescue route is a full-hypergraph invariant that beats surrogate and
+  non-record controls. That rescue route is not yet evidence; it is only the last
+  unfailed test.
 
-Weak form:
-- "Understanding which primes go to row 1 versus column 1 should control the gap sizes."
+### 2. H2: Prime-support fixed point
 
-Falsifier response:
-- This is the most tempting wrong abstraction.
-- OEIS already records the prime split. Repackaging it is not novelty.
-- Large record gaps do not need skipped primes. The `139039 -> 139060` gap is already a direct counterexample to a prime-obstruction narrative.
+Weak claim:
+- The row/column prime split or prime-support state controls when large row-1 gaps
+  appear.
 
-What would invalidate a weak claim:
-- any proof sketch that treats `A129259` as a sparse prime subsequence with ordinary prime-gap heuristics attached;
-- any claim that prime assignment alone controls row-1 jumps without accounting for composite coverage in `A_n B_n`.
+Fastest falsifier:
+- Composite-only record gaps already kill any prime-obstruction narrative.
+- In the baseline run, record gaps `17`, `20`, `21`, `28`, and `30` contain zero
+  skipped primes.
+- In the axis-swapped run, late row gaps `20`, `21`, `23`, `26`, and `31` are also
+  composite-only.
+- The current H2 claim sheet already says the support counts add no explanatory power
+  beyond direct witness logs, and the later corpus only strengthens that negative read.
 
-### 3. Valuation-frontier / finite-state hypothesis
+Why this will be accused of rehashing prior art:
+- OEIS already records the prime split.
+- A paper that mostly repackages the prime split, prime counts, or support imbalance is
+  just retelling a public observation.
+- A paper that drifts into ordinary prime-gap heuristics misses the empirical fact that
+  the skipped intervals can be entirely composite.
 
-Weak form:
-- "The process becomes simple in `v_p` coordinates, so boundedness should follow from a small-state frontier rule."
+What would invalidate a weak H2 claim immediately:
+- any story that does not explain composite-only late records;
+- any story whose predictive state variables stay as smooth background counts;
+- any story that does not beat direct witness data on the same corpus.
 
-Falsifier response:
-- This can turn into decorative language very quickly.
-- Unless the valuation model predicts new gaps, forbids large ones, or yields a rigorous transition invariant, it is just a re-encoding.
-- If the state space grows with the number of relevant primes, "finite-state" is probably illusory.
+Current adversarial verdict:
+- Current-form H2 is rejected.
+- Reopening it without a materially sharper state variable is budget waste.
 
-What would invalidate a weak claim:
-- no theorem or falsifiable prediction beyond pattern description;
-- no control showing that low-prime valuations actually dominate the frontier;
-- no explanation for why high-prime effects can be truncated safely.
+### 3. H3: Near-minimal multiplicative basis
 
-### 4. Compressed-computation hypothesis
+Weak claim:
+- The border sets form a canonical sparse multiplicative basis, so unbounded gaps or
+  asymptotic behavior should follow.
 
-Weak form:
-- "We computed much farther, so the contribution is stronger."
+Fastest falsifier:
+- This is the most overlap-heavy lane in the whole project.
+- Without a `T`-specific invariant that uses the mex coupling essentially, the claim is
+  just a reformulation inside the multiplication-table / multiplicative-basis branch.
 
-Falsifier response:
-- Computation is necessary here, but bigger term tables are not a mathematical result.
-- A purely empirical paper is vulnerable unless it produces either a disproof-quality counterexample or proof-oriented artifacts such as reusable witness certificates for every skipped integer in each record gap.
+Why this will be accused of rehashing prior art:
+- Ford already owns the nearest multiplication-table branch.
+- Pach-Sandor and related multiplicative-basis papers already own the sparse-basis
+  branch.
+- Asymptotic curve fitting or density narration without a theorem-level invariant is
+  not differentiation.
 
-What would invalidate a weak claim:
-- longer plots without mechanistic diagnostics;
-- runtime claims without a baseline generator and reproducible scaling profile;
-- empirical claims about boundedness based on horizons that are too low to beat already observed record growth.
+What would invalidate a weak H3 claim immediately:
+- no theorem or proof-oriented obstruction tied to the mex coupling;
+- no explanation of why the argument is not generic sparse product-set behavior;
+- any reliance on the current "variant" runs as if they were real robustness ablations.
 
-## Missing controls
+Current adversarial verdict:
+- Keep H3 de-prioritized.
+- Treat it as overlap control, not as an active claim.
 
-### Empirical controls
+## Missing Controls
 
-- The current repo state had no reusable generator script. That is already a reproducibility risk.
-- The previous swarm note stopped at record gap `17`; a modest extension already reaches `21`. Any narrative built on the earlier horizon is stale.
-- Record-gap studies need witness logs, not just gap sizes. For each skipped integer in a record interval, store at least one factorization `u*v` with `u in A_n`, `v in B_n`.
-- Prime/composite composition of skipped intervals must be logged. The latest record gap found here had no skipped primes, which is exactly the sort of control that can kill a bad heuristic early.
+These are the controls whose absence most directly weakens the current package.
 
-### Specification controls
+### 1. No independent implementation baseline
 
-- The recurrence for `T(n+1,1)` is easy to misread operationally: choose from the old `n x n` square, excluding the newly chosen row term, before adding new products. Any implementation should test this explicitly rather than assuming an equivalent update order.
+- The million-step repeats show determinism of one generator family, not protection
+  against shared logic errors.
+- A publication-quality claim needs a separately written checker that agrees with the
+  baseline through at least a substantial prefix.
 
-### Robustness controls
+### 2. No generic null or surrogate baseline
 
-- One trivial nearby control is already clear: reversing the order of choosing the two new axis terms just swaps the row-1 and column-1 border sequences. That is a label symmetry, not a robustness result.
-- The meaningful controls are still missing. At minimum, compare:
-  - the present rule;
-  - a version that resolves the symmetric choice from the same snapshot with an explicit tie rule;
-  - a version that perturbs the admissibility rule for covered integers without merely renaming the axes.
+- There is still no matched surrogate product-set or witness-hypergraph control.
+- Without that control, "mex-specific structure" is not separated from generic local
+  divisor/product coverage.
 
-If a proposed mechanism disappears under tiny perturbations, then a broad heuristic explanation is probably false.
+### 3. No matched non-record-window baseline
 
-## Benchmark traps
+- Prime-free intervals, singleton-heavy coverage, balanced-factor growth, and the
+  one-point axis marker are summarized on record gaps only.
+- Without matched non-record windows, those features are not yet discriminative.
 
-- `5e3` border steps is not "deep asymptotics." It is barely enough to kill the small-constant guess.
-- "No large gaps seen yet" is not evidence without a scalable generator. With a cheap optimized rerun, new records `19`, `20`, and `21` already appear by `3e4` steps.
-- Distinct-product counts are a trap. Heavy multiplicative collisions mean that `|A_n||B_n|` says little about whether the frontier interval below the mex is saturated.
-- Prime statistics are a trap. A long row-1 gap can be caused by composite coverage alone.
+### 4. No real robustness ablation
 
-## Novelty illusions
+- `row_immediate` collapses to the baseline on the stored observables.
+- `column_immediate` is the axis swap, not an independent nearby mechanism.
+- The repo still lacks the falsifier-requested controls:
+  - a same-snapshot explicit tie-rule control;
+  - a real admissibility perturbation that changes coverage rather than just axis order.
+
+### 5. Chosen-witness summaries are canonicalization-sensitive
+
+- The generator stores the first witness it encounters for each skipped value.
+- The tiny/balanced/signature summaries are then computed from that chosen witness.
+- Those summaries are informative, but not yet canonical.
+
+### 6. Full-hypergraph validation is selective
+
+- Full witness exports exist for selected late gaps, not every late record gap and not
+  matched non-record windows.
+- That is enough to sharpen the negative result, but not enough to close the structural
+  question completely.
+
+### 7. Claim sheets are stale relative to the current corpus
+
+- The public H1/H2 sheets still stop at gaps `13`, `17`, `19`, `20`, `21`.
+- The current baseline reaches `25`, `28`, `30`, and the axis-swapped run reaches row
+  gap `31`.
+- Any memo that still bottoms out at `21` is stale.
+
+## Benchmark Traps
+
+- Treating `10^6` deterministic repeats as an independent correctness check.
+- Treating `row_immediate` and `column_immediate` as genuine robustness evidence.
+- Treating chosen-witness histograms as canonical rather than witness-order-sensitive.
+- Treating "more horizon" as novelty.
+- Treating distinct-product counts as evidence of local frontier coverage.
+- Treating prime statistics as decisive after composite-only late record gaps already
+  exist.
+
+## Novelty Illusions
 
 - Recomputing OEIS terms is not novelty.
 - Repeating "every prime lies on exactly one axis" is not novelty.
-- Plotting gap growth or fitting heuristics to the first few thousand terms is not novelty.
-- Translating the problem into "restricted multiplication tables" is not novelty unless the endogenous greedy structure is used in an essential way.
-- Translating the problem into valuation space is not novelty unless it produces a theorem, a counterexample, or a testable obstruction that beats direct integer-space analysis.
+- Restating Kimberling's bounded-difference question is not novelty.
+- Rebranding local frontier coverage as a multiplication-table story is not novelty.
+- Rebranding the process as a sparse multiplicative basis is not novelty.
+- Re-encoding the witnesses in prime-support or valuation language is not novelty unless
+  it yields a theorem, a disproof-quality obstruction, or a sharper predictive failure
+  mode than direct witness logs already give.
 
-## Prior-art overlap risks
+## Literature Branches That Would Invalidate Weak Claims
 
-### Direct provenance baseline
-
-- `A129258`: the array itself.
-- `A129259`: first row; comments already state the prime split and explicitly ask whether the first differences are bounded.
-- Kimberling's AIM problem list already frames this as an open problem (`Problem 18` in the "100 conjectures" list).
-
-Consequence:
-- Any paper must treat OEIS + Kimberling as baseline prior art, not as a citation afterthought.
-
-### Closest mathematical overlap branch
-
-- The strongest overlap risk is with multiplication-table / distinct-product / divisor-in-interval literature.
-- If the proposed proof argues that long row-1 gaps come from dense local factor coverage, then it is moving into the territory of:
-  - Kevin Ford, "The distribution of integers with a divisor in a given interval";
-  - Kevin Ford, "The multiplication table problem."
-
-Consequence:
-- If the paper uses divisor-density or product-set coverage language, it must state exactly what is new about the self-generated sets `A_n` and `B_n`.
-- Otherwise the work can be accused of rebranding known divisor-in-interval phenomena inside an OEIS wrapper.
-
-## Literature branches that should be cleared before making strong claims
-
-- OEIS / Kimberling provenance: to avoid overstating novelty on the exact object.
-- Multiplication-table literature: to avoid rediscovering generic product-set coverage heuristics.
-- Divisor-in-an-interval literature: to avoid calling a standard divisor-density mechanism a new frontier certificate.
-- Generic greedy / mex sequence literature: only if the argument becomes primarily one-dimensional or symbolic; otherwise this branch is secondary, not primary.
-
-## Concrete sources to cite
+### Mandatory provenance floor
 
 - OEIS `A129258`
 - OEIS `A129259`
-- OEIS `A129259` comments and references noting:
-  - every prime is in the first row or first column, but not both;
-  - the bounded-difference question;
-  - Kimberling's `Problem 18`
-- Clark Kimberling, "100 Conjectures and/or Problems"
-- Kevin Ford, "The multiplication table problem"
-- Kevin Ford, "The distribution of integers with a divisor in a given interval"
+- Kimberling's live unsolved-problem page for the prime-separator array
 
-## Adversarial acceptance bar
+Consequence:
+- Any paper whose payload is "define the array, note the prime split, list more terms,
+  and re-ask bounded or not" is rehashing public baseline material.
 
-I would not accept a boundedness claim, or even a serious heuristic paper, unless it clears all of the following:
+### Main overlap branch
 
-- proves something not already implicit in OEIS / Kimberling;
-- does more than global density or prime-gap analogy;
-- separates local frontier coverage from generic multiplication-table counting;
-- shows why divisor-in-interval prior art does not already explain the claimed mechanism;
-- uses computation as evidence with witness-carrying diagnostics, not term dumps.
+- Ford, *The multiplication table problem*
+- Ford, *The distribution of integers with a divisor in a given interval*
+- Ford, *Integers with a divisor in (y, 2y)*
+- Koukoulopoulos, generalized/restricted multiplication-table work
+
+Consequence:
+- Any argument based on local product density, restricted product sets, or short-interval
+  divisor coverage must state exactly what survives after direct comparison with this
+  branch.
+
+### Multiplicity / concentration branch
+
+- Ford-Tenenbaum on integers with at least two divisors in a short interval
+- Ford-Green-Koukoulopoulos on concentration-of-divisors behavior
+
+Consequence:
+- Any claim built around singleton witnesses, low multiplicity, or clustered witness
+  behavior risks being generic divisor-concentration language unless it uses the
+  mex-coupled border geometry essentially.
+
+### Multiplicative-basis branch
+
+- Pach-Sandor and related multiplicative-basis literature
+
+Consequence:
+- Any near-minimal-basis story without a `T`-specific invariant is derivative.
+
+### Greedy-sequence branch
+
+- Odlyzko-Stanley and related greedy-sequence work
+
+Consequence:
+- If the pitch degrades into "another curious mex/greedy process," it is already in an
+  established lane and still lacks differentiation on the exact object.
+
+## Specification And Citation Hygiene Traps
+
+- The load-bearing implementation trap is update order:
+  - choose `T(1,n+1)` from the old square;
+  - choose `T(n+1,1)` from that same old square, excluding only the just-chosen row
+    term;
+  - only then add the new products.
+- Any implementation that lets new products influence `T(n+1,1)` is the wrong process.
+- Citation hygiene matters here because the exact object is so close to public baseline
+  material. The live Kimberling source is currently an itemized unsolved-problem page;
+  if numbering or page identity is cited loosely, that is an avoidable credibility hit.
+
+## Adversarial Acceptance Bar
+
+I would reject any positive mechanism paper that fails any of the following:
+
+- it does not step clearly beyond OEIS/Kimberling provenance;
+- it does not separate itself from Ford-style local coverage;
+- it relies on prime assignment after composite-only record gaps already exist;
+- it treats the current variants as robustness evidence;
+- it uses chosen-witness summaries as if they were canonical;
+- it lacks matched non-record and surrogate/null controls.
+
+The current package is defensible only in the narrower form:
+
+- validated recurrence implementation;
+- reproducible finite-horizon computation through baseline gap `30`;
+- direct negative evidence against strong raw-witness H1;
+- direct negative evidence against current-form H2;
+- a carefully delimited overlap-control dossier explaining why stronger positive claims
+  are not yet earned.

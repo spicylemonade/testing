@@ -1,27 +1,85 @@
 # Cross-Domain Bridge Hypotheses
 
-Inspected `results/research_context.md` and `results/literature/gap_frontier.md` first. `results/swarm/director_brief.md` was absent, and no ConceptEvolve artifacts were present in the repository. Local computation on the first 20,000 terms suggests `R(x) := #{n : T(1,n) <= x}` and `C(x) := #{n : T(n,1) <= x}` are both close to `2x/log x`, while the observed row-1 gap record has already reached `19`, so the bounded-gap conjecture currently looks more likely false than true.
+Inspected `results/research_context.md`, `results/literature/gap_frontier.md`,
+`results/swarm/director_brief.md`, `results/swarm/falsifier.md`,
+`results/concept_evolve/bridge_candidates.json`, `results/concept_evolve/summary.txt`,
+and `results/evaluation/literature_comparison.md` first.
 
-## 1. Greedy Extremal Multiplicative-Basis Hypothesis
+The overlap pivot is explicit: do not recycle Ford-style product-coverage language,
+prime-support storytelling, or symbolic-compression rhetoric unless the bridge uses a
+stronger structural object than the current repo already retired.
 
-- **Title:** Canonical Near-Minimal Multiplicative Basis via Greedy Mex Coupling
-- **Closest prior art:** Multiplicative bases of order `2` and the Erdős multiplication-table problem.
-- **Why it is different:** Existing work studies how small a multiplicative basis can be or how many distinct products appear. Here the novelty is the deterministic `mex` coupling: the table is not an arbitrary basis but a canonically generated one, and the bridge claim is that this greedy rule forces a specific near-extremal regime rather than merely some sparse covering set.
-- **Falsifiable prediction:** If `A = {T(1,n)}` and `B = {T(n,1)}`, then `R(x) ~ 2x/log x` and `C(x) ~ 2x/log x`, and the row-1 difference sequence is unbounded. More sharply, record row gaps should occur at locations where the local product-coverage multiplicity from `A(x)B(x)` is unusually high, so the same local obstruction explains both the near-minimal density and the large gap.
-- **Required experiments:** Generate at least `10^6` terms with incremental product coverage; estimate `R(x)log x/(2x)` and `C(x)log x/(2x)` over logarithmic windows; for each new record row gap, log local coverage multiplicities and compare them against synthetic near-minimal multiplicative bases. Reject this bridge if the counting law looks right but record gaps do not line up with any extremal-coverage witness.
+## 1. Commutative-Stabilization Hypothesis
 
-## 2. T-Specific Buchstab/Kinetic Frontier Hypothesis
+- **Title:** The paired-`mex` recurrence is an abelian frontier network.
+- **Closest prior art:** Abelian networks, chip-firing, and rotor-router style
+  schedule-invariant stabilization.
+- **Why it is different:** The current variant work has mostly been read as robustness
+  bookkeeping. The stronger bridge claim is that row choice, column choice, and product
+  insertion are commuting local updates of a hidden stabilization process on frontier
+  defects. That is a real pivot away from Ford overlap because the key invariant is
+  schedule-independence, not local divisor density. The local signal is unusually
+  strong: `row_immediate` is exactly the same process, `column_immediate` is the axis
+  swap, and the late-gap witness profile survives both runs.
+- **Falsifiable prediction:** Any legal asynchronous schedule started from the same
+  frontier snapshot and inserting the same two new border defects should stabilize to
+  the same border pair up to axis relabeling. Record-gap size should correlate with a
+  schedule-independent stabilization observable such as total firing count, maximal
+  defect depth, or avalanche diameter. One honest counter-schedule with genuinely
+  different stabilized borders kills this bridge.
+- **Required experiments:** Implement randomized and batched legal schedules for the
+  same prefix states; log whether stabilized row/column borders agree with the baseline
+  up to swap; measure schedule-independent defect-depth statistics; compare these with
+  gap size on the baseline and the existing `row_immediate` / `column_immediate`
+  variants.
 
-- **Title:** The Mex Frontier Has a Buchstab-Type Scaling Fixed Point
-- **Closest prior art:** Buchstab-style rough-number asymptotics and Smoluchowski-type kinetic fixed points.
-- **Why it is different:** This is not the generic statement that `A` or `B` look like rough numbers. The claim is that the `mex` evolution induces its own nonlinear frontier operator on uncovered integers, and only after rescaling does that operator land in the same universality class as Buchstab/kinetic equations. The table-specific object is the frontier dynamics, not the eventual asymptotic shape alone.
-- **Falsifiable prediction:** On logarithmic scales, the uncovered-frontier profile converges to a stable shape. Consequently, `R(x) = C(x) = (2 + o(1))x/log x`, and the mean row-1 gap near index `n` is `(1/2 + o(1)) log n`. If successive dyadic windows fail to approach a common rescaled profile, or if the mean-gap-to-`log n` ratio drifts without stabilization, this hypothesis should be discarded.
-- **Required experiments:** Measure uncovered-frontier statistics on dyadic windows; fit a nonlinear renewal or delay equation directly to the observed frontier; track the mean row gap, upper gap quantiles, and `R(x)` against the predicted scaling law. Reject quickly if no scale-stable profile emerges.
+## 2. Witness-Forest Hypothesis
 
-## 3. Divisor-Lattice Twin-Front Hypothesis
+- **Title:** Frontier coverage lives in an acyclic two-color witness forest.
+- **Closest prior art:** `C_4`-free / Zarankiewicz-type bipartite graph theory and
+  sparse decoding factor graphs.
+- **Why it is different:** This is not another density story about `A_n B_n`. It says
+  the right object is the full witness graph whose left vertices are row factors and
+  right vertices are column factors used inside a frontier window. On the local corpus,
+  every exported full witness graph for record gaps `1, 2, 3, 4, 5, 7, 8, 11, 12, 13,
+  17, 19, 20, 21, 25, 28, 30` has cycle rank `0`, and matched late windows sampled
+  near steps `5000`, `30000`, `100000`, and `729353` also came back with cycle rank
+  `0`. That is a concrete structural invariant, not a rebranding of Ford overlap.
+- **Falsifiable prediction:** Late frontier windows continue to have cycle rank `0` or
+  at worst uniformly bounded cycle rank, with long gaps arising from larger tree
+  components rather than denser local rectangle structure. The first persistent
+  appearance of positive cycle rank or frequent `C_4` rectangles near the frontier
+  would sharply weaken this bridge.
+- **Required experiments:** Extend full hypergraph export to all record gaps past
+  `10^6` and to matched non-record windows; compute cycle rank, arboricity, component
+  sizes, diameters, and leaf fractions; search explicitly for the first frontier window
+  whose witness graph contains a cycle or rectangle; compare against size-matched
+  surrogate product windows.
 
-- **Title:** Row and Column Are Coupled Fronts in a Deterministic Divisor-Lattice Growth Model
-- **Closest prior art:** First-passage percolation / Eden-type growth models and exploration processes on divisor graphs.
-- **Why it is different:** A standard symbolic-dynamics or `B`-free framing is too derivative here. The sharper bridge is to deterministic front propagation: `A` and `B` are two advancing fronts, while product-covered integers form the explored interior of a growth process on the divisibility lattice. That creates a coupled two-front geometry absent from fixed forbidden-divisor models.
-- **Falsifiable prediction:** The row and column stay near-twins even while row gaps diverge: `T(n,1) - T(1,n) = O(log n)` in maximum and has prefix-average growth at most polylogarithmic, while record row gaps correlate with spikes in divisor richness or local collision multiplicity. Thus unbounded row gaps come from frontier trapping, not from row/column decoupling.
-- **Required experiments:** Log `T(n,1) - T(1,n)`, row-gap records, divisor counts `tau(m)`, and local collision multiplicities around each record gap; test whether record gaps concentrate near unusually divisor-rich zones; compare the observed statistics with a deterministic growth surrogate on the divisor graph. Reject this bridge if row/column offsets scale comparably to the row-gap records themselves.
+## 3. Betti-Defect Hypothesis
+
+- **Title:** Long gaps are runs of low-complexity elements in a two-color factorization monoid.
+- **Closest prior art:** Nonunique factorization theory for numerical monoids,
+  especially Betti-element, delta-set, and catenary-style invariants.
+- **Why it is different:** The raw witness-certificate program failed because exact
+  factor identities are too heterogeneous. The stronger bridge is to ignore identities
+  and track factorization-complexity invariants of the constrained two-color monoid
+  generated by the current row and column borders. That is farther from Ford overlap
+  than another coverage count, and farther from the failed symbolic lane because the
+  compression target is algebraic rather than lexical. The local signal is that late
+  record gaps stay sparse even while they stop looking tiny-factor driven: for gap
+  `30`, the interval has `29` skipped values, only `43` admissible factor pairs,
+  `39` distinct row factors, `41` distinct column factors, and still `19/29` singleton
+  values while the balanced-factor share has risen to `13/29`.
+- **Falsifiable prediction:** Per-window branching invariants such as Betti counts,
+  factorization-graph connectivity, or catenary-like distances stay bounded or grow
+  sublinearly in the gap length, so new records are mostly longer runs of
+  low-complexity elements rather than denser branching. If these invariants grow
+  essentially linearly with gap size, or matched surrogates reproduce them, retire this
+  bridge.
+- **Required experiments:** For every late record gap and matched non-record window,
+  compute per-value factorization graphs, Betti-style branching counts, connected
+  components, and catenary-like distances; test whether the resulting invariant profile
+  stabilizes across horizon and across the existing baseline / `row_immediate` /
+  `column_immediate` runs; reject the bridge if no invariant beats raw witness counts
+  or surrogate controls.

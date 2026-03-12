@@ -2,30 +2,43 @@
 
 ## Decision
 
-- Champion: `H1_frontier_witness_certificate`
-- Backup: `H2_prime_support_fixed_point`
-- De-prioritized: `H3_near_minimal_multiplicative_basis`
+- Champion: `H1_anchor_offset_backbone`
+- Backup: `H2_witness_forest_invariant`
+- Reserve only if both fail: `H3_modular_obstruction_lift`
 
-## Why This Is The Right Split
+## Why This Split Survives Adversarial Review
 
-The strongest scout signal is that novelty lives or dies at the frontier itself. Long first-row jumps are created by consecutive integers just below the mex already being covered, and the falsifier correctly warns that this becomes trivial or derivative unless the explanation uses the self-generated border sets in an essential way. That makes the witness-carrying frontier-certificate line the best champion: it attacks the actual boundedness event, it can be falsified quickly, and it has a clear novelty bar.
+The best live direction is the previous-column anchor and offset geometry. It is the most `T`-specific object left in the corpus: the previous-column term sits inside every analyzed late row-gap interval, the offset `Delta_n = T(n,1) - T(1,n)` is endogenous to the paired-`mex` rule, and the whole line stays meaningful even on composite-only record gaps. That makes it materially less derivative than Ford-style local product coverage and materially less stale than the retired prime-support story.
 
-The best backup is the coupled prime-index support line. It is structurally sharper than generic prime-gap talk because it uses the OEIS-noted odious-exponent and recursive prime-support description, but it should remain secondary until it proves that the support layer explains something the frontier witness layer cannot. Prime assignment by itself is not sufficient; the falsifier already records a record gap with no skipped primes at all.
+The best backup is the full-witness forest line. The falsifier already rejected strong chosen-witness `H1`, but also left one rescue route open: a full-hypergraph invariant that survives controls. The bridge memo supplies exactly that candidate, with forest-like witness graphs as the proposed structural object. This is worth keeping active, but only as a backup because it still needs matched non-record and surrogate baselines before it can claim to explain record formation rather than just describe frontier sparsity.
 
-The near-minimal multiplicative-basis framing stays out of the active lane. It overlaps too directly with Ford-style multiplication-table and divisor-in-an-interval literature, and the current scout evidence does not yet isolate a T-specific invariant that would make that framing more than a rebranding exercise.
+The modular-obstruction line stays in reserve because it is low-overlap and cheap to kill, but the current scout evidence does not yet support promoting it ahead of the two more directly grounded lanes.
 
-## Main Blocker
+## Unresolved Blocker
 
-The current scout outputs are enough to choose directions, but not enough to claim a mechanism. The missing proof-oriented artifact is a witness-carrying corpus for record gaps under a recurrence implementation whose update order has been validated. Without that corpus, both the champion and the backup risk collapsing into language rather than mathematics.
+The current scout outputs are sufficient to rank directions, but insufficient to assert a mechanism. Three gaps remain load-bearing:
+
+- no independent implementation baseline yet separates correctness from repeated use of one generator family;
+- no matched non-record and surrogate/null controls yet show that the observed anchor or witness features are discriminative rather than generic;
+- full witness exports remain selective, so the structural backup is not yet closed under late-record coverage.
+
+Until those are fixed, the honest product is a direction memo and blocker handoff, not a proof claim.
 
 ## Exact Next Experiment For The Researcher
 
-Run one correct baseline generator only far enough to refind and extend beyond the known record-gap horizon already surfaced in the swarm notes. For every skipped integer in every new record interval, log:
+Run one bounded, independently checked corpus build instead of three separate explorations.
 
-- one valid witness `u * v` with `u` on the row border and `v` on the column border;
-- witness multiplicity, if cheaply available;
-- skipped-prime versus skipped-composite status;
-- row/column offset at that step;
-- if the backup line is still active, the relevant prime-support observables for the same interval.
+1. Validate the update order with a separately written checker on a substantial prefix.
+2. On the same verified run, export every late record gap from the current known regime together with matched non-record windows.
+3. For each window, log:
+   - previous-column anchor position inside the skipped interval;
+   - `Delta_n`, plus left/right subinterval lengths around the anchor;
+   - skipped-prime versus skipped-composite status;
+   - minimal witness summaries for the champion lane;
+   - full witness hypergraphs for the backup lane;
+   - residue logs for small `q` only if they come essentially for free from the same export.
+4. Compare the champion and backup observables against matched surrogate product-window controls before writing any mechanism language.
 
-The go/no-go test is simple. If the record-gap corpus yields a compact witness taxonomy or a sharp obstruction language, continue with the champion. If it does not, but prime-support observables explain the failures, promote the backup. If neither happens, stop and record that the current hypothesis family is unsupported rather than widening the search blindly.
+## Go / No-Go Rule
+
+If anchor/offset observables separate record windows from matched controls, keep the champion active. If they fail but the forest-like hypergraph invariants survive controls, promote the backup. If both fail, only then spend the cheap reserve scan on modular obstruction. If none of the three clears controls, stop and write the negative-result handoff rather than widening the search.

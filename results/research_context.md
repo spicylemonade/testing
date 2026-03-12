@@ -1,10 +1,10 @@
 # Research Context
 
-- Stage: post_writer
+- Stage: post_director_swarm
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: high
-- Note: paper draft and compilation stage completed
+- Note: gap_queries=4, swarm_agents=4
 - Rubric progress: 25/25 completed
 - Known papers tracked: 100
 - `sources.bib` entries: 15
@@ -18,8 +18,8 @@
 - Cotton (Gossypium hirsutum) Response to Simulated Repeated Damage by Helicoverpa spp. Larvae (2002)
 
 ## Recent Semantic Scholar Activity
-- search :: Stanley sequences greedy sequence mex (results=0, cache_hits=0, network_calls=0)
-- search :: "Stanley sequences" (results=0, cache_hits=0, network_calls=0)
-- bibtex :: f8b63d03bc185b019249849e00ef057dbb75eebb (results=1, cache_hits=0, network_calls=1)
-- bibtex :: 48a89afec71d2d1af2852db5a02b7b248435a526 (results=1, cache_hits=0, network_calls=1)
 - bibtex :: ceffab6ba62f2a0012a65306c6f1083e743e4d22 (results=1, cache_hits=0, network_calls=1)
+- search :: First, decree that T(1,1) = 1. Then for n > 0, let S(n) = {(i,j) : 1 <= i <= n, 1 <= j <= n}, and let T(1,n+1) = least p (results=0, cache_hits=1, network_calls=0)
+- search :: First, decree that T(1,1) = 1. Then for n > 0, let S(n) = {(i,j) : 1 <= i <= n, 1 <= j <= n}, and let T(1,n+1) = least p (results=0, cache_hits=1, network_calls=0)
+- search :: First, decree that T(1,1) = 1. Then for n > 0, let S(n) = {(i,j) : 1 <= i <= n, 1 <= j <= n}, and let T(1,n+1) = least p (results=0, cache_hits=1, network_calls=0)
+- search :: First, decree that T(1,1) = 1. Then for n > 0, let S(n) = {(i,j) : 1 <= i <= n, 1 <= j <= n}, and let T(1,n+1) = least p (results=0, cache_hits=1, network_calls=0)

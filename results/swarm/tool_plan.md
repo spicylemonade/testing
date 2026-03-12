@@ -1,39 +1,82 @@
 # Tool Plan
 
-## Guardrails
+## Global Routing
 
-- Stay on the two active lines only:
-  - `H1_frontier_witness_certificate`
-  - `H2_prime_support_fixed_point`
-- Do not widen into generic mex, prime-gap, or multiplication-table storytelling unless a blocker forces targeted prior-art clearance.
-- Every computational claim must carry proof-oriented artifacts:
-  - witness logs for skipped integers in record gaps;
-  - recurrence-order validation;
-  - compact claim-to-evidence mapping.
-- Cap robustness work at two meaningful perturbations. Do not create a variant zoo.
+- Default to local repo artifacts, shell commands, and existing helper scripts.
+- Do not run broad web search, wide literature expansion, theorem search, LP/ILP work, or extra horizon-chasing just to get larger numbers.
+- Route work in this order:
+  1. champion corpus build for `H1_anchor_offset_backbone`;
+  2. falsifier controls on that same corpus;
+  3. backup structural audit for `H2_witness_forest_invariant` only if the champion does not clear controls;
+  4. reserve modular scan only if both active lanes fail;
+  5. writing and review only after one lane survives the gates.
 
-## Role Routing
+## Role Routing And Budgets
 
-| Role | Tool routing | Expected output | Budget envelope |
-|---|---|---|---|
-| Orchestrator | Repo artifacts and shell first. Spawn at most one parallel review round if needed. Use web only for blocker-driven provenance checks. | One-page decision memo that keeps `H1` primary and `H2` backup unless a blocker reverses them. | 2-3 hours human. No broad search budget. |
-| Researcher | Existing local scripts, shell, and repository data only. If no correct baseline generator exists, stop and file that exact blocker before building anything else. | One witness-carrying record-gap corpus and two short claim sheets: frontier certificate claim and prime-support claim. | 4-6 hours human plus one bounded benchmark pass. No theorem search and no side explorations. |
-| Falsifier | Local artifact review plus targeted attacks on the active claims. No new hypothesis families. | Pass/fail checklist covering prime-free record gaps, brittle single-witness coverage, stale small-horizon claims, and recurrence-order mistakes. | 4-5 hours human. Stop after one decisive failure per claim or three failed rescue attempts. |
-| Writer | Work from the claim sheets and falsifier outputs only. No new research. | Compact note organized as `claim -> required evidence -> current status -> blocker`. | 2-3 hours human, 2-3 pages max. |
-| Reviewer | Review only the active claims and their evidence package. No reopening of the full search space. | Go/no-go review focused on overclaim, novelty overlap, and missing controls. | 1.5-2 hours human. |
-| Citation auditor | Targeted provenance check only. Local notes first, then exact sources if needed. | Source map covering OEIS array/row provenance, bounded-difference statement, Kimberling baseline, and Ford only if divisor-interval language appears. | 1-2 hours human. No bibliography growth beyond blocker-driven sources. |
-| Benchmark auditor | Validate one correct baseline, one witness-log format, and at most two ablations. Use shell plus existing helper scripts only. | Benchmark spec with stress metrics: record-gap trajectory, skipped-prime composition, witness multiplicity profile, and row/column offset sanity check. | 3-4 hours human, up to 8 CPU-hours. Reject any run without witness logs or recurrence-order validation. |
+### `orchestrator`
 
-## Minimal Sequence
+- Tools: local shell, repo files, existing helper scripts.
+- Budget envelope: one bounded round of coordination; at most one researcher bundle, one falsifier pass, one benchmark audit, one reviewer pass, and one citation audit.
+- Routing rule: do not fork parallel explorations of all three hypotheses. Keep the reserve lane closed unless the first two fail.
 
-1. Orchestrator locks the claim ladder: `H1` first, `H2` second, `H3` out of scope.
-2. Benchmark auditor defines the baseline generator contract, witness-log schema, and two allowed ablations.
-3. Researcher and falsifier run in parallel on that contract.
-4. Writer, reviewer, and citation auditor engage only if the evidence package clears the falsifier bar.
+### `researcher`
 
-## Stop Conditions
+- Tools: local generator/checker scripts and artifact export helpers only.
+- Budget envelope: one independently checked run plus one corpus export pass.
+- Deliverable:
+  - verify the recurrence update order with a separately written checker on a substantial prefix;
+  - export all late record gaps in the current known regime plus matched non-record windows;
+  - log previous-column anchor position, `Delta_n`, left/right interval lengths, skipped-prime flags, minimal witness summaries, and full witness hypergraphs;
+  - include small-`q` residue logs only if they are effectively free from the same export.
+- Stop rule: no new variant families and no extra horizon extension unless required to recover the already known late-record regime.
 
-- Stop immediately if the baseline recurrence implementation cannot be validated.
-- Stop the champion line if witness logs do not yield a compact certificate language or obstruction.
-- Promote the backup only if prime-support observables explain failures that frontier witnesses do not.
-- Do not spend budget on broader literature or extra variants until one active line survives the above filters.
+### `falsifier`
+
+- Tools: local corpus, matched-window comparisons, surrogate product-window controls.
+- Budget envelope: one attack pass, stopping at the first decisive failure.
+- Deliverable:
+  - test whether anchor/offset observables actually separate record windows from matched non-record windows;
+  - test whether the same observables survive surrogate/null controls;
+  - if the champion fails, immediately test whether the backup witness-forest invariants are any more discriminative.
+
+### `writer`
+
+- Tools: local markdown, claim sheets, and audit memos only.
+- Budget envelope: one short memo or one negative-result handoff.
+- Deliverable:
+  - if a lane clears controls, write only the validated mechanism claim and its limits;
+  - if no lane clears controls, write the blocker memo instead of speculative framing.
+
+### `reviewer`
+
+- Tools: local claim drafts, benchmark audit, falsifier memo, and exported corpus summaries.
+- Budget envelope: one review pass.
+- Deliverable:
+  - reject any draft that slides back into OEIS/Kimberling provenance recovery, Ford-style local coverage language without explicit clearance, or prime-obstruction rhetoric that ignores composite-only records;
+  - verify that update-order correctness, matched-control coverage, and witness-canonicalization caveats are stated explicitly.
+
+### `citation auditor`
+
+- Tools: local watchlist first; web only for exact source-of-record checks.
+- Budget envelope: at most three targeted checks.
+- Deliverable:
+  - verify exact OEIS and Kimberling provenance wording;
+  - clear any direct Ford/divisor-interval comparison language before it appears in a draft;
+  - no broad exploratory search.
+
+### `benchmark auditor`
+
+- Tools: local experiment summaries, exported corpus artifacts, checker outputs.
+- Budget envelope: one audit memo.
+- Deliverable:
+  - confirm independent checker agreement with the main generator on the audited prefix;
+  - confirm matched non-record sampling and surrogate controls were actually used;
+  - confirm row-immediate and column-immediate outputs are not presented as genuine robustness evidence;
+  - flag any witness statistics that still depend on chosen-witness canonicalization.
+
+## Decision Gates
+
+- `H1_anchor_offset_backbone` stays active only if anchor/offset metrics beat matched non-record and surrogate controls.
+- `H2_witness_forest_invariant` is promoted only if the forest-like profile survives full-hypergraph export, canonicalization checks, and surrogate controls.
+- `H3_modular_obstruction_lift` opens only if the first two lanes fail and residue logging is already available at negligible marginal cost.
+- If none of the lanes clears its gate, the correct output is a negative-result dossier and an explicit blocker memo, not a widened search program.
