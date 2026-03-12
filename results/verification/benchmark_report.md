@@ -2,7 +2,7 @@
 
 ## Status
 
-Baseline audit result: **PASS after contract cleanup**.
+Benchmark audit result: **PASS with explicit documented risks**.
 
 The initial audit correctly identified that the old benchmark package mixed deterministic structural outputs with volatile timing and RSS data. That issue has been fixed by separating:
 
@@ -45,21 +45,52 @@ The initial audit correctly identified that the old benchmark package mixed dete
 ### Prime-Free Record Gaps
 
 - **PASS**
-- the gap-`21` interval contains `0` skipped primes and `20` skipped composites.
+- the baseline already shows that gap `21` contains `0` skipped primes and `20` skipped composites.
+- the million-step run strengthens this rather than weakening it:
+  - gap `28` is composite-only;
+  - gap `30` is composite-only;
+  - the `column_immediate` perturbation also produces composite-only late records, including gap `31`.
+
+Interpretation: prime-free record gaps are a validated feature of the package, not a hidden contradiction.
 
 ### Brittle Single-Witness Coverage
 
 - **PASS**
-- in the gap-`21` interval, `16` of the `20` skipped values have multiplicity `1`.
-- this confirms the falsifier’s warning that long gaps can be sustained by brittle coverage.
+- in the gap-`21` interval, `16` of the `20` skipped values have multiplicity `1`;
+- in the million-step run, the late record gaps have singleton shares:
+  - gap `25`: `18/24`;
+  - gap `28`: `18/27`;
+  - gap `30`: `19/29`.
+
+Interpretation: brittle coverage remains present at larger horizons and is now explicitly benchmarked rather than buried.
 
 ### Recurrence-Order Mistakes
 
 - **PASS**
 - the benchmark package now includes a negative control test for a nearby wrong axis-choice rule.
 - the deterministic digest test makes silent recurrence drift easier to catch than before.
+- the two nearby perturbation runs are logged separately under `results/experiments/row_immediate_1000000/` and `results/experiments/column_immediate_1000000/`, so the package no longer blurs the validated baseline with robustness experiments.
+- full-witness hypergraph exports validate multiplicity counts on:
+  - original gap `30`;
+  - `row_immediate` gap `30`;
+  - `column_immediate` gap `31`.
 
-## Allowed Perturbations
+### Stale Small-Horizon Claims
+
+- **PASS**
+- the package no longer stops at the old `21`-gap horizon.
+- `results/experiments/run_1000000/contract.json` extends the record-gap trajectory to `25`, `28`, and `30`.
+- `results/experiments/run_1000000/experiment_note.md` records the exact command and runtime.
+
+### Unsupported Benchmarks
+
+- **PASS**
+- the primary experiment, the two perturbation runs, and the late-gap hypergraph exports are all backed by exact commands recorded in:
+  - `results/experiments/run_1000000/experiment_note.md`;
+  - `results/experiments/variant_comparison.md`.
+- no claim in the current package relies on an uncaptured shell transcript or on a benchmark path that cannot be regenerated.
+
+## Allowed Non-Structural Perturbations
 
 No more than these two perturbations are allowed for later robustness work:
 
@@ -72,4 +103,5 @@ No more than these two perturbations are allowed for later robustness work:
 
 - The test suite is still lightweight and subprocess-based rather than property-heavy.
 - The negative control is a nearby wrong rule, not an exhaustive family of recurrence mistakes.
+- The `column_immediate` perturbation shows that some trajectory-level phenomena are sensitive to staging, even though the high-level negative-result conclusions survive.
 - Performance numbers remain environment dependent and should not be treated as structural evidence.
