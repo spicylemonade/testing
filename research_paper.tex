@@ -42,36 +42,38 @@
 \newcommand{\Pset}{\mathcal{P}}
 \newcommand{\mex}{\operatorname{mex}}
 
-\title{Archivara Agent: Structure, Symmetry, and Finite-Horizon Evidence for Kimberling's Prime-Separator Array}
+\title{Archivara Agent: Structural Clarification and Negative Mechanism Evidence for Kimberling's Prime-Separator Array}
 \author{Archivara Agent}
 \date{March 12, 2026}
 
 \begin{document}
+\hypersetup{pageanchor=false}
 \begin{titlepage}
 \centering
 {\Large Archivara Agent\par}
 \vspace{1.5cm}
-{\huge\bfseries Structure, Symmetry, and Finite-Horizon Evidence for Kimberling's Prime-Separator Array\par}
+{\huge\bfseries Structural Clarification and Negative Mechanism Evidence for Kimberling's Prime-Separator Array\par}
 \vspace{1.2cm}
 {\large Research manuscript generated inside the Archivara pipeline\par}
 \vspace{1.8cm}
-\begin{minipage}{0.86\linewidth}
+\begin{minipage}{0.88\linewidth}
 \small
-\textbf{Primary object.} The Kimberling prime-separator array $T$ is defined greedily by two coupled border sequences and the multiplicative rule $T(m,n)=T(m,1)T(1,n)$. The first-row sequence is OEIS A129259; the array itself is OEIS A129258 \citep{oeisA129258,oeisA129259}. Kimberling asks whether the first differences $T(1,n+1)-T(1,n)$ are bounded \citep{kimberling100conjectures}.\\[0.8em]
-\textbf{Manuscript status.} This paper proves several exact structural facts about the recurrence, corrects the interpretation of the nearby update-order ``variants,'' and synthesizes the archived million-step computational package. The global boundedness question remains unresolved.
+\textbf{Primary object.} Kimberling's prime-separator array $T$ is the multiplicative greedy array whose first row is OEIS A129259 and whose full array is OEIS A129258 \citep{oeisA129258,oeisA129259}. Kimberling asks whether the first differences $T(1,n+1)-T(1,n)$ are bounded \citep{kimberling100conjectures}.\\[0.8em]
+\textbf{Manuscript status.} This paper does not claim boundedness, unboundedness, or a new positive mechanism. It gives complete proofs of several exact structural properties of the recurrence, documents a digest-checked million-step computation, and incorporates the repository's late matched-control audits, all of which sharpen the evidence while leaving Kimberling's problem open.
 \end{minipage}
 \vfill
 {\large March 12, 2026\par}
 \end{titlepage}
 \clearpage
-\setcounter{page}{1}
+\hypersetup{pageanchor=true}
+\pagenumbering{arabic}
 
 \begin{abstract}
-We study Kimberling's prime-separator array, a multiplicative greedy construction whose first row is OEIS A129259 and whose defining open problem asks whether the first-difference sequence is bounded. The repository we analyze contains a validated baseline generator, witness-carrying record-gap logs, selected full witness hypergraphs, and million-step experiments. Our first contribution is theoretical: we prove exact structural facts that were not isolated in the working notes. At every stage the row and column border terms are the first two missing integers of the current product set; the border sequences strictly interleave; every row gap contains exactly one column term, yielding a unique forced unit witness; the so-called \texttt{row\_immediate} update rule is not a perturbation but is exactly identical to the original recurrence; and the \texttt{column\_immediate} rule is the exact axis swap. We also give a complete proof that every prime lies on exactly one axis. Our second contribution is computational and negative: replaying the archived million-step baseline reproduces the published digest and record-gap trajectory, extending the largest observed first-row record gap to $30$ while leaving the boundedness problem unresolved. The witness and hypergraph evidence rejects the simplest mechanistic story: large record gaps are often composite-only, remain dominated by singleton witnesses, and do not compress into a compact frontier certificate. The resulting picture is mathematically narrower than a mechanism paper but substantially sharper than an OEIS term dump: the recurrence has exact symmetries and a rigid local geometry, yet no proof-quality bridge from that geometry to boundedness is presently known.
+We study Kimberling's prime-separator array, a multiplicative mex construction whose first row is OEIS A129259 and whose defining open problem asks whether the gap sequence $T(1,n+1)-T(1,n)$ is bounded. Our first contribution is exact and theoretical. We prove that at every step the new row and column terms are precisely the first two missing positive integers of the current restricted product set, that the two border sequences strictly interleave, that each row gap contains exactly one column term and therefore one forced axis-$1$ witness, that the archived \texttt{row\_immediate} rule is exactly the original recurrence, that the archived \texttt{column\_immediate} rule is the exact axis swap, and that every prime lies on exactly one axis. Our second contribution is computational and negative. The validated million-step run reaches record row gap $30$, and the matched-control novelty-deepening corpus adds one independent checker agreement through $10^5$ steps together with late record, control, and surrogate windows. These artifacts show that composite-only late record gaps persist, singleton-heavy coverage does not collapse into a bounded witness grammar, the anchor/offset lane fails as a bounded-memory mechanism, the border-prefix law fails for structural reasons, full-hypergraph leaf-fraction invariants are only near-misses, and small-modulus locking does not predict the late windows; see \artifact{results/experiments/run\_1000000/record\_gap\_summary.json}, \artifact{results/novelty\_deepening/item\_026\_anchor\_metrics.json}, \artifact{results/novelty\_deepening/item\_029\_hypergraph\_metrics.json}, and \artifact{results/novelty\_deepening/item\_030\_modular\_metrics.json}. The resulting paper is therefore deliberately narrow: it is a structural clarification and negative-result dossier around Kimberling's open problem, not a claimed mechanism paper.
 \end{abstract}
 
 \section{Introduction}
-Kimberling's prime-separator array is defined by a deceptively short greedy rule. Starting from $T(1,1)=1$, one chooses the next first-row term as the least positive integer missing from the current $n\times n$ multiplicative border square, then chooses the next first-column term as the least remaining miss, and finally fills the new row and column multiplicatively. The opening rows are
+Kimberling's prime-separator array is defined by a short recurrence with unexpectedly rigid geometry. Starting from $T(1,1)=1$, one chooses the next first-row term as the least positive integer missing from the current $n\times n$ multiplicative border square, then chooses the next first-column term as the least remaining miss, and finally fills the new row and column multiplicatively. The opening rows are
 \[
 \begin{bmatrix}
 1&2&4&7&9&13&15&18&23&25&29\\
@@ -81,41 +83,40 @@ Kimberling's prime-separator array is defined by a deceptively short greedy rule
 11&22&44&77&99&143&165&198&253&275&319
 \end{bmatrix}.
 \]
-Every prime appears on exactly one axis, and the first-row difference sequence begins
+Every prime lies on exactly one axis, and the first-row difference sequence begins
 \[
-1,2,3,2,4,2,3,5,2,4,2,5,4,2,4,3,2,4,3,3,2,4,4,7,\ldots
+1,2,3,2,4,2,3,5,2,4,2,5,4,2,4,3,2,4,3,2,2,4,4,7,\ldots
 \]
-\citep{oeisA129258,oeisA129259}. The open question is whether these differences stay bounded \citep{kimberling100conjectures}.
+\citep{oeisA129258,oeisA129259}. Kimberling's public problem asks whether these differences remain bounded \citep{kimberling100conjectures}.
 
-This object sits in an awkward position relative to the literature. Its exact definition and the bounded-difference question are already public in OEIS and on Kimberling's problem list \citep{oeisA129258,oeisA129259,kimberling100conjectures}. On the other hand, any attempt to explain long covered intervals by generic product-set or divisor-interval language risks collapsing into the multiplication-table and divisor-in-an-interval framework of Ford and its descendants \citep{ford2006divisor2y,ford2008divisorinterval,ford2011multiplicationtable}. The repository under study was built explicitly to navigate that novelty boundary.
+The repository studied here already contains more than a term dump. It includes a validated generator, witness-carrying record-gap logs, selected full witness hypergraphs, phase-4 million-step experiments, and a later phase of matched-control novelty-deepening audits. At the same time, the repository's own verification layer is explicit about scope: the supported contribution is not a theorem settling boundedness and not a new positive mechanism, but a tighter description of what is exact, what is reproducibly observed, and which plausible mechanism stories have now failed on the available corpus.
 
-The present paper takes a deliberately conservative position. We do not claim boundedness, unboundedness, or a new positive mechanism. Instead we contribute a rigorous structural analysis of the recurrence plus a fully sourced synthesis of the finite-horizon evidence package. In particular, we make the following contributions.
+The paper adopts that narrower claim hierarchy. In our assessment, three comparison classes matter. First, OEIS A129258/A129259 and Kimberling's problem page already occupy the public provenance of the object and the question \citep{oeisA129258,oeisA129259,kimberling100conjectures}. Second, the closest live mathematical overlap risk is Ford's multiplication-table and divisor-in-an-interval branch, because any explanation phrased purely in local factor coverage threatens to drift into an established restricted-product-set literature \citep{ford2006divisor2y,ford2008divisorinterval,ford2011multiplicationtable}. Third, multiplicative-basis papers form a weaker comparison class that matters mainly as a guardrail against reframing the recurrence into a different sparse-product problem \citep{dressler1970newmultiplicativebases,nathanson1987multiplicativerepresentations,pus1992multiplicativebases,pach2017multiplicativebases}. The repo's novelty ledger reaches exactly the same conclusion: what survives cleanly is a structural cleanup plus a negative-result evidence package, not a broad mechanism claim; see \artifact{results/literature/prior\_art\_gap.md} and \artifact{results/verification/novelty\_report.md}.
+
+Our contributions are therefore the following.
 
 \begin{enumerate}[label=\textbf{C\arabic*.}, leftmargin=2.8em]
-\item We prove exact recurrence identities that were only implicit in the computational package: the original rule chooses the first two missing integers of the current product set; the border sequences strictly interleave; the \texttt{row\_immediate} rule is exactly identical to the original recurrence; and the \texttt{column\_immediate} rule is exactly the axis-swapped process.
-\item We prove that every prime lies on exactly one axis. This recovers the prime-separation phenomenon directly from the recurrence, without relying on OEIS commentary.
-\item We formalize the unique forced unit witness in every row gap: the interval $(r_n,r_{n+1})$ contains exactly one column term, namely $c_n$. This explains the persistent axis-1 marker seen in the archived witness logs.
-\item We synthesize the validated million-step corpus (\artifact{results/experiments/run\_1000000/}) and selected full witness hypergraphs (\artifact{results/analysis/full\_witness\_hypergraphs\_gap21\_25\_28\_30.json}). The record-gap trajectory reaches $30$, but the data remain negative rather than explanatory: composite-only large gaps persist, singleton witnesses dominate, and balanced witnesses grow rather than compress.
-\item We sharpen the statement of what remains open. The exact symmetries and local geometry are now explicit, but they do not yet imply any global upper bound for $r_{n+1}-r_n$ nor any construction forcing unbounded growth.
+\item We prove exact recurrence identities that were previously scattered across code and notes: the original rule picks the first two missing positive integers of the current product set; the border sequences strictly interleave; each row gap contains exactly one column term; the \texttt{row\_immediate} rule is identical to the baseline; the \texttt{column\_immediate} rule is the exact axis swap; and every prime lies on exactly one axis.
+\item We synthesize the validated baseline computation. The archived million-step run and fresh replay agree on the structural digest, reproduce the published small prefix, and extend the observed record row gap to $30$.
+\item We integrate the repository's late matched-control evidence. An independent checker agrees with the baseline through $10^5$ steps; the shared corpus contains $5$ late baseline record windows, $45$ anchor-matched non-record controls, and $50$ affine surrogates; and the anchor/backbone, prefix, hypergraph, and modular candidate mechanisms all fail to produce a proof-quality, horizon-independent explanation.
+\item We restate the open problem more sharply than the public provenance alone allows. The recurrence has a rigid local geometry, and some late-window observables are highly discriminative on the current corpus, but none of the present arguments proves boundedness or unboundedness of $T(1,n+1)-T(1,n)$.
 \end{enumerate}
 
-The paper is organized as follows. Section~\ref{sec:related} situates the work relative to OEIS/Kimberling provenance and Ford-style overlap. Section~\ref{sec:prelim} introduces the notation and the repository artifacts used as evidence. Section~\ref{sec:method} describes the generator, witness instrumentation, and rendering pipeline. Section~\ref{sec:theory} proves the exact structural results. Section~\ref{sec:setup} documents the deterministic replay and computational protocol. Section~\ref{sec:results} reports the finite-horizon findings. Sections~\ref{sec:discussion} and \ref{sec:conclusion} discuss limitations and open directions. Appendices collect extended proofs, artifact provenance, and additional tables.
+The rest of the paper is organized as follows. Section~\ref{sec:related} positions the work against the provenance and overlap branches already identified in the repository. Section~\ref{sec:prelim} defines the recurrence, the matched-control corpus, and the observables used later. Section~\ref{sec:method} describes the generator, checker, novelty-deepening pipeline, and figure generation. Section~\ref{sec:theory} proves the exact structural results. Section~\ref{sec:setup} documents the deterministic computational protocol. Section~\ref{sec:results} reports the finite-horizon findings and the negative mechanism audits. Sections~\ref{sec:discussion} and \ref{sec:conclusion} discuss limitations, open questions, and the appropriate claim boundary. Appendices collect extended proofs, implementation details, and supplementary tables.
 
 \section{Related Work}
 \label{sec:related}
-\subsection{Provenance: OEIS and Kimberling}
-The array itself is OEIS A129258 and the first row is OEIS A129259 \citep{oeisA129258,oeisA129259}. These entries already contain the recurrence, the initial terms, and the prime-separation framing. Kimberling's web page ``100 Conjectures and/or Problems'' records the bounded-difference question explicitly \citep{kimberling100conjectures}. Consequently, no manuscript on this object can claim novelty merely by reconstructing the array, reproducing the first differences, or restating the problem. This point was already recognized in the repository's prior-art ledger \artifact{results/literature/prior\_art\_gap.md} and novelty review \artifact{results/verification/novelty\_report.md}.
+\subsection{Public provenance}
+The array itself is OEIS A129258 and the first row is OEIS A129259 \citep{oeisA129258,oeisA129259}. Kimberling's page ``100 Conjectures and/or Problems'' records the bounded-difference question explicitly \citep{kimberling100conjectures}. Accordingly, we do not treat reconstruction of the array, reproduction of the first-row prefix, or restatement of the prime-separation phenomenon as novel. The differentiated contribution of the present paper must therefore come from formal consequences of the recurrence or from a stronger validated evidence package than the public provenance provides.
 
-\subsection{Nearest overlap: multiplication tables and divisor intervals}
-The nearest serious literature branch is Ford's work on integers represented in restricted multiplication tables and on integers with a divisor in a prescribed interval \citep{ford2006divisor2y,ford2008divisorinterval,ford2011multiplicationtable}. The conceptual overlap is immediate: at step $n$, the recurrence asks which integers near the frontier are represented in the restricted product set $\R_n\Cset_n$. Any attempt to explain long first-row gaps by local factor coverage therefore risks becoming a renaming of an existing product-set/divisor-interval phenomenon.
+\subsection{Closest overlap risk: restricted product sets}
+In our assessment, the most important overlap branch is Ford's work on multiplication tables and divisor intervals \citep{ford2006divisor2y,ford2008divisorinterval,ford2011multiplicationtable}. The reason is structural rather than terminological: at step $n$, the recurrence asks which integers near the frontier are represented in the restricted product set $\R_n\Cset_n$. Any proposed explanation of long row gaps that appeals only to local factor coverage, divisor availability, or distinct-product density risks becoming a reformulation of an existing restricted-product-set question rather than a genuinely $T$-specific theorem. This is an author judgment, not a theorem of Ford's papers; it is also the explicit novelty boundary recorded in \artifact{results/literature/prior\_art\_gap.md} and \artifact{results/verification/novelty\_report.md}.
 
-This paper does not claim to improve Ford's asymptotic results, nor to place Kimberling's process inside Ford's theorems. Instead we use the Ford branch as an overlap control. The point is negative and precise: if a proposed explanation does not use the endogenous greedy coupling of the border sets in an essential way, then it does not clear the prior-art boundary.
+\subsection{More distant multiplicative-basis comparisons}
+The multiplicative-basis literature provides a second comparison class \citep{dressler1970newmultiplicativebases,nathanson1987multiplicativerepresentations,pus1992multiplicativebases,pach2017multiplicativebases}. These papers study sparse sets whose products represent integers, but they do not address Kimberling's coupled mex dynamics. They are relevant here mainly as a warning against overreframing: if one drops the endogenous update order and treats the border sets only as a sparse multiplicative basis, the discussion moves away from Kimberling's recurrence and toward a different established topic.
 
-\subsection{More distant multiplicative-basis controls}
-The multiplicative-basis literature supplies a second comparison class \citep{dressler1970newmultiplicativebases,nathanson1987multiplicativerepresentations,pus1992multiplicativebases,pach2017multiplicativebases}. These papers study sparse product-generating sets and multiplicative representations of integers. They matter here mainly as a warning: if one reframes Kimberling's border sets as an almost-minimal multiplicative basis without producing a $T$-specific invariant, the project drifts away from the actual recurrence and toward a different established topic. The repository's own novelty audit reaches exactly that conclusion \artifact{results/verification/novelty\_report.md}.
-
-\subsection{How the present contribution differs}
-Relative to the provenance baseline, we add three things that are not already on OEIS/Kimberling: exact structural lemmas about the recurrence order, a reproducible witness-level experiment package, and a theorem-backed reinterpretation of the purported update-order variants. Relative to Ford and the multiplicative-basis branch, our contribution is narrower: we document why the obvious positive mechanism story fails on the current corpus rather than claiming a new local-coverage theorem.
+\subsection{How this paper differs}
+Relative to the public provenance, this paper adds complete proofs of exact recurrence properties, a digest-checked computation package through one million steps, and a matched-control negative-result audit. Relative to Ford-style local coverage, the paper is narrower: it does not claim a new asymptotic theory of restricted multiplication tables, and it does not claim a $T$-specific positive mechanism that separates cleanly from generic local coverage. Relative to the multiplicative-basis branch, the contribution remains tied to the actual recurrence rather than to an abstract basis problem.
 
 \section{Background and Preliminaries}
 \label{sec:prelim}
@@ -132,53 +133,75 @@ and their restricted product set
 \[
 \Pset_n := \R_n\Cset_n := \{xy : x\in \R_n,\ y\in \Cset_n\}.
 \]
-The recurrence can then be written compactly as
+The recurrence is
 \[
 r_{n+1} = \mex(\Pset_n), \qquad
 c_{n+1} = \mex\bigl(\Pset_n \cup \{r_{n+1}\}\bigr),
 \]
 with $T(m,n)=c_m r_n$ for all $m,n\ge 1$.
 
-\begin{definition}[Row gap, offset, record gap]
+\begin{definition}[Row gap, offset, and row-gap window]
 For $n\ge 1$, define the \emph{row gap}
 \[
 g_n := r_{n+1}-r_n,
 \]
-and the \emph{offset}
+the \emph{offset}
 \[
-\delta_n := c_n-r_n.
+\delta_n := c_n-r_n,
 \]
-A \emph{record gap} is an index $n$ such that $g_n > \max_{1\le k<n} g_k$.
+and the open \emph{row-gap window}
+\[
+W_n := \{r_n+1,\dots,r_{n+1}-1\}.
+\]
+If $g_n>1$, then $W_n$ is nonempty and contains the skipped values between two consecutive row terms.
+\end{definition}
+
+\begin{definition}[Anchor and left/right depths]
+When $g_n>1$, the \emph{anchor} of the row-gap window is the previous column term $c_n$. Define
+\[
+\ell_n := c_n-r_n-1, \qquad
+u_n := r_{n+1}-c_n-1.
+\]
+Thus $\ell_n$ and $u_n$ are respectively the numbers of skipped values strictly to the left and right of the anchor inside $W_n$.
 \end{definition}
 
 \begin{definition}[Witness]
-Fix $n$ and a skipped value $v\in (r_n,r_{n+1})$. A \emph{witness} for $v$ at step $n$ is a factor pair $(x,y)\in \R_n\times \Cset_n$ such that $xy=v$. The archived corpus stores one chosen witness and its multiplicity for each skipped value in each record interval; selected late gaps also store the full witness hypergraph.
+Fix $n$ and a skipped value $v\in W_n$. A \emph{witness} for $v$ at step $n$ is a factor pair $(x,y)\in \R_n\times \Cset_n$ such that $xy=v$. The baseline corpus stores one chosen witness and its multiplicity for each skipped value in each record interval; selected late gaps and matched controls also store the full admissible witness-pair set.
 \end{definition}
+
+\begin{definition}[Record gap]
+A \emph{record gap} is an index $n$ such that
+\[
+g_n > \max_{1\le k<n} g_k.
+\]
+\end{definition}
+
+\subsection{Matched-control corpus}
+The novelty-deepening phase builds a single shared corpus from the baseline million-step run; see \artifact{results/novelty\_deepening/shared\_corpus.json}. The corpus contains:
+\begin{itemize}[leftmargin=1.8em]
+\item the five baseline record windows with $g_n\ge 20$,
+\item forty-five anchor-matched non-record control windows drawn from the same late trajectory,
+\item fifty affine size-matched surrogate windows.
+\end{itemize}
+For every such window, the corpus stores the anchor position, left/right depths, prime/composite counts, full witness-pair data, and several projected graph summaries. The point of this corpus is not to prove boundedness; it is to test whether candidate mechanism observables distinguish true record windows from comparable windows that are not records.
 
 \subsection{Artifact map used in this paper}
 The manuscript relies on the following repository artifacts.
 \begin{itemize}[leftmargin=1.8em]
 \item Generator and tests: \artifact{scripts/prime\_separator.py}, \artifact{scripts/prime\_separator\_variants.py}, \artifact{tests/test\_prime\_separator.py}.
+\item Independent checker and matched-control pipeline: \artifact{scripts/novelty\_deepening.py}, \artifact{tests/test\_novelty\_deepening.py}, \artifact{results/novelty\_deepening/checker\_agreement.json}, and \artifact{results/novelty\_deepening/shared\_corpus.json}.
 \item Baseline million-step contract and replay target: \artifact{results/experiments/run\_1000000/contract.json}.
 \item Witness summaries: \artifact{results/experiments/run\_1000000/record\_gap\_summary.json}.
 \item Full witness hypergraphs for late baseline gaps: \artifact{results/analysis/full\_witness\_hypergraphs\_gap21\_25\_28\_30.json}.
-\item Narrative verification documents: \artifact{results/verification/novelty\_report.md}, \artifact{results/verification/benchmark\_report.md}, and \artifact{results/verification/verification\_summary.md}.
+\item Negative-result audit artifacts: \artifact{results/novelty\_deepening/item\_026\_anchor\_backbone.md} through \artifact{results/novelty\_deepening/item\_030\_modular\_locking.md}.
+\item Narrative verification documents: \artifact{results/verification/novelty\_report.md}, \artifact{results/verification/citation\_audit.md}, and \artifact{results/verification/verification\_summary.md}.
 \end{itemize}
-Whenever a quantitative claim comes from the local computation rather than the external literature, we cite the relevant artifact path directly in the text.
-
-\subsection{Known facts carried into this paper}
-We take the following externally sourced facts as prior provenance.
-\begin{enumerate}[label=(\roman*), leftmargin=2.2em]
-\item The array and first-row sequence are public OEIS objects \citep{oeisA129258,oeisA129259}.
-\item The bounded-difference problem is public on Kimberling's problem list \citep{kimberling100conjectures}.
-\item Product-set/divisor-interval coverage is the correct overlap branch against which any positive mechanism claim must be judged \citep{ford2006divisor2y,ford2008divisorinterval,ford2011multiplicationtable}.
-\end{enumerate}
-Everything else in this paper is either proved from the recurrence or measured directly from the archived local artifacts.
+Whenever a quantitative statement comes from computation rather than from the external literature, we cite the relevant local artifact directly.
 
 \section{Method}
 \label{sec:method}
 \subsection{Validated generator}
-The baseline implementation \artifact{scripts/prime\_separator.py} stores the current row and column border terms, maintains an extendable coverage array for the product set $\Pset_n$, and updates that coverage incrementally when a new border term is appended. Prefix validation is built into the emitted contract: the script checks the given $5\times 11$ table, the first-row prefix, and the first-column prefix against the problem statement. The contract digest stored in \artifact{contract.json} is a SHA-256 hash of the border sequences and record-gap locations, so exact replay can be checked mechanically.
+The baseline implementation \artifact{scripts/prime\_separator.py} stores the current border sequences, maintains an extendable coverage array for $\Pset_n$, and updates that coverage incrementally when a new row or column term is appended. Prefix validation is built into the emitted contract: the script checks the given $5\times 11$ table, the first-row prefix, and the first-column prefix against the problem statement. The contract digest stored in \artifact{contract.json} is a SHA-256 hash of the border sequences and record-gap locations, so exact replay can be checked mechanically.
 
 \subsection{Pseudocode}
 \begin{center}
@@ -214,13 +237,21 @@ be the number of admissible border-factor incidences up to a coverage limit $L$.
 \[
 O\bigl(W(L_N) + L_N\bigr),
 \]
-where $L_N$ is the largest internal coverage-array index reached during the run. This is an honest implementation bound rather than an asymptotic theorem about the sequence itself; the paper makes no claim that $W(L)$ is presently understood in closed form.
+where $L_N$ is the largest internal coverage-array index reached during the run. This is an implementation bound rather than an asymptotic theorem about the sequence itself.
 
-\subsection{Witness instrumentation and hypergraph export}
-The record-gap summaries in \artifact{results/experiments/run\_1000000/record\_gap\_summary.json} are derived from \artifact{scripts/summarize\_record\_gaps.py}. They aggregate, for each record interval, the singleton share, prime/composite composition, signature histogram, and support-state observables. The selected full hypergraphs in \artifact{results/analysis/full\_witness\_hypergraphs\_gap21\_25\_28\_30.json} are produced by \artifact{scripts/export\_witness\_hypergraphs.py}; these exports enumerate \emph{all} admissible border-factor pairs for each skipped value in gaps $21$, $25$, $28$, and $30$ and check that the multiplicities match the stored first-pass counts.
+\subsection{Independent checker and matched-control pipeline}
+The late phase of the project adds \artifact{scripts/novelty\_deepening.py}. It performs five tasks relevant to the final paper.
+\begin{enumerate}[label=(\roman*), leftmargin=2.2em]
+\item It runs a separately written checker and compares its border sequences with the main generator on a substantial prefix.
+\item It extracts late baseline record windows and matched non-record windows from the baseline million-step run.
+\item It constructs affine surrogate windows of the same sizes.
+\item It computes anchor, offset, recent-prefix, and full-witness graph observables on all windows.
+\item It emits summary metrics for the anchor/backbone, schedule, border-prefix, hypergraph, and modular candidate mechanisms.
+\end{enumerate}
+This pipeline is deliberately bounded. It does not search for larger horizons or widen the hypothesis family beyond the three lanes already recorded in \artifact{results/swarm/hypotheses.json}.
 
 \subsection{Figure pipeline}
-All figures in this paper are programmatically generated by \artifact{scripts/make\_paper\_figures.py}. Because the environment contains a TeX toolchain but no scientific Python plotting stack, the script emits TSV files and standalone TikZ/PGFPlots sources under \artifact{figures/}, compiles them to PDF with \texttt{pdflatex}, and renders 600-DPI PNG copies with \texttt{mutool draw}. No hand-edited graphics were used.
+All figures in this paper are programmatically generated by \artifact{scripts/make\_paper\_figures.py}. The script emits TSV data files and standalone TikZ/PGFPlots sources under \artifact{figures/}, compiles them to PDF with \texttt{pdflatex}, and renders 600-DPI PNG copies with \texttt{mutool draw}. No hand-edited graphics were used.
 
 \section{Theoretical Results and Proofs}
 \label{sec:theory}
@@ -244,7 +275,6 @@ Now consider the second claim. By definition, $c_{n+1}$ is the least positive in
 \[
 \Pset_n \cap [1,c_{n+1}-1] = [1,c_{n+1}-1]\setminus\{r_{n+1}\}.
 \]
-No further argument is needed.
 \end{proof}
 
 \begin{corollary}[Immediate row insertion fills the only hole below $c_{n+1}$]
@@ -315,6 +345,34 @@ For every $n\ge 2$, the skipped interval $(r_n,r_{n+1})$ contains exactly one va
 By Corollary~\ref{cor:uniquecolumn}, the only column term in the interval is $c_n$. Since $1=r_1\in \R_n$, the product $1\cdot c_n$ represents $c_n$ inside $\Pset_n$. No other value in the interval can have the form $1\cdot c_m$, because that would require a second column term $c_m$ in the same interval, which Corollary~\ref{cor:uniquecolumn} forbids.
 \end{proof}
 
+\begin{corollary}[Anchor decomposition]
+\label{cor:anchor}
+For every $n\ge 2$ with $g_n>1$, the row-gap window $W_n$ decomposes as
+\[
+W_n = \{r_n+1,\dots,c_n-1\}\,\cup\,\{c_n\}\,\cup\,\{c_n+1,\dots,r_{n+1}-1\}.
+\]
+Equivalently,
+\[
+\ell_n=\delta_n-1, \qquad u_n=g_n-\delta_n-1,
+\]
+and therefore
+\[
+g_n = \ell_n + u_n + 1.
+\]
+\end{corollary}
+
+\begin{proof}
+Corollary~\ref{cor:uniquecolumn} states that $c_n$ is the unique column term in $(r_n,r_{n+1})$. The open interval therefore splits uniquely at $c_n$ into the skipped values to the left of the anchor, the anchor itself, and the skipped values to its right. Counting integers gives
+\[
+\ell_n = (c_n-1) - (r_n+1) + 1 = c_n-r_n-1 = \delta_n-1
+\]
+and
+\[
+u_n = (r_{n+1}-1) - (c_n+1) + 1 = r_{n+1}-c_n-1 = g_n-\delta_n-1.
+\]
+Adding the three pieces of the decomposition yields $g_n=\ell_n+u_n+1$.
+\end{proof}
+
 \begin{proposition}[The \texttt{column\_immediate} rule is the axis swap]
 \label{prop:swap}
 Consider the update rule that first chooses the least missing positive integer as the new column term, immediately adjoins it to the column border, and then chooses the next row term from the updated product set. If the resulting sequences are denoted $(r_n',c_n')$, then for all $n\ge 1$,
@@ -333,7 +391,7 @@ Assume $r_k'=c_k$ and $c_k'=r_k$ for all $k\le n$. Then the product set of the s
   = \R_n\Cset_n
   = \Pset_n.
 \]
-Therefore the first missing positive integer of the swapped process is exactly $r_{n+1}$, but under the swapped naming convention this first choice is the \emph{new column term}. Hence
+Therefore the first missing positive integer of the swapped process is exactly $r_{n+1}$, but under the swapped naming convention this first choice is the new column term. Hence
 \[
 c_{n+1}' = r_{n+1}.
 \]
@@ -341,7 +399,7 @@ After adjoining this term to the swapped column border, the updated product set 
 \[
 \R_n'(\Cset_n'\cup\{c_{n+1}'\}) = \Cset_n(\R_n\cup\{r_{n+1}\}),
 \]
-which is just $\R_{n+1}\Cset_n$ with the factors reversed. By Proposition~\ref{prop:rowimmediate}, the least missing positive integer of this updated set is $c_{n+1}$. Under the swapped naming convention this second choice is the \emph{new row term}, so
+which is just $\R_{n+1}\Cset_n$ with the factors reversed. By Proposition~\ref{prop:rowimmediate}, the least missing positive integer of this updated set is $c_{n+1}$. Under the swapped naming convention this second choice is the new row term, so
 \[
 r_{n+1}' = c_{n+1}.
 \]
@@ -363,96 +421,93 @@ It remains to prove uniqueness. By Proposition~\ref{prop:interleave}, the row an
 \end{proof}
 
 \begin{remark}
-Proposition~\ref{prop:primes} recovers the prime-separation observation recorded in OEIS A129258/A129259, but here it is obtained directly from the recurrence. The proof uses no external number-theoretic input beyond primality itself.
+Proposition~\ref{prop:primes} recovers a public OEIS observation from the recurrence itself. The novelty here is the proof, not the fact that prime separation occurs.
 \end{remark}
 
-\subsection{What the theory does \emph{not} yet imply}
-The preceding propositions settle several structural questions, but they do not resolve boundedness of $(g_n)$. In particular:
+\subsection{What the theory does not yet imply}
+The preceding results settle several exact structural questions, but they do not resolve boundedness of $(g_n)$. In particular:
 \begin{itemize}[leftmargin=1.8em]
-\item Strict interleaving shows only that $g_n>\delta_n$.
-\item The unique forced unit witness identifies one covered point in each gap, not the rest of the interval.
-\item The exact variant identities prove that two nearby update-order modifications are symmetries rather than robustness tests; they do not create new asymptotic information.
+\item strict interleaving gives only $\delta_n < g_n$;
+\item the forced unit witness identifies one covered point in each row gap, not the entire interval;
+\item the anchor decomposition rewrites each row gap in terms of $\delta_n$ and $u_n$, but does not bound either quantity globally;
+\item the variant identities prove that two nearby update-order modifications are symmetries rather than robustness tests, but they do not create new asymptotic information.
 \end{itemize}
-Thus the global question still requires either a horizon-independent upper-bound invariant or a construction of arbitrarily long fully covered frontier intervals. Neither is present in the current record.
+Thus the open problem still requires either a horizon-independent upper-bound invariant or a construction of arbitrarily long fully covered frontier intervals. Neither is presently known.
 
 \section{Experimental Setup}
 \label{sec:setup}
 \subsection{Deterministic protocol}
-All experiments are deterministic. There are no random seeds, no data splits, and no stochastic hyperparameters. Each plotted point in Sections~\ref{sec:results}--\ref{sec:discussion} is therefore an exact value of the recurrence or of a deterministic statistic derived from the archived witness logs. Confidence intervals are degenerate and are omitted for that reason.
+All experiments are deterministic. There are no random seeds, no train/test splits in the stochastic sense, and no probabilistic hyperparameters. Every plotted mathematical quantity is therefore an exact value of the recurrence or of a deterministic statistic computed from the stored windows. Confidence intervals are degenerate for the mathematical observables and are omitted. The only nondegenerate intervals reported in this paper are runtime confidence intervals obtained from three repeated million-step runs in \artifact{results/experiments/runtime\_repeats\_1000000.json}.
 
 \subsection{Commands and artifacts}
-The primary archived commands are recorded in \artifact{results/experiments/run\_1000000/experiment\_note.md} and \artifact{results/experiments/variant\_comparison.md}. The baseline million-step run is:
+The primary archived commands are recorded in \artifact{results/experiments/run\_1000000/experiment\_note.md} and \artifact{results/experiments/variant\_comparison.md}. The baseline million-step run is
 \begin{quote}
 \small\ttfamily
 python3 scripts/prime\_separator.py --steps 1000000 --out-dir results/experiments/run\_1000000
 \end{quote}
-The summary and hypergraph exports are:
-\begin{quote}
-\small\ttfamily
-python3 scripts/summarize\_record\_gaps.py ...\\
-python3 scripts/export\_witness\_hypergraphs.py ...
-\end{quote}
-The generator was additionally replayed during preparation of this manuscript on the current environment, reproducing the archived digest exactly.
+The late checker and shared-corpus build are exercised by \artifact{tests/test\_novelty\_deepening.py} and are implemented in \artifact{scripts/novelty\_deepening.py}. The checker agreement artifact reports exact row and column agreement through $10^5$ steps.
 
 \subsection{Hardware and software}
-The archived performance JSON records runtime and maximum resident set size but does not store a full machine fingerprint. A fresh replay during manuscript preparation ran on the current Archivara environment:
+The archived performance JSON stores runtime and maximum resident set size, and the repeat artifact stores repeated timing summaries. A fresh replay during manuscript preparation ran on the current Archivara environment:
 \begin{itemize}[leftmargin=1.8em]
-\item operating system: Linux x86\_64 (\texttt{uname -a} recorded in the shell transcript),
-\item logical CPUs visible to the process: $20$,
-\item Python executable: \texttt{python3},
-\item TeX toolchain for figures and manuscript: \texttt{pdflatex} and \texttt{mutool}.
+\item platform recorded by Python: \texttt{Linux-4.4.0-x86\_64-with-glibc2.36},
+\item Python version: \texttt{3.10.17},
+\item logical memory visible to the process: \texttt{1055933872} KB,
+\item TeX toolchain for figures and manuscript: \texttt{pdflatex}, \texttt{bibtex}, and \texttt{mutool}.
 \end{itemize}
-The replay reproduced the archived structural digest
+The fresh replay reproduced the archived structural digest
 \[
 \texttt{3680d24d2073239978438eaf02f8f05a1ed81da4e52927909c4dc47c0d0291e3}
 \]
-with runtime $9.673$ seconds and peak RSS $319{,}772$ KB; the archived run stored in \artifact{results/experiments/run\_1000000/performance.json} reported $10.156$ seconds and $321{,}264$ KB.
+exactly.
 
 \subsection{Validation and tests}
-The unit test suite \artifact{tests/test\_prime\_separator.py} verifies:
+The unit test suites verify:
 \begin{enumerate}[label=(\roman*), leftmargin=2.2em]
-\item the given $5\times 11$ prefix exactly,
-\item repeatability of the baseline structural digest over two independent 30,000-step runs,
-\item detectability of a genuinely wrong update order,
-\item exact equality of the \texttt{row\_immediate} rule and the baseline for a 200-step regression window,
-\item exact axis-swap behavior of the \texttt{column\_immediate} rule for the same window.
+\item the given $5\times 11$ prefix exactly;
+\item repeatability of the baseline structural digest over two independent $30{,}000$-step runs;
+\item detectability of a genuinely wrong update order;
+\item exact equality of \texttt{row\_immediate} with the baseline on a $200$-step regression window;
+\item exact axis-swap behavior of \texttt{column\_immediate} on the same window;
+\item agreement of the separately written checker with the baseline on a $200$-step test window;
+\item construction of a shared corpus containing record and control windows.
 \end{enumerate}
 
 \section{Results}
 \label{sec:results}
 \subsection{Exact structural consequences}
-Figure~\ref{fig:construction} summarizes the main recurrence geometry proved in Section~\ref{sec:theory}. The left panel shows the initial block of the array; the right panel shows the frontier picture from Lemma~\ref{lem:frontier} and Propositions~\ref{prop:rowimmediate}--\ref{prop:interleave}. The theory yields three immediate empirical consequences that match the archived corpus exactly:
+Figure~\ref{fig:construction} summarizes the recurrence geometry proved in Section~\ref{sec:theory}. The left panel shows the initial block of the array; the right panel shows the frontier picture from Lemma~\ref{lem:frontier}, Proposition~\ref{prop:interleave}, and Corollary~\ref{cor:anchor}. The theory yields three immediate empirical consequences, all confirmed by the archived artifacts:
 \begin{enumerate}[label=(\alph*), leftmargin=2.2em]
-\item every row gap contains exactly one column term,
-\item that column term contributes the unique forced unit witness,
-\item the purported \texttt{row\_immediate} and \texttt{column\_immediate} perturbations are identities rather than independent robustness tests.
+\item every row gap contains exactly one column term and therefore one forced axis-$1$ witness;
+\item the anchor splits each row gap into left and right depths determined by $(g_n,\delta_n)$;
+\item the archived \texttt{row\_immediate} and \texttt{column\_immediate} runs are identities rather than genuine ablations.
 \end{enumerate}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/figure1_construction.pdf}
-\caption{\textbf{Construction and frontier geometry.} Left: the initial $5\times 11$ block of Kimberling's array. The first row and first column are highlighted because they determine the whole array multiplicatively. Right: the step-$n$ frontier structure proved in Lemma~\ref{lem:frontier}. The set $\Pset_n=\R_n\Cset_n$ contains every positive integer below $c_{n+1}$ except the first missing value $r_{n+1}$; after adjoining $r_{n+1}$, that unique hole is filled by the trivial representation $r_{n+1}=r_{n+1}\cdot 1$, so the next missing value is still $c_{n+1}$. This yields the exact equality of the \texttt{row\_immediate} rule with the original recurrence and implies the strict interleaving $r_n<c_n<r_{n+1}<c_{n+1}$.}
+\caption{\textbf{Construction and frontier geometry.} Left: the initial $5\times 11$ block of Kimberling's array. The first row and first column determine the whole array multiplicatively. Right: the step-$n$ frontier structure. The set $\Pset_n=\R_n\Cset_n$ contains every positive integer below $c_{n+1}$ except the first missing value $r_{n+1}$; after adjoining $r_{n+1}$, that single hole is filled by the trivial representation $r_{n+1}=r_{n+1}\cdot 1$, so the next missing value remains $c_{n+1}$. Proposition~\ref{prop:interleave} and Corollary~\ref{cor:anchor} then force $r_n<c_n<r_{n+1}$ and identify the previous column term as the unique anchor inside the row gap.}
 \label{fig:construction}
 \end{figure}
 
-\subsection{Growth, interleaving, and offsets}
-Figure~\ref{fig:interleaving} visualizes the exact interleaving and the offset process $\delta_n=c_n-r_n$. The interleaving is theorem-level, not empirical. The figure's only measured quantity is the size of the offset, which remains small through one million steps: the maximum observed offset is $24$, attained at step $464{,}334$ according to the direct scan of \artifact{results/experiments/run\_1000000/row\_terms.json} and \artifact{column\_terms.json}. This is suggestive but not sufficient for boundedness, because no theorem currently links a bounded offset to a bounded future covered run.
+\subsection{Offsets, interleaving, and the observed frontier scale}
+Figure~\ref{fig:interleaving} visualizes the exact interleaving and the offset process $\delta_n=c_n-r_n$. The interleaving itself is theorem-level. The measured quantity is the size of the offset, which never exceeds $24$ on the baseline million-step run; this value occurs at step $464{,}334$ according to direct scans of \artifact{results/experiments/run\_1000000/row\_terms.json} and \artifact{results/experiments/run\_1000000/column\_terms.json}. Corollary~\ref{cor:anchor} predicts that the left anchor depth is $\ell_n=\delta_n-1$, so the observed smallness of the offset explains why the previous column term sits near the left edge of many large gaps. It does \emph{not} prove that future gaps are bounded, because $u_n=r_{n+1}-c_n-1$ may still grow.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/figure2_interleaving.pdf}
-\caption{\textbf{Interleaving and offsets.} Left: the first $60$ row and column border terms, showing the exact strict alternation proved in Proposition~\ref{prop:interleave}. Right: the sampled offset process $\delta_n=c_n-r_n$ up to $n=10^6$. The offset stays small on the explored horizon and never exceeds $24$, but the current theory does not convert this observation into a global theorem about the row-gap sequence.}
+\caption{\textbf{Interleaving and offsets.} Left: the first $60$ row and column border terms, showing the exact strict alternation proved in Proposition~\ref{prop:interleave}. Right: the sampled offset process $\delta_n=c_n-r_n$ up to $n=10^6$. The offset stays small on the explored horizon and never exceeds $24$, but the current theory does not convert this finite observation into a global theorem about the gap sequence.}
 \label{fig:interleaving}
 \end{figure}
 
-\subsection{Record-gap trajectory}
-The baseline million-step run stores $17$ record gaps and reaches a largest gap of $30$; these numbers are exact and appear in \artifact{results/experiments/run\_1000000/contract.json}. The full trajectory is listed in Table~\ref{tab:records} and plotted in Figure~\ref{fig:trajectory}. The three late records beyond the earlier $30{,}000$-step horizon are:
+\subsection{Baseline record-gap trajectory}
+The baseline million-step run stores $17$ record gaps and reaches a largest gap of $30$; these numbers are exact and appear in \artifact{results/experiments/run\_1000000/contract.json}. The full trajectory is listed in Table~\ref{tab:records} and plotted in Figure~\ref{fig:trajectory}. The three late records beyond the earlier $30{,}000$-step horizon are
 \[
 25 \text{ at step } 92{,}320,\qquad
 28 \text{ at step } 247{,}399,\qquad
 30 \text{ at step } 729{,}353.
 \]
-The waiting times between records also grow irregularly rather than periodically.
+The step gaps between successive records grow irregularly rather than periodically.
 
 \begin{table}[t]
 \centering
@@ -486,59 +541,90 @@ record index & step $n$ & previous $r_n$ & gap $g_n$ \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/figure3_gap_trajectory.pdf}
-\caption{\textbf{Record-gap growth and waiting times.} Left: the exact record-gap trajectory from the baseline million-step run. Right: the step increments between successive records. The record process clearly continues beyond the early $30{,}000$-step horizon, but the present data do not determine whether it stabilizes or diverges.}
+\caption{\textbf{Record-gap growth and waiting times.} Left: the exact record-gap trajectory from the baseline million-step run. Right: the step increments between successive records. The record process clearly continues beyond the early $30{,}000$-step horizon, but finite-horizon growth alone does not distinguish eventual boundedness from eventual divergence.}
 \label{fig:trajectory}
 \end{figure}
 
-\subsection{Witness composition rejects the compact-certificate hypothesis}
-The repository's active positive hypothesis was that late record gaps might admit a compact interval-wide witness grammar. The archived data reject that story. Figure~\ref{fig:composition} uses \artifact{results/experiments/run\_1000000/record\_gap\_summary.json} to show two trends:
+\subsection{Witness composition and full hypergraphs}
+Figure~\ref{fig:composition} uses \artifact{results/experiments/run\_1000000/record\_gap\_summary.json} to show two persistent trends across the baseline record gaps:
 \begin{enumerate}[label=(\roman*), leftmargin=2.2em]
-\item the singleton share remains high but declines from the earlier record intervals toward the late ones,
-\item the share of balanced witnesses (minimum factor $>100$) rises steadily, while the share of tiny-factor witnesses falls.
+\item singleton witnesses remain common but do not converge to a rigid, tiny-factor certificate;
+\item the balanced-factor share rises substantially on the late record gaps, while the tiny-factor share declines.
 \end{enumerate}
 For the late records $19,20,21,25,28,30$, the singleton shares are
 \[
 \frac{15}{18},\ \frac{17}{19},\ \frac{16}{20},\ \frac{18}{24},\ \frac{18}{27},\ \frac{19}{29},
 \]
-whereas the balanced-factor shares rise from $1/18$ to $13/29$. This is the opposite of what a compact tiny-factor certificate would predict.
+whereas the balanced-factor shares rise from $1/18$ to $13/29$. Several late record gaps are composite-only: gaps $20$, $21$, $28$, and $30$ contain no skipped primes at all. These facts are exactly the ones that the repository's negative-result narrative treats as load-bearing; see \artifact{results/experiments/run\_1000000/record\_gap\_summary.json} and \artifact{results/final\_status\_note.md}.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/figure4_gap_composition.pdf}
-\caption{\textbf{Witness composition across record gaps.} Left: stacked witness signatures extracted from \artifact{results/experiments/run\_1000000/record\_gap\_summary.json}. Every record gap contains exactly one forced axis-1 marker by Corollary~\ref{cor:unitwitness}, but the rest of the interval does not compress into a stable small alphabet. Right: three summary shares. The singleton share remains large but does not increase toward a rigid certificate, the tiny-factor share decays, and the balanced-factor share rises sharply. Theorem~\ref{prop:interleave} explains the one-point axis motif; the rest of the interval still lacks a theorem-level mechanism.}
+\caption{\textbf{Witness composition across record gaps.} Left: stacked witness signatures extracted from \artifact{results/experiments/run\_1000000/record\_gap\_summary.json}. Every record gap contains exactly one forced axis-$1$ marker by Corollary~\ref{cor:unitwitness}, but the remaining skipped values do not collapse to a fixed small alphabet. Right: three summary shares. The singleton share remains high but not rigid, the tiny-factor share decays, and the balanced-factor share rises sharply. The theorem-level one-point anchor motif survives; an interval-wide compact witness grammar does not.}
 \label{fig:composition}
 \end{figure}
 
-\subsection{Full witness hypergraphs sharpen the negative result}
-The selected full witness exports in \artifact{results/analysis/full\_witness\_hypergraphs\_gap21\_25\_28\_30.json} validate the stored multiplicities and show that even after enumerating all admissible border-factor pairs, the late gaps remain sparse rather than explosively redundant. The most informative case is gap $30$:
+The selected full witness exports in \artifact{results/analysis/full\_witness\_hypergraphs\_gap21\_25\_28\_30.json} sharpen this negative conclusion rather than rescuing it. Figure~\ref{fig:hypergraph} shows that the late gaps remain sparse even after complete witness enumeration. The most informative case is gap $30$:
 \begin{itemize}[leftmargin=1.8em]
 \item skipped values: $29$,
-\item total admissible pairs: $43$,
+\item total admissible witness pairs: $43$,
 \item distinct row factors used: $39$,
 \item distinct column factors used: $41$,
 \item multiplicity histogram: $19$ singletons, $8$ doubletons, $1$ tripleton, $1$ quintupleton.
 \end{itemize}
-Figure~\ref{fig:hypergraph} visualizes the same sparsity pattern across gaps $21$, $25$, $28$, and $30$. The full witness layer therefore reinforces, rather than rescues, the negative conclusion of the first-pass witness summaries.
+Thus the full hypergraph layer validates multiplicities and weak factor reuse, but it still does not reveal a compressed interval-level certificate.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/figure5_hypergraph.pdf}
-\caption{\textbf{Selected full witness hypergraphs for late baseline record gaps.} Left: total admissible factor pairs and the number of distinct row/column factors used in gaps $21$, $25$, $28$, and $30$, from \artifact{results/analysis/full\_witness\_hypergraphs\_gap21\_25\_28\_30.json}. Right: multiplicity histograms for the same gaps. Even after full enumeration, the intervals remain singleton-dominated and use nearly as many distinct factors as there are witness pairs. This is evidence \emph{against} a low-description frontier certificate.}
+\caption{\textbf{Selected full witness hypergraphs for late baseline record gaps.} Left: total admissible factor pairs and the numbers of distinct row and column factors used in gaps $21$, $25$, $28$, and $30$, from \artifact{results/analysis/full\_witness\_hypergraphs\_gap21\_25\_28\_30.json}. Right: multiplicity histograms for the same gaps. Even after full enumeration, the intervals remain singleton-dominated and use nearly as many distinct factors as there are witness pairs. This is evidence against a low-description frontier certificate.}
 \label{fig:hypergraph}
 \end{figure}
 
-\subsection{The ``variant'' runs are exact symmetries}
-The repository originally stored two nearby update-order runs under \artifact{results/experiments/row\_immediate\_1000000/} and \artifact{results/experiments/column\_immediate\_1000000/}. Section~\ref{sec:theory} changes their interpretation completely. Proposition~\ref{prop:rowimmediate} shows that \texttt{row\_immediate} is not an empirical perturbation at all; it is mathematically identical to the baseline. Proposition~\ref{prop:swap} shows that \texttt{column\_immediate} is the exact axis swap. Figure~\ref{fig:variants} plots these identities directly from the archived sequences. The practical value of the runs is therefore \emph{validation}, not robustness.
+\subsection{Late matched-control audits}
+The strongest new evidence beyond the original manuscript comes from the novelty-deepening package. Table~\ref{tab:audits} summarizes the five audited lanes using \artifact{results/novelty\_deepening/item\_026\_anchor\_metrics.json} through \artifact{results/novelty\_deepening/item\_030\_modular\_metrics.json}.
+
+\begin{table}[t]
+\centering
+\caption{Late matched-control audit summary from the novelty-deepening artifacts. All metrics are deterministic functions of the stored windows.}
+\label{tab:audits}
+\begin{tabular}{p{2.9cm}p{7.3cm}p{4.1cm}}
+\toprule
+audit lane & main quantitative outcome & paper-level conclusion \\
+\midrule
+Independent checker & Exact row and column agreement with the baseline through $10^5$ steps; checker runtime $0.467$ s versus baseline runtime $0.673$ s (\artifact{results/novelty\_deepening/checker\_agreement.json}). & Large-horizon evidence still comes from one generator family, but the update-order logic is no longer unchecked. \\
+Anchor/backbone & Training support of correction pairs is $\{(4,4),(7,2),(8,4)\}$, while the held-out record windows at gaps $28$ and $30$ require new pairs $(17,1)$ and $(14,2)$; bounded-support check is false, though the anchor extremality score achieves held-out AUROC $0.9224$ (\artifact{results/novelty\_deepening/item\_026\_anchor\_metrics.json}). & The anchor geometry is real and informative, but it fails as a bounded-memory mechanism. \\
+Schedule audit & On $1000$ late sampled states, batched and \texttt{row\_immediate} schedules agree everywhere, \texttt{column\_immediate} matches the axis swap everywhere, and the schedule-independent right-defect depth has AUROC $0.9569$ versus $0.5259$ for window length alone (\artifact{results/novelty\_deepening/item\_027\_schedule\_metrics.json}). & One-step frontier evolution is abelian up to axis swap on the audited states, but the discriminative observable is still just the anchor geometry from Corollary~\ref{cor:anchor}. \\
+Border-prefix law & The recent-prefix depth needed to cover the five late record windows is $27675$, $29372$, $92319$, $247398$, and $729352$ respectively (\artifact{results/novelty\_deepening/item\_028\_prefix\_metrics.json}). & Any bounded recent-prefix certificate is structurally impossible, because the anchor value $c_n$ requires the ancient row factor $1$. \\
+Hypergraph and modular lanes & Full witness cycle rank is $0$ on records, controls, and surrogates; the best leaf-fraction near-miss has record-vs-control AUROC $0.8711$ but $28.9\%$ matched-control overlap; the best modulus with $q\le 200$ has AUROC $0.5259$ (\artifact{results/novelty\_deepening/item\_029\_hypergraph\_metrics.json}, \artifact{results/novelty\_deepening/item\_030\_modular\_metrics.json}). & Hypergraph structure yields a descriptive near-miss rather than a credible invariant, and small-modulus locking does not explain the late record windows. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Several points in Table~\ref{tab:audits} are worth making explicit.
+
+First, the independent checker closes one earlier verification gap. The repository now contains a separately written implementation that agrees with the baseline through $10^5$ steps, so the recurrence order is no longer justified only by repeated self-comparison.
+
+Second, the anchor/backbone audit is informative precisely because it \emph{fails}. The anchor itself is theorem-level by Corollary~\ref{cor:uniquecolumn}, and the left/right depths are explicit functions of $(g_n,\delta_n)$ by Corollary~\ref{cor:anchor}. On the shared corpus, that geometry strongly distinguishes true record windows from matched controls. But the late held-out records require correction pairs outside the training support, so the apparent rule does not stabilize into a bounded alphabet. This is negative evidence against a compact memory mechanism, not a positive explanation.
+
+Third, the schedule audit turns the old ``variant'' narrative into a consistency result. Proposition~\ref{prop:rowimmediate} and Proposition~\ref{prop:swap} already prove the exact identities globally. The audit in \artifact{results/novelty\_deepening/item\_027\_schedule\_network.md} checks the same fact on $1000$ late stored states and shows that the only schedule-independent predictive observable with strong AUROC is the right anchor depth $u_n$ already isolated by Corollary~\ref{cor:anchor}. No new independent mechanism appears.
+
+Fourth, the border-prefix obstruction is partly theorem and partly measurement. The theorem-level content is that the anchor value $c_n$ can only be represented as $1\cdot c_n$ inside the row gap. Therefore any witness rule restricted to only recent row-border terms must reach all the way back to the oldest row term. The measured depths in Table~\ref{tab:audits} show that this obstruction is not a corner case: it saturates all five late baseline record windows.
+
+Fifth, the hypergraph and modular lanes remain negative. The full witness graphs are forests everywhere in the audited corpus, so raw cycle rank is true but useless as a discriminator. The best canonical leaf-fraction statistic is reasonably stable across canonicalizations and rejects the affine surrogates, but it still overlaps too heavily with matched non-record controls to justify a promoted invariant. The modular audit performs worse still: the best small modulus is barely above chance and cannot beat the anchor comparator.
+
+\subsection{The archived variant runs are exact symmetries}
+The repository stores two nearby update-order runs under \artifact{results/experiments/row\_immediate\_1000000/} and \artifact{results/experiments/column\_immediate\_1000000/}. Section~\ref{sec:theory} changes their interpretation completely. Proposition~\ref{prop:rowimmediate} shows that \texttt{row\_immediate} is not an empirical perturbation at all; it is mathematically identical to the baseline. Proposition~\ref{prop:swap} shows that \texttt{column\_immediate} is the exact axis swap. Figure~\ref{fig:variants} plots these identities directly from the archived sequences. The practical value of the runs is therefore validation, not robustness.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/figure6_variant_identities.pdf}
-\caption{\textbf{Exact identities behind the archived update-order runs.} Left: the \texttt{row\_immediate} sequence pair lies exactly on the diagonal when plotted against the baseline, because Proposition~\ref{prop:rowimmediate} proves that the rule is identical to the original recurrence. Right: the \texttt{column\_immediate} pair lies exactly on the axis-swapped diagonal because Proposition~\ref{prop:swap} proves that it simply exchanges the roles of the two border sequences. These runs are therefore code-level consistency checks, not genuinely new robustness experiments.}
+\caption{\textbf{Exact identities behind the archived update-order runs.} Left: the \texttt{row\_immediate} sequence pair lies exactly on the diagonal when plotted against the baseline, because Proposition~\ref{prop:rowimmediate} proves that the rule is identical to the original recurrence. Right: the \texttt{column\_immediate} pair lies exactly on the axis-swapped diagonal because Proposition~\ref{prop:swap} proves that it simply exchanges the roles of the two border sequences. These runs are therefore code-level consistency checks, not genuine robustness experiments.}
 \label{fig:variants}
 \end{figure}
 
 \subsection{All first-row gaps through one million steps}
-For completeness, Figure~\ref{fig:distribution} shows the full empirical distribution of the first-row gaps $g_n$ for $1\le n<10^6$, computed directly from \artifact{results/experiments/run\_1000000/row\_terms.json}. The modal gaps are $4$, $3$, $5$, and $6$, but the tail extends to $30$. Again, these are exact deterministic frequencies rather than samples with uncertainty bars.
+For completeness, Figure~\ref{fig:distribution} shows the full empirical distribution of the first-row gaps $g_n$ for $1\le n<10^6$, computed directly from \artifact{results/experiments/run\_1000000/row\_terms.json}. The modal gaps are $4$, $3$, $5$, and $6$, but the tail extends to $30$. Again, these are exact deterministic frequencies rather than statistical estimates.
 
 \begin{figure}[t]
 \centering
@@ -550,44 +636,55 @@ For completeness, Figure~\ref{fig:distribution} shows the full empirical distrib
 \section{Discussion}
 \label{sec:discussion}
 \subsection{What is now rigorous}
-The present paper upgrades several features of the repository from observation to theorem.
+The present paper upgrades several features of the project from observation to theorem.
 \begin{itemize}[leftmargin=1.8em]
-\item The first two missing values viewpoint is exact, not heuristic.
-\item The interleaving $r_n<c_n<r_{n+1}<c_{n+1}$ is exact.
-\item The axis-1 marker is forced by the recurrence; it is not a contingent pattern in the data.
-\item The two update-order ``variants'' are exact symmetries of the construction.
+\item The ``first two missing values'' viewpoint is exact.
+\item The interleaving $r_n<c_n<r_{n+1}$ is exact.
+\item Each nontrivial row gap contains exactly one column term and therefore exactly one forced axis-$1$ witness.
+\item The anchor decomposition expresses the left and right depths of each row gap explicitly in terms of $(g_n,\delta_n)$.
+\item The two archived update-order runs are exact symmetries of the recurrence.
 \item Prime separation follows directly from the recurrence.
 \end{itemize}
-These points matter because they cleanly separate genuine structure from artifacts of implementation order.
+These statements matter because they separate genuine mathematical structure from implementation artifacts and because they explain several persistent motifs in the data, especially the single anchor marker inside each row gap.
 
-\subsection{What remains unresolved}
-Despite the stronger theory, the boundedness question is still open. The main obstruction is conceptual. The exact structure identified here explains one point in each gap and the order in which the frontier holes are exposed, but it does not control the \emph{entire covered block} between $r_n$ and $r_{n+1}$. The negative computational evidence is informative: the missing mechanism is not a prime obstruction, not a compact tiny-factor grammar, and not a hidden explosion of multiplicity in the full hypergraphs. But a negative result is not a proof of boundedness or unboundedness.
+\subsection{What the computational evidence now says}
+The evidence package is also sharper than a simple longer run.
+\begin{itemize}[leftmargin=1.8em]
+\item The baseline generator is reproducible at one million steps and now has a separate checker that agrees through $10^5$ steps.
+\item The late record-gap trajectory reaches $30$ in the baseline run and $31$ in the axis-swapped run, but those facts remain finite-horizon observations only.
+\item Large late record gaps can be composite-only, so skipped primes are not the governing phenomenon.
+\item The anchor geometry is genuine and strongly discriminative on the late matched corpus, yet it fails to stabilize into a bounded correction law.
+\item The border-prefix and modular mechanisms fail outright.
+\item The full hypergraph layer yields a descriptive near-miss but not a proof-quality invariant.
+\end{itemize}
+This is enough to support a careful negative-result paper. It is not enough to support a theorem-level mechanism claim.
 
-\subsection{Failure modes and methodological limits}
-Three limitations are especially important.
+\subsection{Remaining limitations}
+Three limitations are still load-bearing.
 \begin{enumerate}[label=(\roman*), leftmargin=2.2em]
-\item \textbf{Finite horizon.} The largest provenly observed record gap is $30$, not infinity. No asymptotic inference should be made from that fact alone.
-\item \textbf{Single implementation family.} Although the generator is validated and replayed, the large-horizon corpus still comes from one implementation family. The benchmark review in \artifact{results/verification/benchmark\_report.md} correctly notes that an independently written checker would strengthen publication-quality confidence.
-\item \textbf{No surrogate local-coverage control.} The current package does not benchmark the witness/hypergraph summaries against size-matched surrogate product sets or against non-record intervals. Without such controls, one should avoid claiming that the observed witness structure is unique to Kimberling's recurrence.
+\item \textbf{Finite horizon.} The largest provenly observed baseline record gap is $30$, not infinity. No asymptotic claim follows from that alone.
+\item \textbf{Checker horizon.} The independent checker validates the recurrence through $10^5$ steps, not through the full million-step horizon. That is a substantial improvement over the earlier state of the repo, but it is still not a fully independent million-step replication.
+\item \textbf{Control coverage.} The matched-control and surrogate corpus is real and useful, but it is intentionally bounded: five late record windows, forty-five controls, and fifty surrogates. This is enough to reject several naive mechanism claims, but not enough to prove that every future candidate invariant must fail.
 \end{enumerate}
 
 \subsection{Open questions}
-The most concrete next questions are now sharply formulated.
+The sharpened picture leaves a more precise list of open questions.
 \begin{enumerate}[label=(\arabic*), leftmargin=2.2em]
-\item Does there exist a horizon-independent invariant controlling the covered block between the unique axis witness $c_n$ and the next row miss $r_{n+1}$?
-\item Can one construct arbitrarily long frontier intervals contained in $\R_n\Cset_n$ using the endogenous interleaving and not merely generic product-set density?
-\item Is the offset sequence $\delta_n=c_n-r_n$ bounded? The data suggest small values, and bounded offsets would at least constrain where long row gaps can occur.
-\item Can the full witness hypergraphs be compressed by an invariant that genuinely uses the greedy coupling, thereby clearing the Ford overlap boundary?
+\item Is the offset sequence $\delta_n=c_n-r_n$ bounded?
+\item Can one control the right depth $u_n=r_{n+1}-c_n-1$ by a horizon-independent invariant extracted from the coupled mex dynamics?
+\item Is there a full-witness invariant that genuinely uses the mex coupling and survives matched non-record controls, or is every such statistic destined to overlap with generic local product coverage?
+\item Can one prove arbitrarily long covered frontier intervals in $\R_n\Cset_n$ by a recurrence-specific argument rather than by generic restricted-product heuristics?
+\item Conversely, can one construct a rigorous lower-bound mechanism that forces unbounded growth of $g_n$?
 \end{enumerate}
 
 \subsection{Societal implications}
-This is a pure mathematics and reproducible-computation project. The direct societal stakes are low. The relevant broader implication is methodological: negative results and exact provenance matter. In a setting where an OEIS problem is already public and nearby number-theoretic literature is strong, it is easy to overclaim novelty from large computations. The safer practice is to expose the evidence trail, make the negative result explicit, and state clearly which questions remain open.
+This is a pure mathematics and reproducible-computation project. Its direct societal stakes are low. The broader methodological point is that open-problem work around public sequences is especially vulnerable to rhetorical overreach. The repo's verification layer is valuable precisely because it forces the final paper to distinguish structural theorems, finite-horizon evidence, and failed mechanisms instead of treating all three as the same kind of progress.
 
 \section{Conclusion}
 \label{sec:conclusion}
-The boundedness of the first differences of Kimberling's prime-separator array remains unresolved. What has changed is the precision of the surrounding mathematics. The recurrence has a rigid local geometry: it always chooses the first two misses of the current product set, its border sequences strictly interleave, every row gap contains exactly one forced unit witness, and the two archived update-order variants are exact symmetries rather than robustness probes. On the computational side, the validated million-step corpus extends the observed record-gap trajectory to $30$ and strengthens the negative mechanistic conclusion: the witness data do not compress into a compact frontier certificate, prime obstruction is not the governing phenomenon, and full hypergraph enumeration does not uncover hidden redundancy.
+The boundedness of the first differences of Kimberling's prime-separator array remains unresolved. What has changed is the precision of the mathematical and computational record. The recurrence has a rigid local geometry: it always chooses the first two missing values of the current product set, its border sequences strictly interleave, every row gap contains exactly one forced axis-$1$ witness, and the two archived update-order variants are exact symmetries rather than robustness probes. On the experimental side, the baseline million-step corpus extends the observed record-gap trajectory to $30$, while the later matched-control audits show that the most natural mechanism candidates fail in specific ways: the anchor/offset lane is descriptive but not bounded-memory, recent-prefix laws are structurally impossible, hypergraph invariants are near-misses rather than proofs, and small-modulus locking is nonpredictive.
 
-The paper therefore resolves a different problem than the one posed by Kimberling. It does not settle boundedness, but it does determine what the current evidence actually says, what the recurrence exactly guarantees, and what any future proof must overcome.
+The contribution of the paper is therefore narrower than the motivating open problem. It does not settle boundedness, but it does determine what the recurrence guarantees exactly, what the current evidence genuinely supports, and which mechanism stories future work must improve on rather than merely restate.
 
 \clearpage
 \bibliographystyle{plainnat}
@@ -600,7 +697,7 @@ The paper therefore resolves a different problem than the one posed by Kimberlin
 For completeness we isolate the short argument behind Corollary~\ref{cor:uniquecolumn}. Because $r_n$ is the first missing value of $\Pset_{n-1}$ and $c_n$ is the second missing value of the same set, we have $r_n<c_n$. By Proposition~\ref{prop:rowimmediate}, once $r_n$ is adjoined, the value $c_n$ is already represented before the next row mex is taken. Therefore $c_n\in\Pset_n$, which forces $c_n<r_{n+1}$. Hence $c_n$ lies in $(r_n,r_{n+1})$. Strict interleaving then excludes all other column terms from the same interval.
 
 \subsection{Why Proposition~\ref{prop:primes} is specific to primes}
-The proof of prime separation uses only one arithmetic fact: if a prime $p$ factors as $xy$ with $x,y\in \mathbb{N}$, then one factor must be $1$. This argument does not extend to composites. In fact the whole difficulty of the boundedness question lies in the composite coverage: the late record intervals are overwhelmingly composite-only, and yet they are almost fully represented in $\R_n\Cset_n$.
+The proof of prime separation uses only one arithmetic fact: if a prime $p$ factors as $xy$ with $x,y\in \mathbb{N}$, then one factor must be $1$. This argument does not extend to composites. In fact the whole difficulty of the boundedness question lies in the composite coverage: the late record intervals are frequently composite-only and yet almost fully represented in $\R_n\Cset_n$.
 
 \section{Supplementary Experimental Tables}
 \begin{table}[h]
@@ -622,37 +719,56 @@ gap & step & skipped primes & singleton share & tiny share & balanced share & of
 
 \begin{table}[h]
 \centering
-\caption{Fresh replay versus archived baseline contract.}
-\begin{tabular}{lrr}
+\caption{Repeated million-step runtimes from \artifact{results/experiments/runtime\_repeats\_1000000.json}.}
+\begin{tabular}{lrrrr}
 \toprule
-quantity & archived run & fresh replay \\
+rule & mean runtime (s) & 95\% CI half-width (s) & largest record gap & record-gap count \\
 \midrule
-steps & $1{,}000{,}000$ & $1{,}000{,}000$ \\
-row last & $5{,}195{,}523$ & $5{,}195{,}523$ \\
-column last & $5{,}195{,}525$ & $5{,}195{,}525$ \\
-record-gap count & $17$ & $17$ \\
-largest record gap & $30$ & $30$ \\
-runtime (s) & $10.156$ & $9.673$ \\
-max RSS (KB) & $321{,}264$ & $319{,}772$ \\
+baseline & 9.944 & 0.384 & 30 & 17 \\
+\texttt{row\_immediate} & 9.975 & 0.243 & 30 & 17 \\
+\texttt{column\_immediate} & 9.628 & 0.275 & 31 & 20 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section{Artifact Provenance}
-For rapid reproduction, the minimum artifact set used in the manuscript is:
+\begin{table}[h]
+\centering
+\caption{Canonical leaf-fraction near-miss from \artifact{results/novelty\_deepening/item\_029\_hypergraph\_metrics.json}.}
+\begin{tabular}{lrr}
+\toprule
+quantity & balanced canonicalization & lexicographic canonicalization \\
+\midrule
+record band minimum & 0.9474 & 0.9444 \\
+record band maximum & 0.9811 & 0.9808 \\
+record-vs-control AUROC & 0.8711 & 0.8156 \\
+surrogate failure rate & 1.0000 & 0.9600 \\
+matched-control overlap & 0.2889 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Implementation Details}
+The minimum artifact set used in the manuscript is:
 \begin{itemize}[leftmargin=1.8em]
 \item \artifact{scripts/prime\_separator.py}
 \item \artifact{scripts/prime\_separator\_variants.py}
+\item \artifact{scripts/novelty\_deepening.py}
 \item \artifact{scripts/summarize\_record\_gaps.py}
 \item \artifact{scripts/export\_witness\_hypergraphs.py}
 \item \artifact{scripts/make\_paper\_figures.py}
 \item \artifact{results/experiments/run\_1000000/contract.json}
 \item \artifact{results/experiments/run\_1000000/record\_gap\_summary.json}
-\item \artifact{results/analysis/full\_witness\_hypergraphs\_gap21\_25\_28\_30.json}
+\item \artifact{results/novelty\_deepening/checker\_agreement.json}
+\item \artifact{results/novelty\_deepening/shared\_corpus.json}
+\item \artifact{results/novelty\_deepening/item\_026\_anchor\_metrics.json}
+\item \artifact{results/novelty\_deepening/item\_027\_schedule\_metrics.json}
+\item \artifact{results/novelty\_deepening/item\_028\_prefix\_metrics.json}
+\item \artifact{results/novelty\_deepening/item\_029\_hypergraph\_metrics.json}
+\item \artifact{results/novelty\_deepening/item\_030\_modular\_metrics.json}
 \item \artifact{figures/figure1\_construction.pdf} through \artifact{figures/figure7\_gap\_distribution.pdf}
 \end{itemize}
 
 \section{Hyperparameter Sensitivity}
-There are no tunable model hyperparameters in the mathematical recurrence. The only implementation-level parameters are the number of requested steps, the initial size of the extendable coverage array, and the figure-rendering resolution. The million-step scientific conclusions in this manuscript are insensitive to the initial array size because the generator dynamically extends the coverage array until all required products are marked. The 600-DPI rendering choice affects only visual sharpness of the PNG exports and not the mathematics.
+There are no tunable model hyperparameters in the mathematical recurrence. The only implementation-level parameters are the number of requested steps, the initial size of the extendable coverage array, and the figure-rendering resolution. The mathematical conclusions in this paper are insensitive to the initial array size because the generator dynamically extends the coverage structure as needed. The 600-DPI rendering choice affects only visual sharpness of the PNG exports and not the mathematics.
 
 \end{document}
