@@ -192,3 +192,56 @@ Update this file throughout the run. If you discover a branch that is already we
   - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/packet_scout_blocks.inc`
 - Pivot decision (if any):
   - Downgrade all claims about absolute startup voltage, generic multi-source PMU novelty, and steady-state extraction efficiency until the experiment matrix shows a real startup-correctness advantage against both baselines.
+
+## 16. Dual-Source Energy-Harvesting Interface With Cycle-by-Cycle Source Tracking and Adaptive Peak-Inductor-Current Control (2018)
+- Paper ID: 6ff0cf08012351e24380f167b4bd5eeec1b83dec
+- Dated differentiation note: 2026-03-12
+- Why it is close:
+  - This is the closest recovered adaptive dual-source overlap for any claim about pre-handoff source selection. It already covers dual-source energy harvesting with active cycle-by-cycle source tracking and adaptive control.
+- Differentiation hypothesis:
+  - The DEEPEN contribution is not another continuous source-tracking controller. The surviving claim is a helper-free abstain-to-commit rule inside the packet-gated startup family:
+    - stay blind on static near ties
+    - commit only when temporal separability appears
+    - keep the zero-backdrive posture of packet isolation
+- Evidence artifact(s):
+  - `sources.bib` entry `liu2018`.
+  - `results/literature/semantic_scholar_manifest.json` targeted search and reference pass.
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/deepen_summary.json`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item030_deepen_matrix.md`
+- Pivot decision (if any):
+  - Do not claim novelty on adaptive dual-source tracking, continuous arbitration, or generic source-aware startup.
+
+## 17. 8.5 A 6nA Fully-Autonomous Triple-Input Hybrid-Inductor-Capacitor Multi-Output Power Management System with Multi-Rail Energy Sharing, All-Rail Cold Startup, and Adaptive Conversion Control for mm-scale Distributed Systems (2024)
+- Paper ID: 9f06036e87dfd8fe40b8242b1057b21b45625ab1
+- Dated differentiation note: 2026-03-12
+- Why it is close:
+  - It is a strong recent overlap anchor for broad claims about adaptive multi-input cold-start power management. It already covers triple-input autonomy, all-rail cold startup, and adaptive conversion control.
+- Differentiation hypothesis:
+  - The DEEPEN lane survives only because it is narrower than a PMU/platform claim:
+    - two-source helper-free startup only
+    - same-scaffold comparison against blind packet isolation and no-packet merge
+    - explicit temporal-ambiguity handling before handoff, not a full autonomous PMU
+- Evidence artifact(s):
+  - `sources.bib` entry `liu2024`.
+  - `results/literature/semantic_scholar_manifest.json` targeted citation pass.
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/deepen_summary.json`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item030_deepen_matrix.md`
+- Pivot decision (if any):
+  - Do not claim a new multi-input power-management platform, all-rail cold-start architecture, or adaptive conversion-control family result.
+
+## 18. DEEPEN Claim-Boundary Closure (2026-03-12)
+- Why it matters:
+  - The final novelty screen had to answer whether the confidence-gated lane was materially different from the closest adaptive startup literature, not just from the earlier in-repo baselines.
+- Consolidated decision:
+  - The targeted Semantic Scholar pass around `liu2018` and `liu2024` did not recover a close same-family abstention-like pre-handoff controller.
+  - The surviving contribution is therefore bounded to one operating-regime insight:
+    - confidence gating is useful only as a temporal-separability controller
+    - it collapses to blind packet isolation on static near ties
+    - it recovers part of the late-arrival delay without reopening the backdrive seen in `blind_packet_merge`
+- Evidence artifact(s):
+  - `results/literature/semantic_scholar_manifest.json` targeted recommend / references / citations pass.
+  - `sources.bib` entries `liu2018`, `liu2024`, and `liu2024distributedpmu`.
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/deepen_summary.json`
+  - `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item030_deepen_matrix.md`
+- Pivot decision (if any):
+  - Finalize the paper as a bounded temporal-separability result and avoid `first`, `best`, `general multi-input PMU`, or field-wide absence claims.

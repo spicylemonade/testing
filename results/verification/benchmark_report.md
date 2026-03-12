@@ -1,158 +1,118 @@
 # Benchmark Report
 
 Date: 2026-03-12
-Review round: review_round_1
-Scope: benchmark audit of the H1 `001_packet_scout_handoff_root` evidence pack, limited to baselines, controls, ablations, error analysis, and stress coverage
-Status: BLOCK for publication-quality benchmark claims; PASS only as an internal falsification package
+Review round: novelty_deepening_final
+Scope: benchmark audit of the H1 `001_packet_scout_handoff_root` evidence pack after metric repair and the DEEPEN near-tie matrix
+Status: PASS for a bounded internal frontier claim; BLOCK for literature-performance claims
 
 ## Executive Gate
 
-- The current package is strong enough to reject the original RC-ranked champion story.
-- It is not yet strong enough to publish a benchmark-centered positive claim about packet-gated isolation or superiority to prior work.
-- The blocking gaps are concrete:
-  - no executed same-scaffold no-packet-gate control
-  - no literature-faithful executed comparator
-  - handoff/chatter metrics still use a store-voltage proxy rather than a validated `n_handoff` event
-  - decisive separator cases are not covered by robustness reruns
-  - back-drive reporting uses an undocumented threshold that hides raw nonzero values
+- The benchmark now clears the core internal debt that blocked the earlier positive story:
+  - same-scaffold no-packet control executed
+  - explicit `n_handoff`-based timing repaired
+  - near-tie late-arrival cases executed under equal accounting
+- The benchmark still does not clear any measured claim against prior silicon because no literature-faithful executed comparator exists.
 
 ## Reviewed Artifacts
 
 - `research_rubric.json`
 - `results/research_context.md`
-- `results/swarm/falsifier.md`
 - `results/concept_evolve/tree/001_packet_scout_handoff_root/experiment_spec.md`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/startup_matrix_manifest.json`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/falsifier_cases.json`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/startup_summary.json`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_summary.json`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_comparison.csv`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/ablation_summary.json`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/ablation_pairwise.csv`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_summary.json`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_results.csv`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/robustness_summary.json`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/analysis_sensitivity.csv`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item011_signoff.md`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item018_benchmark_note.md`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item019_falsifier_note.md`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item022_analysis_package.md`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/startup_cells.inc`
 - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/measurement_hooks.inc`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/packet_scout_blocks.inc`
 - `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/ablations/blind_packet_merge/blind_packet_merge.cir`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/champion/packet_scout_handoff/variant_04_confidence_gated_abstention/confidence_gated_abstention.cir`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item028_metric_control_repair.md`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item029_confidence_variant.md`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item030_deepen_matrix.md`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/deepen_summary.json`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/deepen_results.csv`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/deepen_near_tie_manifest.json`
 - `tools/run_h1_matrix.py`
 - `tools/run_h1_falsifier.py`
+- `tools/run_h1_robustness.py`
+- `tools/run_h1_deepen.py`
 
 ## Findings
 
-### 1. Baselines are adequate for internal screening, but not for publication-grade comparison
+### 1. The handoff and control-energy contract is now materially repaired
 
-- The executed design set is `champion`, `fixed`, `nonaware`, `source_blind`, and `time_constant_ranked`.
-- That is enough to reject weak internal comparisons such as open-loop-only or fixed-threshold-only baselines.
-- It is not enough to support any claim against the closest literature families:
-  - `benchmark_comparison.csv` maps regimes to prior work, but no recovered literature-family comparator is executed under the shared hooks.
-  - Any statement beyond within-repo ranking remains structural, not measured.
-- Publication consequence:
-  - block any claim of superiority over recent multi-input, dual-polarity, or batteryless startup interfaces.
+- `startup_cells.inc` now latches `n_handoff` explicitly instead of relying on the earlier effectively-high switch proxy.
+- `measurement_hooks.inc` reports:
+  - `t_handoff`
+  - `t_handoff_fall`
+  - `t_handoff_rise2`
+  from the repaired handoff node, while keeping store-threshold crossings only as diagnostics.
+- `startup_ok` now requires both stored energy and observed handoff activity.
+- Benchmark consequence:
+  - the DEEPEN timing claims are no longer resting on the old store-voltage proxy alone
 
-### 2. Same-family ablations are present, but the key positive control is still missing
+### 2. The same-scaffold no-packet control is now executed and informative
 
-- The executed same-family ablations are useful and load-bearing:
-  - `source_blind` removes ranking while keeping the packet scaffold
-  - `time_constant_ranked` keeps source awareness with lower overhead
-- Those runs are sufficient to falsify the original RC-ranking mechanism claim:
-  - primary matrix: all five designs tie at `17/24`
-  - falsifier suite: `source_blind = 10/10`, `time_constant_ranked = 9/10`, `champion = 8/10`
-- The remaining positive story in the repo is now "packet-gated isolation matters."
-- That positive story is not isolated by an executed same-scaffold control:
-  - `blind_packet_merge.cir` exists, but it is absent from the startup and falsifier manifests and from all summary tables.
-  - The current packet-gating claim therefore depends on comparisons to `nonaware`, which changes more than one mechanism at once.
-- Publication consequence:
-  - block any causal claim that packet gating itself is the surviving mechanism until a no-packet-gate same-scaffold control is executed.
+- `blind_packet_merge` is no longer a hypothetical control.
+- On the four decisive control cases:
+  - `blind_packet_merge` median `t_handoff = 4.67638 s`
+  - `blind_packet_merge` median `e_backdrive = 1.54753e-09 J`
+  - `confidence_gated` median `t_handoff = 4.85884 s`, `e_backdrive = 0`
+  - `source_blind` median `t_handoff = 5.01093 s`, `e_backdrive = 0`
+- Benchmark consequence:
+  - the repo now has a measured speed-versus-backdrive frontier rather than a one-sided packet-gating claim
 
-### 3. The metric contract is still not aligned tightly enough for handoff or chatter claims
+### 3. The DEEPEN matrix supports a bounded positive claim
 
-- `experiment_spec.md` defines `startup_ok` and `t_handoff` using both `V(n_store)` and `V(n_handoff)`.
-- `measurement_hooks.inc` measures:
-  - `t_handoff` when `V(n_store)` crosses `V_HANDOFF`
-  - `t_handoff_fall` when `V(n_store)` falls through `V_HANDOFF_FALL`
-  - `t_handoff_rise2` when `V(n_store)` crosses `V_HANDOFF` a second time
-- `n_handoff` is used only to stop pre-handoff integration, not to define the reported event times.
-- That means the decisive chatter and handoff metrics are still proxy measurements unless the repo shows that `V(n_store)` and `V(n_handoff)` transitions coincide for every design.
-- There is also a reporting lag:
-  - `item018_benchmark_note.md` still reports the pre-repair three-design benchmark and the older full-window control-energy numbers.
-  - `item019_falsifier_note.md` still describes the earlier six-case suite with "none" for fall/rise2 events.
-- Publication consequence:
-  - block any benchmark claim about handoff correctness or UVLO chatter until actual `n_handoff` event traces are reported and the stale benchmark/falsifier notes are synchronized.
+- Static near ties:
+  - `confidence_gated` and `source_blind` both succeed `6/6`
+  - `confidence_gated` median gain versus `source_blind` is only `-0.000545 s`
+  - commit count is `0/6`
+- Late-arrival near ties:
+  - `confidence_gated` and `source_blind` both succeed `6/6`
+  - `confidence_gated` median gain versus `source_blind` is `+0.30882 s`
+  - commit count is `6/6`
+  - median `t_commit = 1.02799 s`
+- Benchmark consequence:
+  - the executed evidence supports one bounded statement:
+    - confidence gating is useful only when ambiguity resolves temporally
 
-### 4. Back-drive evidence is numerically ambiguous and thresholded without justification
+### 4. `time_constant_ranked` prevents any best-overall claim
 
-- `falsifier_summary.json` reports `nonzero_backdrive_cases = 0` for every design.
-- `falsifier_results.csv` still contains positive pre-handoff `e_backdrive_j` values for `nonaware` in multiple cases, including `fa_001`, `fa_004`, `fa_005`, `fa_006`, `fa_007`, and `fa_008`.
-- `tools/run_h1_falsifier.py` counts a case as nonzero only when `e_backdrive_j > 1e-12`.
-- That threshold is not documented in the experiment spec, the table README, or the benchmark notes.
-- The result is a benchmark ambiguity:
-  - the raw table says "some wrong-way energy exists"
-  - the summary says "zero nonzero cases"
-- Publication consequence:
-  - block any strong back-drive narrative until the report states the simulator noise floor and publishes both raw and thresholded counts.
+- `time_constant_ranked` remains faster than `confidence_gated` in both static and late families.
+- The DEEPEN lane therefore does not produce a new universal winner.
+- Benchmark consequence:
+  - the final package is a tradeoff/frontier paper, not a champion benchmark paper
 
-### 5. Stress coverage improved materially, but the decisive claims are still supported by too few uncertainty-qualified cases
+### 5. Remaining benchmark limits are real but narrower now
 
-- The falsifier suite now spans `10` attack classes, which is materially better than the earlier six-case pack.
-- The robustness runner adds `24` samples per design-case, but only for:
-  - `fa_001`
-  - `fa_004`
-  - `fa_005`
-  - `sm_015`
-- The decisive cases are missing from robustness:
-  - the champion losses to `source_blind` are `fa_002` and `fa_006`
-  - the leak-path boundary used in the current narrowed story is `fa_009` and `fa_010`
-- Those claims are therefore still deterministic one-off results, not uncertainty-qualified effects.
-- The primary matrix is also a coverage screen, not a causal sensitivity study:
-  - executed cases: `24`
-  - full cross-product implied by the frozen factor levels: `4 voltages x 4 ramps x 3 ratios x 2 polarities = 96`
-  - current grouped summaries cannot isolate interaction effects well enough for a publication-quality sensitivity claim
-- Publication consequence:
-  - block any strong claim that explicit ranking is harmful, or that packet gating survives leak-path stress, until the separator cases receive the same robustness treatment as `fa_001` and `fa_005`.
-
-### 6. Error analysis is still too thin for a paper benchmark section
-
-- The primary matrix leaves `7` failed cases per design, but there is no case-level failure taxonomy across the full table.
-- The current artifacts do not separate:
-  - no-start due to shared source scarcity
-  - wrong-branch startup
-  - collapse-after-latch
-  - leak-dominated failure
-  - proxy-measurement artifacts
-- Without that taxonomy, the observed five-way tie in the main matrix could still be dominated by shared model limits rather than by a proven mechanism equivalence.
-- Publication consequence:
-  - block any causal explanation of the primary-matrix null until the failed cases are explicitly classified and linked to waveform evidence.
+- No literature-faithful executed comparator exists.
+- The DEEPEN matrix is intentionally small and focused:
+  - `12` core cases
+  - `4` decisive controls
+- Robustness intervals were not rerun for every DEEPEN separator case.
+- Historical notes such as `item018_benchmark_note.md` and `item019_falsifier_note.md` should be read as superseded by `item028_metric_control_repair.md` and `item030_deepen_matrix.md`.
 
 ## Claim Gate
 
 - Supported now:
-  - the current benchmark falsifies the original RC-ranked champion claim inside this repo
-  - `source_blind` and `time_constant_ranked` are stronger benchmark lines than the original champion
-  - the present evidence package is useful for internal simplification decisions
+  - explicit handoff timing and pre-handoff accounting are repaired for the final lane
+  - `blind_packet_merge` defines a measured speed/backdrive frontier
+  - `confidence_gated` beats `source_blind` on late-arrival near ties without reopening backdrive
+  - `confidence_gated` correctly abstains on static near ties
 
-- Not yet publication-quality:
-  - packet-gated isolation as a causally isolated positive mechanism
-  - any superiority claim over the closest literature families
-  - any benchmark claim that depends on back-drive separation
-  - any handoff/chatter claim that depends on the current store-threshold proxy
-  - any sensitivity statement that depends on the aliased 24-case matrix
+- Not supported:
+  - any claim that `confidence_gated` is best overall
+  - any measured superiority claim against recovered prior-art families
+  - any general startup-envelope map for the field
 
-## Required Next Actions
+## Required Next Actions If The Project Continues
 
-1. Execute `blind_packet_merge` under the shared measurement hooks on at least `fa_001`, `fa_002`, `fa_005`, `fa_006`, `fa_009`, `fa_010`, plus matched primary-matrix cases.
-2. Add one literature-faithful comparator from the recovered overlap set and run it on the same load-bearing cases before making any prior-art performance claim.
-3. Emit explicit `n_handoff` rise, fall, and second-rise measurements, then rerun the decisive falsifier cases to verify that the current store-voltage proxy does not change the conclusions.
-4. Reissue the back-drive summaries with a documented noise floor and publish both raw and thresholded counts side by side.
-5. Extend robustness sampling to `fa_002`, `fa_006`, `fa_009`, and `fa_010`; if the current winners persist with confidence intervals, the narrowed mechanism story becomes materially stronger.
-6. Add a case-level failure taxonomy for all failed startup-matrix rows and the decisive falsifier losses, with one waveform-backed reason code per failure.
+1. Execute one literature-faithful comparator under the repaired hooks.
+2. Add robustness intervals for the decisive DEEPEN late-arrival cases.
+3. Translate the behavioral confidence node into a hardware-plausible implementation if the goal moves beyond mechanism discovery.
 
 ## Bottom Line
 
-- The repo has enough benchmark evidence to kill the original champion story.
-- It does not yet have enough benchmark evidence to publish the surviving positive story without another control pass.
-- The fastest route to a defensible paper benchmark is not a broader sweep; it is a tighter control package around packet-gating causality, handoff metric validity, and robustness on the already-identified separator cases.
+- The repo now has enough benchmark evidence to publish a bounded internal frontier:
+  - merge is fastest but leaky
+  - blind packet isolation is safe but slow on late arrival
+  - confidence-gated abstention recovers part of the lost speed without reopening backdrive
+- It still does not have enough benchmark evidence for measured claims against prior literature.

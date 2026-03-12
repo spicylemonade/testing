@@ -140,3 +140,60 @@ Focus: `variant_04_confidence_gated_abstention`
 - Still provisional:
   - the current evidence is only smoke-test scale
   - the lane still dies if the near-tie matrix shows no improvement over `source_blind` under equal accounting
+
+## Final Iterate Closure
+
+Date: 2026-03-12
+Focus: `H1_confidence_gated_abstention`
+
+### Suggestion
+
+- Stop treating the DEEPEN lane as a search for a universally better selector.
+- Use the final iterate pass to lock the concept search onto one bounded research claim:
+  - stay blind on static near ties
+  - commit only when temporal separability appears
+
+### Implementation
+
+- Ran:
+  - `python3 .archivara/concept_evolve.py iterate "Do electrical engineering research and discover something new/interesting. nontrivial and important. maybe you design a new circuit and use ng spice or something"`
+- Refreshed the verification boundary before the iterate pass:
+  - `results/verification/novelty_report.md`
+  - `results/verification/benchmark_report.md`
+  - `results/verification/citation_audit.md`
+  - `results/verification/verification_summary.md`
+- Consumed the generated state files:
+  - `results/concept_evolve/bridge_candidates.json`
+  - `results/concept_evolve/concept_delta.json`
+  - `results/concept_evolve/recurrent_state.json`
+
+### Result
+
+- The iterate pass promoted exactly one bridge:
+  - `H1_confidence_gated_abstention`
+- It retired five earlier bridge candidates:
+  - `packet_scout_handoff_root::variant_01_rc_ranked_packet_gate`
+  - `dual_bucket_polarity_split_bootstrap`
+  - `tokenized_uvlo_handoff_gate`
+  - `reverse_leakage_vote_or`
+  - `comparatorless_current_probe_bootstrap`
+- The recurrent state now agrees with the DEEPEN verification package:
+  - broad architecture novelty is dead
+  - the confidence lane survives only with a narrow temporal-separability claim
+  - `time_constant_ranked` stays as a benchmark anchor, not a promoted novelty bridge
+- The next-step list from `concept_delta.json` is now correctly downstream of the final result:
+  - robustness on late-arrival DEEPEN cases
+  - bounded parasitic sweeps against `blind_packet_merge`
+  - immediate kill if a close abstention-style prior-art overlap is later recovered
+
+### Novelty Delta
+
+- Stronger:
+  - the structured concept search now converges on the same claim boundary as the executed evidence pack
+  - the project is no longer inflating novelty with alternate selector families that the repo has already killed or crowded out
+- Weaker:
+  - the surviving claim is explicitly not `best overall`
+  - no literature-faithful executed comparator exists yet
+  - the literature-gap language must stay scoped to the recovered overlap set
+- Net effect:
+  - the research contribution is now a bounded operating-regime insight about abstain-to-commit startup control, not a general adaptive multi-input startup architecture

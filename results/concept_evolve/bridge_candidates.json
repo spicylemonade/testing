@@ -1,44 +1,65 @@
 [
   {
-    "bridge": "packet_scout_handoff_root",
-    "novelty_signal": "Strongest surviving bridge, but only as a helper-free pre-arbitration failure-mode result. Broad multi-source cold-start, anti-backdrive, and generic PMU framing are invalidated by close overlap and by the tied 17/24 primary matrix.",
-    "validation_plan": "Execute source_blind_packet_gate, time_constant_ranked_arbiter, unequal-VOC sweeps, leak-path falsifiers, stronger chatter falsifiers, corrected pre-handoff e_ctrl and e_backdrive accounting, and Monte Carlo around fa_001 and fa_005. Keep promoted only if packet scouting still beats both fixed and same-family controls on startup correctness under robustness variation.",
-    "risk": "The mechanism may reduce to ordinary thresholded source preference. If the blind packet-gate ablation or the simpler RC ranker matches the result, the claimed scouting advantage disappears.",
+    "bridge": "H1_confidence_gated_abstention",
+    "novelty_signal": "Strongest surviving bridge. The DEEPEN matrix supports a bounded claim: stay blind on static near ties and commit only when source evidence becomes temporally separable. It clears the gate against source_blind on late-arrival cases, but it is not a better general selector and it does not beat time_constant_ranked on speed or control energy.",
+    "validation_plan": "Keep the lane on the existing packet-gated scaffold. Extend robustness on the late-arrival cases, sweep confidence threshold and integration constants, compare against source_blind, time_constant_ranked, and blind_packet_merge under explicit n_handoff accounting, and run a targeted overlap screen for abstention-like pre-handoff controls.",
+    "risk": "If the temporal-separability gain vanishes under variation or if prior work already covers abstain-to-commit startup control, the bridge collapses to an implementation detail rather than a defensible research claim.",
     "promotion_decision": "promote"
   },
   {
     "bridge": "time_constant_ranked_arbiter",
-    "novelty_signal": "Promoted by the benchmark feedback as the missing lower-overhead same-family discriminator. It is not a broad novelty moat, but it is now the most informative bridge for discovering whether minimal source awareness is sufficient.",
-    "validation_plan": "Implement and run it on fa_001, fa_005, ratio 1:20 slices, and unequal-VOC cases with corrected pre-handoff metrics. Keep promoted if it preserves the narrow failure-mode win with lower control energy and comparable robustness.",
-    "risk": "If RC ranking is too noisy under slow ramps it fails as both benchmark and candidate; if it works too well, packet_scout_handoff_root loses justification.",
-    "promotion_decision": "promote"
-  },
-  {
-    "bridge": "dual_bucket_polarity_split_bootstrap",
-    "novelty_signal": "Still relevant only as a mixed-polarity contingency. The novelty report says mixed polarity alone is not a moat because bipolar-input and dual-polarity cold-start literature already covers much of that space.",
-    "validation_plan": "Hold until packet_scout_handoff_root is tested against unequal-VOC and leak-path stress. Reopen only if the surviving failure mode is specifically caused by helper-free mixed-polarity branch isolation that a single scouting path cannot handle.",
-    "risk": "Bucket leakage and merge control can recreate helper behavior or burn the startup budget before handoff, leaving a more complicated version of known bipolar-input startup.",
+    "novelty_signal": "Empirically strong but conceptually crowded. It stays faster and lower-energy than the confidence-gated variant on the current near-tie matrix, yet the verifier already downgraded source-aware ranking as a headline novelty claim.",
+    "validation_plan": "Keep it as the mandatory same-family control and tradeoff anchor. Reopen it as a concept only if a focused overlap screen unexpectedly clears a cleaner novelty path than the current assessment supports.",
+    "risk": "Promoting it would likely recreate the already-killed smarter-selector story.",
     "promotion_decision": "hold"
   },
   {
+    "bridge": "H1_restart_scrub_handoff",
+    "novelty_signal": "Important backup bridge with a cleaner practical problem than generic selector tuning. It could matter if first-handoff novelty saturates, but the current overlap screen has not yet cleared restart-safe intermittent-power prior art.",
+    "validation_plan": "Keep parked until the confidence lane either dies or loses its differentiated claim. If activated, run one repeated-collapse matrix with partial-store memory, a fixed hysteretic scrub baseline, and explicit second-rise and re-arm metrics.",
+    "risk": "It may reduce to a standard hysteretic scrub supervisor once equal accounting and prior-art screening are applied.",
+    "promotion_decision": "hold"
+  },
+  {
+    "bridge": "H1_reverse_port_sentinel",
+    "novelty_signal": "Potential realism bridge only. It is interesting if device-faithful parasitics reopen the anti-backdrive problem, but the present evidence still says the issue may be more about modeling cleanliness than about a new circuit thesis.",
+    "validation_plan": "Keep parked behind the champion and backup. Activate only if bounded nonideal parasitic sweeps show failures that blind packet isolation and a plain back-to-back switch cannot close.",
+    "risk": "A simpler back-to-back isolation path may close the gap as soon as realistic parasitics are introduced.",
+    "promotion_decision": "hold"
+  },
+  {
+    "bridge": "packet_scout_handoff_root::variant_01_rc_ranked_packet_gate",
+    "novelty_signal": "Retired as a headline bridge. The five-way primary matrix ties at 17 out of 24 and source_blind beats the RC-ranked champion 10 out of 10 versus 8 out of 10 on the falsifier suite, so explicit RC ranking is no longer the causal story.",
+    "validation_plan": "Do not advance as an active concept. Keep only as a historical control against source_blind, time_constant_ranked, and confidence_gated variants.",
+    "risk": "Continuing to promote it would force claim inflation against the repo's own ablation evidence.",
+    "promotion_decision": "retire"
+  },
+  {
+    "bridge": "dual_bucket_polarity_split_bootstrap",
+    "novelty_signal": "Retired from the active search. Mixed polarity remains a useful stress axis, but the verifier explicitly says it is not a novelty moat and the current champion already absorbs the surviving helper-free packet-gated claim.",
+    "validation_plan": "Leave inactive unless a future falsifier shows a polarity-specific failure that the confidence lane and source_blind cannot address on the same scaffold.",
+    "risk": "It is likely to become a more complicated version of already-crowded bipolar-input startup work.",
+    "promotion_decision": "retire"
+  },
+  {
     "bridge": "tokenized_uvlo_handoff_gate",
-    "novelty_signal": "Current evidence does not justify keeping this as an active bridge. The falsifier package produced no measured fall or second-rise chatter events, and generic startup-control logic is already crowded prior art.",
-    "validation_plan": "Retire as an active bridge. Restore only if a strengthened chatter falsifier creates real half-enable behavior in a baseline and the token chain fixes it under equal control-energy accounting.",
-    "risk": "Without measured chatter, this reads as a standard POR or UVLO deglitcher with extra startup overhead.",
+    "novelty_signal": "Retired. The lane no longer needs a standalone UVLO or chatter story, and the current claim boundary is about temporal separability, not generic startup sequencing.",
+    "validation_plan": "Reopen only if the repeated-collapse backup lane demonstrates a restart-specific failure that cannot be handled by the fixed hysteretic scrub baseline.",
+    "risk": "Without a restart-specific gap, this reads as ordinary startup hygiene.",
     "promotion_decision": "retire"
   },
   {
     "bridge": "reverse_leakage_vote_or",
-    "novelty_signal": "Retired. Anti-backdrive is expected in multi-input interfaces, the primary matrix shows no broad back-drive separation, and the required leak-path falsifier has not yet shown a unique sensing advantage.",
-    "validation_plan": "Do not pursue as a standalone concept. Reopen only if finite off-isolation sweeps reveal a correctness gap that ideal-diode or packet-scout isolation cannot explain.",
-    "risk": "Leakage signatures are process- and temperature-sensitive and are likely to become a calibration-heavy ornament rather than a robust mechanism.",
+    "novelty_signal": "Retired. The literature and benchmark feedback both crowd out generic anti-backdrive sensing, and the newer no-packet control already provides a cleaner speed-versus-wrong-way-energy frontier.",
+    "validation_plan": "Do not pursue unless realistic parasitics create a failure that neither blind_packet_merge nor a plain back-to-back switch can resolve.",
+    "risk": "Leakage signatures are too process-sensitive to anchor a robust novelty claim.",
     "promotion_decision": "retire"
   },
   {
     "bridge": "comparatorless_current_probe_bootstrap",
-    "novelty_signal": "Retired. The minimum-energy probe question did not generate new evidence, and the bridge now reads as a low-level implementation option inside source scouting rather than a separate concept.",
-    "validation_plan": "Keep dormant until packet_scout_handoff_root and time_constant_ranked_arbiter are benchmarked. Reopen only if passive charge probing shows a clear robustness-normalized energy advantage without hidden bias or precharge.",
-    "risk": "Probe disturbance, capacitor mismatch, and hidden helper behavior can consume the same budget as the RC ranker while making the mechanism harder to defend.",
+    "novelty_signal": "Retired. The minimum-energy probe question did not surface a differentiated win, and the confidence-gated lane already reuses the existing scout scaffold more cleanly.",
+    "validation_plan": "Keep dormant unless the confidence lane dies and a new passive probe can show a clear robustness-normalized energy advantage over time_constant_ranked.",
+    "risk": "It is likely to add probe disturbance and hidden helper behavior without improving the claim boundary.",
     "promotion_decision": "retire"
   }
 ]
