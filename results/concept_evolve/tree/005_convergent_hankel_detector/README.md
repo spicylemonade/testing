@@ -30,3 +30,9 @@ Signal-processing papers reconstruct sparse exponential models from samples. Thi
 - Sampling and Super Resolution of Sparse Signals Beyond the Fourier Domain (46972284777ce742297550ab926d7d83f2ab5cf3, 2018, IEEE Transactions on Signal Processing): Super-resolution perspective on sparse recovery beyond standard Fourier sampling.
 - Linear fractional transformations of continued fractions with bounded partial quotients (475c339b02716f45ddc460b6966ca95179b0cd1d, 1997, Journal de Theorie des Nombres de Bordeaux): Continued-fraction boundedness result that motivates convergent-block sampling.
 
+## Current decision
+- Alignment: `H1`
+- Promotion status: promoted and executed.
+- Evidence links: `results/concept_evolve/tree/005_convergent_hankel_detector/experiment.py`, `results/concept_evolve/tree/005_convergent_hankel_detector/results.json`, `results/concept_evolve/tree/005_convergent_hankel_detector/analysis.md`, `results/core/h2_pisot_backup.md`
+- Experimental status: validated as a useful exact front-end. It cleanly separates quadratic survivor patterns from cubic Pisot, Salem, and transcendental prefix mirages under exact holdout.
+- Decision: keep active; this is the main front-end for any survivor analysis.

@@ -30,3 +30,9 @@ Existing SML papers analyze recurrence zero sets or affine-orbit intersections i
 - Beatty Sequences for a Quadratic Irrational: Decidability and Applications (74492951ce0e23319ffde058fc107cefc4488d0e, 2024, arXiv.org): Supplies a finite-state Beatty-membership interface in the quadratic regime.
 - Ostrowski-automatic sequences: Theory and applications (60d51405e92dd39f0836d04dbbe88f5904b094b3, 2021, Theoretical Computer Science): Provides automatic-sequence tooling for the Beatty side of the filter.
 
+## Current decision
+- Alignment: `H1`
+- Promotion status: promoted as the champion obstruction layer.
+- Evidence links: `results/core/h1_modular_shadow_memo.md`, `results/baseline/modular_shadow_smoke.json`, `results/literature/literature_graph_memo.md`
+- Current experiment status: the modular-shadow implementation exists in `special_numbers/diagnostics.py`, but the concept-specific Beatty-membership sieve is still pending.
+- Next experiment: use Fibonacci and Pell value sets against `r in {phi, sqrt(2), plastic}` and record admissible `k`-shadows modulo `2,3,5,7,11,25`.

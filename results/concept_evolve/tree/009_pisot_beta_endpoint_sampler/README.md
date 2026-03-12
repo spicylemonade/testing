@@ -30,3 +30,9 @@ Existing Pisot and generalized-polynomial work shows that some LRS value sets ar
 - Sparse generalised polynomials (352a36ff547769f41b9a06e2a153f14869312eb8, 2016, Transactions of the American Mathematical Society): Provides sparsity obstructions that can separate real hits from accidental ones.
 - Beatty Sequences for a Quadratic Irrational: Decidability and Applications (74492951ce0e23319ffde058fc107cefc4488d0e, 2024, arXiv.org): Acts as the quadratic baseline before extending to higher-degree numeration.
 
+## Current decision
+- Alignment: `H2`
+- Promotion status: promoted as the live higher-degree backup experiment.
+- Evidence links: `results/core/h2_pisot_backup.md`, `results/concept_evolve/probe_result.json`, `results/concept_evolve/steering_notes.md`
+- Current experiment status: the convergent-based backup falsified a broad Pisot-only claim, so this folder now carries the narrower task of checking whether endpoint-conditioned selectors rescue the plastic constant or any other higher-degree Pisot example.
+- Next experiment: implement the suffix-conditioned beta-endpoint sampler for `beta in {phi, 1+sqrt(2), plastic}` with matched non-Pisot controls and compare exact Hankel/companion certificates.
