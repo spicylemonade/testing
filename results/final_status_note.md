@@ -9,7 +9,7 @@ prime-separator array remains unresolved.
 
 | claim | status | evidence | blocker |
 |---|---|---|---|
-| The first-row difference sequence is bounded. | unsupported | No compact witness certificate survived H1; no prime-support mechanism survived H2. | No horizon-independent invariant or proof bridge from the witness data to a global upper bound. |
+| The first-row difference sequence is bounded. | unsupported | The original H1 certificate claim was rejected on the current corpus, and H2 added no explanatory mechanism. | No horizon-independent invariant or proof bridge from the witness data to a global upper bound. |
 | The first-row difference sequence is unbounded. | unsupported | The validated baseline reaches record gaps `25`, `28`, and `30`; a nearby perturbation reaches `31`. | Finite record growth does not imply asymptotic unboundedness. |
 | Large record gaps can be composite-only. | supported | Million-step baseline: gaps `28` and `30` are composite-only. `column_immediate` also has late composite-only records. | None for the empirical claim. |
 | The raw witness layer yields a compact T-specific certificate language. | rejected on the current corpus | `results/claims/h1_frontier_witness_certificate.md`, `results/experiments/run_1000000/experiment_note.md`, and the late-gap hypergraph export all show heterogeneous mostly-singleton coverage. | Only a stronger full-hypergraph invariant could rescue this line. |

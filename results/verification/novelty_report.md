@@ -54,7 +54,8 @@ The strongest overlap risk is still the Ford branch documented in
 
 ## Surviving Differentiated Contribution
 
-What still survives is narrower than the original champion hypothesis:
+What remains after rejecting the original H1 mechanism claim is narrower than the
+original champion hypothesis:
 
 - a validated negative result that the current raw-witness corpus does **not** compress
   into a compact T-specific certificate language;

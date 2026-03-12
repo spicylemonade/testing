@@ -16,7 +16,8 @@ The current package settles the computational baseline, not the mathematics.
   records into an unboundedness proof, and no witness invariant upgrades them into a
   global upper bound.
 - The active mechanism claims also weaken rather than strengthen:
-  - H1 survives only as a pivoted negative-result / rescue line;
+  - the original H1 mechanism claim is rejected; only a narrowed hypergraph-rescue
+    question remains open;
   - H2 is killed as non-explanatory.
 
 Therefore the honest synthesis is neither `boundedness supported` nor `boundedness
@@ -28,8 +29,8 @@ refuted`, but `still unresolved`.
   data that would imply a genuine global bound, or rule one out.
 - A proof bridge from the measured observables to asymptotic behavior; finite record-gap
   growth alone is not enough.
-- A decisive compression result on the full witness hypergraphs, if the pivoted H1 line
-  is to survive at all.
+- A decisive compression result on the full witness hypergraphs, if the narrowed
+  hypergraph-rescue question is to remain open at all.
 
 ## Overclaim Boundary
 

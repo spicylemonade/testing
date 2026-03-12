@@ -109,11 +109,11 @@ Interpretation:
 
 Compared with the literature, the current package says:
 
-- stronger than OEIS/Kimberling on reproducible evidence, but not on final theorem status;
+- it provides a more reproducible local computation package than the public OEIS/Kimberling baseline, but not a new theorem;
 - too close to Ford-style local coverage to support a positive mechanism claim;
 - not strong enough to reopen the multiplicative-basis branch;
-- most naturally interpreted through constrained factorization / witness-hypergraph
-  language, which is exactly the narrowed H1 rescue path left alive by the novelty round.
+- best documented internally through constrained factorization / witness-hypergraph
+  language, which is exactly the narrowed H1 rescue question left open by the novelty round.
 
 ## Sources
 
