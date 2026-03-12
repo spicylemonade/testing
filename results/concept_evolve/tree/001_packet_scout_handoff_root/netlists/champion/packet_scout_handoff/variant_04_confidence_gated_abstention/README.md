@@ -1,0 +1,22 @@
+# Variant 04: Confidence-Gated Abstention
+
+- Role: DEEPEN near-tie branch
+- Source inference:
+  - measure the normalized RC scout margin `|a_probe - b_probe| / (eps + |a_probe| + |b_probe|)` after a minimum scout amplitude, then integrate it onto a dedicated confidence capacitor
+- Minimum-energy accumulation:
+  - default to the `source_blind` split while the confidence node stays below the commit threshold
+  - blend toward the winner only after the separability score commits
+- Handoff gating:
+  - reuse the shared hysteretic `n_handoff` release after the winner or blind fallback has raised `n_store`
+- Dependency list:
+  - `netlists/shared/source_pair_models.inc`
+  - `netlists/shared/startup_cells.inc`
+  - `netlists/shared/packet_scout_blocks.inc`
+  - RC scout packet
+  - confidence capacitor
+  - commit threshold gate
+  - shared handoff latch
+- Netlist:
+  - `confidence_gated_abstention.cir`
+- Predicted failure mode:
+  - if the confidence node either commits too early or never clears in useful cases, the design degenerates into the RC-ranked path or a more expensive `source_blind` copy

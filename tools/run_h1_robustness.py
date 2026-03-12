@@ -28,7 +28,7 @@ SUMMARY_PATH = LANE_ROOT / "tables" / "robustness_summary.json"
 NGSPICE_BIN = REPO_ROOT / "tools" / "ngspice-local"
 
 DEFAULT_CASES = ["fa_001", "fa_004", "fa_005", "sm_015"]
-DEFAULT_DESIGNS = ["champion", "fixed", "nonaware", "source_blind", "time_constant_ranked", "blind_packet_merge"]
+DEFAULT_DESIGNS = ["champion", "fixed", "nonaware", "source_blind", "time_constant_ranked", "blind_packet_merge", "confidence_gated"]
 
 SCALE_RE = {
     "t": 1e12,
@@ -105,10 +105,16 @@ def vary_case(case: dict, design: str, rng: random.Random) -> tuple[dict, dict]:
     base_vstart_dead = parse_numeric(overrides.get("VSTART_DEAD", "5m"))
     overrides["VSTART_DEAD"] = to_spice(clamp(base_vstart_dead * (1.0 + rng.gauss(0.0, 0.12)), 1e-3, 15e-3))
 
-    if design in {"champion", "source_blind", "blind_packet_merge"}:
+    if design in {"champion", "source_blind", "blind_packet_merge", "confidence_gated"}:
         overrides["SCOUT_R"] = to_spice(parse_numeric(overrides.get("SCOUT_R", "150k")) * max(0.6, 1.0 + rng.gauss(0.0, 0.12)))
         overrides["SCOUT_C"] = to_spice(parse_numeric(overrides.get("SCOUT_C", "5n")) * max(0.6, 1.0 + rng.gauss(0.0, 0.12)))
         overrides["G_SCOUT_CTRL"] = to_spice(parse_numeric(overrides.get("G_SCOUT_CTRL", "40n")) * max(0.5, 1.0 + rng.gauss(0.0, 0.10)))
+    if design == "confidence_gated":
+        overrides["CONF_EPS"] = to_spice(parse_numeric(overrides.get("CONF_EPS", "1m")) * max(0.6, 1.0 + rng.gauss(0.0, 0.10)))
+        overrides["CONF_AMP_FLOOR"] = to_spice(parse_numeric(overrides.get("CONF_AMP_FLOOR", "10m")) * max(0.6, 1.0 + rng.gauss(0.0, 0.10)))
+        overrides["CONF_R"] = to_spice(parse_numeric(overrides.get("CONF_R", "100k")) * max(0.6, 1.0 + rng.gauss(0.0, 0.12)))
+        overrides["CONF_C"] = to_spice(parse_numeric(overrides.get("CONF_C", "500n")) * max(0.6, 1.0 + rng.gauss(0.0, 0.12)))
+        overrides["G_CONF_CTRL"] = to_spice(parse_numeric(overrides.get("G_CONF_CTRL", "8n")) * max(0.5, 1.0 + rng.gauss(0.0, 0.10)))
     if design == "time_constant_ranked":
         overrides["TC_FAST_R"] = to_spice(parse_numeric(overrides.get("TC_FAST_R", "30k")) * max(0.6, 1.0 + rng.gauss(0.0, 0.12)))
         overrides["TC_FAST_C"] = to_spice(parse_numeric(overrides.get("TC_FAST_C", "1.5n")) * max(0.6, 1.0 + rng.gauss(0.0, 0.12)))

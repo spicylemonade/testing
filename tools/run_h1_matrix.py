@@ -25,7 +25,7 @@ BENCHMARK_SUMMARY_PATH = LANE_ROOT / "tables" / "benchmark_summary.json"
 NGSPICE_BIN = REPO_ROOT / "tools" / "ngspice-local"
 
 CORE_DESIGNS = ["champion", "fixed", "nonaware"]
-DESIGN_ORDER = CORE_DESIGNS + ["source_blind", "time_constant_ranked", "blind_packet_merge"]
+DESIGN_ORDER = CORE_DESIGNS + ["source_blind", "time_constant_ranked", "blind_packet_merge", "confidence_gated"]
 DECKS = {
     "champion": LANE_ROOT
     / "netlists"
@@ -58,6 +58,12 @@ DECKS = {
     / "ablations"
     / "blind_packet_merge"
     / "blind_packet_merge.cir",
+    "confidence_gated": LANE_ROOT
+    / "netlists"
+    / "champion"
+    / "packet_scout_handoff"
+    / "variant_04_confidence_gated_abstention"
+    / "confidence_gated_abstention.cir",
 }
 
 PARAM_RE = {
@@ -84,6 +90,8 @@ MEASURE_PATTERNS = {
     "t_store_proxy_s": r"t_store_proxy\s*=\s*([-+0-9.eE]+)",
     "t_store_proxy_fall_s": r"t_store_proxy_fall\s*=\s*([-+0-9.eE]+)",
     "t_store_proxy_rise2_s": r"t_store_proxy_rise2\s*=\s*([-+0-9.eE]+)",
+    "t_commit_s": r"t_commit\s*=\s*([-+0-9.eE]+)",
+    "conf_final_v": r"conf_final\s*=\s*([-+0-9.eE]+)",
     "e_backdrive_j": r"e_backdrive\s*=\s*([-+0-9.eE]+)",
     "e_ctrl_j": r"e_ctrl\s*=\s*([-+0-9.eE]+)",
     "e_backdrive_full_j": r"e_backdrive_full\s*=\s*([-+0-9.eE]+)",
@@ -273,6 +281,8 @@ def write_table(rows: list[dict]) -> None:
         "t_store_proxy_s",
         "t_store_proxy_fall_s",
         "t_store_proxy_rise2_s",
+        "t_commit_s",
+        "conf_final_v",
         "e_backdrive_j",
         "e_ctrl_j",
         "e_backdrive_full_j",

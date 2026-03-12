@@ -1,6 +1,6 @@
 # Packet Scout Handoff Variants
 
-These are the three active H1 variants under the champion subtree.
+These are the original three H1 variants plus the DEEPEN near-tie branch under the champion subtree.
 
 ## Rank Order
 
@@ -10,6 +10,8 @@ These are the three active H1 variants under the champion subtree.
    - mixed-polarity fallback inside the champion subtree
 3. `variant_03_current_probe_token_gate`
    - low-helper current-probe and handoff-gating variant
+4. `variant_04_confidence_gated_abstention`
+   - DEEPEN branch for near-tie startup cases
 
 ## Mechanism Split
 
@@ -25,3 +27,7 @@ These are the three active H1 variants under the champion subtree.
   - source inference via comparatorless current-probe delta
   - minimum-energy accumulation via fixed packet train into a shared reservoir
   - handoff gating via tokenized sustained-surplus release
+- `variant_04_confidence_gated_abstention`
+  - source inference via normalized RC scout margin and confidence integration
+  - minimum-energy accumulation via blind packet isolation until the separability score commits
+  - handoff gating via the shared store-threshold latch after confidence-based commit

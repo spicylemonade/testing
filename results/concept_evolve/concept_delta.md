@@ -90,3 +90,53 @@ Focus: `H1_confidence_gated_abstention`
 - Still fragile:
   - the probe tooling did not return new bridge candidates, so the lane still depends on measured separation rather than concept-worker novelty support
   - if the confidence node only reproduces `source_blind` with extra overhead, the lane dies immediately
+
+## Confidence-Gated Implementation
+
+Date: 2026-03-12
+Focus: `variant_04_confidence_gated_abstention`
+
+### Suggestion
+
+- Do not use absolute probe difference as the confidence signal.
+- Use a normalized separability score that only turns on after a minimum scout amplitude:
+  - `|a_probe - b_probe| / (eps + |a_probe| + |b_probe|)`
+- Keep the startup path in the `source_blind` posture until that score integrates past a commit threshold.
+
+### Implementation
+
+- Ran:
+  - `python3 .archivara/concept_evolve.py reframe "Do electrical engineering research and discover something new/interesting. nontrivial and important. maybe you design a new circuit and use ng spice or something"`
+- The saved `results/concept_evolve/reframings.json` remained empty, so the DEEPEN implementation proceeded from the director brief and probe freeze rather than a useful helper reframe.
+- Added:
+  - `netlists/champion/packet_scout_handoff/variant_04_confidence_gated_abstention/README.md`
+  - `netlists/champion/packet_scout_handoff/variant_04_confidence_gated_abstention/confidence_gated_abstention.cir`
+- Extended `packet_scout_blocks.inc` with `confidence_gated_packet_gate`, which:
+  - computes a normalized scout-margin ratio after a minimum amplitude floor
+  - integrates that ratio on `n_conf`
+  - exposes `n_commit`
+  - blends from blind packet isolation toward the winning branch only after `n_commit` rises
+
+### Result
+
+- The new deck executes without helper rails under the same shared source, startup, and measurement includes.
+- Smoke-test behavior is directionally correct:
+  - late-arrival case:
+    - `t_commit = 1.02771 s`
+    - `t_handoff = 4.73294 s`
+    - `source_blind t_handoff = 4.76565 s`
+  - near-tie case:
+    - `t_commit = none`
+    - `conf_final = 0.01659312`
+    - `t_handoff = 4.70396 s`, effectively matching `source_blind`
+- Interpretation:
+  - the variant now behaves like an explicit abstain-to-commit controller instead of a slower hidden copy of the blind path
+
+### Novelty Delta
+
+- Stronger:
+  - the mechanism is no longer `better ranking`; it is an analog refusal-to-commit rule tied to normalized separability
+  - the design exposes a measurable `t_commit` state, which gives the DEEPEN matrix a new behavioral axis that the prior H1 family did not report
+- Still provisional:
+  - the current evidence is only smoke-test scale
+  - the lane still dies if the near-tie matrix shows no improvement over `source_blind` under equal accounting
