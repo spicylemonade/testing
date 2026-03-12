@@ -20,14 +20,15 @@ Sources: `bell2005`, `derksen2005`, `schaeffer2024`, `durand2000`.
 ## Strongest experiment-backed claim
 
 **Experiment-backed statement.**
-Within the frozen zero-density selector panel, the only exact irrational recurrence cases observed are the quadratic periodic-continued-fraction cases `phi`, `sqrt(2)`, and `1 + sqrt(2)` on the selector `quadratic_convergent_even`.
+Within the frozen zero-density selector panel, the exact-certified irrational recurrence cases are the quadratic periodic-continued-fraction examples `phi - 1`, `phi`, `sqrt(2)`, and `1 + sqrt(2)` on the selector `quadratic_convergent_even`.
 
-- `phi` supports `x_k - 3 x_{k+1} + x_{k+2} = 0`.
+- `phi - 1` and `phi` support `x_k - 3 x_{k+1} + x_{k+2} = 0`.
 - `sqrt(2)` and `1 + sqrt(2)` support `x_k - 6 x_{k+1} + x_{k+2} = 0`.
+- Additional zero-density quadratic cases on `fib_indices` and `pell_indices` survive exact holdout through 160 samples in `results/experiments/claim_sensitive_ablation.json`, but they still lack structural certificates and therefore remain empirical only.
 - No higher-degree Pisot, Salem, or transcendental slope survives the same order-`<=4` convergent construction or the concrete suffix-`10` beta-endpoint construction.
 
-Artifact support: `results/concept_evolve/tree/005_convergent_hankel_detector/results.json`, `results/core/h2_pisot_backup.md`, `results/concept_evolve/tree/009_pisot_beta_endpoint_sampler/results.json`, `results/experiments/full_panel_results.json`.
-Sources: `schaeffer2024`, `byszewski2023`, `allouche2018`.
+Artifact support: `results/concept_evolve/tree/005_convergent_hankel_detector/results.json`, `results/core/h2_pisot_backup.md`, `results/concept_evolve/tree/009_pisot_beta_endpoint_sampler/results.json`, `results/experiments/full_panel_results.json`, `results/experiments/claim_sensitive_ablation.json`.
+Sources: `schaeffer2024`, `byszewski2023`, `allouche2018`, `maskov2006`.
 
 ## Conjectural refinement
 

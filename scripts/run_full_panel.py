@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
 
 from special_numbers.baseline import evaluate_case
 from special_numbers.diagnostics import run_shadow_case
+from special_numbers.metrics import nondegenerate_status, risk_tags, summarize_runs
 from special_numbers.selectors import (
     arithmetic_progression,
     beta_endpoint_selector,
@@ -92,6 +93,11 @@ def evaluate_selector(slope_id: str, selector):
     base = evaluate_case(slope_id, selector, max_order=MAX_ORDER)
     run = run_shadow_case(base, fit_length=FIT_LENGTH, max_order=MAX_ORDER)
     run["runtime_seconds"] = time.perf_counter() - start
+    verification = run.get("shadow_probe", {}).get("full_length_verification") or {}
+    run["holdout_exact_20"] = bool(verification.get("holds")) if verification else False
+    run["exact_certificate_present"] = run.get("certificate") is not None
+    run["risk_tags"] = risk_tags(run)
+    run["nondegenerate"] = nondegenerate_status(run)
     run["status"] = "executed"
     return run
 
@@ -122,7 +128,7 @@ def main() -> None:
         if not bool(get_slope(slope_id).expr.is_rational):
             rows.append(evaluate_selector(slope_id, beta_endpoint_selector(slope_id, COUNT, max_n=SELECTOR_MAX_N)))
 
-    aggregate = {
+    aggregate: dict[str, object] = {
         "executed_cases": sum(1 for row in rows if row["status"] == "executed"),
         "waived_cases": sum(1 for row in rows if row["status"] == "waived"),
         "exact_recurrence_cases": sum(
@@ -131,6 +137,7 @@ def main() -> None:
             if row["status"] == "executed" and row.get("shadow_probe", {}).get("classification") == "exact_recurrence"
         ),
     }
+    aggregate["metrics"] = summarize_runs([row for row in rows if row["status"] == "executed"])
 
     payload = {
         "panel": {

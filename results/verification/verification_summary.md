@@ -1,21 +1,27 @@
 # Verification Summary
 
-## Overall Verdict
+Synthesis of `results/verification/novelty_report.md`, `results/verification/citation_audit.md`, and the refreshed `results/verification/benchmark_report.md` after the writer-stage evidence repairs.
 
-- The package is internally coherent and novel enough to continue, provided the final claim stays narrow.
-- Safe public claim: the H1 obstruction core for arithmetic progressions and finite unions of arithmetic progressions, together with the experimental observation that the only surviving sparse exact cases in the frozen matrix are quadratic-convergent ones.
+## Decision
 
-## Reconciled Findings
+- `PASS WITH NARROW CLAIM SET`
+- The package is now internally consistent for the periodic-gap theorem lane and the four certified quadratic-convergent examples. The remaining obligation is scope discipline, not another benchmark repair cycle.
 
-- Novelty audit: partially credible, with the main risk concentrated in overclaiming the sparse quadratic lane.
-- Citation audit: conditional pass, with software citations still desirable but no missing mathematical branch in the curated map.
-- Benchmark audit: partial support, strong enough for the H1 core and negative enough to reject a broad Pisot-only story.
+## What Is Solid Now
 
-## Must-Fix List
+- The strongest theorem is unchanged and safe: for selectors with eventually periodic gaps (in particular arithmetic progressions and finite unions of arithmetic progressions), recurrence occurs exactly for rational `r`.
+- The rational benchmark gap is closed: all 28 AP/FUAP rational cases now carry exact certificates in `results/experiments/full_panel_results.json`.
+- The main unresolved positive from the earlier review is resolved: `phi - 1/quadratic_convergent_even` is now certified and joins `phi`, `sqrt(2)`, and `1 + sqrt(2)` as a named exact quadratic-convergent example.
+- The promised release artifacts now exist: `results/experiments/metrics_full_panel.json`, `results/experiments/full_panel_case_audit.csv`, and `results/experiments/claim_sensitive_ablation.json`.
 
-- None before the internal research package can move forward.
-- For any outward-facing draft, keep all quadratic sparse-lane language explicitly experimental or conjectural.
+## Remaining Scope Limits
 
-## Recommended Next Step
+- Keep the sparse quadratic `fib_indices` and `pell_indices` lanes empirical. They survive long exact holdouts through `160` samples, but without structural certificates they are not theorem statements.
+- Do not generalize the benchmark into a full quadratic-only characterization or a universal higher-degree impossibility theorem. The benchmark still speaks at the named-example level outside the certified cases.
+- Keep the modular-shadow layer framed as a rigorous screening and verification tool, not as a standalone new theorem beyond the proved selector classes.
 
-- Finish the phase-4/5 documentation so the final claim memo, artifact index, and citation bundle point to the H1 theorem core, the H2 falsifier result, and the concept-tree evidence without overstating the sparse survivor lane.
+## Writer Guidance
+
+- Lead with the periodic-gap theorem and its complete proof.
+- Present the four quadratic-convergent identities as exact certified examples, then separate the longer-holdout but uncertified sparse cases into a clearly empirical subsection.
+- Use the curated gap notes in `results/literature/prior_art_gap.md` and `results/literature/gap_frontier.md`; do not rely on the raw lexical watchlist for novelty framing.

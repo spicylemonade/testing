@@ -21,14 +21,32 @@ def arithmetic_progression(selector_id: str, step: int, offset: int, count: int)
 
 
 def finite_union(selector_id: str, modulus: int, residues: list[int], count: int) -> SelectorInstance:
-    residues_set = {r % modulus for r in residues}
+    normalized_residues = sorted({r % modulus for r in residues})
+    residues_set = set(normalized_residues)
     indices: list[int] = []
     n = 1
     while len(indices) < count:
         if n % modulus in residues_set:
             indices.append(n)
         n += 1
-    return SelectorInstance(selector_id, "finite_union_of_arithmetic_progressions", indices, {"modulus": modulus})
+    gap_pattern: list[int] = []
+    if normalized_residues:
+        for idx, residue in enumerate(normalized_residues):
+            next_residue = normalized_residues[(idx + 1) % len(normalized_residues)]
+            if idx + 1 < len(normalized_residues):
+                gap_pattern.append(next_residue - residue)
+            else:
+                gap_pattern.append(modulus + next_residue - residue)
+    return SelectorInstance(
+        selector_id,
+        "finite_union_of_arithmetic_progressions",
+        indices,
+        {
+            "modulus": modulus,
+            "residues": normalized_residues,
+            "gap_pattern": gap_pattern,
+        },
+    )
 
 
 def fibonacci_indices(count: int) -> SelectorInstance:

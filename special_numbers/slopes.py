@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import isqrt
 
 import sympy as sp
 
@@ -52,6 +53,17 @@ def get_slope(slope_id: str) -> SlopeSpec:
 
 def floor_value(slope_id: str, n: int) -> int:
     expr = get_slope(slope_id).expr
+    if expr.is_rational:
+        ratio = sp.Rational(expr)
+        return (n * int(sp.numer(ratio))) // int(sp.denom(ratio))
+    if slope_id == "sqrt2":
+        return isqrt(2 * n * n)
+    if slope_id == "one_plus_sqrt2":
+        return n + isqrt(2 * n * n)
+    if slope_id == "phi":
+        return (n + isqrt(5 * n * n)) // 2
+    if slope_id == "phi_minus_1":
+        return (isqrt(5 * n * n) - n) // 2
     return int(sp.floor(sp.Integer(n) * expr))
 
 

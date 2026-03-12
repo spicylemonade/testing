@@ -1,0 +1,1018 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xcolor}
+\usepackage[hypertexnames=false]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{natbib}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=[rgb]{0.08,0.24,0.39},
+  citecolor=[rgb]{0.08,0.38,0.34},
+  urlcolor=[rgb]{0.45,0.19,0.21}
+}
+
+\setlist[itemize]{leftmargin=1.5em}
+\setlist[enumerate]{leftmargin=1.75em}
+\setlength{\parskip}{0.35em}
+\setlength{\parindent}{1.2em}
+\numberwithin{equation}{section}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\set}[1]{\left\{ #1 \right\}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\Egap}{\mathcal{E}}
+\newcommand{\AP}{\mathrm{AP}}
+\newcommand{\FUAP}{\mathrm{FUAP}}
+\newcommand{\Hold}{\ensuremath{\mathrm{EH}}}
+\newcommand{\Exact}{\ensuremath{\mathrm{EX}}}
+\newcommand{\Shadow}{\ensuremath{\mathrm{SF}}}
+\newcommand{\Prefix}{\ensuremath{\mathrm{PF}}}
+
+\title{Archivara Agent: Structured Recurrences in Beatty Subsequences}
+\author{Archivara Agent}
+\date{March 12, 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We study the following question: for which real numbers $r>0$ does the Beatty sequence $\floor{nr}$ contain an ordered subsequence satisfying a homogeneous constant-coefficient linear recurrence over $\Z$? The phrase \emph{linearly recurrent} is dangerously ambiguous in the surrounding literature, so we first lock the problem to ordered integer values rather than symbolic recurrence of gap words. Within this locked formulation we prove a complete classification for the largest selector family supported by theorem-level evidence: if the selector gaps are eventually periodic---in particular for arithmetic progressions and finite unions of arithmetic progressions---then such a subsequence exists if and only if $r$ is rational. The proof is fully explicit: bounded integer recurrence sequences have eventually periodic first differences, while eventual periodicity of $\floor{k\alpha+\beta}$ differences forces $\alpha\in\Q$. 
+
+To map the remaining sparse-selector territory, we implement an exact arithmetic benchmark with structural certification, holdout verification, and modular-shadow screening over a pre-registered 145-case panel. After repairing the rational baseline and running the requested ablations, the benchmark yields 32 exact-certified cases: 28 rational periodic-gap baselines and 4 nondegenerate quadratic examples on the even-convergent selector, namely $r\in\{\varphi-1,\varphi,\sqrt2,1+\sqrt2\}$. Higher order fitting ($d\le 6,8$) adds no new certified case but greatly increases short-window false positives, while longer holdouts ($40/80/160$) preserve the four certified quadratic identities and destroy the plastic-control mirages. The result is a sharp separation between a proof-complete periodic-gap theorem and a sparse quadratic lane that remains only partly understood. 
+\end{abstract}
+
+\section{Introduction}
+
+Beatty sequences sit at a productive intersection of Diophantine approximation, symbolic dynamics, generalized polynomials, and automatic numeration systems. For a real number $r>0$, the ordered integer sequence
+\[
+  B_r = \bigl(\floor{nr}\bigr)_{n\ge 1}
+\]
+is simple enough to compute exactly, but rigid enough to encode subtle arithmetic structure. The present paper asks when this structure is strong enough to support a homogeneous constant-coefficient recurrence after passing to a subsequence.
+
+The question becomes nontrivial only after disambiguation. In the symbolic-dynamics literature, \emph{linearly recurrent} often means return-word recurrence of an infinite word in the sense of Durand; here it means something strictly arithmetic: an ordered integer sequence $(b_k)_{k\ge 0}$ for which there exist $d\ge 1$, integers $c_0,\dots,c_d$ with $c_d\neq 0$, and an index $K$ such that
+\begin{equation}
+\label{eq:main-recurrence}
+  c_0 b_k + c_1 b_{k+1} + \cdots + c_d b_{k+d} = 0 \qquad \text{for all } k\ge K.
+\end{equation}
+The distinction matters: symbolic recurrence of a difference word does not automatically imply arithmetic recurrence of the sampled values.
+
+Our starting point is the observation that the unrestricted problem is likely too permissive. If one allows arbitrary selectors, sparse extraction can manufacture convincing finite-window recurrences without producing any theorem-grade infinite identity. We therefore follow the pre-registered plan in the repository and stratify the problem by selector complexity. This leads to a complete theorem for selectors with eventually periodic gaps, a rigorous exact benchmark for the pre-registered sparse families, and a clean separation between proof-backed content and empirical survivor patterns.
+
+The paper makes five contributions.
+\begin{enumerate}
+  \item We prove a full characterization for eventually periodic-gap selectors: $\floor{n_k r}$ satisfies a homogeneous integer recurrence for some such selector if and only if $r\in\Q$.
+  \item We supply explicit proof lemmas that are strong enough to stand alone: bounded integer recurrence sequences are eventually periodic, arithmetic subsequences of recurrence sequences are again recurrence sequences, and eventual periodicity of differences of $\floor{k\alpha+\beta}$ forces $\alpha$ to be rational.
+  \item We formalize an exact arithmetic screening pipeline---nullspace-based relation discovery, structural certification, exact holdout verification, and modular-shadow diagnostics---and execute it on a fixed 145-case panel covering rational, quadratic irrational, higher-degree algebraic, Salem, and transcendental slopes.
+  \item We upgrade the sparse quadratic lane from three to four certified exact examples by resolving the previously open low-slope case $\varphi-1$, and we show by ablation that the four named even-convergent identities remain stable through holdout length $160$ while the plastic-control prefix fits collapse by length $40$.
+  \item We place the result honestly against prior work: the periodic-gap theorem is materially different from Beatty decidability, symbolic linear recurrence, generalized-polynomial definability, and Skolem--Mahler--Lech zero-set theory, whereas the sparse quadratic examples are treated as exact examples rather than a new full classification theorem.
+\end{enumerate}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig1_pipeline.pdf}
+  \caption{Research pipeline and claim hierarchy. The repository first locks the arithmetic meaning of the problem, then separates the proof-complete periodic-gap lane from the sparse empirical lane. Exact certificates, not finite-window fits, are the gate into theorem language. This separation is the methodological backbone of the paper: it is what allows the final writeup to keep the rational periodic-gap theorem and the sparse quadratic examples in the same article without conflating proof, certificate, and exact holdout evidence.}
+  \label{fig:pipeline}
+\end{figure}
+
+The remainder of the paper follows this split. \Cref{sec:related} positions the work relative to the closest mathematical branches. \Cref{sec:background} fixes notation and proves the elementary recurrence lemmas used later. \Cref{sec:method} describes the exact benchmark pipeline. \Cref{sec:theory} contains the proof-complete theorems and exact quadratic identities. \Cref{sec:setup} records the deterministic benchmark protocol. \Cref{sec:results} reports the 145-case panel and the claim-sensitive ablations. \Cref{sec:discussion} discusses limitations, open problems, and the modest but precise novelty claim supported by the artifacts.
+
+\section{Related Work}
+\label{sec:related}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.92\linewidth]{figures/fig8_prior_art_matrix.pdf}
+  \caption{Curated positioning against the actual nearby branches, rather than the raw lexical watchlist. The closest technical neighbors solve different tasks: quadratic Beatty decidability studies numeration-definable Beatty relations rather than exact value recurrences \citep{schaeffer2024,hieronymi2021,baranwal2021}; symbolic linear recurrence and central-set work study words, return words, or IP-set structure rather than the ordered integer value sequence \citep{durand1998,durand2000,durand2003,bucci2013}; generalized-polynomial work studies definability of recurrence-value sets rather than embeddings of those values into an ordered Beatty subsequence \citep{adamczewski2022,byszewski2016,byszewski2023}; Skolem--Mahler--Lech theory starts from a pre-existing recurrence and characterizes its zero or intersection sets \citep{bell2005,derksen2005}. The present paper is therefore narrow by design: it claims a theorem only where the ordered-value problem can be proved directly.}
+  \label{fig:prior-art-matrix}
+\end{figure}
+
+Four branches matter most.
+
+\paragraph{Beatty sequences, Ostrowski numeration, and decidability.}
+Recent work on quadratic Beatty sequences shows that many Beatty relations are decidable or automaton-recognizable in Ostrowski numeration \citep{schaeffer2024,hieronymi2021,baranwal2021}. Model-theoretic extensions by Beatty functions and Beatty predicates further show that the ambient structures can be tame in surprising ways \citep{gnaydin2020,khani2021}. This line is the closest technical neighbor, but it solves a different problem: decidability of relations in the Beatty graph is not the same as existence of an ordered subsequence of values satisfying \eqref{eq:main-recurrence}. Our main theorem is therefore not another definability statement; it is an obstruction theorem for exact value recurrences under an explicitly frozen selector class.
+
+\paragraph{Symbolic linear recurrence, S-adic structure, and central sets.}
+Durand's program identifies symbolic linear recurrence via return words, substitutive structure, and proper primitive S-adic expansions \citep{durand1998,durand2000,durand2003}. Bucci, Puzynina, and Zamboni connect uniformly recurrent words to central sets and solutions of homogeneous linear equations \citep{bucci2013}. These papers are crucial as category-boundary markers. They show how easy it is to slide from symbolic recurrence to arithmetic claims, but they do not resolve the present question because our recurrence relation is imposed on the ordered integer values $\floor{n_k r}$, not on the symbolic coding of the differences.
+
+\paragraph{Generalized polynomials and self-matching.}
+Generalized-polynomial work of Byszewski, Konieczny, and Adamczewski explains when recurrence-value sets or bracket-word structures are definable in generalized-polynomial terms \citep{adamczewski2022,byszewski2016,byszewski2023}. Generalized and complementary Beatty constructions give a rich source of exact identities and selector heuristics \citep{allouche2018}. The self-matching literature for quadratic Beatty sequences is especially relevant for the sparse quadratic lane \citep{maskov2006}. For that reason we do \emph{not} sell the four certified quadratic examples as a novelty-bearing classification theorem. They are best viewed as exact sanity checks and boundary examples around the main obstruction theorem.
+
+\paragraph{Skolem--Mahler--Lech rigidity.}
+Bell and Derksen describe arithmetic-progression structure in zeros and intersections of recurrence sequences and affine-orbit systems \citep{bell2005,derksen2005}. Their work provides the right obstruction language for our modular-shadow screen, but again the logical direction is different. Those theorems begin with a recurrence sequence and analyze its exceptional set. We begin with a Beatty subsequence candidate and ask when it can instantiate a recurrence at all.
+
+The upshot is exactly the one encoded in \Cref{fig:prior-art-matrix}: the theorem-grade contribution of this paper is narrow but materially distinct. It is a statement about ordered value recurrences in Beatty subsequences under explicitly structured selectors. Everything outside that scope is either comparative context or empirical evidence.
+
+\section{Background and Preliminaries}
+\label{sec:background}
+
+\subsection{Locked problem statement and notation}
+
+\begin{definition}[Selector and extracted value sequence]
+Let $r>0$. A \emph{selector} is an increasing sequence of positive integers $(n_k)_{k\ge 0}$. Its extracted Beatty-value sequence is
+\[
+  b_k = \floor{n_k r} \qquad (k\ge 0).
+\]
+We say that $(n_k)$ has \emph{eventually periodic gaps} if there exist $K,m\in\N$ and positive integers $h_0,\dots,h_{m-1}$ such that
+\[
+  n_{k+1}-n_k = h_j \qquad \text{whenever } k\ge K \text{ and } k\equiv j \pmod m.
+\]
+\end{definition}
+
+The benchmark and theorem language distinguish four pre-registered selector families:
+\begin{itemize}
+  \item arithmetic progressions ($\AP$),
+  \item finite unions of arithmetic progressions ($\FUAP$),
+  \item Ostrowski-definable selectors tied to the tested irrational slope,
+  \item linear-recursive selectors such as Fibonacci, Pell, Padovan, and even-convergent selectors.
+\end{itemize}
+Only the first two belong to the proof-complete theorem lane; the latter two are screened empirically.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig2_periodic_gap_decomposition.pdf}
+  \caption{Why eventually periodic gaps reduce to arithmetic progressions. Top: a finite union of residue classes modulo $6$ gives a selector whose gap word repeats as $(2,1,2)$. Bottom: when the selected indices are grouped by phase inside the gap period, each phase class becomes an arithmetic progression $Qt+c_j$. This decomposition is the exact bridge from the general periodic-gap theorem to the arithmetic-progression obstruction in \Cref{prop:ap-obstruction}.}
+  \label{fig:periodic-gap}
+\end{figure}
+
+\begin{definition}[Homogeneous integer recurrence]
+An integer sequence $(x_k)_{k\ge 0}$ satisfies a \emph{homogeneous constant-coefficient recurrence over $\Z$} if there exist $d\ge 1$, integers $c_0,\dots,c_d$ with $c_d\neq 0$, and $K\ge 0$ such that
+\[
+  c_0 x_k + c_1 x_{k+1} + \cdots + c_d x_{k+d} = 0
+\]
+for all $k\ge K$. We call $d$ the \emph{order}. For reporting only, a certified recurrence is called \emph{nondegenerate} if no quotient of distinct characteristic roots is a root of unity. This diagnostic is \emph{not} part of the existence problem itself.
+\end{definition}
+
+\subsection{Elementary recurrence lemmas}
+
+The first three lemmas isolate all of the general recurrence theory needed for the main theorem.
+
+\begin{lemma}[Arithmetic subsequences of recurrence sequences are recurrence sequences]
+\label{lem:subsequence-recurrence}
+Let $(x_k)_{k\ge 0}$ satisfy a homogeneous constant-coefficient recurrence. Fix integers $m\ge 1$ and $0\le j<m$. Then the arithmetic subsequence $(x_{mt+j})_{t\ge 0}$ also satisfies a homogeneous constant-coefficient recurrence.
+\end{lemma}
+
+\begin{proof}
+Assume that
+\begin{equation}
+\label{eq:base-recurrence}
+  c_0 x_k + c_1 x_{k+1} + \cdots + c_d x_{k+d} = 0
+\end{equation}
+for all $k\ge K$, with $c_d\neq 0$. Define the companion matrix
+\[
+  A=
+  \begin{pmatrix}
+    0 & 1 & 0 & \cdots & 0 \\
+    0 & 0 & 1 & \cdots & 0 \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    0 & 0 & 0 & \cdots & 1 \\
+    -c_0/c_d & -c_1/c_d & -c_2/c_d & \cdots & -c_{d-1}/c_d
+  \end{pmatrix}
+\in M_d(\Q).
+\]
+For each $k\ge K$ set
+\[
+  v_k = (x_k,x_{k+1},\dots,x_{k+d-1})^T \in \Q^d.
+\]
+Equation \eqref{eq:base-recurrence} implies $v_{k+1}=Av_k$ for every $k\ge K$.
+
+Fix $m$ and $j$. For all sufficiently large $t$ we have $mt+j\ge K$, hence
+\[
+  v_{mt+j} = A^j (A^m)^t v_0'
+\]
+for a fixed vector $v_0'$. Let
+\[
+  \chi_m(\lambda)=\lambda^d+\gamma_{d-1}\lambda^{d-1}+\cdots+\gamma_0
+\]
+be the characteristic polynomial of $A^m$. By the Cayley--Hamilton theorem,
+\[
+  (A^m)^d + \gamma_{d-1}(A^m)^{d-1}+\cdots+\gamma_0 I = 0.
+\]
+Multiplying this identity on the right by $(A^m)^tA^jv_0'$ yields
+\[
+  (A^m)^{t+d}A^jv_0' + \gamma_{d-1}(A^m)^{t+d-1}A^jv_0' + \cdots + \gamma_0 (A^m)^t A^jv_0' = 0.
+\]
+Taking the first coordinate of each vector gives
+\[
+  x_{m(t+d)+j} + \gamma_{d-1}x_{m(t+d-1)+j} + \cdots + \gamma_0 x_{mt+j} = 0
+\]
+for all sufficiently large $t$. Thus $(x_{mt+j})_{t\ge 0}$ satisfies a homogeneous constant-coefficient recurrence.
+\end{proof}
+
+\begin{lemma}[Bounded integer recurrence sequences are eventually periodic]
+\label{lem:bounded-periodic}
+Let $(x_k)_{k\ge 0}$ be an integer sequence satisfying a homogeneous constant-coefficient recurrence. If $(x_k)$ is bounded, then $(x_k)$ is eventually periodic.
+\end{lemma}
+
+\begin{proof}
+Choose a recurrence of order $d$ as in \eqref{eq:base-recurrence}. Because $(x_k)$ is bounded and integer-valued, there exists $M\in\N$ such that $\abs{x_k}\le M$ for all $k$. Consider the state vectors
+\[
+  w_k=(x_k,x_{k+1},\dots,x_{k+d-1})\in \Z^d.
+\]
+Each coordinate of $w_k$ lies in the finite set $\{-M,-M+1,\dots,M\}$, so there are only finitely many possible states. Hence there exist indices $s<t$ such that $w_s=w_t$.
+
+The recurrence determines each future term uniquely from the previous $d$ terms because $c_d\neq 0$ in \eqref{eq:base-recurrence}, so
+\[
+  x_{k+d} = -\frac{1}{c_d}\sum_{i=0}^{d-1} c_i x_{k+i}.
+\]
+Therefore equal states have equal successors: if $w_k=w_\ell$, then $w_{k+1}=w_{\ell+1}$. Starting from $w_s=w_t$, an induction on $n\ge 0$ gives
+\[
+  w_{s+n}=w_{t+n}.
+\]
+In particular,
+\[
+  x_{s+n}=x_{t+n}
+\]
+for every $n\ge 0$. Thus $(x_k)$ is periodic from index $s$ onward, with period $t-s$.
+\end{proof}
+
+\begin{lemma}[Eventual periodicity of Beatty differences forces rational slope]
+\label{lem:difference-rational}
+Let $\alpha,\beta\in\R$ and define
+\[
+  y_k = \floor{k\alpha+\beta} \qquad (k\ge 0).
+\]
+If the first-difference sequence $d_k=y_{k+1}-y_k$ is eventually periodic, then $\alpha\in\Q$.
+\end{lemma}
+
+\begin{proof}
+For every $k$,
+\[
+  y_k = k\alpha + \beta - \{k\alpha+\beta\},
+\]
+where $\{x\}=x-\floor{x}\in [0,1)$. Hence
+\[
+  -1-\abs{\beta} \le y_k-k\alpha \le \abs{\beta},
+\]
+so $y_k/k \to \alpha$ as $k\to\infty$.
+
+Now suppose $d_k$ is eventually periodic. Then there exist integers $K\ge 0$ and $p\ge 1$ such that $d_{k+p}=d_k$ for all $k\ge K$. Set
+\[
+  S = d_K + d_{K+1} + \cdots + d_{K+p-1}.
+\]
+Fix $m\ge 1$. Because the difference sequence repeats with period $p$ after time $K$,
+\begin{align*}
+  y_{K+mp}-y_K
+    &= \sum_{t=0}^{mp-1} d_{K+t}
+     = \sum_{u=0}^{m-1}\sum_{v=0}^{p-1} d_{K+up+v} \\
+    &= \sum_{u=0}^{m-1}\sum_{v=0}^{p-1} d_{K+v}
+     = mS.
+\end{align*}
+Therefore
+\[
+  y_{K+mp} = y_K + mS.
+\]
+Divide by $K+mp$ and let $m\to\infty$. The left-hand side tends to $\alpha$, while the right-hand side tends to $S/p$. Thus
+\[
+  \alpha = \frac{S}{p}\in\Q.
+\]
+This proves the claim.
+\end{proof}
+
+\section{Method}
+\label{sec:method}
+
+The computational pipeline is deliberately conservative. A case is promoted to \texttt{exact\_recurrence} only when it has a structural infinite certificate. Exact holdout success without such a certificate is recorded, but it is not allowed to masquerade as a theorem.
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{0.22\linewidth}}
+    \toprule
+    Component & Fixed choices & Role \\
+    \midrule
+    Slopes & $2$, $3/2$, $5/3$, $1/2$, $\varphi-1$, $\varphi$, $\sqrt2$, $1+\sqrt2$, plastic constant, Salem quartic root, $e$ & Rational baselines, quadratic lanes, higher-degree controls \\
+    Positive-density selectors & four arithmetic progressions and three finite AP unions & Theorem lane \\
+    Sparse selectors & Fibonacci, Pell, Padovan, three Ostrowski templates, even convergents, beta-endpoint suffix \texttt{10} & Empirical screen \\
+    Baseline fit / holdout & fit length $12$, total length $20$, order cap $d\le 4$ & Main pre-registered screen \\
+    Ablations & order caps $d\le 6,8$; holdouts $40/80/160$; nearby convergent variants & Claim-sensitive stress tests \\
+    Modular replay & moduli $2,3,5,7,11,25$ & Reject short-window and sparse mirages \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Pre-registered benchmark matrix. The dataset is not an external corpus but an exhaustive deterministic panel of case families fixed before the main run. Because every reported quantity is an exact count over this full panel, stochastic uncertainty bars are not applicable.}
+  \label{tab:panel}
+\end{table}
+
+\subsection{Exact recurrence discovery}
+
+For a fixed slope $r$ and selector $(n_k)_{k=0}^{M-1}$, we compute the exact values
+\[
+  b_k = \floor{n_k r}
+\]
+with integer arithmetic whenever a closed form is available and with exact symbolic evaluation otherwise. The recurrence detector then searches for a low-order relation on the first $m_{\mathrm{fit}}=12$ values.
+
+For each order $d\in\{1,\dots,d_{\max}\}$, define the Hankel-style relation matrix
+\[
+  H_d(b) =
+  \begin{pmatrix}
+    b_0 & b_1 & \cdots & b_d \\
+    b_1 & b_2 & \cdots & b_{d+1} \\
+    \vdots & \vdots & & \vdots \\
+    b_{m_{\mathrm{fit}}-d-1} & b_{m_{\mathrm{fit}}-d} & \cdots & b_{m_{\mathrm{fit}}-1}
+  \end{pmatrix}.
+\]
+If this matrix has a nontrivial rational nullspace vector, then after clearing denominators we obtain an integer candidate coefficient vector.
+
+\begin{algorithm}[t]
+  \caption{Exact recurrence fit on a fixed sample window}
+  \label{alg:fit}
+  \begin{algorithmic}
+    \Require exact values $(b_0,\dots,b_{M-1})$, fit length $m_{\mathrm{fit}}$, order cap $d_{\max}$
+    \For{$d=1$ to $d_{\max}$}
+      \State form $H_d(b_0,\dots,b_{m_{\mathrm{fit}}-1})$
+      \State compute a rational basis for $\ker H_d$
+      \For{each nullspace vector $v$ with nonzero trailing coordinate}
+        \State clear denominators and divide by the gcd of the entries to get integer coefficients $c$
+        \If{$\sum_{i=0}^{d} c_i b_{k+i}=0$ for every admissible $k$ in the fit window}
+          \State \Return candidate recurrence $(d,c)$
+        \EndIf
+      \EndFor
+    \EndFor
+    \State \Return \texttt{no\_candidate}
+  \end{algorithmic}
+\end{algorithm}
+
+The detector is exact but intentionally weak: it can only see relations of order at most $d_{\max}$ and only through the first $m_{\mathrm{fit}}$ samples. This is why the paper never equates a fitted relation with a theorem.
+
+\subsection{Structural certificates and modular-shadow screening}
+
+After a candidate is fitted, the pipeline branches in two directions.
+
+\paragraph{Structural certificates.}
+Two exact certificates are implemented in the repository and used in the writer-stage refresh.
+\begin{enumerate}
+  \item \textbf{Rational periodic-gap certificate.} If $r=p/q\in\Q$ and the selector gaps are periodic with period $m$ and total drift $Q$, then the first-difference sequence of $b_k$ is periodic with period $L=mq/\gcd(q,Q)$. Hence
+  \[
+    (T^{L+1}-T^L-T+1)b = 0,
+  \]
+  where $T$ is the left shift. Appendix~\ref{app:rational-cert} gives the full proof.
+  \item \textbf{Named quadratic-convergent identities.} The four exact sequences $r\in\{\varphi-1,\varphi,\sqrt2,1+\sqrt2\}$ along the even-convergent selector are proved in \Cref{sec:theory}.
+\end{enumerate}
+
+\paragraph{Holdout and modular-shadow checks.}
+If no structural certificate is available, the candidate relation is verified on the full 20-sample panel and then replayed modulo the fixed modulus set $\{2,3,5,7,11,25\}$. The classification rule is conservative:
+\begin{itemize}
+  \item \texttt{exact\_recurrence}: structural certificate present;
+  \item \texttt{prefix\_fit}: positive-density selector, exact holdout success, no certificate;
+  \item \texttt{sparse\_subsequence\_leak}: zero-density selector, exact holdout success, no certificate;
+  \item \texttt{selector\_shadow\_failure}: fitted relation breaks on the holdout or on some modulus;
+  \item \texttt{no\_candidate}: no fit up to the current order cap.
+\end{itemize}
+
+\begin{algorithm}[t]
+  \caption{Certification and shadow classification}
+  \label{alg:classify}
+  \begin{algorithmic}
+    \Require case $(r,(n_k)_{k=0}^{M-1})$, fitted candidate $(d,c)$ or \texttt{no\_candidate}
+    \If{a structural certificate is available}
+      \State label case \texttt{exact\_recurrence}
+      \State record certified coefficients and nondegeneracy flag
+      \State \Return
+    \EndIf
+    \If{there is no fitted candidate}
+      \State label case \texttt{no\_candidate}
+      \State \Return
+    \EndIf
+    \State verify $\sum_{i=0}^{d} c_i b_{k+i}=0$ on the full 20-sample window
+    \State replay the same relation modulo $2,3,5,7,11,25$
+    \If{the full holdout or some modulus fails}
+      \State label case \texttt{selector\_shadow\_failure}
+    \ElsIf{the selector has positive density}
+      \State label case \texttt{prefix\_fit}
+    \Else
+      \State label case \texttt{sparse\_subsequence\_leak}
+    \EndIf
+  \end{algorithmic}
+\end{algorithm}
+
+This design choice is the central methodological guardrail of the paper. \Cref{fig:pipeline} and \Cref{fig:ablations} show why: increasing the order cap on the same short sample window manufactures many additional fitted relations but no new exact certificates.
+
+\subsection{Complexity and design rationale}
+
+Let $M$ be the total sample length and $d_{\max}$ the order cap. For each $d\le d_{\max}$, the nullspace computation in \Cref{alg:fit} acts on an $(m_{\mathrm{fit}}-d)\times(d+1)$ matrix over $\Q$. Exact Gaussian elimination therefore costs polynomial time in $d$ and in the bit lengths of the sample values; for fixed $m_{\mathrm{fit}}=12$ and $d_{\max}\le 8$ the arithmetic cost is negligible relative to exact floor evaluation. The modular-shadow replay costs $O(sMd)$ integer operations for $s=6$ moduli. Long-holdout ablations scale linearly in the holdout length.
+
+The more important design point is qualitative rather than asymptotic. The pipeline is intentionally \emph{certificate-first}. Exact sample agreement is treated as evidence, not as proof, unless a structural argument closes the infinite tail. This is the key safeguard against prefix-fitting and post-selection artifacts.
+
+\section{Theoretical Results and Complete Proofs}
+\label{sec:theory}
+
+\subsection{The periodic-gap theorem}
+
+We begin with the arithmetic-progression core.
+
+\begin{proposition}[Arithmetic-progression obstruction]
+\label{prop:ap-obstruction}
+Let $a\ge 1$, $b\ge 0$, and $r>0$. Define
+\[
+  x_k = \floor{(ak+b)r} \qquad (k\ge 0).
+\]
+If $(x_k)$ satisfies a homogeneous constant-coefficient recurrence over $\Z$, then $r\in\Q$.
+\end{proposition}
+
+\begin{proof}
+Assume that $(x_k)$ satisfies a recurrence. Define its first-difference sequence
+\[
+  \Delta x_k = x_{k+1}-x_k.
+\]
+Because the shift operator is linear, applying $(T-I)$ to the original recurrence relation shows that $(\Delta x_k)$ also satisfies a homogeneous constant-coefficient recurrence over $\Z$.
+
+Next we prove that $(\Delta x_k)$ is bounded. Write
+\[
+  u_k = (ak+b)r.
+\]
+Then
+\[
+  u_{k+1}-u_k = ar.
+\]
+For any real numbers $u$ and $v$ one has
+\[
+  \floor{u+v}-\floor{u} \in \set{\floor{v},\floor{v}+1}.
+\]
+Applying this with $u=u_k$ and $v=ar$ gives
+\[
+  \Delta x_k = \floor{u_k+ar}-\floor{u_k} \in \set{\floor{ar},\floor{ar}+1}.
+\]
+Hence $(\Delta x_k)$ is a bounded integer sequence.
+
+By \Cref{lem:bounded-periodic}, every bounded integer recurrence sequence is eventually periodic. Therefore $(\Delta x_k)$ is eventually periodic. But
+\[
+  x_k = \floor{k(ar)+br},
+\]
+so \Cref{lem:difference-rational} applied with $\alpha=ar$ and $\beta=br$ implies $ar\in\Q$. Since $a\in\Z_{>0}$, the equality $r=(ar)/a$ shows that $r\in\Q$.
+\end{proof}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig3_difference_sequences.pdf}
+  \caption{First-difference intuition behind \Cref{prop:ap-obstruction}. For a rational slope, the difference sequence along an arithmetic selector is eventually periodic; for an irrational slope such as $\varphi$ it remains an aperiodic two-letter mechanical word. The proposition turns this picture into a proof: if the sampled values satisfied a recurrence, their bounded first differences would also satisfy a recurrence, hence would be eventually periodic by \Cref{lem:bounded-periodic}; \Cref{lem:difference-rational} then forces the arithmetic-progression slope parameter to be rational.}
+  \label{fig:differences}
+\end{figure}
+
+We now prove the theorem stated in the abstract.
+
+\begin{theorem}[Eventually periodic-gap characterization]
+\label{thm:periodic-gap}
+Let $\Egap$ be the class of selectors with eventually periodic gaps. For a real number $r>0$, the following are equivalent.
+\begin{enumerate}
+  \item There exists a selector $(n_k)_{k\ge 0}\in\Egap$ such that $\bigl(\floor{n_k r}\bigr)_{k\ge 0}$ satisfies a homogeneous constant-coefficient recurrence over $\Z$.
+  \item The number $r$ is rational.
+\end{enumerate}
+In particular, the same equivalence holds when $\Egap$ is replaced by arithmetic progressions or by finite unions of arithmetic progressions.
+\end{theorem}
+
+\begin{proof}
+We prove the two implications separately.
+
+\paragraph{(2) implies (1).}
+Suppose $r=p/q$ with $p,q\in\Z_{>0}$ and $\gcd(p,q)=1$. Choose the arithmetic progression selector $n_k=qk$. Then
+\[
+  \floor{n_k r} = \floor{qk\cdot p/q} = pk.
+\]
+The arithmetic progression $(pk)_{k\ge 0}$ satisfies the order-2 homogeneous recurrence
+\[
+  x_k - 2x_{k+1} + x_{k+2} = 0
+\]
+for every $k$. Because arithmetic progressions have constant gaps, the chosen selector belongs to $\Egap$.
+
+\paragraph{(1) implies (2).}
+Assume that there exists $(n_k)_{k\ge 0}\in\Egap$ such that
+\[
+  b_k = \floor{n_k r}
+\]
+satisfies a homogeneous constant-coefficient recurrence over $\Z$. We must show that $r\in\Q$.
+
+Because $(n_k)$ has eventually periodic gaps, there exist integers $K\ge 0$ and $m\ge 1$ and positive integers $h_0,\dots,h_{m-1}$ such that
+\[
+  n_{k+1}-n_k = h_j \qquad \text{for all } k\ge K \text{ with } k\equiv j \pmod m.
+\]
+Define
+\[
+  Q = h_0+h_1+\cdots+h_{m-1}.
+\]
+Fix $j\in\{0,1,\dots,m-1\}$ and set $c_j=n_{K+j}$. We claim that
+\begin{equation}
+\label{eq:periodic-gap-affine}
+  n_{K+tm+j} = Qt + c_j \qquad \text{for all } t\ge 0.
+\end{equation}
+For $t=0$ this is the definition of $c_j$. Assume it holds for some $t$. Then
+\begin{align*}
+  n_{K+(t+1)m+j} - n_{K+tm+j}
+    &= \sum_{u=0}^{m-1} \bigl(n_{K+tm+j+u+1}-n_{K+tm+j+u}\bigr).
+\end{align*}
+The summands on the right form one full period of the eventual gap pattern, possibly starting at a different phase, so their sum is still $Q$. Hence
+\[
+  n_{K+(t+1)m+j} = n_{K+tm+j}+Q = (Qt+c_j)+Q = Q(t+1)+c_j.
+\]
+Thus \eqref{eq:periodic-gap-affine} holds for all $t$ by induction.
+
+Now consider the subsequence
+\[
+  b^{(j)}_t = b_{K+tm+j} = \floor{n_{K+tm+j}r} = \floor{(Qt+c_j)r}.
+\]
+Because $(b_k)$ is a recurrence sequence, \Cref{lem:subsequence-recurrence} implies that each fixed-$j$ subsequence $(b^{(j)}_t)_{t\ge 0}$ is again a recurrence sequence. Applying \Cref{prop:ap-obstruction} with slope $Qr$ and offset $c_j r$ shows that $r$ must be rational: if $r$ were irrational, then $Qr$ would also be irrational because $Q\in\Z_{>0}$, contradicting the proposition.
+
+Therefore $r\in\Q$, proving (2).
+\end{proof}
+
+\begin{remark}
+\Cref{thm:periodic-gap} is the strongest theorem supported by both the proof archive and the refreshed benchmark. It is already enough to settle the entire positive-density lane of the pre-registered panel. \Cref{fig:heatmap-full} and \Cref{fig:outcome-breakdown} show the numerical side of the same split.
+\end{remark}
+
+\subsection{Four exact quadratic-convergent identities}
+
+The sparse exact lane contains four structurally certified examples. Two are Fibonacci-type identities, and two are Pell-type identities.
+
+\begin{proposition}[Fibonacci even-convergent identities]
+\label{prop:fibonacci-identities}
+Let $(F_n)_{n\ge 0}$ be the Fibonacci sequence, with $F_0=0$, $F_1=1$, and $F_{n+2}=F_{n+1}+F_n$. Define $q_k=F_{2k+1}$.
+\begin{enumerate}
+  \item For every $k\ge 0$,
+  \[
+    \floor{q_k\varphi} = F_{2k+2}.
+  \]
+  \item For every $k\ge 0$,
+  \[
+    \floor{q_k(\varphi-1)} = F_{2k}.
+  \]
+  \item Both sequences satisfy the order-2 recurrence
+  \[
+    x_{k+2} - 3x_{k+1} + x_k = 0.
+  \]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Let
+\[
+  \widehat\varphi = \frac{1-\sqrt5}{2} = -\varphi^{-1}.
+\]
+Binet's formula gives
+\[
+  F_n = \frac{\varphi^n-\widehat\varphi^n}{\sqrt5}.
+\]
+Multiplying by $\varphi$ yields
+\begin{align*}
+  F_n\varphi
+    &= \frac{\varphi^{n+1}-\varphi\widehat\varphi^n}{\sqrt5}
+     = \frac{\varphi^{n+1}-\widehat\varphi^{n+1}}{\sqrt5} - \widehat\varphi^n \\
+    &= F_{n+1} - \widehat\varphi^n.
+\end{align*}
+Now take $n=2k+1$. Because $\widehat\varphi=-\varphi^{-1}$,
+\[
+  -\widehat\varphi^{2k+1} = \varphi^{-(2k+1)}.
+\]
+This number lies strictly between $0$ and $1$. Therefore
+\[
+  F_{2k+1}\varphi = F_{2k+2} + \varphi^{-(2k+1)},
+\]
+and taking floors gives
+\[
+  \floor{F_{2k+1}\varphi}=F_{2k+2}.
+\]
+This proves part (1).
+
+For part (2), subtract $F_n$ from the identity above:
+\begin{align*}
+  F_n(\varphi-1)
+    &= F_n\varphi - F_n
+     = \bigl(F_{n+1}-\widehat\varphi^n\bigr)-F_n \\
+    &= F_{n-1}-\widehat\varphi^n,
+\end{align*}
+because $F_{n+1}-F_n=F_{n-1}$. Setting again $n=2k+1$ gives
+\[
+  F_{2k+1}(\varphi-1)=F_{2k}+\varphi^{-(2k+1)}.
+\]
+The correction term lies in $(0,1)$, so
+\[
+  \floor{F_{2k+1}(\varphi-1)}=F_{2k}.
+\]
+
+For part (3), we prove that every second Fibonacci term satisfies the claimed recurrence. Starting from the Fibonacci recurrence,
+\begin{align*}
+  F_{n+4}
+    &= F_{n+3}+F_{n+2}
+     = (F_{n+2}+F_{n+1}) + F_{n+2} \\
+    &= 2F_{n+2}+F_{n+1}
+     = 2F_{n+2} + (F_{n+2}-F_n) \\
+    &= 3F_{n+2}-F_n.
+\end{align*}
+Set $n=2k$ to obtain
+\[
+  F_{2k+4}-3F_{2k+2}+F_{2k}=0.
+\]
+This is exactly the recurrence for $(F_{2k})_{k\ge 0}$, and shifting by one index gives the same recurrence for $(F_{2k+2})_{k\ge 0}$. By parts (1) and (2), the two Beatty subsequences are equal to these Fibonacci subsequences, so they satisfy
+\[
+  x_{k+2}-3x_{k+1}+x_k=0.
+\]
+\end{proof}
+
+\begin{proposition}[Pell-type even-convergent identities]
+\label{prop:pell-identities}
+Define integers $A_k,B_k$ by
+\begin{equation}
+\label{eq:pell-unit-definition}
+  A_k + B_k\sqrt2 = (1+\sqrt2)(3+2\sqrt2)^k \qquad (k\ge 0).
+\end{equation}
+Then the following hold for all $k\ge 0$.
+\begin{enumerate}
+  \item $A_0=1$, $A_1=7$, $B_0=1$, $B_1=5$, and both sequences satisfy
+  \[
+    u_{k+2}-6u_{k+1}+u_k=0.
+  \]
+  \item $\floor{B_k\sqrt2}=A_k$.
+  \item $\floor{B_k(1+\sqrt2)}=A_k+B_k$.
+\end{enumerate}
+Consequently the benchmark selector $q_{2k}=B_k$ yields the exact order-2 recurrences
+\[
+  x_{k+2}-6x_{k+1}+x_k=0
+\]
+for both $r=\sqrt2$ and $r=1+\sqrt2$.
+\end{proposition}
+
+\begin{proof}
+Expanding \eqref{eq:pell-unit-definition} for $k=0$ gives
+\[
+  A_0+B_0\sqrt2 = 1+\sqrt2,
+\]
+so $A_0=B_0=1$. For $k=1$ we obtain
+\[
+  A_1+B_1\sqrt2 = (1+\sqrt2)(3+2\sqrt2)=7+5\sqrt2,
+\]
+so $A_1=7$ and $B_1=5$.
+
+To derive the recurrence, multiply \eqref{eq:pell-unit-definition} by $3+2\sqrt2$:
+\[
+  A_{k+1}+B_{k+1}\sqrt2 = (3A_k+4B_k) + (2A_k+3B_k)\sqrt2.
+\]
+Hence
+\[
+  A_{k+1}=3A_k+4B_k,
+  \qquad
+  B_{k+1}=2A_k+3B_k.
+\]
+Applying the same rule one step later gives
+\begin{align*}
+  A_{k+2}
+    &= 3A_{k+1}+4B_{k+1}
+     = 3A_{k+1}+4(2A_k+3B_k) \\
+    &= 3A_{k+1}+8A_k+12B_k.
+\end{align*}
+From $A_{k+1}=3A_k+4B_k$ we obtain $12B_k=3A_{k+1}-9A_k$. Substituting this into the previous identity yields
+\[
+  A_{k+2}=3A_{k+1}+8A_k+3A_{k+1}-9A_k = 6A_{k+1}-A_k.
+\]
+The same computation with $B_{k+1}=2A_k+3B_k$ gives $B_{k+2}=6B_{k+1}-B_k$. This proves part (1).
+
+For part (2), take norms in \eqref{eq:pell-unit-definition}. The norm of $1+\sqrt2$ is
+\[
+  (1+\sqrt2)(1-\sqrt2)=-1,
+\]
+and the norm of $3+2\sqrt2$ is
+\[
+  (3+2\sqrt2)(3-2\sqrt2)=1.
+\]
+Therefore
+\[
+  A_k^2-2B_k^2 = -1.
+\]
+Rearranging gives
+\[
+  (B_k\sqrt2-A_k)(B_k\sqrt2+A_k)=1.
+\]
+The factor $B_k\sqrt2+A_k$ is strictly larger than $1$, so the factor $B_k\sqrt2-A_k$ is strictly between $0$ and $1$. Thus
+\[
+  A_k < B_k\sqrt2 < A_k+1,
+\]
+which implies
+\[
+  \floor{B_k\sqrt2}=A_k.
+\]
+
+For part (3), write
+\[
+  B_k(1+\sqrt2) = B_k + B_k\sqrt2.
+\]
+Because $B_k$ is an integer and part (2) gives $\floor{B_k\sqrt2}=A_k$, we obtain
+\[
+  \floor{B_k(1+\sqrt2)} = B_k + \floor{B_k\sqrt2} = A_k+B_k.
+\]
+Finally, part (1) shows that both $(A_k)$ and $(B_k)$ satisfy $u_{k+2}-6u_{k+1}+u_k=0$, so their sum does as well. Hence both Beatty subsequences satisfy the claimed order-2 recurrence.
+\end{proof}
+
+\begin{corollary}[Four certified sparse quadratic examples]
+\label{cor:four-certified}
+The Beatty sequence $\floor{nr}$ admits a certified homogeneous linear-recurrence subsequence for each of the four slopes
+\[
+  r\in\set{\varphi-1,\varphi,\sqrt2,1+\sqrt2}.
+\]
+In every case the selector is the even-convergent denominator sequence, and the certified recurrence is order $2$.
+\end{corollary}
+
+\section{Experimental Setup}
+\label{sec:setup}
+
+The benchmark is deterministic and exhaustive over the pre-registered panel in \Cref{tab:panel}; there are no random seeds, no stochastic training procedures, and no sampling error bars to report. Every quantitative statement in \Cref{sec:results} is therefore an exact count over the executed panel rather than an estimate with confidence intervals.
+
+\paragraph{Software and exact arithmetic.}
+The experiments were executed with Python~3.10.17 and SymPy~1.14.0; figures were generated with Matplotlib~3.10.8 and Seaborn~0.13.2. Rational and the four certified quadratic slopes were evaluated with exact integer formulas; all remaining slopes used exact symbolic floor evaluation through SymPy.
+
+\paragraph{Hardware.}
+The run used a Linux 4.4.0 x86\_64 host with 20 CPU cores and 448~GiB RAM. No GPU acceleration was used.
+
+\paragraph{Primary benchmark protocol.}
+The main panel evaluates 145 executed cases and 20 justified waivers. For each executed case, the pipeline uses fit length $12$, total sample length $20$, order cap $d\le 4$, and modular replay on $2,3,5,7,11,25$. Rational slopes waive Ostrowski, convergent-even, and beta-endpoint selectors because those constructions require irrational numeration data.
+
+\paragraph{Writer-stage verification repairs.}
+The repository now includes three additional artifacts that did not exist in the first researcher pass.
+\begin{itemize}
+  \item \texttt{results/experiments/metrics\_full\_panel.json} publishes full-run metrics, per-case holdout flags, certificate flags, risk tags, and the nondegenerate exact-hit split.
+  \item The claim-sensitive ablation artifact reruns the requested order-cap, holdout-length, and selector-variant checks.
+  \item \texttt{results/experiments/full\_panel\_case\_audit.csv} provides a flat case table for exact reproduction and figure generation.
+\end{itemize}
+
+\section{Results}
+\label{sec:results}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig4_full_panel_heatmap.pdf}
+  \caption{Full benchmark heatmap. Rows are the 11 tested slopes and columns are the 15 selector templates, for a total of 165 cells; 20 irrational-only cells are definition-driven waivers and the remaining 145 cells are executed cases. The exact-certified region is sharply localized: the entire positive-density exact lane is rational, while the only sparse exact certificates occur on the even-convergent selector for $\varphi-1$, $\varphi$, $\sqrt2$, and $1+\sqrt2$. The figure is therefore a visual summary of the theorem/empirical split: periodic-gap selectors support a complete rational characterization, whereas sparse selectors exhibit a much narrower and more delicate survivor pattern.}
+  \label{fig:heatmap-full}
+\end{figure}
+
+\subsection{Global panel counts}
+
+The refreshed benchmark yields the following exact totals.
+\begin{itemize}
+  \item Executed cases: 145.
+  \item Waived cases: 20.
+  \item Exact-certified cases: 32.
+  \item Nondegenerate exact-certified cases: 4.
+  \item Remaining 20-sample exact holdouts without certificates: 15.
+\end{itemize}
+
+The classification counts are:
+\begin{itemize}
+  \item 32 \texttt{exact\_recurrence},
+  \item 12 \texttt{sparse\_subsequence\_leak},
+  \item 3 \texttt{prefix\_fit},
+  \item 7 \texttt{selector\_shadow\_failure}, and
+  \item 91 \texttt{no\_candidate}.
+\end{itemize}
+By slope family this becomes: rationals contribute 28 exact-certified and 5 additional sparse exact holdouts; quadratics contribute 4 exact-certified, 6 sparse holdouts, and 50 negative or shadow-failure cases; the higher-degree and control family contributes no exact certificate at all.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig5_outcome_breakdown.pdf}
+  \caption{Outcome breakdown after the writer-stage repairs. Left: every positive-density exact certificate is rational, while the sparse exact lane contains only four certified cases. Right: classification mix by slope family. The theorem-backed rational lane is fully populated after the periodic-gap certificate refresh, whereas the higher-degree/control family produces only prefix fits, modular-shadow failures, and no-candidate outcomes. The four nondegenerate exact cases coincide exactly with the named quadratic-convergent examples in \Cref{cor:four-certified}.}
+  \label{fig:outcome-breakdown}
+\end{figure}
+
+The headline consequence is that the benchmark now supports the exact claim set advertised in \Cref{sec:theory}: the rational periodic-gap lane is fully repaired, and the sparse exact-certified lane contains exactly four nondegenerate examples.
+
+\subsection{Exact-certified cases}
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.20\linewidth} >{\raggedright\arraybackslash}X >{\centering\arraybackslash}p{0.10\linewidth}}
+    \toprule
+    Lane & Slope(s) & Selector & Certified recurrence & Status \\
+    \midrule
+    Rational periodic-gap & $2$, $3/2$, $5/3$, $1/2$ & all 7 AP/FUAP templates & orders $2$--$7$ via periodic-difference certificates $(T^{L+1}-T^L-T+1)b=0$ & theorem-backed \\
+    Sparse quadratic & $\varphi-1$ & even convergents $q_{2k}$ & $x_{k+2}-3x_{k+1}+x_k=0$ & exact certified \\
+    Sparse quadratic & $\varphi$ & even convergents $q_{2k}$ & $x_{k+2}-3x_{k+1}+x_k=0$ & exact certified \\
+    Sparse quadratic & $\sqrt2$ & even convergents $q_{2k}$ & $x_{k+2}-6x_{k+1}+x_k=0$ & exact certified \\
+    Sparse quadratic & $1+\sqrt2$ & even convergents $q_{2k}$ & $x_{k+2}-6x_{k+1}+x_k=0$ & exact certified \\
+    \bottomrule
+  \end{tabularx}
+  \caption{All exact-certified cases after the writer-stage refresh. The 28 rational certificates are degenerate and belong to the mandatory baseline. The four quadratic certificates are nondegenerate and remain stable under the longer holdout ablations in \Cref{tab:holdouts,fig:ablations}.}
+  \label{tab:exact-cases}
+\end{table}
+
+Two features of \Cref{tab:exact-cases} are critical. First, the rational lane is now completely repaired: every AP/FUAP rational case has either the classical denominator-compatible order-2 certificate or the new periodic-gap certificate of Appendix~\ref{app:rational-cert}. Second, the sparse exact lane is genuinely smaller and structurally different. All four certified irrational examples are nondegenerate order-2 recurrences attached to the same even-convergent template.
+
+\subsection{Claim-sensitive ablations}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig6_claim_sensitive_ablations.pdf}
+  \caption{Claim-sensitive ablations requested by the verification audit. Left: raising the search ceiling from $d\le 4$ to $d\le 6$ and $d\le 8$ adds no new exact-certified case, but it converts many former \texttt{no\_candidate} rows into higher-order short-window fits and modular-shadow failures. This is why the paper does not infer new mathematics from a larger order cap alone. Right: longer holdouts. The four certified quadratic-convergent identities remain exact through lengths $40$, $80$, and $160$; the unresolved Fibonacci/Pell quadratic cases also retain exact holdouts empirically; the three plastic prefix fits fail immediately once the holdout exceeds $20$.}
+  \label{fig:ablations}
+\end{figure}
+
+The order-cap ablation is striking. Moving from $d\le 4$ to $d\le 6$ flips 84 classifications, and moving to $d\le 8$ flips 89, yet the number of exact-certified cases remains fixed at 32. The additional fits are therefore not new exact structure; they are higher-order explanations of the same short sample windows. This validates the repository's certificate-first design.
+
+Longer holdouts tell the complementary story. The four exact-certified quadratic cases keep the same order-2 recurrence through 40, 80, and 160 samples. Meanwhile, the plastic positive-density prefix fits
+\[
+  (\text{plastic},\AP(1,0)),\quad (\text{plastic},\mathrm{U3}\{0,1\}),\quad (\text{plastic},\mathrm{U6}\{0,1,3\})
+\]
+all fail by holdout length 40. So the longer holdout ablation sharpens both sides of the story: it strengthens the named quadratic identities and weakens the temptingly broad nonquadratic near-misses.
+
+\begin{table}[t]
+  \centering
+  \scriptsize
+  \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.30\linewidth} >{\raggedright\arraybackslash}p{0.20\linewidth} >{\centering\arraybackslash}p{0.07\linewidth} >{\centering\arraybackslash}p{0.07\linewidth} >{\centering\arraybackslash}p{0.07\linewidth} >{\centering\arraybackslash}p{0.07\linewidth} >{\raggedright\arraybackslash}X}
+    \toprule
+    Case & Fitted recurrence & 20 & 40 & 80 & 160 & Interpretation \\
+    \midrule
+    $\{\varphi-1,\varphi\}/q_{2k}$ & $x_{k+2}-3x_{k+1}+x_k=0$ & \Exact & \Exact & \Exact & \Exact & certified F-type \\
+    $\{\sqrt2,1+\sqrt2\}/q_{2k}$ & $x_{k+2}-6x_{k+1}+x_k=0$ & \Exact & \Exact & \Exact & \Exact & certified P-type \\
+    $\{\varphi-1,\varphi\}/\mathrm{Fib}$ & $(1,1,-2,-1,1)$ & \Hold & \Hold & \Hold & \Hold & empirical holdout \\
+    $\{\sqrt2,1+\sqrt2\}/\mathrm{Pell}$ & $(1,2,-2,-2,1)$ & \Hold & \Hold & \Hold & \Hold & empirical holdout \\
+    plastic/AP$(1,0)$ & $(1,-1,0,-1,1)$ & \Prefix & \Shadow & \Shadow & \Shadow & mirage \\
+    plastic/U3$\{0,1\}$ & $(1,-2,1)$ & \Prefix & \Shadow & \Shadow & \Shadow & mirage \\
+    plastic/U6$\{0,1,3\}$ & $(1,-1,0,-1,1)$ & \Prefix & \Shadow & \Shadow & \Shadow & mirage \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Holdout-length ablation. Abbreviations: \Exact = exact certified, \Hold = exact holdout without structural certificate, \Prefix = positive-density prefix fit, \Shadow = selector-shadow failure. Grouped rows indicate that the two Fibonacci-type quadratic cases and the two Pell-type quadratic cases behave identically across all four holdout lengths.}
+  \label{tab:holdouts}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.88\linewidth]{figures/fig7_variant_matrix.pdf}
+  \caption{Selector-template ablation around the even-convergent lane. For each of the four quadratic slopes, nearby convergent templates (odd convergents, shifted even convergents, and every-third convergents) still exhibit exact finite holdouts; the annotations show the leading coefficients of the fitted low-order recurrences. However, because these variants have no structural certificates, they remain in the sparse empirical lane. In contrast, the matched nonquadratic controls plastic and $e$ remain modular-shadow failures across the same variant panel. The figure therefore supports two simultaneous claims: the quadratic lane is not a one-template accident, but its broader selector-level classification is still unproved.}
+  \label{fig:variant-matrix}
+\end{figure}
+
+\subsection{What remains empirical}
+
+The strongest remaining empirical cases are not random. The exact-holdout survivors beyond the four certified identities are
+\begin{itemize}
+  \item $\varphi$ and $\varphi-1$ on Fibonacci indices,
+  \item $\sqrt2$ and $1+\sqrt2$ on Pell indices,
+  \item the equivalent Ostrowski-single-digit copies of the Fibonacci cases,
+  \item a single Salem Ostrowski holdout at 20 samples only.
+\end{itemize}
+The quadratic Fibonacci/Pell cases persist through 160 samples, so they are serious empirical signals. But they are still only empirical signals. Given the direct connection to self-matching and generalized Beatty literature \citep{maskov2006,allouche2018}, elevating them to theorem language without a structural proof would be precisely the kind of overclaim the verification layer was designed to prevent.
+
+Finally, the beta-endpoint suffix-\texttt{10} selector remains negative on every executed irrational slope, including $\varphi$, $\varphi-1$, $1+\sqrt2$, plastic, the Salem quartic root, $\sqrt2$, and $e$. This is not a theorem against all beta-numeration constructions, but it is enough to rule out the most obvious higher-degree Pisot rescue mechanism in the frozen panel.
+
+\section{Discussion}
+\label{sec:discussion}
+
+The paper settles one natural structured version of the problem and leaves the unrestricted version open. The settled part is meaningful: eventually periodic-gap selectors are the largest selector class in the archive for which theorem-grade proof, benchmark evidence, and literature positioning all line up cleanly. Inside that class, rationality is the whole story.
+
+Three limitations remain.
+
+\paragraph{The unrestricted problem is still open.}
+Our theorems do not characterize all $r$ for arbitrary selectors, or even all zero-density selectors. The evidence strongly suggests that sparse extraction can support exact recurrences beyond the rational lane, but the current paper certifies only four such examples.
+
+\paragraph{The sparse quadratic lane overlaps with known quadratic Beatty phenomena.}
+The exact examples for $\varphi$, $\varphi-1$, $\sqrt2$, and $1+\sqrt2$ fit naturally beside the self-matching and generalized Beatty literature \citep{maskov2006,allouche2018}. That is precisely why the novelty claim of this paper does not rest on them. Their role is to map the edge of the theorem lane, not to serve as a standalone discovery claim.
+
+\paragraph{The nonquadratic negatives are only named-example negatives.}
+Plastic, Salem, and transcendental controls are enough to reject a broad Pisot-first narrative, but they do not imply a universal impossibility theorem for all higher-degree algebraic or transcendental slopes. Additional exact backends for large-index nonquadratic floor evaluation would make this part of the map sharper.
+
+The failure modes observed in the ablations are themselves informative. Higher-order fits on short windows behave exactly as a skeptic would fear: they generate many new relations without producing new certificates. Likewise, the plastic-control prefix fits show how convincing a false positive can look before the holdout or modular replay is extended. This suggests a broader methodological point for automated mathematics: empirical regularity in exact arithmetic is useful, but it must be reported in calibrated layers rather than collapsed into a binary true/false theorem verdict.
+
+The societal implications are correspondingly modest but real. Beatty subsequences are a low-stakes topic, yet the workflow here is representative of a larger issue in machine-assisted mathematics and formalizable scientific reasoning. Automated systems can generate genuine conjectural insight, but without hard separation between proof, certificate, and finite exact evidence they can also generate confident nonsense. The contribution of this paper is therefore not only mathematical. It is also procedural: it shows one way to keep a research pipeline honest when symbolic, arithmetic, and empirical notions of recurrence are easy to conflate.
+
+\section{Conclusion}
+
+We gave a proof-complete answer to the structured Beatty-subsequence problem for selectors with eventually periodic gaps: such a selector supports a homogeneous integer recurrence in $\floor{n_k r}$ if and only if $r$ is rational. We then mapped the sparse-selector frontier with an exact arithmetic benchmark and certification layer. After repairing the rational baseline and running the requested ablations, the benchmark supports exactly four certified irrational examples, all in a quadratic even-convergent lane, and no certified higher-degree or transcendental survivor. The remaining sparse quadratic holdouts are strong empirical evidence but not yet theorems. The clean separation between these layers is the main message of the paper.
+
+\appendix
+
+\section{A stronger rational periodic-gap certificate}
+\label{app:rational-cert}
+
+The benchmark refresh uses a certificate slightly stronger than the existence statement in \Cref{thm:periodic-gap}. It proves that \emph{every fixed} rational periodic-gap selector produces a recurrence sequence.
+
+\begin{proposition}[Rational periodic-gap certificate]
+\label{prop:rational-certificate}
+Let $r=p/q\in\Q_{>0}$ in lowest terms, and let $(n_k)_{k\ge 0}$ be a selector whose gaps are periodic from the start with period $m$:
+\[
+  n_{k+1}-n_k = h_j \qquad \text{whenever } k\equiv j \pmod m.
+\]
+Set $Q=h_0+\cdots+h_{m-1}$ and
+\[
+  L = \frac{mq}{\gcd(q,Q)}.
+\]
+Then the extracted value sequence $b_k=\floor{n_k r}$ satisfies the recurrence
+\[
+  b_{k+L+1}-b_{k+L}-b_{k+1}+b_k = 0
+\]
+for all $k\ge 0$.
+\end{proposition}
+
+\begin{proof}
+Define the first-difference sequence
+\[
+  d_k = b_{k+1}-b_k.
+\]
+Because
+\[
+  b_{k+1}-b_k = \floor{n_{k+1}p/q}-\floor{n_kp/q},
+\]
+the value of $d_k$ is determined by two pieces of data:
+\begin{enumerate}
+  \item the gap phase $j\equiv k\pmod m$, which determines $n_{k+1}-n_k=h_j$;
+  \item the residue class of $n_k$ modulo $q$.
+\end{enumerate}
+After $m$ selector steps, the phase returns to its starting value and the index has advanced by $Q$. Therefore after $L$ selector steps, where $L=mq/\gcd(q,Q)$, the phase returns to its starting value and the total advance $LQ/m$ is a multiple of $q$. Hence both the phase and the index residue modulo $q$ agree with their initial values. Consequently
+\[
+  d_{k+L}=d_k \qquad \text{for every } k\ge 0,
+\]
+so the first-difference sequence is periodic with period $L$.
+
+The periodicity identity $d_{k+L}=d_k$ is
+\[
+  (b_{k+L+1}-b_{k+L})-(b_{k+1}-b_k)=0.
+\]
+Rearranging gives
+\[
+  b_{k+L+1}-b_{k+L}-b_{k+1}+b_k = 0,
+\]
+which is the desired homogeneous recurrence.
+\end{proof}
+
+This proposition explains why the writer-stage refresh could certify every rational AP/FUAP case, including the previously missed union cases whose minimum recurrence order exceeds the original search cap $d\le 4$.
+
+\section{Implementation details and exact arithmetic backends}
+
+The repository implementation uses three exact floor backends.
+\begin{enumerate}
+  \item For rationals $p/q$, it computes $\floor{np/q}$ by exact integer division.
+  \item For $\sqrt2$, $1+\sqrt2$, $\varphi$, and $\varphi-1$, it uses exact integer-square-root formulas such as
+  \[
+    \floor{n\sqrt2}=\lfloor \sqrt{2n^2}\rfloor,
+    \qquad
+    \floor{n\varphi}=\frac{n+\lfloor\sqrt{5n^2}\rfloor}{2},
+  \]
+  which remain stable even for the 160-sample holdout lengths.
+  \item For plastic, the Salem quartic root, and $e$, it falls back to exact symbolic floor evaluation through SymPy.
+\end{enumerate}
+
+The last backend is sufficient for the 20-sample main panel, but it is not yet a satisfactory long-horizon exact backend for the largest nonquadratic convergent selectors. This is one reason the paper avoids a universal higher-degree negative theorem.
+
+\section{Extended empirical tables}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.20\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth}}
+\caption{Certification summary used by the writer-stage figures and tables.}\label{tab:appendix-summary}\\
+\toprule
+Case & Classification & Holdout 20 & Certificate & Nondegenerate & Note \\
+\midrule
+\endfirsthead
+\toprule
+Case & Classification & Holdout 20 & Certificate & Nondegenerate & Note \\
+\midrule
+\endhead
+Rational AP/FUAP lane & exact recurrence & yes / mixed & yes & no & 28 baseline certificates, orders $2$--$7$ \\
+$\varphi-1$ on $q_{2k}$ & exact recurrence & yes & yes & yes & proved in \Cref{prop:fibonacci-identities} \\
+$\varphi$ on $q_{2k}$ & exact recurrence & yes & yes & yes & proved in \Cref{prop:fibonacci-identities} \\
+$\sqrt2$ on $q_{2k}$ & exact recurrence & yes & yes & yes & proved in \Cref{prop:pell-identities} \\
+$1+\sqrt2$ on $q_{2k}$ & exact recurrence & yes & yes & yes & proved in \Cref{prop:pell-identities} \\
+$\varphi$ on Fib & sparse leak & yes & no & no & exact holdout through $160$ \\
+$\varphi-1$ on Fib & sparse leak & yes & no & no & exact holdout through $160$ \\
+$\sqrt2$ on Pell & sparse leak & yes & no & no & exact holdout through $160$ \\
+$1+\sqrt2$ on Pell & sparse leak & yes & no & no & exact holdout through $160$ \\
+plastic on AP/U3/U6 & prefix fit / shadow failure & yes at $20$ only & no & no & fails by holdout $40$ \\
+beta-endpoint suffix \texttt{10} & no candidate & no & no & n/a & negative on every executed irrational slope \\
+\bottomrule
+\end{longtable}
+
+\section{Reproducibility summary}
+
+The exact scripts used in the writer pass are:
+\begin{itemize}
+  \item \texttt{scripts/refresh\_full\_panel\_artifacts.py} for rational baseline repair and metrics publication,
+  \item \texttt{scripts/run\_claim\_sensitive\_ablations.py} for the order-cap, holdout-length, and selector-variant ablations,
+  \item \texttt{scripts/generate\_figures.py} for all eight publication figures.
+\end{itemize}
+The durable outputs are indexed in \texttt{results/artifact\_index.md} and the end-to-end workflow is described in \texttt{results/reproducibility.md}.
+
+\bibliographystyle{plainnat}
+\bibliography{sources}
+
+\end{document}
