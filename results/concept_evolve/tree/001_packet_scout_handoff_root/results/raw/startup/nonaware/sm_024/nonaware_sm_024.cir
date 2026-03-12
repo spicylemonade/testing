@@ -2,6 +2,8 @@
 * case_id=sm_024
 * polarity_mode=mixed
 * voltage_mv=300
+* voc_a_mv=300
+* voc_b_mv=300
 * ramp_mvps=0.1
 * ratio_b_to_a=20
 * t_stop_s=3750.0
@@ -12,19 +14,20 @@
 .include "/home/archivara/work/repo/results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/startup_cells.inc"
 
 .param VLEVEL=300m
-.param VOC_A={VLEVEL}
-.param VOC_B={VLEVEL}
+.param VOC_A=300m
+.param VOC_B=300m
 .param R_UNIT=1k
 .param RATIO=20
-.param R_A=1k
-.param R_B=20k
+.param R_A=1000.0
+.param R_B=20000.0
 .param POL_A=1
 .param POL_B=-1
 .param RAMP_MVPS=0.1
 .param C_STORE=10u
+.param R_LOAD=100meg
 .param V_HANDOFF=1.2
 .param V_HANDOFF_FALL=1.0
-.param TSTOP=3750
+.param TSTOP=3750.0
 
 VMEAS_A src_a_p n_src_a_p 0
 VMEAS_B src_b_p n_src_b_p 0
@@ -53,9 +56,9 @@ RCTRL_PATH_A n_ctrl 0 80meg
 RCTRL_PATH_B n_ctrl 0 80meg
 
 CSTORE n_store 0 {C_STORE} ic=0
-RLOAD n_store 0 100meg
+RLOAD n_store 0 {R_LOAD}
 
 .include "/home/archivara/work/repo/results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/measurement_hooks.inc"
 
-.tran 468.75m {TSTOP} 0 468.75m
+.tran 0.46875 3750.0 0 0.46875
 .end

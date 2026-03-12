@@ -1,44 +1,44 @@
 [
   {
     "bridge": "packet_scout_handoff_root",
-    "novelty_signal": "Strongest surviving bridge. The claim only survives as helper-free pre-arbitration source scouting under mixed polarity and impedance asymmetry; it is structurally distinct from single-source startup and steady-state multi-input extraction, but still unproven on measured performance.",
-    "validation_plan": "Run the frozen H1 matrix on variant_01_rc_ranked_packet_gate across 20/50/100/300 mV, 0.1/1/10/100 mV/s, 1:1/1:5/1:20 impedance ratios, and mixed-polarity cases. Compare against both fixed_startup_path and nonaware_multi_input_startup, then add source-collapse and leaky-path adversarial cases. Promote only if startup_ok or t_handoff improves without e_ctrl and e_backdrive blowing up.",
-    "risk": "RC recovery signatures may collapse under ultra-slow ramps, and if the nonaware baseline shows negligible back-drive this bridge shrinks to extra logic with better accounting rather than a publishable new startup mechanism.",
-    "promotion_decision": "promote"
-  },
-  {
-    "bridge": "dual_bucket_polarity_split_bootstrap",
-    "novelty_signal": "Mixed-polarity isolation remains the cleanest differentiation against recent collaborative multi-input interfaces, and the current anomaly notes say bucketed polarity handling becomes more attractive at extreme 1:20 asymmetry plus mixed polarity.",
-    "validation_plan": "Evaluate only on mixed-polarity primary cases. Measure startup_ok, t_handoff, e_backdrive, and merge-control energy against the champion root and both baselines. Keep it promoted only if polarity-safe merge prevents wrong-way startup without turning either bucket into a de facto helper reservoir.",
-    "risk": "Bucket leakage and merge overhead are likely to dominate below 50 mV, collapsing the benefit into a slower and leakier version of a simpler startup path.",
+    "novelty_signal": "Strongest surviving bridge, but only as a helper-free pre-arbitration failure-mode result. Broad multi-source cold-start, anti-backdrive, and generic PMU framing are invalidated by close overlap and by the tied 17/24 primary matrix.",
+    "validation_plan": "Execute source_blind_packet_gate, time_constant_ranked_arbiter, unequal-VOC sweeps, leak-path falsifiers, stronger chatter falsifiers, corrected pre-handoff e_ctrl and e_backdrive accounting, and Monte Carlo around fa_001 and fa_005. Keep promoted only if packet scouting still beats both fixed and same-family controls on startup correctness under robustness variation.",
+    "risk": "The mechanism may reduce to ordinary thresholded source preference. If the blind packet-gate ablation or the simpler RC ranker matches the result, the claimed scouting advantage disappears.",
     "promotion_decision": "promote"
   },
   {
     "bridge": "time_constant_ranked_arbiter",
-    "novelty_signal": "Useful as the cleanest source-awareness ablation, but multiple artifacts say it is too close to ordinary RC arbitration to anchor the headline claim.",
-    "validation_plan": "Use it as the required control. Hold source voltages equal, sweep 1:1 to 1:20 impedances, and compare benefit per control energy versus packet_scout_handoff_root. Keep only if it establishes a strong lower-complexity baseline for the source-awareness argument.",
-    "risk": "Under ultra-slow ramps the fast and slow RC signatures may collapse, making the ranking too noisy to prove novelty or even to serve as a decisive benchmark.",
+    "novelty_signal": "Promoted by the benchmark feedback as the missing lower-overhead same-family discriminator. It is not a broad novelty moat, but it is now the most informative bridge for discovering whether minimal source awareness is sufficient.",
+    "validation_plan": "Implement and run it on fa_001, fa_005, ratio 1:20 slices, and unequal-VOC cases with corrected pre-handoff metrics. Keep promoted if it preserves the narrow failure-mode win with lower control energy and comparable robustness.",
+    "risk": "If RC ranking is too noisy under slow ramps it fails as both benchmark and candidate; if it works too well, packet_scout_handoff_root loses justification.",
+    "promotion_decision": "promote"
+  },
+  {
+    "bridge": "dual_bucket_polarity_split_bootstrap",
+    "novelty_signal": "Still relevant only as a mixed-polarity contingency. The novelty report says mixed polarity alone is not a moat because bipolar-input and dual-polarity cold-start literature already covers much of that space.",
+    "validation_plan": "Hold until packet_scout_handoff_root is tested against unequal-VOC and leak-path stress. Reopen only if the surviving failure mode is specifically caused by helper-free mixed-polarity branch isolation that a single scouting path cannot handle.",
+    "risk": "Bucket leakage and merge control can recreate helper behavior or burn the startup budget before handoff, leaving a more complicated version of known bipolar-input startup.",
     "promotion_decision": "hold"
   },
   {
     "bridge": "tokenized_uvlo_handoff_gate",
-    "novelty_signal": "Not a standalone novelty bridge, but it may become mandatory if mixed-polarity cases trigger UVLO chatter. It is best treated as a support block inside H1 rather than as a paper claim.",
-    "validation_plan": "Inject threshold-oscillation and half-enable cases into the champion matrix. Keep it only if token gating removes chatter or false handoff that ordinary hysteresis misses under equal control-energy accounting.",
-    "risk": "The token chain can become a disguised helper or control rail and erase the energy advantage while reading like a conventional POR or UVLO deglitcher.",
-    "promotion_decision": "hold"
+    "novelty_signal": "Current evidence does not justify keeping this as an active bridge. The falsifier package produced no measured fall or second-rise chatter events, and generic startup-control logic is already crowded prior art.",
+    "validation_plan": "Retire as an active bridge. Restore only if a strengthened chatter falsifier creates real half-enable behavior in a baseline and the token chain fixes it under equal control-energy accounting.",
+    "risk": "Without measured chatter, this reads as a standard POR or UVLO deglitcher with extra startup overhead.",
+    "promotion_decision": "retire"
   },
   {
     "bridge": "reverse_leakage_vote_or",
-    "novelty_signal": "Weak. Anti-backdrive is already expected in multi-input interfaces, and the leakage-vote framing looks more like fragile sensing around existing OR-ing devices than a differentiated architecture.",
-    "validation_plan": "Retire as a standalone bridge. Only resurrect it if a later source-collapse matrix shows a large startup-correctness gap that simpler isolation cannot close.",
-    "risk": "Process and temperature spread can swamp leakage signatures, turning the bridge into calibration-heavy cosmetics with little startup benefit.",
+    "novelty_signal": "Retired. Anti-backdrive is expected in multi-input interfaces, the primary matrix shows no broad back-drive separation, and the required leak-path falsifier has not yet shown a unique sensing advantage.",
+    "validation_plan": "Do not pursue as a standalone concept. Reopen only if finite off-isolation sweeps reveal a correctness gap that ideal-diode or packet-scout isolation cannot explain.",
+    "risk": "Leakage signatures are process- and temperature-sensitive and are likely to become a calibration-heavy ornament rather than a robust mechanism.",
     "promotion_decision": "retire"
   },
   {
     "bridge": "comparatorless_current_probe_bootstrap",
-    "novelty_signal": "Low confidence. It was already downgraded to a conditional merge candidate, the specific minimum-energy probe question ended in a parse error, and the bridge survives only if it beats the RC ranker without hidden bias or precharge.",
-    "validation_plan": "Retire as a standalone branch. Absorb it only as a sub-block experiment inside packet_scout_handoff_root after the RC-ranked variant is benchmarked. Re-open only if measured probe energy is clearly below the RC ranker while preserving startup correctness.",
-    "risk": "Probe disturbance, capacitor mismatch, and token leakage can consume the same energy budget as explicit ranking while weakening the helper-free claim.",
+    "novelty_signal": "Retired. The minimum-energy probe question did not generate new evidence, and the bridge now reads as a low-level implementation option inside source scouting rather than a separate concept.",
+    "validation_plan": "Keep dormant until packet_scout_handoff_root and time_constant_ranked_arbiter are benchmarked. Reopen only if passive charge probing shows a clear robustness-normalized energy advantage without hidden bias or precharge.",
+    "risk": "Probe disturbance, capacitor mismatch, and hidden helper behavior can consume the same budget as the RC ranker while making the mechanism harder to defend.",
     "promotion_decision": "retire"
   }
 ]

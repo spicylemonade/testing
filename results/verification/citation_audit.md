@@ -1,44 +1,92 @@
 # Citation Audit
 
 Date: 2026-03-12
-Scope: audit the load-bearing H1 claims against `sources.bib`, the lane-local verification notes, and the repo-level experiment artifacts
-Status: PASS with blocked wording
+Scope: audit claim support and literature traceability for the narrowed H1 manuscript after bibliography repair and the post-ablation reruns
+Status: PASS for the falsification/simplification manuscript; BLOCK for broad novelty or literature-superiority wording
 
-## Bibliography Scope
+## Audit Basis
 
-- `sources.bib` currently contains:
-  - `16` relevant paper entries
-  - `5` repository or local-documentation entries
-- Metadata basis used in this run:
-  - recovered paper titles and paper IDs tracked in `results/literature/prior_art_gap.md`
-  - the repo-local governing documents cited below through the `archivara2026*` entries
+- `sources.bib`
+- `results/literature/prior_art_gap.md`
+- `results/swarm/hypotheses.json`
+- `results/swarm/gap_map.md`
+- `results/verification/benchmark_report.md`
+- `results/verification/novelty_report.md`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/startup_summary.json`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_summary.json`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/ablation_summary.json`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/robustness_summary.json`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/packet_scout_blocks.inc`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/measurement_hooks.inc`
 
-## Audit Rule
+## Supported Claim Set
 
-- Only `PASS` claims may appear in the final brief as affirmative statements.
-- Any row marked `BLOCKED` is disallowed wording and must remain out of the final brief.
+| ID | Claim | Verdict | Evidence |
+| --- | --- | --- | --- |
+| S01 | The primary 24-case startup matrix is tied at `17/24` startup successes for all five executed designs. | PASS | `tables/startup_summary.json` |
+| S02 | The expanded falsifier suite contains `10` cases and ranks the designs `source_blind 10/10`, `time_constant_ranked 9/10`, `champion 8/10`, `fixed 7/10`, `nonaware 5/10`. | PASS | `tables/falsifier_summary.json`; `tables/ablation_summary.json` |
+| S03 | The blind packet-gate ablation falsifies the claim that explicit source awareness is the causal mechanism in the current model family. | PASS | `tables/startup_summary.json`; `tables/falsifier_summary.json`; `netlists/shared/packet_scout_blocks.inc` |
+| S04 | The time-constant-ranked arbiter preserves the primary startup count and reduces median successful-case pre-handoff control energy relative to the original RC-ranked champion. | PASS | `tables/startup_summary.json`; `tables/ablation_summary.json`; `netlists/shared/packet_scout_blocks.inc` |
+| S05 | The repaired measurement contract distinguishes pre-handoff control energy from full-window control energy, and the difference is large enough to alter the old narrative. | PASS | `netlists/shared/measurement_hooks.inc`; `tables/startup_summary.json`; `figures/h1_metric_accounting.pdf` |
+| S06 | `fa_004` now produces actual handoff fall and second-rise events for every design except `source_blind`. | PASS | `tables/falsifier_summary.json`; `tables/falsifier_results.csv` |
+| S07 | The robustness study confirms that the surviving adversarial distinctions are not one-shot deterministic artifacts. | PASS | `tables/robustness_summary.json`; `figures/h1_robustness_ci.pdf` |
+| S08 | The literature-overlap screen now rests on real recovered citations rather than unresolved placeholder titles. | PASS | `sources.bib`; `results/swarm/hypotheses.json`; `results/swarm/gap_map.md` |
 
-## Claim Matrix
+## Findings
 
-| ID | Claim | Support | Status | Audit note |
-| --- | --- | --- | --- | --- |
-| C01 | The closest technical overlap is the integrated TEG startup family plus the recent self-powered multi-input interface family, not the polluted seed-watchlist papers. | `goppert2016startup70mv`; `quintero2019cmosstartup`; `coustans2019coldstart60mv`; `alghisi2017batteryless`; `wang2023serialstack`; `chen2024collaborative`; `weng2024osece`; `results/literature/prior_art_gap.md`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/claim_matrix.md` | PASS | Load-bearing overlap framing is supported. |
-| C02 | The only allowed H1 contribution boundary is helper-free pre-arbitration source-aware startup sequencing under heterogeneous weak sources. | `archivara2026toolplan`; `archivara2026directorbrief`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/claim_matrix.md`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item021_decision_memo.md` | PASS | This is the narrow novelty boundary carried into final reporting. |
-| C03 | The champion topology is helper-free and uses RC-ranked packet selection before handoff. | `archivara2026experimentspec`; `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/packet_scout_blocks.inc`; `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/champion/packet_scout_handoff/variant_01_rc_ranked_packet_gate/rc_ranked_packet_gate.cir` | PASS | Structural claim is directly supported by the netlist and experiment contract. |
-| C04 | The champion and both baselines were measured under the same startup, back-drive, and control-energy accounting contract. | `archivara2026experimentspec`; `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/measurement_hooks.inc`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item011_signoff.md` | PASS | Equal accounting is essential to every benchmark claim. |
-| C05 | The primary startup matrix executed `24` cases across `3` designs for `72` logged rows. | `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/startup_matrix_manifest.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/startup_summary.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item020_run_audit.md` | PASS | Coverage claim is directly supported by manifests and audit note. |
-| C06 | The primary startup matrix shows `17/24` startup successes for champion, fixed, and nonaware. | `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/startup_summary.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_summary.json` | PASS | This claim is stable and repeated consistently across artifacts. |
-| C07 | The primary startup matrix shows no back-drive separation for the champion relative to either baseline. | `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_summary.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_comparison.csv`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item018_benchmark_note.md` | PASS | This negative result is load-bearing and must remain explicit. |
-| C08 | The champion lowers measured startup-control energy in `13/24` cases versus fixed and `22/24` cases versus nonaware. | `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_summary.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item018_benchmark_note.md` | PASS | Allowed as a bounded metric statement only. |
-| C09 | The falsifier suite spans source collapse, mixed polarity, extreme asymmetry, and chatter-intended stress with `6` cases and `18` total rows. | `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/falsifier_cases.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_summary.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item019_falsifier_note.md` | PASS | Required adversarial coverage is documented. |
-| C10 | No measured handoff-fall or second-rise events occurred in the falsifier suite. | `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/measurement_hooks.inc`; `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_summary.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item019_falsifier_note.md` | PASS | Chatter-intended cases became no-start behavior instead of measured chatter. |
-| C11 | The smallest surviving claim boundary is the two-case subset `{fa_001, fa_005}`. | `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_results.csv`; `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/analysis_summary.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item022_analysis_package.md` | PASS | This is the narrowest condition set supported by the evidence. |
-| C12 | The surviving H1 story is mainly against the nonaware baseline under collapse and mixed-polarity stress, not a general win over the fixed startup path. | `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item019_falsifier_note.md`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item021_decision_memo.md`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item022_analysis_package.md` | PASS | This wording is validated and should anchor the final brief. |
-| C13 | The champion beats the fixed startup path broadly. | `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_summary.json`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item021_decision_memo.md` | BLOCKED | Unsupported by the primary matrix and contradicted by the decision memo. |
-| C14 | This design is the `first`, `novel`, or `best` helper-free multi-source cold-start interface. | `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/claim_matrix.md`; `results/literature/prior_art_gap.md` | BLOCKED | Explicitly forbidden wording. No priority claim is supported. |
-| C15 | The champion improves steady-state harvesting efficiency. | `archivara2026experimentspec`; `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/claim_matrix.md` | BLOCKED | No steady-state efficiency experiment was run. |
+### 1. The placeholder-title problem is fixed for the active manuscript path
 
-## Next Required Action
+- The swarm-era unresolved anchors have been removed from the active citation spine and replaced with recovered papers:
+  - `tang2018dualsource`
+  - `cao2019bipolarinput`
+  - `kuai2022dualpolarityjssc`
+  - `alhawari2016multisourcepmu`
+  - `alghisi2017batteryless`
+  - `wang2023serialstack`
+  - `chen2024collaborative`
+  - `weng2024osece`
+  - `li2022multiinputplatform`
+  - `gogolou2025multisourcereview`
+- Audit consequence:
+  - the manuscript can now make an overlap argument without relying on hallucinated titles
 
-- Use only the `PASS` rows above in `results/verification/final_research_brief.md`.
-- Keep all `BLOCKED` wording out of the final brief and the repo-level summary.
+### 2. The bibliography is manuscript-usable, with one quarantined record
+
+- `sources.bib` now contains the required overlap papers and DOI repairs for the actively cited multi-input interface family.
+- `hernandez2013tegboost` remains metadata-suspicious, but it is now explicitly annotated as unresolved and can simply remain uncited.
+
+### 3. Literature comparison is structural, not reproduced benchmark comparison
+
+- The repository can support statements like:
+  - "the current evidence does not justify claiming superiority over recent dual-source, bipolar-input, or multi-input interface papers"
+- The repository cannot support statements like:
+  - "the blind packet gate outperforms Tang 2018" or
+  - "the time-constant ranker beats Chen 2024 on efficiency"
+- Audit consequence:
+  - the manuscript must keep literature comparison qualitative and mechanism-focused
+
+## Allowed Wording
+
+- Allowed:
+  - `falsifies`
+  - `simplifies`
+  - `narrows`
+  - `within the tested model`
+  - `the repository evidence does not justify`
+- Blocked:
+  - `first`
+  - `novel`
+  - `best`
+  - `state of the art`
+  - any direct paper-to-paper performance superiority claim
+
+## Clearance
+
+- CLEAR for a manuscript that says:
+  - the broad source-aware architecture story failed
+  - blind packetized isolation outperformed explicit source ranking in the executed adversarial suite
+  - a lower-overhead time-constant ranker recovered most of the benefit within the source-aware family
+- BLOCK for a manuscript that says:
+  - the RC-ranked design is the winning architecture
+  - the repository proved literature-wide superiority
+  - no close prior art exists

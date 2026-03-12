@@ -1,27 +1,43 @@
 [
   {
     "id": "H1_multisource_cold_start",
-    "title": "Source-Adaptive Cold Start for Weak Multi-Source Harvesters Under Ultra-Slow Ramps",
-    "novelty_claim": "The contribution is not another steady-state harvester-efficiency paper. It targets startup correctness before the normal control loop is alive: mixed weak sources with different impedances, polarities, and ramp rates that must reach first handoff without a helper rail or back-driving each other.",
+    "title": "Helper-Free Packet-Gating Boundary Study for Weak Multi-Source Cold Start",
+    "novelty_claim": "The load-bearing contribution is no longer a broad source-aware architecture claim. It is an evidence-backed falsification: once helper-free packet gating, collapse, unequal-VOC, leak-path, and chatter stress are enforced, explicit pre-handoff source ranking is not required for correctness and can underperform a blind packet gate.",
     "closest_prior_art": [
-      "Review of Fully Integrated Startup Techniques for Thermoelectric Energy Harvesting Systems (2023)",
-      "Power Management for Multi-Source Energy Harvesting Systems: A Review (2024)",
-      "Fully Autonomous Self-Starting Interface Circuit for Piezoelectric Energy Harvesting from Multi-Source Inputs (2024)"
+      "A fully integrated 28nm CMOS dual source adaptive thermoelectric and RF energy harvesting circuit with 110mV startup voltage (2018)",
+      "A Bipolar-Input Thermoelectric Energy-Harvesting Interface With Boost/Flyback Hybrid Converter and On-Chip Cold Starter (2019)",
+      "A High-Efficiency Dual-Polarity Thermoelectric Energy-Harvesting Interface Circuit With Cold Startup and Fast-Searching ZCD (2022)",
+      "A 32nA Fully Autonomous Multi-Input Single-Inductor Multi-Output Energy-Harvesting and Power-Management Platform with 1.2x10^5 Dynamic Range, Integrated MPPT, and Multi-Modal Cold Start-Up (2022)",
+      "Multi-Source Energy Harvesting Systems Integrated in Silicon: A Comprehensive Review (2025)"
     ],
-    "differentiation": "Frame the thesis around source-aware cold-start sequencing under heterogeneous weak sources, not around generic MPPT, generic multi-input harvesting, or ordinary arbitration after startup. The design must infer source condition cheaply enough to choose a kick-start mode and only enable full arbitration after a minimum energy packet is accumulated.",
-    "easiest_falsifier": "Downgrade immediately if focused prior art already shows a fully integrated, helper-free interface that cold-starts across mixed 20-300 mV sources with source-aware arbitration and anti-backdrive protection, or if startup overhead erases the gain over strong fixed-path baselines.",
+    "differentiation": "Keep the framing on a helper-free falsification study. The paper should not claim another new PMU. It should show that packet-gated branch isolation is the load-bearing ingredient under simultaneous weak-source stress, while explicit pre-handoff ranking is unnecessary inside that family.",
+    "easiest_falsifier": "Kill the remaining claim if a still simpler isolated path or a literature-faithful autonomous multi-input cold-start comparator matches the packet-gated boundary under equal pre-handoff accounting.",
     "evidence_plan": [
-      "Repair the traceability gap first: build a one-page claim matrix from the three cited anchors because `results/swarm/hypothesis_bridge.md` and `results/swarm/hypothesis_negative_space.md` are missing.",
-      "Run one go/kill ngspice matrix over source voltage, ramp rate, polarity mismatch, and impedance asymmetry; measure startup success, handoff time, back-drive loss, and control energy.",
-      "Benchmark against at least two nontrivial baselines: a fixed startup path and a non-source-aware multi-input startup/arbitration path with equal energy accounting."
+      "Keep the paper anchored to the executed five-design evidence pack: the 24-case startup matrix, the 10-case falsifier suite, and the 24-sample robustness study on four load-bearing cases.",
+      "Use the same-family ablation as the main mechanism test and avoid re-expanding into a broad architecture claim.",
+      "Report the lower-overhead time-constant control only as a secondary engineering result."
     ],
     "budget_envelope": {
-      "literature_gate": "1 focused pass, <=12 papers, no broad re-search",
-      "simulation_gate": "1 topology family, <=24 startup cases, 2 strong baselines",
-      "promotion_rule": "Promote if it survives the prior-art kill check and shows a clean startup-correctness advantage under mixed-source stress cases.",
-      "kill_rule": "Kill if novelty collapses to existing helper-free multi-source cold start, or if anti-backdrive/arbitration overhead dominates."
+      "literature_gate": "Closed to targeted overlap checks only; do not reopen broad search.",
+      "simulation_gate": "Satisfied by the executed startup matrix, expanded falsifier suite, and 24-sample robustness study.",
+      "promotion_rule": "Write only if the final paper keeps the claim as a falsification and simplification result, not as a champion-architecture win.",
+      "kill_rule": "Kill if the paper drifts back into broad source-aware or literature-superiority language."
     },
-    "selected": true
+    "selected": true,
+    "post_research_status": "narrowed_after_falsification",
+    "final_boundary": {
+      "headline": "Minimal packet gating falsifies pre-handoff source ranking in the tested weak multi-source cold-start model.",
+      "supported_claims": [
+        "The primary startup matrix is tied at 17/24 for all five designs.",
+        "Blind packet gating is 10/10 on the expanded falsifier suite and suppresses the measured chatter event in `fa_004`.",
+        "The time-constant-ranked arbiter is 9/10 on the expanded falsifier suite and halves median successful-case pre-handoff control energy relative to the original RC-ranked champion."
+      ],
+      "blocked_claims": [
+        "Any `first`, `novel`, or `best` language.",
+        "Any broad superiority claim over fixed startup or prior-art silicon.",
+        "Any claim that explicit source awareness is the causal mechanism in the executed model."
+      ]
+    }
   },
   {
     "id": "H2_cryo_support_blocks",
@@ -31,7 +47,7 @@
       "A Review of Cryogenic CMOS Electronics for Quantum Computing (2022)",
       "Toward Cryogenic CMOS Electronics for Quantum Computing: An Updated Review of Cryogenic CMOS Technology for Quantum Computing (2024)",
       "Analysis of Low-Frequency Noise in 40-nm CMOS at Cryogenic Temperatures (2023)",
-      "Design of 1 V sub-1 µW 5 ppm/C Voltage References in a 65nm Cryogenic CMOS PDK (2024)"
+      "Design of 1 V sub-1 \u00b5W 5 ppm/C Voltage References in a 65nm Cryogenic CMOS PDK (2024)"
     ],
     "differentiation": "Do not claim novelty at the level of 'a cryogenic reference.' The differentiator must be a reference/comparator support primitive that avoids room-temperature bandgap assumptions, explicitly budgets low-frequency noise and model uncertainty, and stays monotone and calibratable below 10 K with low power.",
     "easiest_falsifier": "Kill if widened cryogenic corners, mismatch, and low-frequency-noise assumptions break monotonicity or power budget, or if a closely matching sub-10 K support-block primitive already exists once the focused prior-art matrix is assembled.",

@@ -1,79 +1,72 @@
 # Final Research Brief
 
 Date: 2026-03-12
-Scope: final validated H1 brief after novelty, benchmark, citation, and run-governance review
-Status: PASS for a narrowed result only
+Scope: final validated H1 brief after the ablation reruns, metric repair, citation cleanup, and robustness study
+Status: PASS for a narrowed falsification/simplification result
 
 ## Writer (`writer`)
 
-- Question:
-  - can a helper-free multi-source harvester cold-start more safely when source selection happens before normal arbitration is alive
+- Core question:
+  - in a helper-free weak multi-source cold-start model, is explicit pre-handoff source ranking actually necessary once packetized isolation is already present
 - Closest prior-work family:
-  - integrated weak-source startup papers such as `goppert2016startup70mv`, `quintero2019cmosstartup`, and `coustans2019coldstart60mv`
-  - multi-source harvesting and self-powered interface papers such as `alghisi2017batteryless`, `wang2023serialstack`, `chen2024collaborative`, and `weng2024osece`
-- Implemented design:
-  - a packet-scout RC-ranked gate that samples both source branches, admits only one branch into the startup pump, and keeps the lane helper-free
+  - weak-source startup papers such as `goppert2016startup70mv`, `das2017selfstarter`, `quintero2019cmosstartup`, and `coustans2019coldstart60mv`
+  - adaptive dual-source and bipolar-input papers such as `tang2018dualsource`, `cao2019bipolarinput`, and `kuai2022dualpolarityjssc`
+  - multi-input interface papers such as `alhawari2016multisourcepmu`, `alghisi2017batteryless`, `wang2023serialstack`, `chen2024collaborative`, `weng2024osece`, and `li2022multiinputplatform`
+- Implemented design family:
+  - `champion`: RC-ranked packet gate
+  - `source_blind`: packet gate with the same isolation scaffold but no source awareness
+  - `time_constant_ranked`: dual-window fast/slow source-aware selector with lighter control current
 - Validated result:
-  - the `24`-case primary startup matrix does **not** show a general correctness win over the fixed or nonaware baselines
-  - the `6`-case falsifier suite does show a narrow adversarial boundary where the champion avoids some nonaware mixed-source failure modes
-- Evidence anchors:
-  - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_summary.json`
-  - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_summary.json`
-  - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/analysis_summary.json`
-  - `figures/h1_startup_sensitivity.svg`
-  - `figures/h1_falsifier_boundary.svg`
+  - the primary 24-case matrix is tied at `17/24` startup successes for all five designs
+  - `source_blind` is the empirical leader on the 10-case falsifier suite at `10/10`
+  - `time_constant_ranked` is `9/10` and reduces median successful-case pre-handoff control energy to `1.11852e-13 J`
+  - the original RC-ranked design is only `8/10`, so the initial mechanism thesis is falsified
 
 ## Reviewer (`reviewer`)
 
-- The fixed startup path remains too competitive for a broader H1 story.
-- The primary matrix ties all three designs at `17/24` startup successes and shows no primary-matrix back-drive separation.
-- Lower control energy is real but not sufficient:
-  - the champion lowers `e_ctrl` in many cases without converting that into broad startup wins
-- Rejected storylines:
-  - `general superiority over the fixed path`
-  - `general superiority over the 2023-2024 multi-input interface family`
-  - `minimum startup voltage advance`
-  - `steady-state efficiency advance`
+- The paper should not claim that the RC-ranked design won.
+- The paper should show the null primary matrix first.
+- The paper should make the ablation logic explicit:
+  - if blind packet gating beats source-aware ranking, then source awareness is not the causal ingredient
+- The fixed startup path remains competitive and should be presented honestly.
 
 ## Citation Auditor (`citation_auditor`)
 
-- `results/verification/citation_audit.md` clears only the narrowed claim set.
-- Allowed statements are limited to the `PASS` rows in that audit.
+- The active citation spine is now real and recovered:
+  - `tang2018dualsource`
+  - `cao2019bipolarinput`
+  - `kuai2022dualpolarityjssc`
+  - `alhawari2016multisourcepmu`
+  - `alghisi2017batteryless`
+  - `wang2023serialstack`
+  - `chen2024collaborative`
+  - `weng2024osece`
+  - `li2022multiinputplatform`
+  - `gogolou2025multisourcereview`
 - Blocked wording remains blocked:
   - `first`
   - `novel`
   - `best`
-  - broad fixed-baseline superiority
-  - steady-state efficiency claims
-- Bibliography scope:
-  - `21` total entries in `sources.bib`
-  - `16` relevant papers
-  - `5` repo or local-documentation entries
+  - literature-performance superiority claims
 
 ## Benchmark Auditor (`benchmark_auditor`)
 
-- Benchmark integrity passes:
-  - startup and falsifier manifests are complete
-  - run logs and summaries are internally consistent
-- Benchmark promotion gate blocks:
-  - the primary matrix is a null on startup-count advantage
-  - the primary matrix is a null on back-drive separation
-- The only benchmark boundary that survives is the two-case falsifier subset:
-  - `fa_001`
-  - `fa_005`
-- No new broad sweep is justified from the current evidence.
+- Benchmark integrity now passes for the narrowed manuscript:
+  - same-family ablation executed
+  - lower-overhead control executed
+  - real chatter, unequal-`VOC`, and leak-path falsifiers executed
+  - robustness intervals reported
+- The benchmark does not clear the original superiority story.
+- The benchmark does clear a falsification story.
 
 ## Integrator (`integrator`)
 
 - Final integrated verdict:
-  - H1 is **not promoted**
-  - H1 is **not killed**
-  - H1 is reportable only as a narrowed adversarial-startup result
+  - H1 is not promoted as originally framed
+  - H1 is not killed
+  - H1 is reportable as a negative-result and simplification paper
 - Allowed final claim:
-  - helper-free pre-arbitration source awareness can avoid some nonaware mixed-source startup failures under collapse and mixed-polarity stress
+  - in the executed helper-free weak-source model, packetized pre-handoff isolation is the load-bearing ingredient, while explicit source ranking is falsified by a blind packet-gate ablation that matches the primary matrix and improves adversarial startup outcomes
 - Open kill conditions:
-  - a stronger fixed-path or minimally corrected nonaware baseline reproduces `fa_001` and `fa_005` under equal accounting
-  - a direct-overlap paper is recovered that already demonstrates helper-free pre-arbitration mixed-source startup with the same stress boundary
-  - a materially improved collapse or chatter model removes the `fa_001` and `fa_005` separation on rerun
-- Lane-routing consequence:
-  - H2 and H3 remain unactivated because H1 narrowed rather than collapsed, and the run audit already blocks another broad sweep
+  - a reproduced literature-faithful comparator shows the same helper-free packet-gated boundary already exists
+  - a stronger local control eclipses both `source_blind` and `time_constant_ranked` under the same evidence contract

@@ -23,12 +23,16 @@
 - **Why this looks genuinely under-served:** Cold start is still hard even for one weak source. The problem gets materially worse when multiple harvesters with different source impedances, polarities, and ramp rates share the same startup path, but much of the literature still evaluates one benign source at a time.
 - **Concrete failure mode:** The startup path chatters around UVLO, one source back-drives another, or the oscillator/control loop burns the entire startup budget before enough charge accumulates to hand over to the main converter.
 - **Evidence anchors:**
-  - *Review of Fully Integrated Startup Techniques for Thermoelectric Energy Harvesting Systems* (2023) highlights that fully integrated cold start below threshold remains difficult and that oscillator-based startup can be fragile to noise and variation.
-  - *Power Management for Multi-Source Energy Harvesting Systems: A Review* (2024) identifies cold start, source intermittency, threshold mismatch, isolation, and low-overhead control as unresolved multi-source bottlenecks.
-  - *Fully Autonomous Self-Starting Interface Circuit for Piezoelectric Energy Harvesting from Multi-Source Inputs* (2024) shows that even recent silicon still has to work around startup/arbitration complexity when several sources are present.
+  - *A fully integrated 28nm CMOS dual source adaptive thermoelectric and RF energy harvesting circuit with 110mV startup voltage* (2018) is the closest direct threat to any generic "adaptive dual-source startup" claim.
+  - *A Bipolar-Input Thermoelectric Energy-Harvesting Interface With Boost/Flyback Hybrid Converter and On-Chip Cold Starter* (2019) and *A High-Efficiency Dual-Polarity Thermoelectric Energy-Harvesting Interface Circuit With Cold Startup and Fast-Searching ZCD* (2022) narrow any polarity-handling novelty moat.
+  - *Multi-Source Energy Harvesting Systems Integrated in Silicon: A Comprehensive Review* (2025), together with *Configurable Hybrid Energy Synchronous Extraction Interface With Serial Stack Resonance for Multi-Source Energy Harvesting* (2023), *Self-Powered Collaborative Energy Harvesting Interface Circuit for Stacked Multiple Piezoelectric Elements* (2024), and *A self-powered multi-input OSECE interface circuit for multiple piezoelectric transducers* (2024), capture the crowded modern multi-input interface family.
 - **Why it beats crowded decoys:** This is a hard power-interface problem, not another steady-state harvester-efficiency paper.
 - **Plausible circuit thesis:** An asynchronous startup front end that first infers source impedance and polarity, then chooses a kick-start mode and only enables arbitration/anti-backflow devices after a minimum energy packet is available.
 - **Fast falsifier:** If a tighter prior-art pass finds a fully integrated result that already cold-starts across mixed 20-300 mV sources with source-aware arbitration and no external helper supply, this gap should be downgraded.
+- **Executed outcome (2026-03-12):**
+  - The broad gap did not survive as an architecture-superiority claim.
+  - The repository now supports a narrower, more interesting result: packetized pre-handoff isolation helps, but explicit source ranking is not causal in the executed model because the blind packet-gate ablation matches the primary 24-case startup matrix and improves the expanded falsifier suite from `8/10` to `10/10`.
+  - The lower-overhead time-constant ranker preserves most of the benefit (`9/10` falsifier successes) while cutting median successful-case pre-handoff control energy from `2.37717e-13 J` to `1.11852e-13 J`.
 
 ### 2. Dynamic-Source-Impedance-Aware Harvest Interfaces For Self-Powered Sensors
 

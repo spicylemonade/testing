@@ -1,8 +1,8 @@
 # Item 022 Analysis Package
 
 Date: 2026-03-12
-Scope: explain why the H1 champion wins or fails, quantify sensitivity to the required factors, and identify the smallest surviving claim boundary
-Status: PASS with a narrowed claim boundary
+Scope: explain why the H1 packet-gated family survives, why the RC-ranked champion fails as the final headline, and what the smallest defensible claim boundary is after the new evidence pack
+Status: PASS with a falsification-centered claim boundary
 
 ## Generated Artifacts
 
@@ -10,107 +10,75 @@ Status: PASS with a narrowed claim boundary
   - `tables/analysis_sensitivity.csv`
 - Pairwise factor table:
   - `tables/analysis_pairwise.csv`
-- Machine-readable summary:
+- Same-family ablation table:
+  - `tables/ablation_pairwise.csv`
+- Ablation summary:
+  - `tables/ablation_summary.json`
+- Robustness summary:
+  - `tables/robustness_summary.json`
+- Machine-readable analysis summary:
   - `tables/analysis_summary.json`
-- Primary-matrix figure:
-  - `figures/h1_startup_sensitivity.svg`
-- Falsifier-boundary figure:
-  - `figures/h1_falsifier_boundary.svg`
+- Figures:
+  - `figures/h1_primary_matrix_heatmap.pdf`
+  - `figures/h1_falsifier_boundary.pdf`
+  - `figures/h1_metric_accounting.pdf`
+  - `figures/h1_ablation_tradeoff.pdf`
+  - `figures/h1_robustness_ci.pdf`
 
-## Why The Champion Does Not Win Broadly
+## 1. Why The RC-Ranked Champion Does Not Win Broadly
 
-- The primary matrix does not show a startup-correctness advantage:
-  - `startup_ok` is tied at `17/24` for champion, fixed, and nonaware
-- The dominant limiter in the primary matrix is shared source-model stress, not the arbitration topology:
-  - all three designs are `6/6` at `0.1 mV/s`
-  - all three designs are `6/6` at `1 mV/s`
-  - all three designs fall to `4/6` at `10 mV/s`
-  - all three designs fall to `1/6` at `100 mV/s`
-- The fixed baseline remains too competitive for a broader H1 story:
-  - the champion never improves startup count over fixed in any grouped primary-matrix slice
-  - the champion is sometimes faster than fixed, but only on a minority of successful cases and never with a startup-count gain
+- The primary startup matrix is a five-way tie at `17/24` startup successes.
+- Grouped counts by polarity, impedance ratio, and ramp rate are identical across all five designs.
+- The dominant limiter in the primary matrix is therefore shared source stress and storage dynamics, not the selector law.
 
-## Sensitivity Readout
+## 2. What The Executed Ablations Actually Show
 
-### Ramp Rate
+- `source_blind` is not a weak control. It is the strongest deterministic design in the expanded falsifier suite.
+- The startup-matrix equality between `champion` and `source_blind` means explicit ranking buys no startup-envelope advantage in the measured operating region.
+- The falsifier gaps make the point sharper:
+  - `fa_002` and `fa_006` are won by `source_blind` and lost by the RC-ranked champion
+  - the RC-ranked champion wins no case that `source_blind` loses
+- The correct mechanistic conclusion is:
+  - packet-gated isolation matters
+  - explicit RC-based branch ranking does not survive the ablation screen
 
-- Ramp rate is the strongest shared driver of outcome in the primary matrix.
-- Successful-case median control energy falls sharply as the ramp speeds up:
-  - champion: `4.71e-01 J` at `0.1 mV/s`, `3.76e-03 J` at `1 mV/s`, `1.19e-03 J` at `10 mV/s`, `2.49e-06 J` at `100 mV/s`
-  - fixed and nonaware follow the same pattern
-- Interpretation:
-  - startup dwell time dominates control-energy cost across all three designs
-  - the primary matrix therefore cannot support a claim that the champion wins simply because its control logic is lighter
+## 3. Why `time_constant_ranked` Still Matters
 
-### Source Impedance Spread
+- `time_constant_ranked` keeps `17/24` startup-matrix success and `9/10` falsifier success.
+- Its successful-case pre-handoff control-energy median is `1.11852e-13 J`, versus `2.37717e-13 J` for the RC-ranked champion.
+- That `52.9%` reduction is large enough to matter, but it does not restore the RC-ranked design as the headline result.
+- The right interpretation is that if one still wants a source-aware control within the packet-gated family, the time-constant implementation is the only version that remains competitive.
 
-- The worst grouped regime for every design is the moderate asymmetry slice:
-  - ratio `1:5` gives `5/8` startup successes for champion, fixed, and nonaware
-- Ratio `1:1` and ratio `1:20` both give `6/8` successes for every design.
-- What does separate:
-  - at ratio `1:20`, the champion has lower `e_ctrl` than fixed in `8/8` grouped cases and lower `e_ctrl` than nonaware in `7/8`
-  - at ratio `1:1`, the champion is faster than fixed in `6/8` cases and faster than nonaware in `5/8`
-- Interpretation:
-  - impedance spread changes control burden and handoff timing, but not startup correctness in the primary matrix
+## 4. Metric-Contract Repair Changed The Energy Story For The Better
 
-### Polarity Mix
+- The shared measurement hooks now stop `e_ctrl` and `e_backdrive` at first handoff rather than integrating across the full transient by default.
+- This removes the failure-window bias that previously distorted the control-energy narrative.
+- The result is cleaner:
+  - the RC-ranked champion and `source_blind` share the same successful-case median pre-handoff control energy
+  - `time_constant_ranked` is clearly lower
+  - the remaining energy claims can be tied directly to effective control conductance rather than to artifact-heavy full-window integration
 
-- Same-polarity cases are only slightly easier than mixed-polarity cases:
-  - all three designs are `9/12` on same polarity
-  - all three designs are `8/12` on mixed polarity
-- Mixed polarity inflates control-energy cost for every design:
-  - champion successful-case median `e_ctrl` rises from `7.53e-04 J` in same-polarity cases to `3.83e-02 J` in mixed-polarity cases
-  - fixed rises from `6.89e-04 J` to `3.59e-02 J`
-  - nonaware rises from `8.56e-04 J` to `3.97e-02 J`
-- Interpretation:
-  - polarity routing is a real cost center
-  - but mixed polarity by itself still does not produce a primary-matrix correctness win for the champion
+## 5. The Smallest Defensible Claim Boundary
 
-### Control Overhead
+- The final claim boundary is not the old two-case subset `{fa_001, fa_005}` anymore.
+- The stronger and more honest boundary is:
+  - packet-gated isolation beats the nonaware join topology under collapse, mixed-polarity conflict, and leak-path stress
+  - explicit RC ranking is unnecessary inside that packet-gated family
+- Load-bearing cases:
+  - `fa_001`: fixed path fails; packet-gated family survives
+  - `fa_005`: nonaware fails; packet-gated family survives
+  - `fa_009` and `fa_010`: nonaware fails leak-path stress while the packet-gated family survives
+  - `fa_002` and `fa_006`: `source_blind` survives cases that the RC-ranked champion does not
 
-- The champion is usually lower in measured control energy without converting that into general startup wins:
-  - lower `e_ctrl` than fixed in `13/24` primary-matrix cases
-  - lower `e_ctrl` than nonaware in `22/24` primary-matrix cases
-  - better startup count than fixed in `0/24`
-  - better startup count than nonaware in `0/24`
-- The falsifier suite shows why this matters:
-  - `fa_003` gives the champion lower control energy than both baselines, but no startup-correctness advantage
-- Interpretation:
-  - lower control energy is real, but it is not the surviving headline result
-  - the surviving result is narrower and tied to adversarial source interactions, not to control energy alone
+## 6. Robustness Readout
 
-### Smallest Condition Set Where The Claim Still Holds
+- `fa_001` stays the sharpest fixed-baseline separator under variation.
+- `fa_005` stays the sharpest nonaware separator under variation.
+- `fa_004` confirms that the repaired chatter case now produces the intended fall/rise2 events, although all designs still start under sampled variation.
+- `sm_015` confirms that the primary-matrix null remains a null under sampled perturbation.
 
-- The smallest evidence-backed condition set is the two-case falsifier subset:
-  - `fa_001`
-    - same polarity
-    - ratio `1:5`
-    - `100 mV`
-    - `10 mV/s`
-    - one-source collapse attack
-    - result: champion starts, fixed fails, nonaware starts later with `1.65e-06 J` back-drive
-  - `fa_005`
-    - mixed polarity
-    - ratio `1:1`
-    - `300 mV`
-    - `10 mV/s`
-    - chatter-intended transient stress
-    - result: champion and fixed start, nonaware fails with `3.59e-04 J` wrong-way energy
-- What does **not** survive as a claim boundary:
-  - `fa_002`, `fa_004`, and `fa_006` because the champion does not rescue startup there
-  - `fa_003` because it is only a lower-control-energy result without a correctness gain
+## Conclusion
 
-### Mechanistic Readout
-
-- The RC-ranked packet gate does not change the global startup envelope enough to beat the fixed path broadly.
-- It does appear to matter when a nonaware path can connect both sources through a transiently bad branch choice:
-  - collapse and mixed-polarity attacks are the only places where the champion avoids wrong-way energy or preserves startup on the narrowed evidence boundary
-- This explains the overall pattern:
-  - the primary matrix is mostly governed by shared source stress and storage dynamics
-  - the falsifier suite is where pre-arbitration source awareness becomes visible
-
-### Conclusion
-
-- The champion fails as a broad startup-interface winner.
-- The champion survives as a narrow adversarial-startup result:
-  - helper-free pre-arbitration source awareness can avoid some nonaware mixed-source failure modes during collapse and mixed-polarity transients
+- The H1 lane no longer supports a champion-design paper.
+- It does support a stronger paper than the old narrowed story:
+  - a falsification result showing that minimal packet gating preserves the adversarial boundary, explicit source ranking is unnecessary, and a lower-overhead time-constant control is the only source-aware variant worth keeping.
