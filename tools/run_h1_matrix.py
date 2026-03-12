@@ -7,6 +7,7 @@ import argparse
 import csv
 import json
 import re
+import statistics
 import subprocess
 from collections import Counter
 from datetime import datetime, timezone
@@ -20,6 +21,8 @@ RUNLOG_PATH = LANE_ROOT / "results" / "manifests" / "startup_runlog.jsonl"
 RAW_ROOT = LANE_ROOT / "results" / "raw" / "startup"
 TABLE_PATH = LANE_ROOT / "tables" / "startup_results.csv"
 SUMMARY_PATH = LANE_ROOT / "tables" / "startup_summary.json"
+BENCHMARK_TABLE_PATH = LANE_ROOT / "tables" / "benchmark_comparison.csv"
+BENCHMARK_SUMMARY_PATH = LANE_ROOT / "tables" / "benchmark_summary.json"
 NGSPICE_BIN = REPO_ROOT / "tools" / "ngspice-local"
 
 DECKS = {
@@ -252,6 +255,147 @@ def write_summary(rows: list[dict]) -> None:
     SUMMARY_PATH.write_text(json.dumps(payload, indent=2) + "\n")
 
 
+def anchor_for_case(row: dict) -> tuple[str, str]:
+    ratio = int(float(row["ratio_b_to_a"]))
+    if row["polarity_mode"] == "mixed":
+        if ratio >= 20:
+            return (
+                "weng2024osece; chen2024collaborative; lu2024tegassist",
+                "Mixed-polarity extreme-asymmetry screen against the closest 2024 multi-input self-powered family plus the helper-assisted low-voltage startup falsifier.",
+            )
+        return (
+            "weng2024osece; chen2024collaborative",
+            "Mixed-polarity screen against the closest 2024 multi-input self-powered interface family.",
+        )
+    if ratio == 1:
+        return (
+            "goppert2016startup70mv; quintero2019cmosstartup",
+            "Same-polarity low-asymmetry startup regime, closest to the recovered single-source TEG startup family.",
+        )
+    return (
+        "alghisi2017batteryless; gogolou2025multisourcereview; wang2023serialstack",
+        "Same-polarity multi-source regime with impedance asymmetry, closest to the multi-source PMU and interface family.",
+    )
+
+
+def write_benchmark_artifacts(rows: list[dict]) -> None:
+    by_case_design = {(row["case_id"], row["design"]): row for row in rows}
+    case_ids = sorted({row["case_id"] for row in rows})
+    fieldnames = [
+        "case_id",
+        "polarity_mode",
+        "voltage_mv",
+        "ramp_mvps",
+        "ratio_b_to_a",
+        "literature_anchor",
+        "regime_note",
+        "champion_startup_ok",
+        "champion_t_handoff_s",
+        "champion_e_backdrive_j",
+        "champion_e_ctrl_j",
+        "fixed_startup_ok",
+        "fixed_t_handoff_s",
+        "fixed_e_backdrive_j",
+        "fixed_e_ctrl_j",
+        "nonaware_startup_ok",
+        "nonaware_t_handoff_s",
+        "nonaware_e_backdrive_j",
+        "nonaware_e_ctrl_j",
+        "champion_vs_fixed_t_handoff_s",
+        "champion_vs_nonaware_t_handoff_s",
+        "champion_vs_fixed_e_ctrl_j",
+        "champion_vs_nonaware_e_ctrl_j",
+    ]
+    with BENCHMARK_TABLE_PATH.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for case_id in case_ids:
+            champion = by_case_design[(case_id, "champion")]
+            fixed = by_case_design[(case_id, "fixed")]
+            nonaware = by_case_design[(case_id, "nonaware")]
+            anchor, note = anchor_for_case(champion)
+            writer.writerow(
+                {
+                    "case_id": case_id,
+                    "polarity_mode": champion["polarity_mode"],
+                    "voltage_mv": champion["voltage_mv"],
+                    "ramp_mvps": champion["ramp_mvps"],
+                    "ratio_b_to_a": champion["ratio_b_to_a"],
+                    "literature_anchor": anchor,
+                    "regime_note": note,
+                    "champion_startup_ok": champion["startup_ok"],
+                    "champion_t_handoff_s": champion["t_handoff_s"],
+                    "champion_e_backdrive_j": champion["e_backdrive_j"],
+                    "champion_e_ctrl_j": champion["e_ctrl_j"],
+                    "fixed_startup_ok": fixed["startup_ok"],
+                    "fixed_t_handoff_s": fixed["t_handoff_s"],
+                    "fixed_e_backdrive_j": fixed["e_backdrive_j"],
+                    "fixed_e_ctrl_j": fixed["e_ctrl_j"],
+                    "nonaware_startup_ok": nonaware["startup_ok"],
+                    "nonaware_t_handoff_s": nonaware["t_handoff_s"],
+                    "nonaware_e_backdrive_j": nonaware["e_backdrive_j"],
+                    "nonaware_e_ctrl_j": nonaware["e_ctrl_j"],
+                    "champion_vs_fixed_t_handoff_s": (
+                        None
+                        if champion["t_handoff_s"] is None or fixed["t_handoff_s"] is None
+                        else float(champion["t_handoff_s"]) - float(fixed["t_handoff_s"])
+                    ),
+                    "champion_vs_nonaware_t_handoff_s": (
+                        None
+                        if champion["t_handoff_s"] is None or nonaware["t_handoff_s"] is None
+                        else float(champion["t_handoff_s"]) - float(nonaware["t_handoff_s"])
+                    ),
+                    "champion_vs_fixed_e_ctrl_j": float(champion["e_ctrl_j"]) - float(fixed["e_ctrl_j"]),
+                    "champion_vs_nonaware_e_ctrl_j": float(champion["e_ctrl_j"]) - float(nonaware["e_ctrl_j"]),
+                }
+            )
+
+    summary = {
+        "updated_at": utc_now(),
+        "case_count": len(case_ids),
+        "champion_better_startup_than_fixed": 0,
+        "champion_better_startup_than_nonaware": 0,
+        "champion_faster_than_fixed": 0,
+        "champion_faster_than_nonaware": 0,
+        "champion_lower_backdrive_than_fixed": 0,
+        "champion_lower_backdrive_than_nonaware": 0,
+        "champion_lower_ctrl_than_fixed": 0,
+        "champion_lower_ctrl_than_nonaware": 0,
+        "median_t_handoff_s": {},
+        "median_e_ctrl_j": {},
+    }
+    for case_id in case_ids:
+        champion = by_case_design[(case_id, "champion")]
+        fixed = by_case_design[(case_id, "fixed")]
+        nonaware = by_case_design[(case_id, "nonaware")]
+        if float(champion["startup_ok"]) > float(fixed["startup_ok"]):
+            summary["champion_better_startup_than_fixed"] += 1
+        if float(champion["startup_ok"]) > float(nonaware["startup_ok"]):
+            summary["champion_better_startup_than_nonaware"] += 1
+        if champion["t_handoff_s"] is not None and fixed["t_handoff_s"] is not None and float(champion["startup_ok"]) >= 0.5 and float(fixed["startup_ok"]) >= 0.5:
+            if float(champion["t_handoff_s"]) < float(fixed["t_handoff_s"]):
+                summary["champion_faster_than_fixed"] += 1
+        if champion["t_handoff_s"] is not None and nonaware["t_handoff_s"] is not None and float(champion["startup_ok"]) >= 0.5 and float(nonaware["startup_ok"]) >= 0.5:
+            if float(champion["t_handoff_s"]) < float(nonaware["t_handoff_s"]):
+                summary["champion_faster_than_nonaware"] += 1
+        if float(champion["e_backdrive_j"]) < float(fixed["e_backdrive_j"]):
+            summary["champion_lower_backdrive_than_fixed"] += 1
+        if float(champion["e_backdrive_j"]) < float(nonaware["e_backdrive_j"]):
+            summary["champion_lower_backdrive_than_nonaware"] += 1
+        if float(champion["e_ctrl_j"]) < float(fixed["e_ctrl_j"]):
+            summary["champion_lower_ctrl_than_fixed"] += 1
+        if float(champion["e_ctrl_j"]) < float(nonaware["e_ctrl_j"]):
+            summary["champion_lower_ctrl_than_nonaware"] += 1
+
+    for design in ["champion", "fixed", "nonaware"]:
+        subset = [row for row in rows if row["design"] == design]
+        success = [float(row["t_handoff_s"]) for row in subset if row["t_handoff_s"] is not None and float(row["startup_ok"]) >= 0.5]
+        summary["median_t_handoff_s"][design] = statistics.median(success)
+        summary["median_e_ctrl_j"][design] = statistics.median(float(row["e_ctrl_j"]) for row in subset)
+
+    BENCHMARK_SUMMARY_PATH.write_text(json.dumps(summary, indent=2) + "\n")
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     manifest = load_manifest()
     manifest["designs"] = ["champion", "fixed", "nonaware"]
@@ -284,6 +428,22 @@ def cmd_summarize(_: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_benchmark(_: argparse.Namespace) -> int:
+    rows = collect_existing()
+    write_benchmark_artifacts(rows)
+    print(
+        json.dumps(
+            {
+                "collected": len(rows),
+                "benchmark_table": str(BENCHMARK_TABLE_PATH.relative_to(REPO_ROOT)),
+                "benchmark_summary": str(BENCHMARK_SUMMARY_PATH.relative_to(REPO_ROOT)),
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -295,6 +455,9 @@ def main() -> int:
 
     sum_parser = sub.add_parser("summarize")
     sum_parser.set_defaults(func=cmd_summarize)
+
+    bench_parser = sub.add_parser("benchmark")
+    bench_parser.set_defaults(func=cmd_benchmark)
 
     args = parser.parse_args()
     return args.func(args)

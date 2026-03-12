@@ -6,6 +6,8 @@ BPCTRL pwr_ctrl 0 V = { pos(V(n_store) * I(VCTRL_MON)) }
 
 .measure tran vstore_final find v(n_store) at={TSTOP}
 .measure tran t_handoff when v(n_handoff)=0.5 rise=1
+.measure tran t_handoff_fall when v(n_handoff)=0.5 fall=1
+.measure tran t_handoff_rise2 when v(n_handoff)=0.5 rise=2
 .measure tran e_back_a integ v(pwr_back_a) from=0 to={TSTOP}
 .measure tran e_back_b integ v(pwr_back_b) from=0 to={TSTOP}
 .measure tran e_backdrive param='e_back_a + e_back_b'
