@@ -10,6 +10,7 @@ This folder is the canonical H1 root for all later netlists, manifests, tables, 
 ## Canonical Links
 
 - Dependency map: [dependency_map.md](dependency_map.md)
+- Experiment spec: [experiment_spec.md](experiment_spec.md)
 - Netlists: [netlists/README.md](netlists/README.md)
 - Raw outputs and manifests: [results/README.md](results/README.md)
 - Tables: [tables/README.md](tables/README.md)
