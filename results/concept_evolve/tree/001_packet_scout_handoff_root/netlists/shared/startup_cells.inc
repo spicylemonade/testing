@@ -3,14 +3,14 @@
 .func pos(x) { 0.5 * (x + abs(x)) }
 .func neg(x) { 0.5 * (-x + abs(x)) }
 
-.param RON_ROUTE=2
+.param RON_ROUTE=5
 .param ROFF_ROUTE=200k
-.param ROUTE_HYST=1u
+.param ROUTE_HYST=2m
 .param G_PUMP=50u
 .param ETA_PUMP=3
 .param VSTART_DEAD=5m
 
-.model SWROUTE SW(Ron={RON_ROUTE} Roff={ROFF_ROUTE} Vt=0 Vh={ROUTE_HYST})
+.model SWROUTE SW(Ron={RON_ROUTE} Roff={ROFF_ROUTE} Vt=1m Vh={ROUTE_HYST})
 
 .subckt fw_router in_p in_n out_p out_n
 BCTRL ctrl 0 V = { V(in_p,in_n) }

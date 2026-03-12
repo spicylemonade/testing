@@ -8,10 +8,10 @@ All later H1 artifacts must link back to this folder, even when a result is summ
 
 - `netlists/shared/source_pair_models.inc`
   - Parameterized two-source Thevenin source models with ramp, polarity, and impedance controls.
-- `netlists/shared/scout_probe_cells.inc`
-  - Packet-injection probes, sample capacitors, and reverse-isolation devices used by champion and ablation lines.
-- `netlists/shared/handoff_control.inc`
-  - Token latch, delayed handoff gate, UVLO deglitch, and main-arbiter enable path.
+- `netlists/shared/startup_cells.inc`
+  - Common polarity-routing switch model and abstract startup-pump block reused by baselines, champion, and ablation decks.
+- `netlists/shared/packet_scout_blocks.inc`
+  - Shared packet-scout ranking core for the champion and the source-blind ablation.
 - `netlists/shared/measurement_hooks.inc`
   - Common `.measure` blocks for startup success, time-to-handoff, back-drive loss, and startup-control energy.
 
@@ -44,7 +44,7 @@ All later H1 artifacts must link back to this folder, even when a result is summ
 - Champion family:
   - `netlists/champion/packet_scout_handoff/`
 - Required ablation family:
-  - `netlists/ablations/time_constant_ranked_arbiter/`
+  - `netlists/ablations/source_blind_packet_gate/`
 
 ## Result Tables And Manifests
 

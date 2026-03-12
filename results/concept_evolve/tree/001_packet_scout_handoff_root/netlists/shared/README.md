@@ -1,8 +1,8 @@
 # Shared Subcircuits
 
-Planned shared includes:
+Implemented shared includes:
 
 - `source_pair_models.inc`
-- `scout_probe_cells.inc`
-- `handoff_control.inc`
+- `startup_cells.inc`
+- `packet_scout_blocks.inc`
 - `measurement_hooks.inc`

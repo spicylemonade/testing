@@ -10,9 +10,12 @@
 - Dependency list:
   - `netlists/shared/source_pair_models.inc`
   - `netlists/shared/startup_cells.inc`
+  - `netlists/shared/packet_scout_blocks.inc`
   - scout packet capacitor
   - recovery timing capacitor
   - branch-isolation switch
   - handoff threshold gate
+- Netlist:
+  - `rc_ranked_packet_gate.cir`
 - Predicted failure mode:
   - under ultra-slow ramps or weak packets, the recovery signatures collapse together and the ranking overhead exceeds the saved back-drive loss
