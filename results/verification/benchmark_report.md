@@ -1,150 +1,253 @@
 # Benchmark Report
 
-Review phase: `review_round_1`
+Verification phase: `post_deepen`
 
 ## Verdict
 
-- Internal reproducibility package: **PASS**
-- Publication-quality benchmark adequacy: **FAIL**
+- Internal reproducibility and negative-result benchmarking: **PASS**
+- Publication-quality benchmark adequacy for mechanism, robustness, or asymptotic claims: **FAIL**
 
-The repository now supports a narrow finite-horizon computational claim set: the
-baseline recurrence is reproducible, the million-step baseline digest repeats, and the
-stored witness artifacts are rich enough to reject the strongest compact-certificate
-version of H1 on the current corpus. The benchmark package is still not strong enough
-for publication-quality robustness, mechanism, or asymptotic claims.
+The post-deepen package is materially stronger than the earlier review-round artifact.
+It now includes a partial independent checker, matched non-record controls, affine
+surrogate windows, a dual-canonicalization full-hypergraph audit, a sampled schedule
+audit, and one genuine admissibility perturbation. That is enough to support a narrow
+finite-horizon negative-result package. It is still not enough to support
+publication-quality claims about a `T`-specific mechanism, robustness of the witness
+story, or boundedness/unboundedness of `T(1,n+1) - T(1,n)`.
 
-## What The Current Evidence Actually Establishes
+## What The Current Benchmark Package Actually Establishes
 
-- The baseline implementation clears the local contract bar. Prefix validation is
-  recorded in `results/experiments/run_1000000/contract.json`, the small-table checks
-  exist in `tests/test_prime_separator.py`, and the old-square update-order mistake is
-  explicitly tested.
-- Large-horizon reproducibility is now better than the previous audit stated.
-  `results/experiments/runtime_repeats_1000000.json` records three digest-matching
-  million-step repeats for the baseline, `row_immediate`, and `column_immediate`, with
-  mean and variance summaries.
-- The archived variant runs do **not** provide two meaningful robustness ablations.
-  `row_immediate` is exactly the baseline process on the stored outputs, and
-  `column_immediate` is the exact axis swap of the baseline sequences rather than an
-  independent nearby mechanism. The test suite and direct sequence equality confirm
-  this.
-- The experiment package therefore supports finite-horizon negative-result statements,
-  not a robustness story. It supports: reproducible record gaps through `30` in the
-  baseline, rejection of the strong raw-witness H1 story on the current corpus, and the
-  empirical fact that several late record gaps are composite-only.
+- The baseline recurrence is reproducible through the checked million-step run:
+  prefix validation passes, the largest baseline record gap is `30`, and three
+  million-step repeats agree on the baseline digest.
+- The package now has a separately written checker that agrees with the baseline
+  row/column terms through `10^5` steps.
+- The evaluation package is no longer record-only. The post-deepen shared corpus
+  contains `5` late record windows, `45` matched non-record controls, and `50`
+  size-matched affine surrogate windows.
+- Full-witness error analysis improved: the hypergraph audit recomputes candidate
+  metrics from the full pair set under balanced and lexicographic canonicalizations.
+- Schedule testing improved: `row_immediate` is confirmed as the baseline process on
+  audited states, and `column_immediate` is confirmed as the axis swap.
+- The package now includes one genuine admissibility perturbation, `coprime_only`,
+  which is strong enough to kill the small-`q` modular-locking lane.
 
-## Missing Baselines
+These additions support negative claims such as:
 
-- **No independent implementation baseline.**
-  All large-horizon evidence still comes from one generator family. Repeated digests of
-  the same implementation protect against nondeterminism, not against shared logic
-  errors. A publication-quality package needs one separately written checker that
-  agrees with the baseline contract through at least `10^5` steps.
-- **No generic null or surrogate baseline.**
-  There is still no benchmark against size-matched surrogate product sets, shuffled or
-  degree-matched witness hypergraphs, or any matched generic factor-coverage process.
-  Without that baseline, the current witness summaries cannot distinguish mex-coupled
-  structure from generic local divisor/product coverage.
-- **No matched non-record window baseline.**
-  Prime-free intervals, singleton-heavy coverage, balanced-factor growth, and the
-  axis-1 marker are summarized on record gaps only. There is no equal-length
-  non-record-window control showing whether these features are actually discriminative.
+- no bounded-correction anchor/backbone law on the held-out late records;
+- no credible full-hypergraph rigidity invariant on the current matched corpus;
+- no modular-residue mechanism that beats the anchor comparator;
+- no robustness story that can be inferred from the stored variant runs alone.
 
-## Missing Ablations And Controls
+## Baselines
 
-- **Zero genuine robustness ablations remain after the identity checks.**
-  The original variant memo still describes `column_immediate` as a real perturbation,
-  but the current code and tests show that it is just the axis swap. After accounting
-  for that fact, the package has no materially distinct robustness variant at all.
-- **The falsifier-requested controls are still missing.**
-  The benchmark package does not include:
-  1. a same-snapshot explicit tie-rule control;
-  2. an admissibility perturbation that changes coverage rules rather than update
-     staging.
-- **Variant contracts are not benchmarked on the same footing as the baseline.**
-  The baseline contract records prefix-validation flags. The variant contracts record
-  digests and gap summaries only. That asymmetry weakens any cross-run evaluation,
-  especially once the variants are being used as control evidence.
-- **The benchmark narrative is internally inconsistent.**
-  `results/experiments/variant_comparison.md` and the previous benchmark report still
-  frame the archived variants as robustness evidence, while the paper and tests now
-  treat them as identity and symmetry validations. That inconsistency needs to be fixed
-  before any external-facing claim about ablations or robustness.
+### 1. Same-code reproducibility baseline
 
-## Missing Error Analysis
+Status: **PASS**
 
-- **Chosen-witness summaries are still canonicalization-sensitive.**
-  `scripts/prime_separator.py` stores the first witness seen for each skipped value, and
-  `scripts/summarize_record_gaps.py` derives prime/tiny/balanced/signature summaries
-  from that chosen witness. Those metrics are not yet shown to be invariant under
-  witness ordering or canonicalization.
-- **Full hypergraph validation is selective.**
-  Full witness exports cover baseline gaps `13, 17, 19, 20, 21` in one artifact and
-  `21, 25, 28, 30` in another, but they are not yet used to recompute the headline
-  taxonomy on every late record gap and not compared against matched non-record
-  intervals.
-- **H1/H2 analysis stops short of the available corpus.**
-  The claim sheets still analyze the five-gap corpus `13, 17, 19, 20, 21` even though
-  the million-step run produced later baseline records `25, 28, 30` and the
-  axis-swapped run produced later row-gap records `21, 23, 26, 27, 31`. H2 explicitly
-  does not extend its support table to those later gaps.
-- **Mechanism language still outruns the controls.**
-  Claims such as "the only stable T-specific motif" or "Ford-like local factor
-  coverage" are still being made without surrogate controls or matched generic windows.
-  Those statements may be right, but the current benchmark package does not isolate them
-  strongly enough for publication-quality presentation.
+- The baseline contract validates the known prefix and the million-step run records
+  the expected late record gaps `25`, `28`, and `30`.
+- `results/experiments/runtime_repeats_1000000.json` records three digest-matching
+  million-step repeats for the baseline, `row_immediate`, and `column_immediate`.
 
-## Missing Stress Tests
+Benchmark implication:
+- The main generator is deterministic on the recorded machine and command path.
 
-- **No horizon sweep for the mechanism metrics.**
-  The repeat artifact is pinned at `10^6` steps. There is still no controlled checkpoint
-  sweep at horizons such as `10^5`, `3 x 10^5`, `10^6`, and `3 x 10^6` showing whether
-  the witness summaries, gap counts, offset statistics, and balanced-factor share
-  stabilize, drift, or reverse.
-- **No rolling hypergraph audit.**
-  Hypergraph exports validate selected late gaps, not every late record gap and not any
-  non-record controls. That is enough to validate some multiplicities, not enough to
-  stress-test the witness-taxonomy narrative over scale.
-- **No adversarial wrong-rule family beyond one nearby failure.**
-  The test suite catches one misread update order, but there is no broader family of
-  stale-state, wrong-snapshot, or witness-accounting negative controls that would
-  pressure-test the benchmark instrumentation itself.
+### 2. Independent implementation baseline
+
+Status: **PARTIAL**
+
+- `results/novelty_deepening/checker_agreement.json` shows a separately written
+  checker agreeing with the baseline through `10^5` steps.
+- There is still no independent agreement artifact at the headline `10^6` horizon, and
+  no independent checker for witness logs, matched-window corpora, or hypergraph
+  summaries.
+
+Benchmark implication:
+- The package is protected against some shared-logic mistakes, but not yet strongly
+  enough for publication-quality use of the full late-horizon evaluation stack.
+
+### 3. Matched controls and surrogate baselines
+
+Status: **PARTIAL**
+
+- The earlier claim that no matched controls exist is now false. The shared corpus
+  includes `45` matched non-record windows and `50` affine size-matched surrogates.
+- These controls are already strong enough to falsify several positive stories:
+  the anchor/backbone law fails bounded-support on held-out records, and the best
+  hypergraph near-miss still leaves `28.9%` of matched controls inside the balanced
+  record band.
+- The control package is still narrow. The held-out positive set for Item 026 is only
+  two late records, and the affine surrogate family is easier than the true matched
+  controls.
+
+Benchmark implication:
+- The package now supports controlled negative-result claims.
+- It still does not support publication-quality separation of `T`-specific structure
+  from generic local product coverage.
+
+## Ablations And Controls
+
+### 1. Main variant package
+
+Status: **FAIL** as robustness ablation evidence
+
+- `row_immediate` is not an ablation; it is the baseline process.
+- `column_immediate` is not an independent nearby mechanism; it is the axis swap.
+- The current tests and the late schedule audit both support this identity/symmetry
+  reading.
+
+Benchmark implication:
+- The main experiment package contains zero genuine nearby robustness ablations.
+- Any claim that the baseline conclusions survive perturbation cannot cite
+  `row_immediate` or `column_immediate` as substantive robustness evidence.
+
+### 2. Genuine perturbation controls
+
+Status: **PARTIAL**
+
+- `coprime_only` is a real coverage-rule change and therefore a real negative control.
+- It is useful for falsifying the modular-locking direction, but it is not a matched
+  robustness baseline for the original recurrence: it fails all baseline prefix checks
+  and changes the object substantially.
+
+Benchmark implication:
+- The repo now has one real perturbation test.
+- It still lacks a nearby admissibility/tie-rule control that preserves enough of the
+  baseline geometry to support a publication-grade robustness argument.
+
+### 3. Schedule control
+
+Status: **PARTIAL**
+
+- The post-deepen schedule audit sampled `1000` late frontier states and found batched
+  equals row-immediate on all audited states, while column-immediate matches the axis
+  swap on all audited states.
+- This is a useful one-step control, not an exhaustive proof that all downstream
+  evaluation artifacts are schedule-insensitive at every horizon.
+
+Benchmark implication:
+- The schedule story is good enough to demote the old robustness rhetoric.
+- It is not a substitute for real nearby ablations of the claimed mechanism metrics.
+
+## Error Analysis
+
+### 1. Chosen-witness sensitivity
+
+Status: **PARTIAL**
+
+- The old criticism is no longer fully accurate: full-witness recomputation exists and
+  the hypergraph audit compares balanced and lexicographic canonicalizations.
+- The remaining problem is scope. The chosen-witness summaries in
+  `record_gap_summary.json`, the H1 sheet, the H2 sheet, and the final-status note are
+  still driven by first-witness bookkeeping rather than by full-pair recomputation of
+  the same headline taxonomy.
+
+Benchmark implication:
+- Graph-level canonicalization risk is partly quantified.
+- Publication-quality witness-taxonomy claims are still unsupported until the headline
+  summaries themselves are shown to be canonicalization-stable.
+
+### 2. Stale evidence routing
+
+Status: **FAIL**
+
+- The benchmark narrative and claim-source routing are stale relative to the
+  post-deepen artifacts. They still lean on the earlier five-gap summaries even though
+  matched-control and surrogate evaluations now exist.
+- H1 and especially H2 remain tabled on the old `13, 17, 19, 20, 21` corpus despite
+  later late-gap evidence and phase-6 controls.
+
+Benchmark implication:
+- The repo currently mixes old and new evidence layers.
+- That inconsistency is itself a benchmark weakness because it makes it unclear which
+  artifact is the authoritative support for each computational claim.
+
+## Stress Tests
+
+### 1. Horizon and checkpoint testing
+
+Status: **PARTIAL**
+
+- A checkpoint sweep now exists in the modular lane at `10^5`, `3 x 10^5`, and `10^6`.
+- There is still no corresponding checkpoint sweep for the core witness, offset,
+  anchor, or hypergraph metrics used in the main narrative.
+
+Benchmark implication:
+- The package has some temporal stress testing.
+- It still does not show whether the main mechanism-style summaries stabilize, drift,
+  or reverse with horizon.
+
+### 2. Full late-window audits
+
+Status: **PARTIAL**
+
+- Late full-witness artifacts now cover the main baseline late records used in the
+  phase-6 corpus, and matched controls/surrogates are present in the shared corpus.
+- The package still does not benchmark every headline witness summary against the full
+  corpus under multiple canonicalizations, and it does not extend the matched-control
+  evaluation beyond the narrow late-record slice.
+
+Benchmark implication:
+- The late negative-result package is credible on its audited slice.
+- It remains too narrow for broad claims about the process as a whole.
+
+### 3. Performance benchmarking
+
+Status: **FAIL** for publication-grade benchmarking
+
+- Runtime evidence is limited to three same-machine repeats and single-run wall-clock /
+  RSS snapshots.
+- That is enough for reproducibility notes, not for serious performance benchmarking or
+  cross-environment claims.
 
 ## Publication-Quality Claim Boundary
 
-- The current package **can** support:
-  - a validated recurrence implementation;
-  - digest-repeatable million-step baseline computation;
-  - finite-horizon record-gap growth through baseline gap `30`;
-  - rejection of the strong raw-witness compact-certificate story on the current
-    finite corpus;
-  - the empirical existence of composite-only late record gaps.
-- The current package **cannot** support:
-  - boundedness or unboundedness of `T(1,n+1) - T(1,n)`;
-  - any broad robustness claim;
-  - a T-specific mechanism separated from generic local divisor/product coverage;
-  - witness-taxonomy claims that depend on chosen-witness summaries being canonical;
-  - publication-quality novelty language against the Ford overlap branch.
+The current package **can** support:
+
+- a validated recurrence implementation and reproducible million-step baseline run;
+- a partial independent check through `10^5` steps;
+- controlled negative-result claims against the bounded-correction anchor/backbone,
+  full-hypergraph rigidity, and modular-locking lanes;
+- the statement that the archived variant runs are identity/symmetry checks rather than
+  robustness ablations.
+
+The current package **cannot** support:
+
+- boundedness or unboundedness of `T(1,n+1) - T(1,n)`;
+- a publication-quality robustness claim;
+- a `T`-specific witness or hypergraph mechanism cleanly separated from generic local
+  product coverage;
+- headline witness-taxonomy claims that still depend on first-witness summaries;
+- performance benchmarking claims beyond simple same-machine repeatability.
 
 ## Falsifiable Next Checks
 
-1. Add one independently written reference implementation and require agreement with the
-   baseline contract through at least `10^5` steps. If the contracts diverge, stop
-   using the current large-horizon package as publication evidence.
-2. Implement the two missing falsifier controls: a same-snapshot tie-rule variant and a
-   real admissibility perturbation. If the qualitative conclusions break under either
-   control, retract the current robustness language.
-3. Benchmark the true process against matched non-record windows and size-matched
-   surrogate product sets or hypergraphs. If prime-free, singleton-heavy, or
-   balanced-factor patterns are equally common there, kill the T-specific mechanism
+1. Extend the independent checker to the full `10^6` horizon and require exact
+   agreement on row/column terms, record-gap locations, and the matched-window export.
+   If any disagreement appears, stop using the current late-horizon package as
+   publication evidence.
+
+2. Add one genuinely nearby admissibility or tie-rule control that preserves the
+   baseline prefix for a substantial prefix while changing coverage decisions. If the
+   main negative conclusions fail under that control, retract the current robustness
+   language completely.
+
+3. Recompute the headline witness taxonomy from the full witness pair set, not from the
+   first witness encountered, on every phase-6 record/control window under at least two
+   canonicalizations. If singleton share, balanced-factor share, or prime-support
+   summaries move materially, remove those narratives from the publication claim set.
+
+4. Replace or augment the affine surrogate family with a harder size- and
+   factor-budget-matched surrogate baseline. If the best hypergraph or anchor metrics
+   stop separating records from the harder surrogates, kill the `T`-specific mechanism
    framing.
-4. Recompute the witness taxonomy from full hypergraphs for every baseline record gap
-   from `20` upward and for the late axis-swapped row-gap records, under at least two
-   witness canonicalizations. If the high-level summary changes materially, retract the
-   current witness-summary narrative.
-5. Extend the H1 and H2 tables to baseline gaps `25, 28, 30` and the late
-   axis-swapped-row gaps. If the negative conclusions fail to persist on the larger
-   corpus, update the claim sheets accordingly.
-6. Run a repeated horizon sweep at fixed checkpoints such as `10^5`, `3 x 10^5`,
-   `10^6`, and `3 x 10^6`. If the mechanism metrics drift or reverse, replace the
-   current trend language with a horizon-limited statement.
+
+5. Run the core benchmark metrics at fixed checkpoints such as `10^5`, `3 x 10^5`,
+   `10^6`, and `3 x 10^6`. If anchor AUROC, control overlap, or witness-taxonomy
+   summaries drift materially, downgrade all mechanism language to an explicitly
+   finite-horizon statement.
+
+6. Rewrite the evidence ledger so every computational claim routes to one current
+   post-deepen artifact. If H1/H2 or the final-status note still depend on stale
+   small-corpus summaries after that rewrite, treat those claims as unsupported.

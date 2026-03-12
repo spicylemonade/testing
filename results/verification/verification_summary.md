@@ -1,90 +1,101 @@
 # Verification Summary
 
-Review phase: `review_round_1`
+Review phase: `post_deepen`
 
 ## Recommendation
 
 **Decision: REVISE**
 
-The current package is strong enough for a narrower paper centered on structural
-cleanup of the public recurrence, proof of the public prime-separation observation,
-reproducible finite-horizon computation, and negative evidence against the strongest
-H1/H2 mechanism stories. It is not strong enough, as written, for broad novelty,
-mechanism, robustness, or asymptotic claims.
+The post-deepen package is strong enough for a narrower paper built around:
+
+- proof-level cleanup of exact consequences of the public recurrence;
+- proof of the public prime-separation observation from the recurrence;
+- reproducible million-step computation with partial independent checking; and
+- matched-control negative evidence against compact anchor/backbone, hypergraph, and
+  modular mechanism stories.
+
+It is still not strong enough, as written, for a broader novelty, mechanism,
+robustness, or asymptotic pitch. Acceptance should be tied to revision into that
+narrower claim set. If the goal is to keep the stronger mechanism or benchmark story,
+the work needs further deepening after revision rather than acceptance now.
 
 ## Must-Fix Issues
 
-1. **Reduce the claim hierarchy to what the evidence actually supports.**
-   Keep the contribution statement centered on:
-   - exact structural consequences of the recurrence;
-   - proof of prime separation from the recurrence;
-   - digest-checked million-step computation;
-   - negative witness/hypergraph evidence against compact-certificate and
-     prime-support mechanism claims.
-   Remove or explicitly downgrade claims about a new positive mechanism, a
-   differentiated prime-support explanation, a clean theorem-level separation from
-   Ford-style overlap, broad robustness, or any boundedness/unboundedness implication.
+1. **Reduce the claim set to the supported contribution boundary.**
+   Keep the manuscript centered on structural cleanup, proof of prime separation,
+   validated finite-horizon computation, and negative mechanism evidence. Remove or
+   explicitly demote claims about:
+   - a new positive mechanism for row-gap formation;
+   - a promoted frontier certificate or hypergraph rigidity law;
+   - a prime-support explanation of late records;
+   - a clean theorem-level escape from Ford-style overlap; or
+   - any progress claim on boundedness or unboundedness of `T(1,n+1) - T(1,n)`.
 
-2. **Rewrite literature-positioning and novelty language as author judgment rather than source-proved fact.**
-   The Ford, OEIS, and Kimberling citations support adjacency and provenance. They do
-   not themselves prove statements such as "this is the correct overlap branch" or
-   "reconstruction alone cannot be novel." Recast those passages as explicit internal
-   assessment, or attach the internal novelty-analysis artifacts where that judgment is
-   being made.
+2. **Rewrite novelty and overlap language as internal assessment, not source-proved fact.**
+   OEIS, Kimberling, Ford, and multiplicative-basis citations support provenance and
+   adjacent comparison classes. They do not by themselves prove that Ford is the
+   decisive novelty boundary or that reconstruction alone cannot be novel. Recast that
+   language as author judgment and pair it with the internal novelty analysis where
+   the paper makes those stronger conclusions.
 
-3. **Add direct artifact support at the first claim site for the main negative computational conclusions.**
-   The core data exist, but abstract/introduction/discussion language currently outruns
-   its sentence-level traceability. Add explicit references when first asserting:
-   - composite-only late record gaps;
-   - singleton-heavy witness behavior;
-   - balanced-factor growth;
-   - non-compression of the witness data;
-   - failure of prime-support observables to explain record gaps.
+3. **Fix sentence-level citation routing at the strongest claim sites.**
+   The paper's quantitative claims are mostly correct, but the abstract, discussion,
+   and conclusion still compress strong results without local artifact support. Add
+   direct citations where the paper first asserts:
+   - composite-only late record gaps and full-witness late-gap summaries;
+   - anchor discrimination and failure of bounded-support generalization;
+   - schedule AUROC versus the length baseline;
+   - prefix-depth obstruction values;
+   - hypergraph near-miss and matched-control overlap;
+   - nonpredictive modular-locking results; and
+   - the axis-swapped `31` claim, if that sentence remains.
 
-4. **Fix the benchmark narrative around variants and robustness.**
-   `row_immediate` is the baseline process and `column_immediate` is an axis swap, not
-   independent robustness ablations. Remove any external-facing language that treats
-   them as meaningful perturbation evidence, and align the paper and experiment notes
-   with the identity/symmetry interpretation.
+4. **Repair the benchmark narrative around variants, controls, and evidence routing.**
+   `row_immediate` is the baseline process and `column_immediate` is the axis swap.
+   They cannot be presented as independent robustness ablations. Update the
+   manuscript, experiment notes, and final-status language so every computational
+   claim routes to a current post-deepen artifact rather than to stale small-corpus
+   summaries.
 
-5. **Stop treating `results/research_context.md` as an authoritative literature ledger unless it is regenerated.**
-   The citation audit found it stale relative to the Semantic Scholar manifest. Either
-   regenerate it from the manifest or demote it to non-authoritative metadata.
+5. **Either justify the headline witness-taxonomy statements from full-pair artifacts or weaken them.**
+   The full-hypergraph audit improved the evidence base, but some headline witness
+   narratives still depend on first-witness bookkeeping. If singleton-share,
+   balanced-share, or cycle-rank language remains in the main claim spine, back it
+   with full-pair / multi-canonicalization artifacts at the sentence where it is
+   asserted. Otherwise, downgrade those statements to exploratory observations.
 
-6. **Clean up weak bibliography entries if they remain in scope.**
-   Replace metadata-only placeholders with primary records where the manuscript still
-   invokes generalized/restricted multiplication-table descendants or algorithmic
-   multiplication-table comparisons.
+6. **Stop treating stale literature metadata as authoritative.**
+   `results/research_context.md` is stale relative to the current manifest and should
+   be regenerated or explicitly demoted to non-authoritative metadata. Clean up weak
+   bibliography placeholders if they remain in scope after the claim set is narrowed.
 
 ## Optional Improvements
 
-These are not necessary for a narrow revision, but they become necessary if the goal
-is to restore a stronger mechanism or publication-quality benchmark story.
+These are not required for a narrow revision. They become necessary if the project
+wants to restore a stronger mechanism or publication-quality benchmark claim.
 
-1. Add one independently written reference implementation and require agreement with
-   the baseline contract through at least `10^5` steps.
+1. Extend the independent checker to the full `10^6` horizon and require exact
+   agreement on row/column terms, record-gap locations, and matched-window exports.
 
-2. Add genuine controls:
-   - same-snapshot tie-rule control;
-   - admissibility perturbation that changes coverage rules rather than update staging.
+2. Add at least one genuinely nearby admissibility or tie-rule control that preserves
+   a substantial baseline prefix while changing coverage decisions.
 
-3. Benchmark against matched non-record windows and size-matched surrogate product
-   sets or witness hypergraphs to test whether the observed structures are actually
-   discriminative.
+3. Recompute the headline witness taxonomy from full witness-pair sets across the
+   whole phase-6 record/control corpus under at least two canonicalizations.
 
-4. Recompute witness taxonomies from full hypergraphs for every late baseline record
-   gap and late axis-swapped row-gap record under multiple canonicalizations.
+4. Replace or augment the affine surrogates with a harder size- and
+   factor-budget-matched surrogate family.
 
-5. Extend the H1/H2 summary tables to the later gaps already present in the corpus,
-   especially baseline gaps `25`, `28`, and `30`.
+5. Run the core mechanism-style metrics at fixed checkpoints such as `10^5`,
+   `3 x 10^5`, `10^6`, and `3 x 10^6` to test whether the current finite-horizon
+   conclusions drift.
 
-6. Run a horizon sweep across fixed checkpoints to test whether offset, witness, and
-   gap metrics stabilize or drift.
+6. Expand the evidence ledger so each H1/H2 and final-status statement points to one
+   current authoritative post-deepen artifact.
 
-## Action-Oriented Bottom Line
+## Bottom Line
 
-Accept the current work only after revision to a narrower claim set. Do not present it
-as a new mechanism paper or a publication-quality robustness package in its current
-form. If the objective is a broader mechanism or benchmark claim, the correct next step
-is not acceptance but deeper experimental work on controls, baselines, and
-canonicalization invariance.
+The correct disposition is **REVISE**. The package now supports a concrete, narrower
+paper with audited negative results, but it does not support the broader novelty and
+mechanism rhetoric in its current form. Revise first; deepen only if the goal is to
+recover stronger mechanism, robustness, or asymptotic claims.

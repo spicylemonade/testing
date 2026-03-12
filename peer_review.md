@@ -1,69 +1,76 @@
 # Peer Review
 
-## Major Findings
+## Findings
 
-1. **Citation accuracy fails the stated review bar.** The manuscript cites only keys that exist in [`sources.bib`](/home/archivara/work/repo/sources.bib), but the bibliography itself is not publication-safe. I found multiple incorrect or inadequate entries: the Kimberling webpage title is wrong in [`sources.bib`](/home/archivara/work/repo/sources.bib#L19), the Ford rough-divisor entry has mismatched publication metadata in [`sources.bib`](/home/archivara/work/repo/sources.bib#L61), the Pach entry has inconsistent year metadata relative to the cited volume/issue/pages in [`sources.bib`](/home/archivara/work/repo/sources.bib#L93), and the Koukoulopoulos and Brent entries are metadata placeholders rather than primary bibliographic records in [`sources.bib`](/home/archivara/work/repo/sources.bib#L72) and [`sources.bib`](/home/archivara/work/repo/sources.bib#L143). Under the zero-tolerance citation policy in the task, this alone blocks acceptance.
+1. **Citation accuracy fails the stated bar and blocks acceptance.** I verified every entry in `sources.bib` via web search. Seven of the fifteen entries are bibliographically incorrect or too incomplete for publication use, including four entries that are actually cited in the manuscript: `oeisA129258`, `oeisA129259`, `kimberling100conjectures`, and `pach2017multiplicativebases` (`sources.bib:1`, `sources.bib:10`, `sources.bib:19`, `sources.bib:93`). Under the task's zero-tolerance citation rule, this alone rules out ACCEPT.
 
-2. **The novelty case is too narrow for a top-tier venue.** The strongest defensible contribution is structural cleanup of a public recurrence plus a reproducible finite-horizon negative-result package. The repo's own novelty audit reaches that conclusion in [`results/verification/novelty_report.md`](/home/archivara/work/repo/results/verification/novelty_report.md#L24), and the benchmark audit explicitly says the package does not yet separate the work from generic local divisor/product coverage in [`results/verification/benchmark_report.md`](/home/archivara/work/repo/results/verification/benchmark_report.md#L122). The concept-evolve layer also records H1 as only "pivoted" and H2 as "retired" rather than successful in [`results/concept_evolve/tree/012_frontier_witness_certificate/concept.json`](/home/archivara/work/repo/results/concept_evolve/tree/012_frontier_witness_certificate/concept.json#L13) and [`results/concept_evolve/tree/013_prime_support_fixed_point/concept.json`](/home/archivara/work/repo/results/concept_evolve/tree/013_prime_support_fixed_point/concept.json#L13).
+2. **The contribution is narrower than the paper's venue target.** The manuscript and the repo's own novelty ledgers converge on the same position: the defensible contribution is structural cleanup of a public recurrence plus a validated negative-result package, not a new mechanism, not a proof-quality invariant, and not progress on boundedness. See `research_paper.tex:72`, `research_paper.tex:94`, `results/verification/novelty_report.md:33`, `results/verification/novelty_report.md:176`, and `results/literature/prior_art_gap.md:7`. That is useful work, but for a top-tier standard it is still incremental.
 
-3. **Results integrity is mostly solid, but not clean enough.** Most headline quantitative claims do match the stored artifacts, including the record-gap table and gap-30 hypergraph counts. But the manuscript reports fresh replay runtime and RSS numbers with no backing artifact in [`research_paper.tex`](/home/archivara/work/repo/research_paper.tex#L398) and Appendix Table 2 in [`research_paper.tex`](/home/archivara/work/repo/research_paper.tex#L623). The paper also overstates the balanced-share trend as "rises steadily" in [`research_paper.tex`](/home/archivara/work/repo/research_paper.tex#L493); the stored series rises overall but dips between gaps 19 and 20.
+3. **Some headline witness-mechanism claims are stronger than the current artifact basis.** The paper's witness-taxonomy narrative and the hypergraph/modular summary are mostly directionally correct, but the repo's own benchmark notes say the headline witness summaries still rely on first-witness bookkeeping rather than full-pair canonicalization (`research_paper.tex:549`, `research_paper.tex:563`, `research_paper.tex:685`; `results/verification/benchmark_report.md:141`; `results/verification/verification_summary.md:60`). In addition, the cycle-rank sentence at `research_paper.tex:599` is stronger than the cited JSON alone supports; the controls/surrogates part lives in the markdown audit, not in `item_029_hypergraph_metrics.json`.
 
-4. **The benchmark story remains weaker than the prose implies.** The internal benchmark report is already explicit that there is no independent implementation baseline, no surrogate or matched non-record control, and no genuine robustness ablation after the identity/symmetry proofs in [`results/verification/benchmark_report.md`](/home/archivara/work/repo/results/verification/benchmark_report.md#L36) and [`results/verification/benchmark_report.md`](/home/archivara/work/repo/results/verification/benchmark_report.md#L53). That is adequate for a finite-horizon verification note, not for a strong mechanism paper.
+4. **Results integrity is otherwise mostly sound.** I did not find fabricated core numbers. The baseline `17` record gaps, maximum gap `30`, late record steps `92320`, `247399`, `729353`, gap-30 hypergraph counts, checker/runtime numbers, and the axis-swapped `31` claim all match stored artifacts in `results/experiments/` and `results/analysis/`. The main issue is not invented data; it is claim strength and evidence routing.
 
-5. **Figure quality is generally good, but two figures need revision.** The figure pipeline is reproducible and not default-matplotlib output. Still, the offset panel annotates the full-run maximum `24` while plotting only a sampled series in [`figures/src/figure2_interleaving.tex`](/home/archivara/work/repo/figures/src/figure2_interleaving.tex#L39), and the variant-identity figure lacks a legend despite plotting multiple clouds in [`figures/src/figure6_variant_identities.tex`](/home/archivara/work/repo/figures/src/figure6_variant_identities.tex#L28). Those are fixable presentation issues, not fatal aesthetic failures.
+5. **Compilation and figures are adequate, not polished.** `research_paper.pdf` exists, and a fresh `pdflatex` rebuild completed successfully. The build still emits multiple overfull/underfull box warnings, and Figures 4 and 7 have visible title crowding at the top of the rendered PNG/PDF outputs (`figures/src/figure4_gap_composition.tex:21`, `figures/src/figure7_gap_distribution.tex:21`). The figures are custom TikZ/PGFPlots figures, not default matplotlib exports, so this is a polish issue rather than a disqualifying figure-quality failure.
 
 ## Scores
 
 | Criterion | Score | Notes |
 |---|---:|---|
-| Completeness | 5 | All required sections are present, including abstract, related work, method, setup, results, discussion, conclusion, and references. |
-| Technical Rigor | 3 | The structural proofs are careful and reproducibility is reasonably documented, but the benchmark/control package is still below publication-grade rigor. |
-| Results Integrity | 3 | Core tables and figures mostly match the stored artifacts, but unsupported fresh replay performance numbers and a mildly overstated trend remain. |
-| Citation Accuracy | 1 | Several bibliography entries are incorrect, inconsistent, or metadata-only placeholders; zero-tolerance policy not met. |
-| Compilation | 4 | [`research_paper.pdf`](/home/archivara/work/repo/research_paper.pdf) exists and `pdflatex` succeeds, but the build still emits warnings. |
-| Writing Quality | 4 | Clear, professional, and mostly disciplined about claim scope. |
-| Figure Quality | 3 | Custom, publication-oriented graphics overall, but a few panels are misleading or under-labeled. |
-| Novelty & Creative Contribution | 2 | The contribution is modest: structural cleanup plus verified negative evidence, not a new mechanism or surprising theorem. |
+| Completeness | 5 | All required sections are present: Abstract, Introduction, Related Work, Method, Experimental Setup, Results, Discussion, Conclusion, References. |
+| Technical Rigor | 3 | The theorem section is substantive and the computational protocol is reproducible, but the checker horizon is partial and some mechanism-level summaries outrun the strongest canonicalized evidence. |
+| Results Integrity | 4 | Core quantitative claims match the committed artifacts, and I found no fabricated results. The main weakness is overinterpretation of some witness-level summaries. |
+| Citation Accuracy | 1 | Seven bibliography entries fail strict verification; four of those are cited in the paper. |
+| Compilation | 4 | The PDF exists and `pdflatex` succeeds, but the build is not warning-free and layout polish remains uneven. |
+| Writing Quality | 4 | The manuscript is clear, professional, and generally disciplined about scope. |
+| Figure Quality | 4 | The figures are clearly custom and publication-oriented, but several panels need spacing/title cleanup. |
+| Novelty & Creative Contribution | 2 | The surviving contribution is mainly structural clarification plus a negative-result audit package around a public OEIS/Kimberling object. |
 
 ## Citation Verification Report
 
-- `oeisA129258`: **Verified via web search.** OEIS entry exists and the title matches the bibliography entry.
-- `oeisA129259`: **Verified via web search.** OEIS entry exists and the title matches the bibliography entry.
-- `kimberling100conjectures`: **Incorrect metadata.** The URL is real, but the webpage title does not match "100 Conjectures and/or Problems"; the entry should be corrected to the actual page title or replaced by a more precise bibliographic description.
-- `ford2011multiplicationtable`: **Verified via web search.** Title, author, journal, volume, issue, pages, year, and DOI all match.
-- `ford2008divisorinterval`: **Verified via web search.** Title, author, journal, year, volume, pages, and DOI match.
-- `ford2006divisor2y`: **Verified via web search.** The arXiv preprint exists with the stated title, author, and year.
-- `ford2020roughdivisorinterval`: **Incorrect metadata.** The DOI resolves to a real paper, but the publication metadata in the BibTeX entry do not match the journal record for year/issue/pages.
-- `koukoulopoulos2010restrictedtables`: **Inadequate / incorrect for publication use.** A real 2010 dissertation with this title exists, but the entry is only a Semantic Scholar placeholder rather than a primary bibliographic record.
-- `mehdizadeh2021smoothmultiplicationtable`: **Verified via web search.** Title, author, journal, volume, pages, year, and DOI match.
-- `pach2017multiplicativebases`: **Incorrect / inconsistent metadata.** The cited volume/issue/pages correspond to the Combinatorica publication, but the year in the entry is inconsistent with that journal record.
-- `pus1992multiplicativebases`: **Partially verified, treated as incorrect under the stated policy.** The paper exists and the core bibliographic data can be found, but I could not independently verify the DOI/URL from web search.
-- `dressler1970newmultiplicativebases`: **Verified via web search.** Title, author, journal, year, and DOI match.
-- `nathanson1987multiplicativerepresentations`: **Verified via web search.** Title, author, journal, year, pages, and DOI match.
-- `brent2019algorithmsmultiplicationtable`: **Inadequate / incorrect for publication use.** The work exists as a 2019 preprint and later publication, but the entry is a Semantic Scholar placeholder with incomplete venue-level metadata.
-- `meisner2018functionfieldmultiplicationtable`: **Verified via web search.** The arXiv preprint exists with the stated title, author, and year.
+All 10 in-text `\cite` keys used in `research_paper.tex` exist in `sources.bib`. The problem is not missing keys; it is incorrect bibliography metadata.
 
-Additional bibliography checks:
+- `oeisA129258`: **Incorrect.** Real OEIS entry, but the BibTeX author/year do not match the OEIS record.
+- `oeisA129259`: **Incorrect.** Real OEIS entry, but the BibTeX author/year do not match the OEIS record.
+- `kimberling100conjectures`: **Incorrect.** Real Kimberling page, but the recorded title is wrong and the page is better identified as the Evansville unsolved-problems page.
+- `ford2011multiplicationtable`: **Verified.** Title, author, journal, year, pages, and DOI match.
+- `ford2008divisorinterval`: **Verified.** Title, author, journal, year, pages, and DOI match.
+- `ford2006divisor2y`: **Verified.** Real arXiv preprint; title, author, year, and URL match.
+- `ford2020roughdivisorinterval`: **Incorrect.** Real paper, but the BibTeX year/pages are inconsistent with the journal record and the entry omits volume/issue.
+- `koukoulopoulos2010restrictedtables`: **Incorrect.** Real work, but the entry is a Semantic Scholar placeholder instead of a proper thesis/publication record with venue metadata.
+- `mehdizadeh2021smoothmultiplicationtable`: **Verified.** Metadata and DOI match the Journal of Number Theory record.
+- `pach2017multiplicativebases`: **Incorrect.** Real paper, but the cited volume/issue/pages correspond to the 2018 journal issue, not year 2017.
+- `pus1992multiplicativebases`: **Verified.** Metadata and DOI match.
+- `dressler1970newmultiplicativebases`: **Verified.** Metadata and DOI match.
+- `nathanson1987multiplicativerepresentations`: **Verified.** Metadata and DOI match.
+- `brent2019algorithmsmultiplicationtable`: **Incorrect.** Real work exists, but this entry is only a non-canonical Semantic Scholar placeholder and does not cleanly identify either the preprint or the journal publication.
+- `meisner2018functionfieldmultiplicationtable`: **Verified.** Real arXiv preprint; title, author, year, and URL match.
 
-- All 10 in-text `\cite` keys used in [`research_paper.tex`](/home/archivara/work/repo/research_paper.tex) exist in [`sources.bib`](/home/archivara/work/repo/sources.bib).
-- 5 bibliography entries are unused: `ford2020roughdivisorinterval`, `koukoulopoulos2010restrictedtables`, `mehdizadeh2021smoothmultiplicationtable`, `brent2019algorithmsmultiplicationtable`, and `meisner2018functionfieldmultiplicationtable`.
-- I did not find an obviously fabricated paper, but several entries are bibliographically incorrect or too weak to survive a strict audit.
+Summary:
+
+- Verified: 8
+- Incorrect or bibliographically inadequate: 7
+- Fabricated papers found: 0
+- In-text citation keys missing from `sources.bib`: 0
 
 ## Novelty Assessment
 
-The paper does contribute something real, but it is not yet top-tier novel work. The novel part is narrow: it isolates and proves several exact consequences of Kimberling's public recurrence, cleans up the status of the update-order "variants," and assembles a reproducible million-step negative-result package showing that the simplest witness-certificate and prime-support stories fail on the stored corpus. That is useful scholarship. What it does **not** yet do is produce a new mechanism for record-gap growth, a theorem-level separation from Ford-style local divisor/product coverage, or a creative cross-domain CE-driven breakthrough. The concept-evolve artifacts themselves show mostly steering, pruning, and retrospective consolidation rather than a successful experimental bridge: old bridge cards still sit in backlog form in [`results/concept_evolve/tree/001_frontier_interval_certificate/README.md`](/home/archivara/work/repo/results/concept_evolve/tree/001_frontier_interval_certificate/README.md#L12) and [`results/concept_evolve/tree/002_divisor_window_density_control/README.md`](/home/archivara/work/repo/results/concept_evolve/tree/002_divisor_window_density_control/README.md#L12), while the surviving CE state explicitly pivots toward future surrogate controls instead of reporting a completed novelty-producing mechanism in [`results/concept_evolve/concept_delta.md`](/home/archivara/work/repo/results/concept_evolve/concept_delta.md#L5). For a Nature/NeurIPS standard, that is a score of **2/5**, not because the work is careless, but because the differentiated mathematical insight is still modest.
+The work is honest and narrower than many automated math manuscripts, but it is still not a genuinely deep new contribution by top-tier standards. The most defensible novelty is local: formal proofs of several exact consequences of Kimberling's public recurrence, clarification that the archived update-order variants are identities/symmetries, and a better-audited finite-horizon negative-result package. The repo's own novelty files say essentially this: the package survives as a "validated negative-result and overlap-control dossier" rather than as a new asymptotic theorem or new mechanism (`results/literature/prior_art_gap.md:13`, `results/verification/novelty_report.md:48`, `results/verification/novelty_report.md:176`). The ConceptEvolve layer does not rescue the novelty score. A few branch statuses were updated (`pivoted`, `retired`, `completed_negative`, `active_control`), but the surviving message in `results/concept_evolve/concept_delta.md:24` is again that positive bridges were retired and the contribution is a cleaner obstruction map. That is a modest contribution, not a surprising one.
 
 ## Overall Verdict
 
 **DEEPEN**
 
-This is not an acceptance-ready top-tier research paper. The novelty score is below threshold, and there are also fixable paper-quality issues, especially in the bibliography. Under the task policy, a novelty score of 1-2 with concurrent quality issues requires `DEEPEN` rather than `REVISE`.
+This manuscript is not acceptance-ready. The citation audit fails outright, and the underlying research contribution is still too incremental for the claimed venue standard. Under the task rubric, a novelty score of 1-2 together with quality issues requires **DEEPEN**, not **REVISE**.
 
-## Deepening Instructions
+## Deepening Feedback
 
-1. Repair the bibliography completely. Replace all metadata-only placeholders with primary records, correct the Kimberling title, correct the Ford/Pach metadata mismatches, and either verify or remove any DOI/URL that cannot be independently checked.
-2. Remove or artifact-back the fresh replay performance claims in [`research_paper.tex`](/home/archivara/work/repo/research_paper.tex#L398) and [`research_paper.tex`](/home/archivara/work/repo/research_paper.tex#L623). If a fresh replay is part of the paper, save it as a concrete artifact first.
-3. Narrow the manuscript's claim hierarchy unless new research is added. As written, the safe contribution is "structural clarification + reproducible finite-horizon negative evidence," not "new mechanism."
-4. Add the missing controls identified by the benchmark and falsifier layers: one independently written checker, one same-snapshot tie-rule control, one real admissibility perturbation, and matched non-record / surrogate product-set baselines.
-5. Push for an actually differentiating contribution. In this domain, that means at least one of: a new theorem controlling frontier coverage, a genuinely T-specific invariant that generic local product coverage does not mimic, a counterintuitive structural law extracted from full witness hypergraphs, or a creative algorithmic/combinatorial compression result that survives surrogate baselines.
-6. If the concept-evolve pipeline is meant to be part of the novelty story, execute the bridge experimentally rather than citing it as latent potential. Right now the CE layer mainly documents abandoned branches and future rescue paths.
+1. Repair `sources.bib` completely. Replace placeholder entries with primary records, fix the OEIS and Kimberling metadata, fix the Pach year, and either correct or remove every entry that cannot be fully verified.
+2. Recast the paper around its actual contribution boundary unless new mathematics is added. As it stands, the safe pitch is "structural clarification plus audited negative results," not "new mechanism."
+3. Either recompute the headline witness-taxonomy claims from full witness-pair corpora under multiple canonicalizations or demote them to exploratory observations. In particular, clean up the `research_paper.tex:599` cycle-rank summary.
+4. If the goal is a stronger novelty claim, produce at least one recurrence-specific result that generic local product coverage does not mimic. In this domain that means something like a new theorem on frontier coverage, a genuinely `T`-specific invariant, or a nontrivial compression law that survives matched controls and surrogate baselines.
+5. Use the ConceptEvolve layer more substantively or stop leaning on it as a novelty signal. Most of the tree still looks like steering and retirement of ideas rather than experimentally realized bridge hypotheses.
+6. Regenerate the crowded figures and clean the LaTeX layout warnings before the next review cycle.
+
+## Scope Note
+
+I read `research_paper.tex`, checked that `research_paper.pdf` exists, rebuilt the paper once with `pdflatex`, read the rubric and the required verification/novelty artifacts, spot-checked the core results against `results/` and `figures/`, and verified every `sources.bib` entry via web search. I did not rerun the million-step experiments or independently re-prove the theorem section.
