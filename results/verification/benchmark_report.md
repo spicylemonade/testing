@@ -1,117 +1,158 @@
 # Benchmark Report
 
 Date: 2026-03-12
-Scope: audit the executed H1 evidence pack after the same-family ablations, metric-contract repair, expanded falsifier suite, and robustness reruns
-Status: PASS for a falsification and simplification paper; BLOCK for any claim that RC-ranked source awareness is the winning architecture
+Review round: review_round_1
+Scope: benchmark audit of the H1 `001_packet_scout_handoff_root` evidence pack, limited to baselines, controls, ablations, error analysis, and stress coverage
+Status: BLOCK for publication-quality benchmark claims; PASS only as an internal falsification package
 
-## Bottom Line
+## Executive Gate
 
-- The executed benchmark is now strong enough to support a publication-quality boundary result.
-- The primary startup matrix remains a null on startup-envelope advantage:
-  - all five designs start in `17/24` cases
-  - all five designs report `0` pre-handoff back-drive in the primary matrix
-- The original mechanism claim is falsified by the executed same-family ablation:
-  - `source_blind` matches the champion on all `24/24` startup-matrix outcomes
-  - `source_blind` improves falsifier startup from `8/10` to `10/10`
-  - the deterministic gaps versus the champion are `fa_002` and `fa_006`, both won by `source_blind`
-- A lower-overhead source-aware control still survives as a useful engineering point:
-  - `time_constant_ranked` preserves `17/24` startup-matrix success and reaches `9/10` falsifier successes
-  - its median successful-case pre-handoff control energy is `1.11852e-13 J` versus `2.37717e-13 J` for the RC-ranked champion, a `52.9%` reduction
-- The expanded falsifier suite now contains real chatter, unequal-`VOC`, and leak-path stress, and the robustness study adds confidence intervals on the remaining boundary cases.
+- The current package is strong enough to reject the original RC-ranked champion story.
+- It is not yet strong enough to publish a benchmark-centered positive claim about packet-gated isolation or superiority to prior work.
+- The blocking gaps are concrete:
+  - no executed same-scaffold no-packet-gate control
+  - no literature-faithful executed comparator
+  - handoff/chatter metrics still use a store-voltage proxy rather than a validated `n_handoff` event
+  - decisive separator cases are not covered by robustness reruns
+  - back-drive reporting uses an undocumented threshold that hides raw nonzero values
 
 ## Reviewed Artifacts
 
 - `research_rubric.json`
 - `results/research_context.md`
-- `results/swarm/tool_plan.md`
+- `results/swarm/falsifier.md`
 - `results/concept_evolve/tree/001_packet_scout_handoff_root/experiment_spec.md`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/dependency_map.md`
 - `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/startup_matrix_manifest.json`
 - `results/concept_evolve/tree/001_packet_scout_handoff_root/results/manifests/falsifier_cases.json`
 - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/startup_summary.json`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_summary.json`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_summary.json`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/benchmark_comparison.csv`
 - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/ablation_summary.json`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/ablation_pairwise.csv`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_summary.json`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/falsifier_results.csv`
 - `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/robustness_summary.json`
-- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/analysis_summary.json`
-- `figures/h1_primary_matrix_heatmap.pdf`
-- `figures/h1_falsifier_boundary.pdf`
-- `figures/h1_metric_accounting.pdf`
-- `figures/h1_ablation_tradeoff.pdf`
-- `figures/h1_robustness_ci.pdf`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/tables/analysis_sensitivity.csv`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item011_signoff.md`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item018_benchmark_note.md`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item019_falsifier_note.md`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/verification/item022_analysis_package.md`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/shared/measurement_hooks.inc`
+- `results/concept_evolve/tree/001_packet_scout_handoff_root/netlists/ablations/blind_packet_merge/blind_packet_merge.cir`
 - `tools/run_h1_matrix.py`
 - `tools/run_h1_falsifier.py`
-- `tools/run_h1_robustness.py`
-- `tools/analyze_h1_results.py`
 
 ## Findings
 
-### 1. The primary startup matrix is a five-way tie
+### 1. Baselines are adequate for internal screening, but not for publication-grade comparison
 
-- `champion`, `fixed`, `nonaware`, `source_blind`, and `time_constant_ranked` each start in `17/24` cases.
-- Grouped counts by polarity, impedance ratio, and ramp rate are identical across all five designs.
-- The primary matrix therefore cannot support any claim of a broader startup-envelope win for explicit source ranking.
+- The executed design set is `champion`, `fixed`, `nonaware`, `source_blind`, and `time_constant_ranked`.
+- That is enough to reject weak internal comparisons such as open-loop-only or fixed-threshold-only baselines.
+- It is not enough to support any claim against the closest literature families:
+  - `benchmark_comparison.csv` maps regimes to prior work, but no recovered literature-family comparator is executed under the shared hooks.
+  - Any statement beyond within-repo ranking remains structural, not measured.
+- Publication consequence:
+  - block any claim of superiority over recent multi-input, dual-polarity, or batteryless startup interfaces.
 
-### 2. The executed ablation falsifies explicit source ranking as the causal mechanism
+### 2. Same-family ablations are present, but the key positive control is still missing
 
-- The previously missing `source_blind_packet_gate` ablation has now been executed on the full startup matrix and the expanded falsifier suite.
-- On the startup matrix, `source_blind` matches the RC-ranked champion exactly on startup success.
-- On the falsifier suite, `source_blind` is the strongest design in the pack:
-  - `source_blind`: `10/10`
-  - `time_constant_ranked`: `9/10`
-  - `champion`: `8/10`
-  - `fixed`: `7/10`
-  - `nonaware`: `5/10`
-- Because the packet-gated isolation topology is shared between `champion`, `source_blind`, and `time_constant_ranked`, while only the selector law changes, the new evidence rules out a narrative where explicit RC-based branch ranking is the load-bearing reason for robustness.
+- The executed same-family ablations are useful and load-bearing:
+  - `source_blind` removes ranking while keeping the packet scaffold
+  - `time_constant_ranked` keeps source awareness with lower overhead
+- Those runs are sufficient to falsify the original RC-ranking mechanism claim:
+  - primary matrix: all five designs tie at `17/24`
+  - falsifier suite: `source_blind = 10/10`, `time_constant_ranked = 9/10`, `champion = 8/10`
+- The remaining positive story in the repo is now "packet-gated isolation matters."
+- That positive story is not isolated by an executed same-scaffold control:
+  - `blind_packet_merge.cir` exists, but it is absent from the startup and falsifier manifests and from all summary tables.
+  - The current packet-gating claim therefore depends on comparisons to `nonaware`, which changes more than one mechanism at once.
+- Publication consequence:
+  - block any causal claim that packet gating itself is the surviving mechanism until a no-packet-gate same-scaffold control is executed.
 
-### 3. The lower-overhead time-constant control is the strongest positive design point that remains
+### 3. The metric contract is still not aligned tightly enough for handoff or chatter claims
 
-- The new `time_constant_ranked` arbiter preserves the startup-matrix boundary and reaches `9/10` falsifier successes.
-- Its successful-case pre-handoff control-energy median is `1.11852e-13 J`, compared with `2.37717e-13 J` for the RC-ranked champion.
-- The measured reduction is close to the conductance-ratio prediction implied by the netlists, which makes the energy result mechanistically interpretable rather than anecdotal.
+- `experiment_spec.md` defines `startup_ok` and `t_handoff` using both `V(n_store)` and `V(n_handoff)`.
+- `measurement_hooks.inc` measures:
+  - `t_handoff` when `V(n_store)` crosses `V_HANDOFF`
+  - `t_handoff_fall` when `V(n_store)` falls through `V_HANDOFF_FALL`
+  - `t_handoff_rise2` when `V(n_store)` crosses `V_HANDOFF` a second time
+- `n_handoff` is used only to stop pre-handoff integration, not to define the reported event times.
+- That means the decisive chatter and handoff metrics are still proxy measurements unless the repo shows that `V(n_store)` and `V(n_handoff)` transitions coincide for every design.
+- There is also a reporting lag:
+  - `item018_benchmark_note.md` still reports the pre-repair three-design benchmark and the older full-window control-energy numbers.
+  - `item019_falsifier_note.md` still describes the earlier six-case suite with "none" for fall/rise2 events.
+- Publication consequence:
+  - block any benchmark claim about handoff correctness or UVLO chatter until actual `n_handoff` event traces are reported and the stale benchmark/falsifier notes are synchronized.
 
-### 4. The falsifier package now measures the stresses it claims to measure
+### 4. Back-drive evidence is numerically ambiguous and thresholded without justification
 
-- The suite has expanded from `6` to `10` cases.
-- It now contains:
-  - source-collapse cases in same and mixed polarity
-  - a real UVLO chatter case with measured `fall` and `rise2` events (`fa_004`)
-  - unequal-`VOC` cases (`fa_007`, `fa_008`)
-  - finite off-isolation leak-path cases (`fa_009`, `fa_010`)
-- `source_blind` is the only design with `0` measured `fall` and `0` measured `rise2` events across the full falsifier suite.
+- `falsifier_summary.json` reports `nonzero_backdrive_cases = 0` for every design.
+- `falsifier_results.csv` still contains positive pre-handoff `e_backdrive_j` values for `nonaware` in multiple cases, including `fa_001`, `fa_004`, `fa_005`, `fa_006`, `fa_007`, and `fa_008`.
+- `tools/run_h1_falsifier.py` counts a case as nonzero only when `e_backdrive_j > 1e-12`.
+- That threshold is not documented in the experiment spec, the table README, or the benchmark notes.
+- The result is a benchmark ambiguity:
+  - the raw table says "some wrong-way energy exists"
+  - the summary says "zero nonzero cases"
+- Publication consequence:
+  - block any strong back-drive narrative until the report states the simulator noise floor and publishes both raw and thresholded counts.
 
-### 5. Robustness evidence now exists for the surviving claim boundary
+### 5. Stress coverage improved materially, but the decisive claims are still supported by too few uncertainty-qualified cases
 
-- The robustness runner executed `24` random samples per design-case over `fa_001`, `fa_004`, `fa_005`, and `sm_015`.
-- The strongest load-bearing outcomes are:
-  - `fa_001`: `fixed` is `0.000` (`0/24`), `nonaware` is `0.875` (`21/24`), while `champion`, `source_blind`, and `time_constant_ranked` are all `1.000` (`24/24`)
-  - `fa_005`: `nonaware` is `0.000` (`0/24`), while the other four designs are all `1.000` (`24/24`)
-  - `fa_004` and `sm_015`: all five designs are `1.000` (`24/24`)
-- These runs do not make the primary matrix causal, but they do upgrade the adversarial boundary from a single deterministic anecdote to a small uncertainty-qualified result.
+- The falsifier suite now spans `10` attack classes, which is materially better than the earlier six-case pack.
+- The robustness runner adds `24` samples per design-case, but only for:
+  - `fa_001`
+  - `fa_004`
+  - `fa_005`
+  - `sm_015`
+- The decisive cases are missing from robustness:
+  - the champion losses to `source_blind` are `fa_002` and `fa_006`
+  - the leak-path boundary used in the current narrowed story is `fa_009` and `fa_010`
+- Those claims are therefore still deterministic one-off results, not uncertainty-qualified effects.
+- The primary matrix is also a coverage screen, not a causal sensitivity study:
+  - executed cases: `24`
+  - full cross-product implied by the frozen factor levels: `4 voltages x 4 ramps x 3 ratios x 2 polarities = 96`
+  - current grouped summaries cannot isolate interaction effects well enough for a publication-quality sensitivity claim
+- Publication consequence:
+  - block any strong claim that explicit ranking is harmful, or that packet gating survives leak-path stress, until the separator cases receive the same robustness treatment as `fa_001` and `fa_005`.
 
-### 6. Remaining limits are now limitations, not blockers
+### 6. Error analysis is still too thin for a paper benchmark section
 
-- The primary startup matrix is still aliased rather than factorially crossed.
-- There is still no literature-faithful executed comparator; literature comparison should remain structural rather than measured.
-- Robustness coverage is focused on four load-bearing cases rather than the full manifest.
-- None of these limits blocks the narrower falsification paper, but all of them block any attempt to restate the result as a broad architecture win.
+- The primary matrix leaves `7` failed cases per design, but there is no case-level failure taxonomy across the full table.
+- The current artifacts do not separate:
+  - no-start due to shared source scarcity
+  - wrong-branch startup
+  - collapse-after-latch
+  - leak-dominated failure
+  - proxy-measurement artifacts
+- Without that taxonomy, the observed five-way tie in the main matrix could still be dominated by shared model limits rather than by a proven mechanism equivalence.
+- Publication consequence:
+  - block any causal explanation of the primary-matrix null until the failed cases are explicitly classified and linked to waveform evidence.
 
-## Evidence Boundary
+## Claim Gate
 
 - Supported now:
-  - the primary startup matrix is a null on startup-count advantage
-  - packet-gated isolation matters against the `nonaware` join topology in adversarial cases
-  - explicit RC-style source ranking is not required for the surviving boundary and is empirically dominated by `source_blind`
-  - `time_constant_ranked` preserves most of the adversarial benefit with materially lower pre-handoff control energy than the RC-ranked champion
+  - the current benchmark falsifies the original RC-ranked champion claim inside this repo
+  - `source_blind` and `time_constant_ranked` are stronger benchmark lines than the original champion
+  - the present evidence package is useful for internal simplification decisions
 
-- Not supported now:
-  - broad superiority over the fixed startup path
-  - measured superiority over the closest literature families
-  - causal sensitivity claims from the aliased 24-case matrix
-  - any statement that the RC-ranked selector is itself the winning new architecture
+- Not yet publication-quality:
+  - packet-gated isolation as a causally isolated positive mechanism
+  - any superiority claim over the closest literature families
+  - any benchmark claim that depends on back-drive separation
+  - any handoff/chatter claim that depends on the current store-threshold proxy
+  - any sensitivity statement that depends on the aliased 24-case matrix
 
-## Publication Gate
+## Required Next Actions
 
-- Write the paper as a helper-free falsification and simplification study.
-- Do not write it as a source-aware champion paper.
-- Treat the strongest final claim as:
-  - minimal packet gating preserves the adversarial startup boundary, while explicit pre-handoff ranking is unnecessary and can be harmful under expanded stress.
+1. Execute `blind_packet_merge` under the shared measurement hooks on at least `fa_001`, `fa_002`, `fa_005`, `fa_006`, `fa_009`, `fa_010`, plus matched primary-matrix cases.
+2. Add one literature-faithful comparator from the recovered overlap set and run it on the same load-bearing cases before making any prior-art performance claim.
+3. Emit explicit `n_handoff` rise, fall, and second-rise measurements, then rerun the decisive falsifier cases to verify that the current store-voltage proxy does not change the conclusions.
+4. Reissue the back-drive summaries with a documented noise floor and publish both raw and thresholded counts side by side.
+5. Extend robustness sampling to `fa_002`, `fa_006`, `fa_009`, and `fa_010`; if the current winners persist with confidence intervals, the narrowed mechanism story becomes materially stronger.
+6. Add a case-level failure taxonomy for all failed startup-matrix rows and the decisive falsifier losses, with one waveform-backed reason code per failure.
+
+## Bottom Line
+
+- The repo has enough benchmark evidence to kill the original champion story.
+- It does not yet have enough benchmark evidence to publish the surviving positive story without another control pass.
+- The fastest route to a defensible paper benchmark is not a broader sweep; it is a tighter control package around packet-gating causality, handoff metric validity, and robustness on the already-identified separator cases.
