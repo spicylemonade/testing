@@ -53,7 +53,7 @@ Explicit kill criteria:
 | Planned activity | Existing utility or artifact | Expected output | Current blocker |
 | --- | --- | --- | --- |
 | Ramsey literature refresh | `.archivara/semantic_scholar.py`, `results/literature/literature_snapshot.json`, `results/literature/semantic_scholar_manifest.json`, `results/swarm/phase1_cleanup.md` | Fixed Ramsey corpus, ranked reading order, and frontier notes | No widening allowed until the fixed corpus is exhausted |
-| Concept branching and route expansion | `.archivara/concept_evolve.py`, `results/concept_evolve/tree/` | Cross-domain concept cards, promoted folders, walk paths | Helper repaired locally; waiting on successful artifact generation |
+| Concept branching and route expansion | `.archivara/concept_evolve.py`, `results/concept_evolve/tree/` | Cross-domain concept cards, promoted folders, walk paths | First-pass tree exists locally; further branching is gated by `Rung 0` frontier reconstruction |
 | Route arbitration | `results/swarm/director_brief.md`, `results/swarm/hypotheses.json`, `results/swarm/tool_plan.md`, `results/swarm/falsifier.md` | Fixed `H1/H2/H3` ordering with explicit stop rules | None |
 | Lower-bound baseline definition | Exoo 1989, Ge et al. 2022, Lehavi 2024, `results/literature/gap_probe_1.json`, `results/swarm/phase1_cleanup.md` | Witness standards, search-effort normalization, failure log schema | No repo-local `frontier_parent` corpus, witness enumerator, or verifier exists yet |
 | Upper-bound baseline definition | McKay-Radziszowski 1992, Angeltveit-McKay 2018 and 2024, Gauthier 2025 | Residue/certificate metrics and matched-baseline comparison plan | No repo-local proof checker or residue reducer exists yet |
@@ -80,7 +80,8 @@ Lower-bound work counts as progress only if it yields an independently verified 
 
 ## 4. Upper-Bound Baseline Metrics
 
-Upper-bound work counts as progress only if it yields a machine-checkable proof that `45`-vertex colorings are impossible, or a residue with a clear certificate path. All upper-bound experiments must track:
+Upper-bound work counts as bound progress only if it yields a machine-checkable proof that `45`-vertex colorings are impossible.
+A residue with a clear certificate path counts only as `improves certificate path` or intermediate evidence. All upper-bound experiments must track:
 
 1. Residue size after decomposition and pruning.
 2. Proof bytes or certificate size.
@@ -88,6 +89,15 @@ Upper-bound work counts as progress only if it yields a machine-checkable proof 
 4. Exactness or rationalization status of every claimed impossibility step.
 5. Matched-baseline runtime against the current split-vertex/transverse-edge gluing line.
 6. Transferability of learned obstruction or kernel artifacts across decomposition families.
+
+Upper-bound comparison protocol:
+- A `clear certificate path` requires a machine-readable residue, residue hash, remaining-open-case count, target proof format, checker name and version, and an exact replay plan.
+- Every benchmark row must log a fixed matched-compute tuple: solver binary and version, proof format, preprocessing passes, thread count, hardware class, timeout policy, branch-order policy, random-seed policy, and warm-start or cached-clause policy.
+- Warm starts, oracle seeds, cached clauses, proof reuse, and hand-picked symmetry priors are allowed only if enabled symmetrically for both baseline and candidate.
+- The upper-bound win rule is fixed in advance as `bound status > certificate class > verified residue size > proof bytes > checker runtime`.
+- No headline claim survives a regression on a higher-priority metric.
+- Every upper-bound artifact must be replayed outside the generating workflow, with input hash, artifact hash, checker version, and pass/fail result recorded.
+- Every upper-bound primitive must reproduce at least one solved smaller certificate case before it is trusted on `R(5,5)`.
 
 ## 5. Concept-Tree Operating Rules
 
@@ -259,6 +269,7 @@ Allowed claim classes:
 Forbidden phrasings:
 - Do not present lower defect, better search trajectories, or more branches pruned as a bound improvement.
 - Do not present a smaller residue without a certificate path as an upper-bound improvement.
+- Do not present a residue with a certificate path but without a checked `45`-vertex impossibility proof as a bound improvement; that is at most `improves certificate path`.
 - Do not present proof logging alone as structural novelty.
 - Do not blur heuristic impossibility evidence into a proof of impossibility.
 

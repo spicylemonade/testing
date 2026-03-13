@@ -43,7 +43,8 @@ Witness standards:
 
 ## 4. Upper-Bound Baseline Metrics And Certificate Standards
 
-Upper-bound work counts as bound progress only if it yields a machine-checkable `45`-vertex impossibility proof, or a residue with a clear certificate path to such a proof.
+Upper-bound work counts as bound progress only if it yields a machine-checkable `45`-vertex impossibility proof.
+A residue with a clear certificate path counts only as certificate-path progress or intermediate evidence.
 
 Required metrics:
 
@@ -58,9 +59,38 @@ Certificate standards:
 
 - Smaller residues without a certificate path count as intermediate evidence, not an upper-bound improvement.
 - Solver speed alone does not count unless the emitted residue or proof object is also improved under matched conditions.
+- A `clear certificate path` is valid only if the artifact includes a machine-readable residue, residue hash, remaining-open-case count, target proof format, checker name and version, and an exact replay plan.
 - Every accepted upper-bound artifact must record the checker, proof format, and whether rational reconstruction or exact replay is still pending.
+- Every accepted upper-bound artifact must be replayed outside the generating workflow, with input hash, artifact hash, checker version, and pass/fail result recorded.
+- Every upper-bound primitive must reproduce at least one solved smaller certificate case before it is trusted on `R(5,5)` upper-bound claims.
 
-## 5. ConceptEvolve First-Pass Contract
+## 5. Matched-Compute And No-Cheat Protocol
+
+Every benchmark row must log a fixed matched-compute tuple:
+
+- solver binary and version
+- proof format
+- preprocessing passes
+- thread count
+- hardware class
+- timeout policy
+- branch-order policy
+- random-seed policy
+- warm-start and cached-clause policy
+
+No-cheat rules:
+
+- Warm starts, oracle seeds, cached clauses, proof reuse, and hand-picked symmetry priors are allowed only if enabled for both baseline and candidate under the same rules.
+- Every learned pruning object, kernel, lemma, or certificate-reuse object must have an on/off ablation on the same rung set under the same compute tuple.
+- Benchmark manifests must be frozen before tuning; later additions belong to a new versioned stratum rather than the headline table.
+- Every run must emit one failure code from a closed taxonomy such as `overfit_seed`, `witness_killed`, `non_transfer`, `residue_only`, `uncheckable_proof`, `exactness_failure`, `proof_bytes_regression`, or `checker_runtime_regression`.
+
+Upper-bound win rule:
+
+- Compare methods in the order `bound status > certificate class > verified residue size > proof bytes > checker runtime`.
+- No headline claim is allowed if a higher-priority metric regresses.
+
+## 6. ConceptEvolve First-Pass Contract
 
 First concept exploration step after Phase 1:
 
@@ -86,7 +116,7 @@ No-drift rule:
 - No further concept branching or promotion happens until `Rung 0` frontier reconstruction is defined.
 - Later `probe`, `reframe`, and `iterate` actions must update existing folders instead of creating `_v2` clutter.
 
-## 6. Baseline Governance Pointer
+## 7. Baseline Governance Pointer
 
 - `results/plans/ramsey_research_program.md` remains the source of truth for route arbitration, metric definitions, exact ladder order, and claim grammar.
 - This sheet exists to make the executable baseline stack auditable without reopening the full program document.
