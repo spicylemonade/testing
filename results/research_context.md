@@ -1,10 +1,10 @@
 # Research Context
 
-- Stage: post_writer
+- Stage: post_director_swarm
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
-- Note: paper draft and compilation stage completed
+- Note: gap_queries=4, swarm_agents=4
 - Rubric progress: 25/25 completed
 - Known papers tracked: 111
 - `sources.bib` entries: 20

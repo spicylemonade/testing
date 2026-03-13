@@ -3,47 +3,59 @@
 Date: 2026-03-13
 Task: Improve the Ramsey number `R(5,5)` bound
 Working frontier: `43 <= R(5,5) <= 46`
+Mode: synthesis-only, route-specification only
 
 ## Decision
 
-Champion: `H1` orbit-stable extension-obstruction atlas for lifting `42`-vertex frontier graphs.
-
-Backup: `H2` decomposition-primitive upgrade beyond split-vertex and transverse-edge gluing.
-
-Reserve: `H3` proof-carrying reusable obstruction certificates, but only as an attachment to `H1` or `H2`, not as a standalone novelty claim.
+- Champion: `H1` cross-family canonical obstruction atlas for failed `42 -> 43` extensions.
+- Backup: `H1B` witness-safe orbit-quotient abstract state for Ramsey pruning.
+- Tertiary fallback: `H2` decomposition-primitive replacement beyond split-vertex and transverse-edge gluing.
 
 ## Why `H1` Wins
 
-- It has the strongest novelty moat in the current materials because it targets a reusable Ramsey object: recurring minimal obstruction cores in failed `42 -> 43` extensions.
-- It is the fastest honest kill. If those cores do not recur across orbit-distinct parents, fail leave-one-parent-out transfer, or break witness-survival tests, the direction dies quickly.
-- It bridges the currently siloed lower-bound and upper-bound lines. The same obstruction dictionary can become both search pruning and proof-grade forbidden-pattern lemmas.
-- It avoids the main falsifier trap of "same search, better engine" because the claimed output is structural compression, not a nicer optimizer trajectory.
+- It has the strongest novelty moat in the packet because it targets the clearest missing Ramsey object: transfer-safe canonical obstruction cores, not another search engine, OVE catalog, or low-defect witness digest.
+- It has the cleanest fast falsifier. Anti-Exoo holdout failure, weak cross-family coverage, or one killed known witness is enough to stop the route without ambiguity.
+- It is the only direction that naturally feeds both sides of the bound program: constructive search can use the atlas as witness-safe pruning, and exact upper-bound work can attempt to replay the same objects as proof-side lemmas.
 
-## Why `H2` Is Backup
+## Why `H1B` Is Backup
 
-- It points directly at the upper-bound bottleneck identified in the scout outputs: the decomposition language may be weaker than the solver layer.
-- It remains riskier on novelty because it sits closer to the Angeltveit-McKay and Gauthier line, so it can easily collapse into "same decomposition, stronger SAT."
-- Keep it as backup because it still has a clean falsifier: matched proof-footprint benchmarks on solved subcases can kill it quickly.
+- The gap map and bridge memo both point to the same missing bridge object: a sound abstract layer that turns cheap necessary conditions into a reusable Ramsey state rather than ad hoc filters.
+- It is more novel than reopening the current upper-bound decomposition line immediately, but only if the domain is explicit, witness-safe, and auditable under matched ablations.
+- It can be killed quickly: one deleted known witness or one no-gain matched ablation is enough.
 
-## Why `H3` Is Reserve Only
+## Why `H2` Is Deferred
 
-- Reusable certificates are valuable, but on their own they risk becoming infrastructure rather than a bound-moving idea.
-- Promote `H3` only if it is attached to a concrete obstruction family from `H1` or a genuinely new decomposition primitive from `H2`.
+- `H2` remains the most direct upper-bound-side fallback, but its overlap burden is the heaviest in the packet because it sits closest to McKay-Radziszowski, Angeltveit-McKay, and Gauthier.
+- It is worth reopening only after `H1` and `H1B` fail or if the researcher explicitly needs an upper-bound-first route with a new decomposition object and matched certificate metrics.
 
-## Immediate Handoff Specs
+## Blockers That Prevent Any Stronger Claim
 
-For `H1`, the next researcher action should be specification only: define a canonical atlas for the available `42`-vertex critical colorings, enumerate orbit-distinct one-vertex extensions, and predefine the transfer test that would kill the hypothesis if obstruction cores do not generalize beyond one parent lineage.
+- No local `frontier_parent` corpus.
+- No orbit-distinct `42 -> 43` extension packet.
+- No independent `44`-vertex witness verifier.
+- No replayable `45`-vertex certificate checker or residue path.
+- No executed comparator rows that would let `H2` or `H1B` claim a matched baseline win.
 
-For `H2`, the first benchmark spec should compare adjacent-pair, nonadjacent-pair, and small-shell decompositions against the current split/gluing baseline under the same solver, proof logging, and checker regime.
+These blockers mean every surviving route must be written as a constrained research direction, not as an implied advance.
 
-## Deprioritized Branches
+## Exact Next Experiment For The Researcher
 
-- Generic defect minimization, GA, SA, RL, or rare-event search without a new reusable obstruction.
-- Generic LP, flag, SDP, or Terwilliger tightening without a rational or exact certificate path.
-- IC3, PDR, CEGAR, or clause-learning narratives that leave the underlying decomposition unchanged.
+Use existing repo tooling only to materialize a minimal `H1` packet with:
 
-## Unresolved Blocker
+- `frontier_parent` records for at least 3 non-isomorphic parent families,
+- `extension_case` and `failure_witness` records for their orbit-distinct `42 -> 43` failures,
+- one frozen anti-Exoo holdout family,
+- one frozen witness-survival ledger covering all saved `42`- and `43`-vertex witnesses.
 
-The prompt named `results/swarm/hypothesis_bridge.md` and `results/swarm/hypothesis_negative_space.md`, but those files are absent in the workspace. The synthesis above is therefore based on `gap_map.md`, `falsifier.md`, the prior-art gap notes, the cached probe files, and the existing tool-plan notes.
+Then run only the first decision gate:
 
-If tighter arbitration is required before execution, the exact next step is to regenerate those two missing scout summaries from the already cached local artifacts only, then rerun ranking. Do not widen literature search until that gap is closed.
+- accept `H1` provisionally if canonical cores clear the cross-family coverage threshold, survive leave-one-parent-out transfer, and delete zero known witnesses;
+- otherwise record the failure code and stop rather than widening the search.
+
+If `H1` survives, `H1B` gets the next narrow audit. If `H1` dies, do not invent a new lower-bound story; move to `H2` only after proving a genuinely new decomposition primitive is on the table.
+
+## Deprioritized Or Attachment-Only Routes
+
+- Rare-tail phase separation is diagnostic only after the first atlas pass; if the uncovered tail stays diffuse, record `rare_core_tail` and stop.
+- Witness-preserving rewrite grammar is interesting negative space, but it is less direct as a bound route than `H1B` or `H2`.
+- Replayable obstruction certificates and decision-diagram families stay infrastructure-only unless attached to `H1` or a genuinely new `H2` primitive.

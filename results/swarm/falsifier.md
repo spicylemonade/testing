@@ -1,145 +1,157 @@
 # Falsifier Memo for Improving `R(5,5)`
 
-## Scope
+Date: 2026-03-13
+Role: adversarial falsifier
+Scope: current champion `H1`, backup `H2`, reserve `H3`, and the bridge variants already named in `results/swarm/hypothesis_bridge.md`
 
-This memo attacks the current likely hypothesis families already present in the workspace:
+The standard here is adversarial. A route does not get credit for sounding new. It only gets credit if it survives prior-art overlap checks, matched-baseline controls, and the bound-moving threshold already frozen in the repo: an independently verified `44`-vertex witness or a machine-checkable `45`-vertex impossibility proof.
 
-- rare-event / defect-manifold lower-bound search
-- finite-`n` Terwilliger / flag / spectral rigidity for the upper bound
-- IC3/PDR / conflict-kernel / decomposition-reform SAT upper-bound search
+## Repo-State Fast Kill
 
-The standard here is adversarial. A method does not get credit for looking sophisticated. It only gets credit if it crosses the threshold that actually moves the bound.
+- The easiest present falsifier is procedural, not mathematical.
+- `results/verification/benchmark_report.md` already records `0/7` planned `H1` artifacts present, `0/4` ladder rungs completed, `0/8` named benchmark rows instantiated, and `0/2` bound-moving artifacts present.
+- `results/h1/` does not exist, so there is still no local `frontier_parent` corpus, no orbit-distinct `42 -> 43` extension packet, no independent `44`-vertex witness verifier, and no replayable `45`-vertex certificate path.
+- Any current claim stronger than `route target`, `negative result`, or `infrastructure-only` can therefore be falsified immediately by asking for artifact paths, hashes, replay logs, or executed comparator rows.
 
-## Non-Negotiable Falsifier Thresholds
+## Non-Negotiable Failure Codes
 
-- Lower-bound work is not progress unless it outputs an independently verified `44`-vertex coloring. Better defect scores, a positive defect floor, or nicer search trajectories do not improve `R(5,5)`.
-- Upper-bound work is not progress unless it outputs a machine-checkable proof or certificate that `45`-vertex colorings are impossible, or reduces to a residue with a clear and credible certificate path.
-- Structural novelty is not established by importing a method name from physics, coding theory, or hardware verification. It is established only by a new reusable Ramsey obstruction, invariant, rigidity statement, or proof-grade lemma.
+- `anti_exoo_holdout`
+- `witness_killed`
+- `rare_core_tail`
+- `stale_baseline`
+- `missing_certificate_path`
 
-## 1. Rare-Event / Defect-Manifold / Frontier-Atlas Lower-Bound Family
+If any of these fires, the corresponding route should be demoted or killed rather than rhetorically repaired.
 
-### Easiest failure or rehash accusations
-
-- This is still Exoo-style search with a fancier energy function. Prior overlap already includes Exoo, the 2010 symmetric-heuristic GA paper, Ge et al.'s re-analysis of Exoo with very low-defect `K_43` colorings, analog Max-SAT work, and RL-style Ramsey search.
-- Multicanonical or population-annealed language only changes the optimizer. If the actual object is still "find lower-defect colorings," the work will read as optimizer theater.
-- A reproducible positive defect floor at `n=44` is not evidence of impossibility. It is equally consistent with a poor move set, bad collective variables, symmetry bias, or an overfit energy.
-- Learning obstruction cores only from known `42`-vertex or Exoo-derived families risks memorizing one construction lineage instead of discovering transferable structure.
-- Search with live upper-bound filters is one unsound pruning rule away from deleting a real witness.
-
-### Missing controls
-
-- Recover known `42`- and `43`-vertex witnesses from neutral random starts, not only from Exoo-like seeds.
-- Run leave-one-parent-out evaluation on `42 -> 43` extension data.
-- Test non-Exoo seed families and deliberately asymmetric perturbations.
-- Ablate each defect coordinate, collective variable, nonlocal move, and symmetry-breaking rule.
-- Prove soundness, or at minimum exhaustively stress-test survival, for every upper-bound-derived pruning filter on all known witnesses.
-- Compare against equalized baselines by total edge flips, neighbor evaluations, and SAT or LP calls, not by wall-clock on mismatched implementations.
-
-### Benchmark traps
-
-- Counting best defect seen instead of witness-finding probability.
-- Reporting one lucky run, one seed family, or one highly curated near-miss corpus.
-- Using near-miss quality as a surrogate for extendability to `44` vertices.
-- Claiming a "new basin" without automorphism-class and defect-overlap clustering.
-- Treating failure to find `K_44` as evidence toward an upper bound.
-
-### Literature branches that invalidate weak claims
-
-- Exoo-style constructive lower-bound search.
-- The 2010 symmetric-heuristic GA paper for `R(5,5)`.
-- Ge et al. on Exoo's lower bound and low-defect variants.
-- Analog Max-SAT or analog-solver Ramsey work.
-- RL or learning-based Ramsey graph search.
-- Generic rare-event and multicanonical optimization literature, if the claimed novelty is only algorithmic and not Ramsey-structural.
-
-## 2. Terwilliger / Flag / Spectral / Finite-Stability Upper-Bound Family
+## 1. `H1` Obstruction-Atlas / OVE-Adjacent Line
 
 ### Easiest failure or rehash accusations
 
-- This is generic SDP or flag-algebra tightening with coding-theory branding. The overlap is already explicit: McKay-Radziszowski, Angeltveit-McKay `<= 48` and `<= 46`, semidefinite Ramsey papers, and split-Terwilliger code bounds.
-- A degree-`4` or low-order colored moment relaxation at `n=45` may still leave a residue no smaller than the current LP-plus-gluing frontier.
-- Floating-point infeasibility is not a Ramsey bound. Without rational reconstruction or an exact certificate path, it is just a numerical-artifact candidate.
-- Finite-`n` rigidity around a `13`-part asymptotic template may simply not bite at `n=45`; asymptotic stability does not automatically control the exact frontier.
-- Seidel or spectral filtering can remove many switching classes while proving nothing about actual graph existence. That is a search aid, not an upper-bound result.
+- If `H1` mainly catalogs failed `42 -> 43` extensions or reorganizes extension emptiness checking, it sits on Lehavi 2024's one-vertex-extension and counterexample-checking surface, not beyond it.
+- If the recurring cores are mostly supported by Exoo-like parent families, the result is Ge-style or Exoo-style witness digestion, not a new cross-family Ramsey object.
+- If `Contrastive motif enrichment` from `results/swarm/hypothesis_bridge.md` amounts to recurrence counting with a new label, it is method-import theater, not structural novelty.
+- If `Rare-tail phase separation` only improves sampling or defect navigation, it collapses into optimizer theater already covered by Exoo, Aija'am 2010, RL-style search, and analog Max-SAT-style search.
+- If the advertised lower-bound / upper-bound bridge never yields a witness-safe reusable lemma, the bridge claim is rhetorical. It is just pruning on one side and analogy on the other.
+- If the same core family does not survive canonical relabeling, held-out families, and proof-side replay, the word `cross-family` is false.
 
 ### Missing controls
 
-- Reproduce smaller solved Ramsey instances, `R(4,5)=25`-style subcases, or known extremal catalogues before touching `n=45`.
-- Run side-by-side ablations versus plain LP, plain flag, and plain SDP with the same type basis.
-- Audit exactness of every block diagonalization, symmetry quotient, and basis truncation.
-- Export rationalized or exact infeasibility certificates for any claimed upper-bound implication.
-- Show that surviving parameter signatures can be exhaustively checked faster than the status quo.
-- Remove `13`-part priors and spectral priors and verify the claimed gain survives.
+- Materialize `frontier_parent`, `extension_case`, and `failure_witness` records for at least 3 non-isomorphic parent families before claiming any atlas behavior.
+- Run neutral-start recovery and deliberately asymmetric or non-Exoo parent families, not only Exoo-line warm starts.
+- Run raw-versus-canonical ablations so recurrence is not created by canonicalization.
+- Freeze and run the decisive leave-one-parent-out `anti_exoo_holdout`.
+- Enforce family balance: no family should contribute more than 50 percent of accepted support.
+- Run per-filter witness-survival audits on all stored `42`- and `43`-vertex witnesses before any filter is called safe.
+- If motif-enrichment language is used, define seed-diversified null families in advance; otherwise the null is hand-shaped around the claim.
 
 ### Benchmark traps
 
-- Reporting variable-count reduction instead of final certificate size or checker runtime.
-- Testing only toy instances where any low-order relaxation succeeds.
-- Comparing different bases or different solvers and attributing all gains to Terwilliger structure.
-- Calling a smaller feasible moment region "progress" when it does not shrink the exact endgame.
+- Reporting coverage only on curated failures, near-misses, or one lineage instead of all orbit-distinct failed extensions.
+- Reporting core counts or compression after tuning `k`, support thresholds, or canonicalization choices on the same corpus.
+- Treating defect reduction, prune count, or low-defect hit rate as structural progress.
+- Treating failure to find a `44`-vertex witness as evidence for impossibility.
+- Comparing against no reproduced Ge/Lehavi baseline and then calling the overlap problem solved.
+- Letting the atlas see provenance labels, family labels, or seed privilege during model or threshold selection.
 
 ### Literature branches that invalidate weak claims
 
-- McKay-Radziszowski subgraph-counting and upper-bound work.
-- Angeltveit-McKay `R(5,5) <= 48` and `R(5,5) <= 46`.
-- Semidefinite programming for Ramsey numbers.
-- Schrijver, Terwilliger, and association-scheme SDP bounds for codes.
-- Seidel-switching, spectral, and equiangular-line literature if the method is only a spectral-compression story.
-- Recent multiplicity and stability work if the claim is merely that `13`-part templates matter.
+- Exoo 1989 for the base lower-bound witness line.
+- Ge et al. 2022 for Exoo re-verification and low-defect `K_43` structure.
+- Lehavi 2024 for one-vertex-extension and counterexample-checking overlap.
+- Aija'am 2010 for optimizer-only or symmetry-only claims.
+- `RamseyRL` and related learning-based search if the story drifts into `smarter search`.
+- `A high-performance analog Max-SAT solver and its application to Ramsey numbers` if the story drifts into energy-landscape or hardware-search novelty without a reusable obstruction object.
 
-## 3. IC3/PDR / Conflict-Kernel / Decomposition-Reform Upper-Bound Family
+## 2. `H2` Decomposition-Primitive Upgrade
 
 ### Easiest failure or rehash accusations
 
-- If the state space is still split-vertex, edge-gluing, or transverse-edge gluing, this is the same decomposition with a stronger SAT engine.
-- Conflict kernels extracted after the fact may fail to transfer across branches. If so, they are compressed proof logs, not new structural obstructions.
-- Orbit-canonicalization and invariant learning may cost more than the branching they save.
-- Learned clauses can be encoding-specific and fail to survive changes in decomposition or symmetry conventions.
-- A dramatic branch-count reduction on easy subcases may still fail to reduce proof size, proof-check time, or unresolved residue on `n=45`.
-- Adding clause learning to a line that previously used a special-purpose solver without clause learning is an engineering delta, not by itself a new Ramsey idea.
+- If the state space is still split-vertex or transverse-edge gluing, `H2` is the same upper-bound surface with a stronger engine or different branch order.
+- If the primitive is only a representation change on top of the Angeltveit-McKay / Gauthier line, the novelty claim collapses before benchmarking.
+- If the result is a smaller residue with no replayable certificate path, it is residue laundering, not an upper-bound advance.
+- If `Orbit-Quotient Ramsey Abstract Interpreter` from `results/swarm/hypothesis_bridge.md` is just a bundle of filters on the same decomposition, it is ad hoc pruning with static-analysis branding.
+- If the gains disappear once solver, proof logger, preprocessing, warm starts, and cached clauses are matched, the win was solver-shopping.
 
 ### Missing controls
 
-- Compare against the exact same decomposition with modern SAT and proof logging but without IC3/PDR or invariant learning.
-- Separate gains from decomposition choice, clause learning, symmetry reduction, and learned-kernel reuse.
-- Run held-out transfer tests: kernels learned on one gluing family must prune a disjoint family.
-- Maintain end-to-end certificate artifacts: CNFs, proof logs, checker outputs, and regeneration scripts.
-- Climb a verified benchmark ladder before making `n=45` claims: Schur Number Five, SAT+CAS Ramsey certificates, and formal `R(4,5)=25`-style proof pipelines.
+- Reproduce at least one local baseline row for McKay-Radziszowski 1992, Angeltveit-McKay 2018, Angeltveit-McKay 2024, and the Gauthier 2025 strategy surface before claiming a comparison win.
+- Prove non-equivalence to split-vertex or transverse-edge gluing before benchmarking. Otherwise the benchmark is testing branch order, not a new primitive.
+- Hold solver binary, proof format, preprocessing, thread count, branch-order policy, warm-start policy, and cached-clause policy fixed.
+- Replay at least one smaller solved certificate rung before touching `n = 45`.
+- Run primitive-only ablations: same pipeline, same decomposition family, target primitive `on` versus `off`.
+- Score by `bound status > certificate class > verified residue size > proof bytes > checker runtime`, not by branch counts or unknown-edge counts.
 
 ### Benchmark traps
 
-- Counting eliminated branches instead of proof bytes or verified runtime.
-- Using handcrafted subproblems rich in repeated motifs.
-- Calling a small residue "tractable" without actually finishing it.
-- Optimizing unknown-edge count, isomorphism collapse, or UNSAT-core reuse while the actual checked proof gets larger.
+- Headlining unknown-edge count, SAT conflicts, or branch count instead of checked proof cost.
+- Letting only the candidate use warm starts, tuned symmetry priors, cached clauses, or proof reuse.
+- Testing only toy subcases where any decomposition looks good.
+- Handing the hard residue back to the old pipeline after advertising a dramatic reduction.
+- Treating Gauthier 2025 as a comparison-grade executed baseline rather than the overlap-only strategy abstract it currently is in the repo.
 
 ### Literature branches that invalidate weak claims
 
-- Angeltveit-McKay `<= 46`, which already integrates SAT inside LP-plus-gluing.
-- Gauthier's 2025 upper-bound strategy, which already pushes SAT decomposition through splitting vertices and transverse-edge gluing.
-- Schur Number Five and SAT proof logging.
-- SAT+CAS verified Ramsey certificates for nearby problems.
-- Formal proof and certificate pipelines such as `R(4,5)=25`.
+- McKay-Radziszowski 1992 as the classical exact case-analysis ancestor.
+- Angeltveit-McKay 2018, `R(5,5) <= 48`.
+- Angeltveit-McKay 2024, `R(5,5) <= 46`.
+- Gauthier 2025 on splitting vertices and transverse-edge gluing.
+- Direct SDP / flag / Terwilliger Ramsey literature if the route imports that vocabulary without an exact finite-`n` certificate path, for example `Semidefinite Programming and Ramsey Numbers`.
 
-## 4. Cross-Cutting Novelty Illusions
+## 3. `H3` Proof-Carrying Reusable Certificates
 
-- Method-import theater: rare-event sampling, Terwilliger algebra, IC3/PDR, or CEGAR names are doing the novelty work while the Ramsey object is unchanged.
-- Proxy-metric inflation: fewer defects, fewer branches, smaller SDPs, or cleaner switching classes without a new bound or a certificate path.
-- Frontier overfitting: tuning to known `42`-vertex graphs or friendly gluing instances and mistaking memorization for structure.
-- Stale-baseline illusion: the local watchlist and frontier files are noisy enough that a weak literature review can make almost anything look novel.
-- Search/proof conflation: heuristic evidence toward infeasibility is being blurred with proof of infeasibility.
-- Residue laundering: a method reports "dramatic reduction" and quietly hands the hard part back to the old pipeline.
+### Easiest failure or rehash accusations
 
-## 5. Fastest Invalidators To Apply Before Taking Any Claim Seriously
+- If `H3` is generic proof logging, certificate export, or proof-assistant packaging, it is already covered by nearby certified-computation lines.
+- If the learned or extracted cores are encoding-specific and fail branch-family transfer, they are compressed solver debris, not reusable Ramsey obstructions.
+- If replay cost exceeds pruning gain, the route is negative-value infrastructure.
+- If the route is not attached to a structural object from `H1` or a genuinely new `H2` primitive, it is infrastructure-only by the repo's own claim grammar.
 
-1. Ask whether the output is a verified `44`-vertex witness or a machine-checkable `45`-vertex impossibility proof. If not, it is intermediate evidence only.
-2. Replace the imported engine with a plain baseline using the same representation, decomposition, and filters. If the gain disappears, the novelty claim collapses.
-3. Remove Exoo-family seeds, `13`-part priors, and favored symmetry coordinates. If performance collapses, the method is overfit.
-4. Move to held-out frontier families and verified benchmark ladders. If kernels, defects, or invariants do not transfer, the structural claim is false.
-5. Demand exact certificates or rationalized outputs for any upper-bound statement. If that path is absent, the claim is not bound-improving.
+### Missing controls
+
+- Maintain a replay ledger with input hash, artifact hash, checker version, and pass or fail result.
+- Reproduce at least one smaller solved proof case locally before making any transfer claim.
+- Run certificate reuse `on` versus `off` under the same proof format and branch family.
+- Test branch-family transfer and proof-format stability explicitly.
+- Measure proof bytes and checker runtime, not only prune counts or branch counts.
+
+### Benchmark traps
+
+- Counting eliminated branches instead of checked proof cost.
+- Testing only one proof format, one decomposition family, or one branch lineage.
+- Claiming a `certificate path` without a machine-readable residue, target proof format, and replay plan.
+- Calling a proof object `canonical` when it changes under symmetry convention, CNF encoding, or branch order.
+
+### Literature branches that invalidate weak claims
+
+- `Schur Number Five` for proof logging and SAT certificate discipline.
+- `Verified Certificates via SAT and Computer Algebra Systems for the Ramsey R(3,8) and R(3,9) Problems`.
+- `A Formal Proof of R(4,5)=25`.
+- `Formalizing Ramsey Theory in Lean: Towards the proof that Ramsey(4,5)=25`.
+- The existing formal / certified Ramsey repositories already tracked in the repo for `H3`.
+
+## Cross-Cutting Novelty Illusions
+
+- OVE relabeling: the object is still failed one-vertex extensions, only repackaged.
+- Exoo-line memorization: one lineage supplies the signal, then gets described as `structure`.
+- Solver-shopping: the pipeline is unchanged and the engine is better.
+- Proof-packaging: the certificate wrapper gets credit instead of the underlying combinatorics.
+- Method-import theater: motif mining, abstract interpretation, rare-event sampling, or statistical-physics language is doing the novelty work while the Ramsey object stays the same.
+- Proxy-metric inflation: fewer defects, fewer branches, smaller residues, or cleaner abstractions without a witness or certificate path.
+- Stale-baseline illusion: no executed comparator rows means any claim can look favorable by construction.
+- Survey inflation: `aijaam2010` and `gauthier2025` are overlap-kill references, not strong comparison-grade baselines.
+- Corpus-hygiene illusion: broken or stale metadata around Gauthier, mirror-only rows, and the still-noisy context file can make the overlap story look cleaner than it is.
+
+## Fastest Invalidators To Apply Before Spending More Compute
+
+1. Ask for executed comparator rows and `results/h1/*` artifact paths. If they are absent, the claim stays at no-go or route-specification scope.
+2. Run the decisive `anti_exoo_holdout`. If coverage collapses, `H1` is memorizing a lineage.
+3. Run witness-survival for every promoted filter. One deleted known witness kills the corresponding branch.
+4. Freeze the matched-compute tuple and rerun candidate versus baseline with only the target primitive toggled.
+5. Demand replayable proof or certificate artifacts for any upper-bound language.
+6. If the first atlas pass leaves a diffuse uncovered tail with no dominant second cluster, record `rare_core_tail` and stop instead of inventing a new story.
 
 ## Bottom Line
 
-- The easiest bad paper here is "same search or proof pipeline, new imported engine."
-- The easiest honest failure is "strong proxy metrics, no certificate."
-- The only durable moat is a new reusable Ramsey structural object: an obstruction family, exact rigidity statement, or proof-grade invariant that survives held-out tests and feeds directly into a verified bound.
+- The easiest bad paper here is still `same Ramsey surface, new imported vocabulary`.
+- The easiest true falsifier on the current repo is even simpler: the claimed structural artifacts and executed benchmark rows do not yet exist.
+- Until `H1` passes recurrence plus held-out transfer plus witness-safety, and until `H2` or `H3` beat reproduced baselines under matched certificate metrics, the only honest outward-facing scope is a constrained no-go or route-specification memo.
