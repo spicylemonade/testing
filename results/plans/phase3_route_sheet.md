@@ -71,3 +71,32 @@ Before any scale-up, materialize the schema itself:
 - reconstruct orbit-distinct `extension_case` records for the first decisive parent packet
 - extract `failure_witness` examples with canonical hashes
 - confirm that every planned field can be filled from a local artifact or a reproducible import step
+
+## 7. `H1` Transfer And Soundness Gates
+
+Mandatory checks before any scale-up:
+
+1. Leave-one-parent-out transfer on every known parent family in the initial frontier packet.
+2. Witness-survival audit on every known `42`- and `43`-vertex construction used as a safety oracle.
+3. Family-balance audit so the atlas is not carried by one Exoo-like lineage alone.
+4. Filter-ablation audit for every pruning rule derived from the core library.
+
+Pass criteria:
+
+- Zero witness-safety violations on the known `42` and `43` constructions.
+- Recurrence and transfer claims from Section 5 remain true after leave-one-parent-out evaluation.
+- No single parent family contributes more than half of the accepted recurring-core support.
+
+## 8. Stop Rules And Pivot Conditions
+
+Kill or demote `H1` if any of the following happens:
+
+- recurring cores fail to generalize across held-out parent families
+- any core-derived filter kills a known `42`- or `43`-vertex witness
+- the atlas collapses to one seed family and fails the family-balance audit
+- core reuse depends on encoding quirks rather than canonical identity
+
+Pivot rule:
+
+- `H2` unlocks only after the transfer or soundness gates above fail.
+- If `H1` fails only on reuse but not on witness-safety, keep the atlas as intermediate structural evidence and treat `H3` as infrastructure-only.
