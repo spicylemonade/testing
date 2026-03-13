@@ -1,9 +1,13 @@
 # Prior Art Watchlist
 
+This file records lexical false positives admitted by the seed query `improve number ramsey bound`.
+It is not an active prior-art set for `R(5,5)`.
+Use `results/literature/literature_snapshot.json`, `results/literature/prior_art_gap.md`, and `results/swarm/phase1_cleanup.md` for the real Ramsey corpus and novelty guard.
+
 - Seed query: improve number ramsey bound
 - Task terms: improve, number, ramsey, bound
 
-## Closest Prior Art
+## Lexical Noise From The Seed Query
 ### 1. Senolytics Improve Physical Function and Increase Lifespan in Old Age (2018)
 - Paper ID: 918fb15a620d71230dc7ee961c0c2cfce924e9a7
 - Citation count: 1852
@@ -40,9 +44,7 @@
 - Overlap terms: improve, number
 - Fields: Computer Science
 
-## Novelty Questions
-- How is the planned contribution materially different from 'Senolytics Improve Physical Function and Increase Lifespan in Old Age'?
-- How is the planned contribution materially different from 'Leveraging polygenic functional enrichment to improve GWAS power'?
-- How is the planned contribution materially different from 'Using Simulation and Domain Adaptation to Improve Efficiency of Deep Robotic Grasping'?
-- How is the planned contribution materially different from 'The EPR effect and beyond: Strategies to improve tumor targeting and cancer nanomedicine treatment efficacy'?
-- How is the planned contribution materially different from 'Automatic Number Plate Recognition'?
+## Retired Novelty Questions
+
+- These watchlist entries are excluded from the active novelty guard.
+- Active novelty questions must target Ramsey-specific overlap such as Exoo 1989, Ge et al. 2022, Lehavi 2024, McKay-Radziszowski 1992, Angeltveit-McKay 2018 and 2024, and the Gauthier line.

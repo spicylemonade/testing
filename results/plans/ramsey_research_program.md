@@ -4,6 +4,30 @@ Date: 2026-03-13
 Task: Improve the Ramsey number `R(5,5)` bound
 Current frontier target: `43 <= R(5,5) <= 46`
 
+## 0. Fixed Ramsey Corpus And Framing Guard
+
+Source of truth for the Phase 1 cleanup:
+- `results/swarm/phase1_cleanup.md`
+
+Do not widen literature search again until the fixed corpus from that synthesis is exhausted.
+
+Active reading order:
+1. `Small Ramsey Numbers Dynamic Survey 1`
+2. Exoo 1989
+3. Ge et al. 2022
+4. Lehavi 2024
+5. Angeltveit-McKay 2024 `R(5,5) <= 46`
+6. Angeltveit-McKay 2018 `R(5,5) <= 48`
+7. McKay-Radziszowski 1992
+8. Aija'am 2010, overlap-only
+9. Gauthier 2025, only if `H2` is opened
+10. Gauthier-Brown 2024 and Barakeel-Gauthier-Commelin 2025, only for `H3` or certificate packaging
+
+Framing guard:
+- The active `H1` label is `Cross-family canonical obstruction atlas for failed 42 -> 43 extensions in R(5,5)`.
+- All outward-facing first sentences must contain `R(5,5)` and the concrete object under study (`obstruction atlas`, `decomposition primitive`, or `certificate reuse`).
+- The lexical watchlist is evidence of query noise only, not substantive prior art.
+
 ## 1. Route Arbitration
 
 Primary source anchors:
@@ -17,6 +41,7 @@ Operational decision:
 - Keep `H1` as champion. The local swarm materials agree that the only credible novelty moat is a reusable obstruction object extracted from failed `42 -> 43` extensions, not another optimizer or another solver narrative.
 - Keep `H2` as backup only. It opens only if `H1` fails transfer or witness-safety gates.
 - Keep `H3` as reserve only. It is infrastructure unless attached to a structural object from `H1` or a genuinely new decomposition primitive from `H2`.
+- Phrase `H1` as an object claim, not as a new one-vertex extension algorithm or an emptiness checker.
 
 Explicit kill criteria:
 - `H1`: kill if minimal obstruction cores do not recur across orbit-distinct parents, fail leave-one-parent-out transfer, or kill any known `42`/`43` witness during witness-safety audits.
@@ -27,16 +52,17 @@ Explicit kill criteria:
 
 | Planned activity | Existing utility or artifact | Expected output | Current blocker |
 | --- | --- | --- | --- |
-| Ramsey literature refresh | `.archivara/semantic_scholar.py`, `results/literature/literature_snapshot.json`, `results/literature/semantic_scholar_manifest.json` | Extended Ramsey-specific bibliography and frontier notes | None |
+| Ramsey literature refresh | `.archivara/semantic_scholar.py`, `results/literature/literature_snapshot.json`, `results/literature/semantic_scholar_manifest.json`, `results/swarm/phase1_cleanup.md` | Fixed Ramsey corpus, ranked reading order, and frontier notes | No widening allowed until the fixed corpus is exhausted |
 | Concept branching and route expansion | `.archivara/concept_evolve.py`, `results/concept_evolve/tree/` | Cross-domain concept cards, promoted folders, walk paths | Helper repaired locally; waiting on successful artifact generation |
 | Route arbitration | `results/swarm/director_brief.md`, `results/swarm/hypotheses.json`, `results/swarm/tool_plan.md`, `results/swarm/falsifier.md` | Fixed `H1/H2/H3` ordering with explicit stop rules | None |
-| Lower-bound baseline definition | Exoo 1989, Ge et al. 2022, Lehavi 2024, `results/literature/gap_probe_1.json` | Witness standards, search-effort normalization, failure log schema | No repo-local witness enumerator or verifier exists yet |
+| Lower-bound baseline definition | Exoo 1989, Ge et al. 2022, Lehavi 2024, `results/literature/gap_probe_1.json`, `results/swarm/phase1_cleanup.md` | Witness standards, search-effort normalization, failure log schema | No repo-local `frontier_parent` corpus, witness enumerator, or verifier exists yet |
 | Upper-bound baseline definition | McKay-Radziszowski 1992, Angeltveit-McKay 2018 and 2024, Gauthier 2025 | Residue/certificate metrics and matched-baseline comparison plan | No repo-local proof checker or residue reducer exists yet |
-| Novelty differentiation | `results/literature/prior_art_gap.md`, `results/literature/prior_art_watchlist.md`, `results/literature/novelty_guard.json` | Closest-overlap notes and branch-kill decisions | Watchlist contains lexical noise and must be filtered |
+| Novelty differentiation | `results/literature/prior_art_gap.md`, `results/literature/prior_art_watchlist.md`, `results/literature/novelty_guard.json`, `results/swarm/phase1_cleanup.md` | Closest-overlap notes, lexical-noise exclusions, and branch-kill decisions | Keep lexical watchlist out of baseline and novelty claims |
 | Citation packaging | `sources.bib`, `results/verification/citation_audit.md` | Complete bibliography and claim-to-source coverage | `sources.bib` absent at run start |
 | Final verification routing | `results/verification/novelty_report.md`, `results/verification/benchmark_report.md`, `results/verification/verification_summary.md` | Publishability gate and no-go documentation | Verification directory empty at run start |
 
 Indispensable missing-tool blockers to log rather than implement ad hoc:
+- No existing repo utility materializes the `frontier_parent` / `extension_case` / `failure_witness` corpus required for `Rung 0`.
 - No existing repo utility enumerates orbit-distinct `42 -> 43` extensions.
 - No existing repo utility independently verifies a `44`-vertex witness.
 - No existing repo utility checks a machine-readable `45`-vertex impossibility certificate.
@@ -66,10 +92,13 @@ Upper-bound work counts as progress only if it yields a machine-checkable proof 
 ## 5. Concept-Tree Operating Rules
 
 Required ConceptEvolve sequence:
-- After Phase 1, run `.archivara/concept_evolve.py evolve "Improve the Ramsey number R(5,5) bound"` and `.archivara/concept_evolve.py walk`.
+- Completed in Phase 1: `.archivara/concept_evolve.py evolve "Improve the Ramsey number R(5,5) bound"` and `.archivara/concept_evolve.py walk`.
 - Entering core research, run `.archivara/concept_evolve.py probe "<biggest open question>"`.
 - Entering experiments, run `.archivara/concept_evolve.py reframe "Improve the Ramsey number R(5,5) bound"`.
 - After verification artifacts exist, run `.archivara/concept_evolve.py iterate "Improve the Ramsey number R(5,5) bound"`.
+
+Concept-drift guard:
+- No further concept branching occurs until `Rung 0` materializes the `frontier_parent`, `extension_case`, and `failure_witness` schema.
 
 Acceptance floor for the concept tree:
 - At least 10 folders under `results/concept_evolve/tree/`.
@@ -78,6 +107,12 @@ Acceptance floor for the concept tree:
 - Each promoted folder must map explicitly to `H1`, `H2`, or `H3`.
 
 ## 6. Champion `H1` Program Specification
+
+`H1` must be described as an object, not a mechanism:
+- Do not call it a new one-vertex extension algorithm.
+- Do not call it an improved lower-bound search.
+- Do not call it an emptiness checker for `R(5,5,43)`.
+- Call it a cross-family canonical obstruction atlas for failed `42 -> 43` extensions in `R(5,5)`.
 
 Canonical `H1` data model:
 - `frontier_parent`: a known `42`-vertex critical coloring, with automorphism metadata, orbit partition, degree profile, and provenance.
@@ -110,6 +145,7 @@ Mandatory `H1` checks before any scale-up:
 - Witness-survival audit on every known `42`- and `43`-vertex witness.
 - Family-balance audit to ensure the atlas is not just an Exoo-lineage memorizer.
 - Filter-ablation audit: remove each pruning rule independently and confirm no hidden unsoundness.
+- Do not report pruning gains, SAT-clause reuse, or upper-bound lemma reuse as a structural advance before the transfer and witness-safety checks pass.
 
 Pivot rule:
 - Open `H2` only after `H1` fails recurrence or transfer on held-out families, or after witness-safety detects unsound pruning.
@@ -120,6 +156,10 @@ Allowed `H2` decomposition primitives:
 - Adjacent-pair split: decompose around two adjacent anchor vertices rather than one.
 - Nonadjacent-pair split: decompose around two nonadjacent anchors to expose different residue symmetry.
 - Small-shell decomposition: use a forced `K_4` shell or an independent-4 shell to define a stronger case partition.
+
+`H2` non-equivalence gate:
+- Before any benchmark, each candidate primitive must state why it is not reducible to split-vertex or transverse-edge gluing plus a different branching order.
+- If that statement is weak or purely rhetorical, kill `H2` early.
 
 `H2` success criteria:
 - Smaller verified residue than split-vertex/transverse-edge gluing.
@@ -136,9 +176,20 @@ Allowed `H3` attachment:
 `H3` non-route:
 - No standalone `H3` track proceeds before `H1` or `H2` yields a transferable structural object.
 
+`H3` evaluation baselines:
+- Formal `R(4,5) = 25` proof practice.
+- Lean formalization work on Ramsey theory and `R(4,5) = 25`.
+
+`H3` credit rule:
+- `H3` gets structural credit only if transfer survives cross-branch or cross-family tests and checked proof size or checker runtime decreases.
+
 ## 9. Exact Experiment Ladder
 
 The first exact ladder must start with the fastest invalidators from `results/swarm/falsifier.md`.
+
+Rung 0: frontier reconstruction pass
+- Goal: reconstruct the Exoo/Ge/Lehavi one-vertex-extension setting and materialize the canonical `frontier_parent`, `extension_case`, and `failure_witness` schema.
+- Expected artifact: frontier corpus table, extension-case schema, and failure-witness schema with provenance fields.
 
 Rung 1: `H1` atlas pass
 - Goal: build the parent/extension/failure-core schema on the smallest decisive frontier set.
@@ -160,11 +211,16 @@ Expansion gate:
 Every evaluation table must include the following named rows:
 - Exoo 1989 lower-bound line.
 - Ge et al. 2022 `Study of Exoo's Lower Bound for Ramsey number R(5,5)`.
+- Lehavi 2024 `Ramsey Number Counterexample Checking and One Vertex Extension Linearly Bound by s and t`.
 - Aija'am 2010 `Can genetic algorithms with the symmetric heuristic find the Ramsey number R(5,5)`.
 - McKay-Radziszowski 1992 `A new upper bound on the Ramsey number R(5,5)`.
 - Angeltveit-McKay 2018 `R(5,5) <= 48`.
 - The `R(5,5) <= 46` line.
 - Gauthier 2025 `Decreasing the upper bound on the Ramsey number R(5,5)`.
+
+`H3`-specific evaluation tables must also include:
+- The formal `R(4,5) = 25` certificate line.
+- The Lean formalization line for Ramsey theory and `R(4,5) = 25`.
 
 Every row must include:
 - comparison object
@@ -205,3 +261,9 @@ Forbidden phrasings:
 - Do not present a smaller residue without a certificate path as an upper-bound improvement.
 - Do not present proof logging alone as structural novelty.
 - Do not blur heuristic impossibility evidence into a proof of impossibility.
+
+Wording constraints:
+- `H1` wording must include `R(5,5)`, `failed 42 -> 43 extensions`, `minimal obstruction cores`, and either `held-out transfer` or `witness-safety`.
+- `H2` wording must name the exact decomposition primitive and at least one certificate metric such as verified residue size, proof bytes, or checker runtime.
+- `H3` wording must say that it is attached to `H1` or `H2` and must name the reuse test: cross-branch, cross-family, or orbit-stable transfer.
+- Run a lexical scrub on every outward-facing title, abstract, and comparison table. If the first sentence does not contain `R(5,5)` and the concrete Ramsey object, rewrite it.
