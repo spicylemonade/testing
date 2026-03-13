@@ -1,0 +1,46 @@
+\documentclass[tikz,border=6pt]{standalone}
+\input{figure_style.tex}
+
+\begin{document}
+\begin{tikzpicture}[node distance=1.35cm and 1.25cm]
+  \node[sourcebox, minimum width=3.35cm, text width=3.0cm] (lit)
+    {\textbf{Literature packet}\\Exoo 1989\\Ge 2022\\Lehavi 2024};
+  \node[missingbox, right=of lit, minimum width=3.4cm, text width=3.15cm] (parents)
+    {\textbf{Frontier parents}\\\texttt{results/h1/frontier\_parents.jsonl}};
+  \node[missingbox, right=of parents, minimum width=3.5cm, text width=3.15cm] (ext)
+    {\textbf{Orbit-distinct extensions}\\\texttt{results/h1/extension\_cases.jsonl}};
+  \node[missingbox, right=of ext, minimum width=3.5cm, text width=3.15cm] (wit)
+    {\textbf{Failure witnesses}\\\texttt{results/h1/failure\_witnesses.jsonl}};
+
+  \node[missingbox, below=1.45cm of parents, minimum width=3.4cm, text width=3.1cm] (cores)
+    {\textbf{Canonical cores}\\\texttt{results/h1/obstruction\_cores.jsonl}};
+  \node[missingbox, right=of cores, minimum width=3.5cm, text width=3.15cm] (transfer)
+    {\textbf{Held-out transfer}\\\texttt{results/h1/transfer\_records.jsonl}};
+  \node[missingbox, right=of transfer, minimum width=3.5cm, text width=3.15cm] (safety)
+    {\textbf{Witness-safety audit}\\\texttt{results/h1/witness\_safety\_audit.md}};
+  \node[successbox, right=of safety, minimum width=3.75cm, text width=3.45cm] (claim)
+    {\textbf{Admissible claim}\\Structural intermediate only if every gate passes; bound movement requires a verified $44$-witness or checked $45$-impossibility proof};
+
+  \node[gatebox, below=0.95cm of wit, minimum width=3.55cm] (gate1)
+    {\textbf{Gate 1}\\Top canonical cores cover at least $30\%$ of failed orbit-distinct $42\!\to\!43$ extensions};
+  \node[gatebox, below=0.95cm of transfer, minimum width=3.55cm] (gate2)
+    {\textbf{Gate 2}\\Held-out coverage is at least $50\%$ of training-side coverage on the decisive anti-Exoo holdout};
+  \node[gatebox, below=0.95cm of safety, minimum width=3.55cm] (gate3)
+    {\textbf{Gate 3}\\Zero known-witness deletions and no family contributes more than $50\%$ of accepted support};
+
+  \draw[stagearrow] (lit) -- (parents);
+  \draw[stagearrow] (parents) -- (ext);
+  \draw[stagearrow] (ext) -- (wit);
+  \draw[stagearrow] (wit.south) |- (cores.north);
+  \draw[stagearrow] (cores) -- (transfer);
+  \draw[stagearrow] (transfer) -- (safety);
+  \draw[stagearrow] (safety) -- (claim);
+
+  \draw[faintarrow] (wit.south) -- (gate1.north);
+  \draw[faintarrow] (transfer.south) -- (gate2.north);
+  \draw[faintarrow] (safety.south) -- (gate3.north);
+
+  \node[ann, above=0.35cm of parents, text width=4.1cm] {Current status: the schema is specified and audited, but none of the \texttt{results/h1/*} artifacts has been materialized yet.};
+  \node[ann, below=0.45cm of claim, text width=4.3cm] {The obstruction-atlas route is therefore a route target only, not an achieved structural contribution.};
+\end{tikzpicture}
+\end{document}

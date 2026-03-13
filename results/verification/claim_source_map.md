@@ -14,8 +14,8 @@ This file is the claim-to-evidence spine for the current run. Every structural o
 | `H1` is a cross-family canonical obstruction atlas for failed `42 -> 43` extensions, not a new OVE algorithm. | structural route definition | `results/plans/phase3_route_sheet.md`, `results/plans/claim_grammar.md` | `ge2022`, `lehavi2024`, `lehavirepo` | route target only |
 | `H1` only earns structural credit if recurrence, held-out transfer, and witness-safety all pass. | structural gate | `results/plans/phase3_route_sheet.md`, `results/verification/novelty_report.md`, `results/plans/claim_grammar.md` | `ge2022`, `lehavi2024` | required gate |
 | Optimizer-only or symmetry-only lower-bound narratives are overlap-only and do not define novelty in this run. | overlap kill rule | `results/literature/prior_art_gap.md`, `results/plans/phase4_evaluation_sheet.md` | `aijaam2010`, `ge2022` | fixed |
-| `H2` is inactive unless it introduces a genuinely different decomposition primitive under matched certificate metrics. | bounded backup route | `results/plans/phase3_route_sheet.md`, `results/swarm/phase3_stress_test.md` | `mckay1992`, `angeltveit2018`, `angeltveitmckay2024`, `gauthier2025` | demoted |
-| `H3` is infrastructure-only unless attached to a transferable structural object from `H1` or `H2`. | infrastructure rule | `results/plans/phase3_route_sheet.md`, `results/swarm/phase3_stress_test.md`, `results/plans/claim_grammar.md` | `gauthier2024`, `gauthierbrown2024arxiv`, `barakeel2025`, `barakeelramseyrepo` | demoted |
+| `H2` is inactive unless it introduces a genuinely different decomposition primitive under matched certificate metrics. | bounded backup route | `results/plans/phase3_route_sheet.md`, `results/swarm/phase3_stress_test.md` | `mckay1992`, `angeltveit2018`, `angeltveitmckay2024` | demoted |
+| `H3` is infrastructure-only unless attached to a transferable structural object from `H1` or `H2`. | infrastructure rule | `results/plans/phase3_route_sheet.md`, `results/swarm/phase3_stress_test.md`, `results/plans/claim_grammar.md` | `gauthier2024`, `gauthierbrown2024arxiv`, `narvez2024`, `heule2018schur`, `li2025ramseycert`, `barakeelramseyrepo` | demoted |
 | Only an independently verified `44`-vertex witness or a machine-checkable `45`-vertex impossibility proof counts as a bound improvement. | claim grammar / benchmark rule | `results/plans/phase2_baseline_sheet.md`, `results/plans/phase4_evaluation_sheet.md`, `results/plans/claim_grammar.md` | `exoo1989`, `angeltveitmckay2024`, `radziszowski2024ds1` | fixed |
 | The current run is `No-go` on any bound-improvement claim and on any claim that `H1` is already an achieved structural intermediate result. | current verdict | `results/verification/verification_summary.md`, `results/verification/evaluation_rehearsal.md`, `results/verification/h1_acceptance_contract.md` | `angeltveitmckay2024`, `radziszowski2024ds1` | active |
 
@@ -30,6 +30,7 @@ This file is the claim-to-evidence spine for the current run. Every structural o
 
 ## Remaining Citation Gaps
 
+- `gauthier2025` is now an overlap-only strategy abstract rather than a proceedings-grade baseline, so it should anchor qualitative `H2` overlap notes but not be treated as a comparison-grade benchmark row.
 - `aijaam2010` remains an overlap-only citation grounded only by institutional-repository or conference-level metadata, so it must not carry comparison-grade argumentative weight.
 - `mckay1992` still lacks a direct publisher or journal-hosted landing page in `sources.bib`; it remains usable as a classical baseline anchor, but the URL is still a discovery mirror.
 - `noga2022` remains a background-only survey entry with a discovery URL and must not be used as a load-bearing source in any final memo.

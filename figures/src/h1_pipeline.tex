@@ -1,0 +1,65 @@
+\documentclass[tikz,border=6pt]{standalone}
+\input{figures/src/style.tex}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 8mm]
+  \node[stage, text width=3.1cm] (parents) {
+    \textbf{Frontier parents}\\
+    Exoo / Ge / Lehavi parent families\\
+    \texttt{frontier\_parents.jsonl}
+  };
+  \node[stage, text width=3.15cm, right=of parents] (extensions) {
+    \textbf{Orbit-distinct extensions}\\
+    One-vertex proposals from each parent orbit\\
+    \texttt{extension\_cases.jsonl}
+  };
+  \node[stage, text width=3.1cm, right=of extensions] (witnesses) {
+    \textbf{Failure witnesses}\\
+    Minimal monochromatic $K_5$ forcing patterns\\
+    \texttt{failure\_witnesses.jsonl}
+  };
+  \node[stage, text width=3.15cm, right=of witnesses] (cores) {
+    \textbf{Canonical cores}\\
+    Hash-equivalent obstructions collapsed across symmetries\\
+    \texttt{obstruction\_cores.jsonl}
+  };
+  \node[stage, text width=3.05cm, right=of cores] (transfer) {
+    \textbf{Transfer records}\\
+    Leave-one-parent-out coverage retention\\
+    \texttt{transfer\_records.jsonl}
+  };
+
+  \draw[link] (parents) -- (extensions);
+  \draw[link] (extensions) -- (witnesses);
+  \draw[link] (witnesses) -- (cores);
+  \draw[link] (cores) -- (transfer);
+
+  \node[note, text width=4cm, below=13mm of witnesses] (filterbank) {
+    \textbf{Witness-safe filter bank}\\
+    Every candidate pruning rule is tested against all known $42$- and $43$-vertex witnesses.
+  };
+  \draw[link] (cores.south) |- (filterbank.north);
+
+  \node[muted, text width=4.05cm, above=13mm of cores] (lemma) {
+    \textbf{Optional upper-bound attachment}\\
+    Only after transfer and witness-safety pass may a core be proposed as a proof-grade lemma candidate.
+  };
+  \draw[dashedlink] (cores.north) -- (lemma.south);
+
+  \node[kill, text width=2.9cm, above left=8mm and -2mm of extensions] (kill1) {
+    \textbf{Kill switch}\\
+    \texttt{anti\_exoo\_holdout}
+  };
+  \node[kill, text width=2.7cm, above=8mm of witnesses] (kill2) {
+    \textbf{Kill switch}\\
+    \texttt{rare\_core\_tail}
+  };
+  \node[kill, text width=2.9cm, above right=8mm and -2mm of transfer] (kill3) {
+    \textbf{Kill switch}\\
+    \texttt{witness\_killed}
+  };
+
+  \draw[dashedlink] (kill1.south) -- (extensions.north);
+  \draw[dashedlink] (kill2.south) -- (witnesses.north);
+  \draw[dashedlink] (kill3.south) -- (filterbank.east);
+\end{tikzpicture}
+\end{document}

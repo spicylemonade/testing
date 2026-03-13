@@ -1,0 +1,57 @@
+\documentclass[tikz,border=6pt]{standalone}
+\input{figures/src/style.tex}
+\begin{document}
+\begin{tikzpicture}
+  \begin{axis}[
+    xbar stacked,
+    width=15.2cm,
+    height=9.2cm,
+    xmin=0,
+    xmax=25,
+    grid=major,
+    bar width=7.5pt,
+    xlabel={Exact count},
+    symbolic y coords={
+      Bound-moving artifacts,
+      Benchmark rows,
+      Gating tools,
+      Required H1 artifacts,
+      Promoted bridges,
+      Verification memos,
+      Rubric items
+    },
+    ytick=data,
+    y dir=reverse,
+    enlarge y limits=0.12,
+    legend columns=2,
+    legend style={at={(0.98,0.02)},anchor=south east}
+  ]
+    \addplot+[xbar, fill=archTeal, draw=archTeal] coordinates {
+      (0,Bound-moving artifacts)
+      (0,Benchmark rows)
+      (0,Gating tools)
+      (0,Required H1 artifacts)
+      (5,Promoted bridges)
+      (4,Verification memos)
+      (25,Rubric items)
+    };
+    \addplot+[xbar, fill=archStone, draw=archStone] coordinates {
+      (2,Bound-moving artifacts)
+      (8,Benchmark rows)
+      (4,Gating tools)
+      (7,Required H1 artifacts)
+      (0,Promoted bridges)
+      (0,Verification memos)
+      (0,Rubric items)
+    };
+    \legend{present, missing}
+  \end{axis}
+
+  \node[note, text width=14.65cm, anchor=north west] at (0.35,-0.95) {
+    Counts are deterministic repository measurements rather than sampled estimates.
+    Confidence intervals are therefore not applicable: the key result is a lopsided packet with
+    planning and verification artifacts present, but zero executed H1 evidence files and zero
+    bound-moving certificates.
+  };
+\end{tikzpicture}
+\end{document}
