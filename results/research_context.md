@@ -12,7 +12,7 @@ Task: Improve the Ramsey number `R(5,5)` bound
 - Current frontier target: `43 <= R(5,5) <= 46`
 - Bound-moving threshold: independently verified `44`-vertex witness or machine-checkable `45`-vertex impossibility proof
 - Current claim ceiling: no bound-improvement claim; only bounded `H1` structural work is authorized
-- `sources.bib` entries: `17`
+- `sources.bib` entries: `18`
 - Verification packet present: yes
 
 ## Major Route Changes
