@@ -2,7 +2,7 @@
 
 Date: 2026-03-13
 Owner role: `integrator`
-Verification phase: `post_researcher`
+Verification phase: `review_round_1`
 Active hypothesis: `H1` = `Cross-family canonical obstruction atlas for failed 42 -> 43 extensions in R(5,5)`
 Bound-moving threshold: independently verified `44`-vertex witness or machine-checkable `45`-vertex impossibility proof
 
@@ -16,30 +16,51 @@ Bound-moving threshold: independently verified `44`-vertex witness or machine-ch
 
 Decision: `DEEPEN`
 
-Rationale: the packet is acceptable only as a constrained no-go/planning memo. It is not acceptable as an achieved `H1` result, a bound-improvement claim, or a stronger `H2`/`H3` comparison memo because the benchmark layer is still empty and the core `H1` transfer evidence does not exist yet.
+Rationale:
+
+- Citation issues are targeted and repairable, but the novelty and benchmark reviews both conclude that the packet still lacks the executed `H1` evidence needed for any stronger scientific claim.
+- The current work is safe only as an `infrastructure-only` plus `negative result` / route-specification memo. It is not ready to claim a new bound, an achieved `H1` structural result, an `H2` non-equivalence win, or an `H3` proof-transfer gain.
+- `REVISE` would understate the gap, because the main blockers are missing artifacts, controls, ablations, and replayable benchmark evidence rather than wording alone.
 
 ## Safe Current Scope
 
-- `Go` only for a constrained memo stating that `H1` remains the only plausible novelty route, that no bound movement has been shown, and that the next step is evidence generation.
-- `No-go` on any claim of an independently supported `44`-vertex witness, a machine-checkable `45`-vertex impossibility proof, an achieved `H1` structural intermediate result, an `H2` non-equivalence win, or an `H3` proof-transfer gain.
+- Accept only the narrow claim that `H1` remains the only plausible live route, while no bound movement or executed structural intermediate result has been demonstrated.
+- Keep all present claims framed as governance, route selection, and no-go evidence.
+- Do not attach novelty credit beyond that scope until the required `H1` artifact and benchmark packet exists.
 
 ## Must-Fix Issues
 
-- Materialize the missing `H1` evidence layer before making stronger claims: `results/h1/frontier_parents.jsonl`, `results/h1/extension_cases.jsonl`, `results/h1/failure_witnesses.jsonl`, `results/h1/obstruction_cores.jsonl`, `results/h1/transfer_records.jsonl`, `results/h1/atlas_summary.md`, and `results/h1/witness_safety_audit.md`.
-- Add the gating validation tools and controls for `H1`: an orbit-distinct `42 -> 43` extension enumerator, an independent `44`-vertex witness verifier, `anti_exoo_holdout`, family-balance auditing across at least 3 non-isomorphic parent families, leave-one-parent-out evaluation, and zero known-witness deletions.
-- Freeze and execute benchmark rows for every named comparator with a shared comparison object, artifact path, matched compute tuple, result type, and replay path. Do not allow partially populated benchmark rows.
-- Reproduce at least one smaller solved certificate case with input hash, artifact hash, checker version, and pass/fail result before making any `H2`, `H3`, or `n=45` certificate-path claim.
-- Run the required ablations and stress tests before treating any signal as real: per-filter `on/off`, canonicalized cores versus raw witness clustering, family/provenance diversification, `H2` and `H3` primitive `on/off`, `anti_exoo_holdout`, `witness_pressure`, and `rare_core_tail`.
-- Emit run-level failure codes and summaries by family, rung, and ablation condition so the packet can distinguish `non_transfer`, `witness_killed`, `rare_core_tail`, `proof_bytes_regression`, and related failure modes from real progress.
+### Evidence and novelty gates
+
+- Materialize the missing `results/h1/` packet: `frontier_parents.jsonl`, `extension_cases.jsonl`, `failure_witnesses.jsonl`, `obstruction_cores.jsonl`, `transfer_records.jsonl`, `atlas_summary.md`, and `witness_safety_audit.md`.
+- Build the missing execution infrastructure: an orbit-distinct `42 -> 43` extension enumerator, an independent `44`-vertex witness verifier, and a replayable `45`-vertex certificate-checking path.
+- Demonstrate all four `H1` distinctness tests together before upgrading the manuscript: recurrence across at least 3 non-isomorphic parent families, substantial leave-one-parent-out transfer including the decisive `anti_exoo_holdout`, zero known-witness deletions, and at least one core family reused identically for lower-bound pruning and an upper-bound lemma candidate.
+- Keep all bound-moving novelty language blocked unless there is an independently verified `44`-vertex witness or a machine-checkable `45`-vertex impossibility proof.
+
+### Benchmark execution and controls
+
+- Freeze a versioned benchmark manifest with mandatory columns for comparator, shared comparison object, artifact path, matched-compute tuple, result class, and replay path. Reject incomplete rows.
+- Execute at least one reproduced lower-bound baseline and one smaller solved upper-bound certificate case under that manifest before making empirical comparison claims.
+- Run the Phase 4 ladder in order: `Rung 0`; `Rung 1` with `rare_core_tail`; `Rung 2` with `anti_exoo_holdout`; `Rung 3` with per-filter ablations.
+- Add the missing ablations and stress tests: raw-witness versus canonical-core, filter `off` versus `on`, provenance/family diversification, `witness_pressure`, and any reopened `H2`/`H3` primitive toggles under otherwise identical conditions.
+- Require run-level failure codes and summaries by family, rung, and ablation condition so the packet can distinguish transfer failure, witness kills, tail behavior, and proof-path regressions from real progress.
+
+### Citation and traceability repairs
+
+- Fix the broken `gauthier2025` bibliography URL and keep that source explicitly limited to overlap / strategy support.
+- Repair the stale exact-measurement row `Known papers tracked = 106` and reconcile corpus counts with one auditable source of truth.
+- Add consistent current-frontier support where the prose makes present-tense status claims, especially by citing `radziszowski2024ds1` with its DOI and exact revision/date.
+- Narrow or properly source the broad comparison paragraph that currently leans too heavily on `aijaam2010`.
+- Replace weak source metadata that is still being relied on directly, especially the `narvez2024` Semantic Scholar mirror.
 
 ## Optional Improvements
 
-- Writer-side citation/context repairs were applied after the original audit: the `gauthier2025` row now points to the verified AITP strategy abstract, H3 comparison language now cites `narvez2024`, `heule2018schur`, and `li2025ramseycert`, and `results/research_context.md` no longer labels lexical false positives as closest prior art.
-- Keep novelty language narrow: frame `H1` as a prospective transfer-safe obstruction atlas, not as one-vertex-extension relabeling, Exoo-line structural analysis, optimizer tuning, solver shopping, or proof-packaging infrastructure.
-- Restrict novelty and comparison arguments to the curated Ramsey-specific corpus; do not let lexical watchlist or snapshot noise carry argumentative weight.
-- Keep `aijaam2010` as overlap-only and enrich its metadata if retained. Keep `mckay1992` and `noga2022` background-only unless stronger anchors are found.
-- After the blocking evidence exists, add stronger diagnostics: target `>= 2x` canonical core compression with unchanged witness coverage, explicit uncovered-tail analysis, and proof-bytes/checker-runtime regression tracking for `H2` and `H3`.
+- Strengthen bibliography metadata for `exoo1989`, `mckay1992`, and `angeltveit2018`, and add a stable release or commit anchor for `lehavirepo`.
+- Clean residual false-positive prior-art rows from context files so later synthesis steps do not reintroduce traceability noise.
+- If `H2` or `H3` is reopened later, claim novelty only if the primitive itself changes the proof object and wins under matched conditions.
+- Track stronger post-blocker diagnostics once execution exists, including `>= 2x` canonical-core compression with unchanged witness coverage, uncovered-tail summaries, and proof-bytes / checker-runtime regressions.
+- Avoid novelty inflation from OVE relabeling, Exoo-line digestion, solver shopping, governance-theorem language, or proof-packaging alone.
 
 ## Bottom Line
 
-The current packet is useful as a disciplined stop signal: no bound improvement, no achieved `H1` result, and no publication-grade benchmark case have been demonstrated. The next action is to deepen the evidence packet, not to strengthen claims.
+The current packet should not be accepted as a stronger Ramsey contribution. It should be deepened: first by repairing the targeted citation-traceability issues, and more importantly by producing the missing `H1` corpus, controls, ablations, replay artifacts, and benchmark rows that would make the novelty claim real rather than prospective.

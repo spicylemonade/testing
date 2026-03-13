@@ -2,99 +2,114 @@
 
 Date: 2026-03-13
 Owner role: `novelty_checker`
-Verification phase: `post_researcher`
+Verification phase: `review_round_1`
 Active hypothesis: `H1` = `Cross-family canonical obstruction atlas for failed 42 -> 43 extensions in R(5,5)`
+Manuscript scope on the current record: `infrastructure-only` + `negative result`, with a prospective `H1` structural route target only
 Bound-moving threshold: independently verified `44`-vertex witness or machine-checkable `45`-vertex impossibility proof
 
 Reviewed artifacts:
+- `research_paper.tex`
 - `results/research_context.md`
 - `results/literature/prior_art_watchlist.md`
 - `results/literature/prior_art_gap.md`
-- `results/literature/gap_frontier.md`
-- `results/literature/literature_snapshot.json`
 - `results/swarm/director_brief.md`
 - `results/swarm/falsifier.md`
 - `results/swarm/gap_map.md`
-- `results/swarm/phase1_cleanup.md`
-- `results/swarm/phase3_stress_test.md`
-- `results/swarm/hypotheses.json`
 - `results/plans/claim_grammar.md`
 - `results/plans/phase3_route_sheet.md`
-- `results/plans/phase4_evaluation_sheet.md`
 - `results/verification/claim_source_map.md`
 - `results/verification/h1_acceptance_contract.md`
 - `results/verification/verification_summary.md`
-- `results/verification/evaluation_rehearsal.md`
+- `results/verification/final_review.md`
+- `results/verification/benchmark_report.md`
+- `results/verification/citation_audit.md`
 - `sources.bib`
+- targeted primary-source web checks for `angeltveitmckay2024` and the overlap-only `gauthier2025` strategy abstract
 
 ## Audit Verdict
 
-The packet identifies a real negative-space gap, but the claimed contribution is only materially distinct in its narrowest `H1` form and only as a route target, not as an achieved result. The genuinely new part is not one-vertex extension, witness re-verification, lower-defect search, decomposition engineering, or proof packaging by itself. The only plausible novelty moat is a small, canonical, transfer-safe obstruction dictionary that recurs across non-isomorphic parent families and survives witness-safety checks. Without that object, the contribution collapses into already occupied surfaces: Lehavi 2024 for one-vertex extension and counterexample checking, Ge et al. 2022 for Exoo-line witness analysis and low-defect `K_43` structure, the Angeltveit-McKay and Gauthier line for upper-bound decomposition, and the formal-proof line around `R(4,5)=25` for certificate infrastructure.
+The manuscript is novelty-safe only under its current narrow framing. As written in `research_paper.tex`, the achieved contribution is not a new Ramsey object, not a new bound, and not an executed `H1` structural result. The achieved contribution is a constrained no-go / route-specification memo: it packages the only remaining novelty-safe route, formalizes the claim contract, and proves that the present repository state does not justify stronger claims.
+
+That means the paper has two different novelty standards. The prospective novelty standard belongs to `H1`: a transfer-safe cross-family obstruction atlas over failed `42 -> 43` extensions. The achieved novelty standard belongs to the actual manuscript scope: infrastructure, governance, and a negative result. `H1` is the only route with a plausible moat, but it is still unexecuted. The achieved manuscript is materially distinct only as a disciplined checkpoint memo; it is not materially distinct as an established structural Ramsey contribution.
 
 ## Major Claims Versus Closest Prior Art
 
-| Major claim | Closest paper or line of work | Novelty assessment |
+| Major claim as written now | Claim class | Closest paper or line of work | Overlap signal | Distinctness judgment |
+| --- | --- | --- | --- | --- |
+| A transfer-safe obstruction atlas over failed `42 -> 43` extensions is the only credible positive route. | prospective structural route | `ge2022`; `lehavi2024` and `lehavirepo` | Same Exoo-derived `42/43` witness surface and same one-vertex-extension / counterexample-checking regime. | This is the only potentially material novelty claim. It is distinct only if it produces recurring canonical cores that transfer across parent families, survive witness-safety, and do more than extension-table reorganization or Exoo-line structural digestion. On the current record it is a route target, not a defended contribution. |
+| The paper reconstructs that route as a precise data model, evaluation ladder, and kill-switch program. | infrastructure-only | `lehavi2024` operationally; `ge2022` for the Exoo structural surface; local route docs in `results/plans/phase3_route_sheet.md` | Same underlying objects: frontier parents, failed extensions, witness extraction, and family-specific structure. | Useful synthesis, but not a strong field-level novelty moat by itself. This is mostly disciplined packaging of a plausible route rather than a new Ramsey result. |
+| The paper proves protocol-level results about canonicalization, witness-oracle safety, and the acceptance contract. | infrastructure-only | formal proof / certified exact-computation line: `gauthier2024`, `gauthierbrown2024arxiv`, `narvez2024`, `heule2018schur`, `li2025ramseycert` | Same emphasis on admissible proof objects, replayable evidence, and sharp separation between heuristic evidence and checked claims. | These results increase rigor inside the repo, but they are closer to formalized governance than to new combinatorics. As external novelty they are weakly differentiated. As internal claim-control machinery they are valid and useful. |
+| The paper gives a publication-grade synthesis of prior art, chronology, and evidence inventory. | infrastructure-only | `radziszowski2024ds1`; related-work baselines in `angeltveitmckay2024`; local synthesis in `results/literature/prior_art_gap.md` | Surveying the frontier and aligning route choice to prior work is already part of the surrounding literature and the repo’s own gap notes. | Not materially novel research. This is review and integration work, valuable for packet integrity but not a scientific moat. |
+| The paper proves a repository-state no-go theorem: no bound movement and no achieved `H1` structural intermediate result are currently supportable. | negative result | exact-frontier and certification discipline rather than a single technical precursor: `exoo1989`, `ge2022`, `angeltveitmckay2024`, `radziszowski2024ds1`, with proof-discipline context from `gauthier2024`, `heule2018schur`, and `li2025ramseycert` | The theorem is driven by claim grammar plus absence of required artifacts, not by new Ramsey mathematics. | Honest and defensible at packet level, but its novelty is mostly governance-level. It is best sold as a disciplined stop signal, not as a new mathematical theorem about `R(5,5)`. |
+
+## Closest Prior Art For The Named Alternative Routes
+
+| Route or narrative | Closest paper or line of work | Novelty assessment |
 | --- | --- | --- |
-| `H1`: canonical obstruction atlas for failed `42 -> 43` extensions | Lehavi 2024, `Ramsey Number Counterexample Checking and One Vertex Extension Linearly Bound by s and t`; Ge et al. 2022, `Study of Exoo's Lower Bound for Ramsey number R(5,5)` | This is the closest plausible novelty claim, but only if the output is a reusable cross-family obstruction object. If the work mainly reconstructs extension cases, verifies `R(5,5,43)` emptiness from `R(5,5,42)`, or catalogs failure witnesses, it is too close to Lehavi's OVE/checking surface. If it mainly studies Exoo-line near-miss structure or low-defect `K_43` variants, it is too close to Ge et al. |
-| `H1` reuse claim: the same cores support lower-bound pruning and upper-bound lemma candidates | Ge et al. 2022 on Exoo-line structure; Angeltveit-McKay 2024, `R(5,5) <= 46`; the broader McKay-Radziszowski to Angeltveit-McKay upper-bound line | This is the right bridge to aim for, but the packet has no executed evidence that the same canonical core survives the jump from lower-bound extension failures into proof-grade upper-bound use. At present this is a conjectured bridge, not demonstrated differentiation. |
-| `H2`: better decomposition primitive beyond split-vertex and transverse-edge gluing | McKay-Radziszowski 1992; Angeltveit-McKay 2018 and 2024; Gauthier 2025, `Decreasing the upper bound on the Ramsey number R(5,5)` | Weak differentiation on the current record. Unless the primitive is non-equivalent to the existing split/glue language and wins on verified residue or certificate metrics under matched conditions, this is just the same proof object with a stronger engine or different branching order. |
-| `H3`: proof-carrying reusable obstruction certificates | Gauthier-Brown 2024, `A Formal Proof of R(4,5)=25`; Barakeel-Gauthier-Commelin 2025; nearby SAT proof-logging and certificate-reuse lines | Not materially distinct as a standalone contribution. Proof packaging, replay, or checker plumbing overlaps heavily with existing formal-verification and certificate lines unless it is attached to a new transferable structural object from `H1` or `H2`. |
-| Optimizer- or symmetry-driven lower-bound narrative | Exoo constructive search line; Aija'am 2010, `Can genetic algorithms with the symmetric heuristic find the Ramsey number R(5,5)`; Ge et al. 2022 | Not novel for this packet. Any story centered on better search, lower defect, or symmetry handling is explicitly overlap-only and fails the packet's own novelty guard. |
+| `H2` decomposition upgrade beyond split-vertex / transverse-edge gluing | `mckay1992`, `angeltveit2018`, `angeltveitmckay2024`, plus overlap-only `gauthier2025` | Weak differentiation on the current record. Unless the primitive itself changes the proof object and wins on verified residue, proof bytes, or checker runtime under matched conditions, this is the same upper-bound surface with a stronger engine. |
+| `H3` proof-carrying reusable obstruction certificates | `gauthier2024`, `gauthierbrown2024arxiv`, `narvez2024`, `heule2018schur`, `li2025ramseycert` | Not materially distinct as a standalone route. Proof packaging or replay infrastructure is prior-covered unless attached to a transferable obstruction object from `H1` or a genuinely new `H2` primitive. |
+| Optimizer / symmetry / GA / rare-event lower-bound narratives | Exoo’s constructive line, `aijaam2010`, `ge2022` | Not novel for this packet. The gap note is correct that better search trajectories, better defect scores, or better symmetry handling do not define a novelty moat here. |
 
-## Material Distinctness Assessment
-
-### `H1`
-
-`H1` is materially distinct only in its most demanding formulation: recurring minimal obstruction cores extracted from failed orbit-distinct `42 -> 43` extensions, transferring across at least 3 non-isomorphic parent families, retaining coverage under leave-one-parent-out evaluation, and preserving all known `42`- and `43`-vertex witnesses. That combination would be more than witness re-verification, more than one-vertex extension checking, and more than optimizer tuning.
-
-The problem is that the current repo does not yet contain the evidence that separates that story from prior work. There is no local `frontier_parent` corpus, no orbit-distinct `42 -> 43` enumerator, no `results/h1/obstruction_cores.jsonl`, no `results/h1/transfer_records.jsonl`, and no witness-safety audit. On today's record, `H1` is a well-posed novelty hypothesis, not a defended contribution.
-
-The closest direct novelty threat is Lehavi 2024 because both operate on the same one-vertex-extension surface and both depend on the `R(5,5,42)` to `R(5,5,43)` regime. The closest lower-bound structural overlap is Ge et al. 2022 because that paper already turns Exoo's witness line into explicit analysis and low-defect structural discussion. The report should therefore treat `H1` as novel only if it demonstrates transfer-safe compression across parent families, not if it merely reconstructs or explains extension failures more cleanly.
-
-### `H2`
-
-`H2` does not currently clear the novelty bar. The repo itself demotes it because the dominant overlap is too strong: McKay-Radziszowski's case-analysis ancestor, Angeltveit-McKay's exact upper-bound program, and Gauthier's split-vertex/transverse-edge successor line already occupy the main decomposition-plus-SAT surface. A decomposition story earns novelty only if the decomposition primitive itself changes the proof object and the gain survives matched proof metrics. Nothing in the current packet shows that yet.
-
-### `H3`
-
-`H3` is infrastructure unless attached to a real structural object. The closest comparison line is already formalized exact Ramsey certification, especially `R(4,5)=25`, plus adjacent certificate and proof-logging workflows. The packet is correct to demote `H3`: without cross-family or cross-branch transfer of the same canonical core, this is packaging, not material novelty.
-
-## Novelty Illusions To Call Out Explicitly
+## Novelty Illusions And Weak Differentiation
 
 1. OVE relabeling illusion.
-   If `H1` outputs a better-organized extension table, emptiness-checking workflow, or failure catalog, it overlaps with Lehavi 2024 rather than escaping it.
+   - Grounding: `lehavi2024`, `lehavirepo`, and the paper’s own related-work warning.
+   - Risk: if `H1` mainly reconstructs the `R(5,5,42)` to `R(5,5,43)` transition, catalogs failed extensions, or improves emptiness checking organization, it sits on Lehavi’s one-vertex-extension surface rather than escaping it.
 
-2. Exoo-line memorization illusion.
-   If the recurring cores are carried mainly by Exoo-like parents or by one seed family, the result is a family-specific digest of the Ge/Exoo line, not a new Ramsey object.
+2. Exoo-line digest illusion.
+   - Grounding: `exoo1989`, `ge2022`, `results/literature/prior_art_gap.md`.
+   - Risk: if the recurring cores are mostly carried by one Exoo-like lineage, the result is a sharper digest of known witness structure, not a new cross-family Ramsey object.
 
-3. Optimizer theater.
-   Any shift toward better search, lower defect counts, GA tuning, or symmetry heuristics collapses into existing constructive-search overlap already flagged by the Aija'am and Exoo/Ge lines.
+3. Governance-theorem inflation.
+   - Grounding: `research_paper.tex` contributions 2 and 4; `results/plans/claim_grammar.md`; `results/verification/h1_acceptance_contract.md`.
+   - Risk: quotient lemmas, witness-oracle safety, and the no-go theorem are important for claim discipline, but they mostly formalize the repo’s reporting contract. That is weaker scientific differentiation than the manuscript’s theorem language may suggest.
 
-4. Solver-shopping illusion.
-   Any `H2` story that keeps split-vertex or transverse-edge gluing intact and changes only SAT strength, branch order, warm starts, or engineering presentation is not a new decomposition result.
+4. Bridge-without-bridge-evidence illusion.
+   - Grounding: `results/plans/phase3_route_sheet.md` reuse claim; `results/swarm/director_brief.md`; `results/swarm/gap_map.md`.
+   - Risk: the strongest rhetorical differentiator is that the same core family could link lower-bound pruning and upper-bound lemma generation. No current artifact demonstrates that identity-preserving bridge. Right now it is a hypothesis, not evidence.
 
-5. Proof-packaging illusion.
-   Any `H3` story centered on proof export, checker wrappers, or formalization scaffolding without a transferable structural core overlaps with existing exact-proof infrastructure.
+5. Solver-shopping illusion for `H2`.
+   - Grounding: `results/literature/prior_art_gap.md`; `results/swarm/falsifier.md`; `gauthier2025`.
+   - Risk: branch ordering, SAT strength, warm starts, or residue shrinkage without a changed decomposition primitive is not material novelty over the McKay -> Angeltveit-McKay -> Gauthier line.
 
-6. Query-noise illusion.
-   The lexical watchlist and early snapshot artifacts are noisy enough that broad novelty language can look safer than it is. Only the curated Ramsey-specific corpus should carry argumentative weight.
+6. Proof-packaging illusion for `H3`.
+   - Grounding: `gauthier2024`, `narvez2024`, `heule2018schur`, `li2025ramseycert`.
+   - Risk: certificate wrappers, replay plumbing, or Lean-facing packaging are infrastructure unless the same structural object transfers across branches or families and reduces checked proof cost.
+
+7. Overlap-only bibliography inflation.
+   - Grounding: `results/verification/citation_audit.md`, `sources.bib`.
+   - Risk: `aijaam2010` and `gauthier2025` are useful overlap notes, but not comparison-grade baseline wins. `noga2022` is background-only. `lehavirepo`, `barakeelramseyrepo`, and `mckayramseydata` are artifact rows, not standalone novelty anchors.
 
 ## Missing Gap Evidence
 
-The report should not overstate novelty because the decisive gap evidence is still absent:
+The current packet does not yet supply the evidence that would turn `H1` from a plausible gap into a materially distinct contribution.
 
-- no local `frontier_parent`, `extension_case`, or `failure_witness` corpus
-- no orbit-distinct `42 -> 43` extension enumerator
-- no `results/h1/*` artifact layer showing recurrence, family balance, or canonical core compression
-- no `anti_exoo_holdout` result establishing transfer beyond the Exoo lineage
-- no witness-safety audit showing zero known-witness deletions
-- no replayable certificate path showing that any `H1` core actually becomes a usable upper-bound lemma
-- no independent `44`-vertex witness verifier or `45`-vertex certificate checker, which blocks any stronger progress claim
+- `results/h1/` is absent, so none of the route-defining artifact files exists.
+- There is no local `frontier_parent`, `extension_case`, or `failure_witness` corpus.
+- There is no orbit-distinct `42 -> 43` extension enumerator.
+- There is no `results/h1/obstruction_cores.jsonl` demonstrating recurring canonical cores.
+- There is no `results/h1/transfer_records.jsonl` demonstrating leave-one-parent-out transfer or the decisive `anti_exoo_holdout`.
+- There is no `results/h1/witness_safety_audit.md` demonstrating zero known-witness deletions.
+- There is no replayable upper-bound lemma path showing that any canonical core survives intact when moved from lower-bound pruning to upper-bound proof use.
+- There is no independently verified `44`-vertex witness and no machine-checkable `45`-vertex impossibility proof, so no stronger novelty framing can be attached to bound movement.
 
-These omissions matter directly for novelty, not just execution readiness. Until they are filled, the packet cannot show that its claimed object exists, transfers, or stays sound.
+These are not generic execution gaps. They are exactly the missing evidence needed to prove that the claimed object is new rather than a relabeling of Lehavi-style OVE work or Ge-style witness analysis.
+
+## What Would Count As Material Distinctness
+
+`H1` becomes materially distinct only if the repo can show all of the following at once:
+
+1. A small canonical obstruction library recurs across at least 3 non-isomorphic parent families rather than one Exoo-like lineage.
+2. Leave-one-parent-out transfer, especially the decisive `anti_exoo_holdout`, preserves a substantial fraction of training-side coverage.
+3. Every core-derived filter is witness-safe on the stored `42`- and `43`-vertex constructions.
+4. At least one canonical core family keeps the same identity when reused as both lower-bound pruning evidence and an upper-bound lemma candidate.
+
+Without that package, the manuscript’s honest novelty lies in disciplined scoping and claim control, not in a demonstrated new Ramsey object.
 
 ## Bottom Line
 
-The repo's narrow positive claim is defensible: there may be a missing structural layer between lower-bound constructions and upper-bound case proofs, and the best shot at it is a transfer-safe obstruction atlas over failed `42 -> 43` extensions. But the novelty moat is still mostly prospective. `H1` remains the only route with a credible path to material distinctness; `H2` is too close to the live upper-bound line, and `H3` is not novel on its own.
+The manuscript is defensible as a constrained no-go / route-specification paper. That is its strongest honest scope, and on that scope it is adequately differentiated from the prior art because it is not claiming a new bound, a new OVE algorithm, a new decomposition primitive, or a new proof-transfer artifact.
+
+The moment the paper asks for credit beyond that scope, the differentiation weakens sharply. `H1` is still prospective, `H2` is too close to the live upper-bound line, and `H3` is infrastructure-only unless attached to a transferable structural object. The real novelty moat is therefore not yet demonstrated; it is only specified.
 
 Verdict: DEEPEN

@@ -2,7 +2,7 @@
 
 Date: 2026-03-13
 Owner role: `citation_auditor`
-Verification phase: `post_researcher`
+Verification phase: `review_round_1`
 Task: Improve the Ramsey number `R(5,5)` bound
 Active hypothesis: `H1`
 Active hypothesis label: `Cross-family canonical obstruction atlas for failed 42 -> 43 extensions in R(5,5)`
@@ -10,177 +10,164 @@ Bound-moving threshold: independently verified `44`-vertex witness or machine-ch
 
 ## Scope
 
-- `research_paper.tex` is not present in this workspace, so this is a packet-level audit rather than a paragraph-level manuscript audit.
-- Reviewed local artifacts:
-  - `sources.bib`
-  - `results/research_context.md`
-  - `results/literature/semantic_scholar_manifest.json`
-  - `results/literature/literature_snapshot.json`
-  - `results/literature/prior_art_gap.md`
-  - `results/plans/claim_grammar.md`
-  - `results/plans/phase2_baseline_sheet.md`
-  - `results/plans/phase3_route_sheet.md`
-  - `results/plans/phase4_evaluation_sheet.md`
-  - `results/plans/ramsey_research_program.md`
-  - `results/swarm/falsifier.md`
-  - `results/swarm/hypotheses.json`
-  - `results/verification/claim_source_map.md`
-  - `results/verification/verification_summary.md`
-  - `results/verification/novelty_report.md`
-  - `results/verification/final_review.md`
+Reviewed directly:
 
-## Audit Verdict
+- `research_paper.tex`
+- `sources.bib`
+- `results/research_context.md`
+- `results/research_context.json`
+- `results/literature/semantic_scholar_manifest.json`
+- `results/literature/literature_snapshot.json`
+- `results/literature/prior_art_gap.md`
+- `results/plans/claim_grammar.md`
+- `results/plans/phase3_route_sheet.md`
+- `results/plans/phase4_evaluation_sheet.md`
+- `results/verification/claim_source_map.md`
+- `results/verification/benchmark_report.md`
+- `results/verification/h1_acceptance_contract.md`
+- `results/verification/verification_summary.md`
 
-The packet is citation-safe enough for the constrained `H1` no-go memo, but it is not fully citation-safe for the broader comparison framing now embedded in the route and falsifier documents.
+External spot checks were used only to verify disputed or weak bibliography metadata:
 
-The good news:
+- `gauthier2025`
+- `radziszowski2024ds1`
+- `narvez2024`
+- `aijaam2010`
 
-- The load-bearing frontier claim `43 <= R(5,5) <= 46` is adequately anchored by `exoo1989`, `ge2022`, `angeltveitmckay2024`, and `radziszowski2024ds1`; see `results/verification/claim_source_map.md:13` and `results/literature/literature_snapshot.json:567-583`.
-- The core `H1` overlap framing against Ge 2022 and Lehavi 2024 is adequately grounded for route triage; see `results/verification/claim_source_map.md:14-15`, `results/plans/phase3_route_sheet.md:45-47`, and `sources.bib:10-19,47-57`.
-- The current `No-go` verdict on any bound-improvement claim is adequately supported at the packet level; see `results/verification/claim_source_map.md:19-20`, `results/plans/claim_grammar.md:10-42`, and `results/verification/verification_summary.md`.
+## Verdict
 
-The remaining problems are narrower but important:
+The manuscript is citation-safe for the main frontier baseline and for the repository-state no-go result, but it is not fully evidence-traceable yet.
 
-- one likely corrupted `H2` citation row,
-- one likely corrupted `H3` citation row,
-- several uncited comparison families that appear in novelty and benchmark framing,
-- and a few weak discovery-only rows that are still being given more argumentative weight than they should carry.
+The main blockers are:
+
+1. one stale exact-measurement row in the results table;
+2. one broken bibliography URL for `gauthier2025`;
+3. one overbroad comparison paragraph that leans on `aijaam2010` far beyond what that weak overlap-only source can support; and
+4. a mismatch between the repaired bibliography used in the paper and the older literature snapshot used for some corpus-count claims.
+
+No clearly fabricated paper remains in the manuscript citation spine itself. The problems are weaker than the earlier packet defects, but they are still material for evidence traceability.
 
 ## Findings
 
-### 1. `gauthier2025` is not audit-safe and is the most serious live citation problem.
+### 1. `Known papers tracked = 106` is unsupported as an exact deterministic measurement.
 
-- `sources.bib:120-128` claims that `gauthier2025` is `Decreasing the upper bound on the Ramsey number R(5,5)` with DOI `10.1145/3727993.3728010`.
-- Direct DOI verification during this audit showed that `10.1145/3727993.3728010` resolves to an unrelated smart-city bibliometrics paper, not to a Ramsey paper.
-- A targeted official search did recover a real AITP 2025 abstract by Thibault Gauthier, but under the title `A Strategy for Lowering the Upper Bound of R(5,5)`, not the title or DOI currently stored in `sources.bib`.
-- This matters because the corrupted row is load-bearing in the current packet:
-  - `results/verification/claim_source_map.md:17`
-  - `results/plans/phase4_evaluation_sheet.md:64`
-  - `results/verification/novelty_report.md:26`
-  - `results/literature/literature_snapshot.json:582,748-767`
+- `research_paper.tex:556` reports `Known papers tracked & 106`.
+- The current packet records `111` at `results/research_context.md:9`, `results/research_context.json:42`, and `results/literature/semantic_scholar_manifest.json:556`.
+- The results table is introduced at `research_paper.tex:549` as exact deterministic measurements extracted from the repository, so this is a real support failure rather than a wording nit.
 
-Audit status: likely citation hallucination or metadata conflation. Until this row is repaired, `H2` cannot be presented as having a verified comparison-grade `Gauthier 2025` baseline. At most, it has an overlap note pointing to an AITP 2025 abstract.
+Status: unsupported exact claim.
 
-### 2. `barakeel2025` is also not audit-safe and likely conflates a nonexistent paper with the general Lean/Ramsey line.
+### 2. `gauthier2025` has broken metadata, and the manuscript still uses it slightly too strongly.
 
-- `sources.bib:130-136` claims a paper titled `Formalizing Ramsey Theory in Lean: Towards the proof that Ramsey(4,5)=25` with DOI `10.1007/978-3-031-66998-9_13`.
-- DOI resolution during this audit returned `DOI Not Found`.
-- Exact-title searches did not recover the claimed paper. The recoverable Lean/Ramsey literature found during this audit instead points to a different formalization paper, `Formalizing Finite Ramsey Theory in Lean 4`.
-- This matters because `results/verification/claim_source_map.md:18` uses `barakeel2025` as one of the explicit bibliography anchors for the `H3` infrastructure rule.
+- `sources.bib:120-125` stores `gauthier2025` as `A Strategy for Lowering the Upper Bound of R(5,5)`, which is the right qualitative object, but the URL points to `AITP_2025_paper_7.pdf`.
+- External verification shows the actual Gauthier abstract is paper `3`, not paper `7`; the stored URL now resolves to an unrelated abstract.
+- In the manuscript, `research_paper.tex:132` and `research_paper.tex:153` use `gauthier2025` as evidence that split-vertex / transverse-edge gluing is the live continuation surface for `H2`.
+- The local packet itself already downgrades this item to overlap-only status at `sources.bib:125` and `results/verification/claim_source_map.md:33`.
 
-Audit status: likely citation hallucination or at minimum badly corrupted metadata. `H3` still has partial support from `gauthier2024`, `gauthierbrown2024arxiv`, and `barakeelramseyrepo`, but the current packet overstates the solidity of its Lean-formalization bibliography.
+Status: broken citation metadata plus mildly overstated weight.
 
-### 3. Several comparison claims remain uncited even though the packet treats them as named benchmark or novelty baselines.
+### 3. The broad rejection paragraph at `research_paper.tex:138` is under-cited and contains uncited comparison families.
 
-The biggest missing bibliography families are:
+- `research_paper.tex:138` rejects generic GA or symmetry stories, generic rare-event narratives, solver-shopping, and pure proof export, but cites only `aijaam2010`.
+- `sources.bib:21-26` already labels `aijaam2010` as an overlap-only citation and explicitly warns not to treat it as a comparison-grade source.
+- The broader comparison families appear only as prose in `results/literature/prior_art_gap.md:38-55` and `results/swarm/falsifier.md:23-24`, `results/swarm/falsifier.md:51-53`, `results/swarm/falsifier.md:118-122`, without a matching manuscript citation cluster.
 
-- `Schur Number Five` proof-logging and certificate practice
-  - used in `results/swarm/falsifier.md:107,120`
-  - used in `results/swarm/hypotheses.json:37-40`
-  - implicitly required by `results/plans/ramsey_research_program.md:231-233`
-- `SAT+CAS verified Ramsey certificates for nearby exact problems`
-  - used in `results/swarm/falsifier.md:107,121`
-  - used in `results/swarm/hypotheses.json:39`
-- `prior SDP/flag-algebra applications to Ramsey numbers`
-  - used in `results/literature/prior_art_gap.md:45-49`
-- `statistical-physics framing of Ramsey lower bounds`, `RL-style Ramsey search`, and `analog Max-SAT work`
-  - used in `results/literature/prior_art_gap.md:40-43`
-  - used in `results/swarm/falsifier.md:23`
+Status: weak citation plus uncited comparisons.
 
-None of those comparison families currently has a corresponding `sources.bib` row. That is a direct violation of the writer constraint in `results/verification/claim_source_map.md:40` and the minimum-anchor rule in `results/plans/claim_grammar.md:49-57` whenever these comparisons are treated as reviewer-facing evidence rather than internal brainstorming.
+### 4. The fixed-corpus sentence omits the dynamic survey even though it names that source explicitly.
 
-Audit status: missing citations / uncited comparisons.
+- `research_paper.tex:257` says the fixed Ramsey-specific corpus includes the dynamic survey for the current frontier.
+- The citation cluster on that sentence omits `radziszowski2024ds1`, even though the bibliography row exists at `sources.bib:138-143`.
+- Because this sentence defines the manuscript's corpus boundary, the omission is more important than a routine missing citation.
 
-### 4. `aijaam2010` is real enough to keep, but it is still packaged too weakly for the role it is currently assigned.
+Status: missing citation.
 
-- `sources.bib:21-27` stores `aijaam2010` as an overlap-only `@misc` entry with a QSpace handle and a warning note.
-- The packet still elevates it to a required comparison row in:
-  - `results/plans/phase4_evaluation_sheet.md:60`
-  - `results/plans/ramsey_research_program.md:225`
-- Exact-title search during this audit recovered the QSpace record and confirmed that it is at least a 2010 IEEE conference item, so the row is not a hallucination.
+### 5. Present-tense frontier-status claims in Related Work should cite a current frontier source, not only milestone papers.
 
-Audit status: weak citation, not a false citation. Keep it overlap-only, enrich the metadata if retained, and do not use it as a comparison-grade baseline row next to Exoo, Ge, Lehavi, or Angeltveit-McKay.
+- `research_paper.tex:126` says Exoo's line "remains the best published lower-bound witness family".
+- `research_paper.tex:132` says Angeltveit--McKay 2024 reaches the "current best published upper bound".
+- Those are present-tense status claims as of 2026-03-13, but they cite only the milestone papers themselves.
+- The manuscript already uses the stronger current-frontier spine at `research_paper.tex:77` and `research_paper.tex:178`, where `radziszowski2024ds1` is included.
 
-### 5. `mckay1992` and `noga2022` remain weak/discovery-only, but they are not the main citation risk right now.
+Status: weak current-state anchoring.
 
-- `mckay1992` at `sources.bib:29-36` still points to a Semantic Scholar mirror instead of a journal-hosted or society-hosted landing page.
-- `noga2022` at `sources.bib:79-85` is still a discovery-link survey entry and should remain background-only.
-- `results/verification/claim_source_map.md:33-35` already recognizes both limits correctly.
+### 6. The corpus count and the corpus definition do not resolve to one auditable source of truth.
 
-Audit status: weak but mostly contained, provided neither row is allowed to become load-bearing in a final memo.
+- `research_paper.tex:257` defines the fixed corpus in prose using the repaired bibliography.
+- `research_paper.tex:557` reports `Curated Ramsey-specific papers & 13`.
+- The `13` count is consistent with the `papers` array in `results/literature/literature_snapshot.json:607`, but that same snapshot still contains stale or unreconciled rows at `results/literature/literature_snapshot.json:749-767` (`Decreasing the upper bound on the Ramsey number R(5,5)` with the stale ACM DOI story) and `results/literature/literature_snapshot.json:863-883` (`Formalizing Ramsey Theory in Lean: Towards the proof that Ramsey(4,5)=25`).
+- The paper itself no longer cites those stale entries directly, which is good, but the exact count still appears to be inherited from that older snapshot rather than from the repaired writer-stage bibliography.
 
-### 6. `results/research_context.md` still exposes lexical false positives as `Closest Prior Art`.
+Status: evidence-traceability mismatch.
 
-- `results/research_context.md:14-18` lists biomedical and robotics papers as `Closest Prior Art`.
-- Those rows are already recognized elsewhere in the packet as lexical false positives rather than genuine Ramsey overlap; see `results/literature/prior_art_gap.md:57-104` and `results/literature/prior_art_watchlist.md`.
-- Leaving them in the top-level context file is citation-unsafe because downstream synthesis can easily mistake that section for the actual prior-art shortlist.
+### 7. The `Survey sources` interpretation overclaims what the local evidence supports.
 
-Audit status: misleading citation context. This does not break the constrained `H1` no-go memo by itself, but it should not survive into any final packet or writer-facing context summary.
+- `research_paper.tex:559` says the two survey sources support the frontier framing.
+- The two survey rows are `results/literature/literature_snapshot.json:926-944`, namely Radziszowski's dynamic survey and Noga Alon's broad extremal-combinatorics survey.
+- The packet already marks `noga2022` as background-only at `results/verification/claim_source_map.md:35-36`.
 
-## Key Claim Coverage Check
+Status: interpretation overclaim.
 
-| Key packet claim | Current support | Status | Notes |
+### 8. Several bibliography entries are real but still weaker than they should be.
+
+- `sources.bib:128-135` (`narvez2024`) uses a Semantic Scholar mirror instead of the official Springer chapter landing page.
+- `sources.bib:138-143` (`radziszowski2024ds1`) does not record the survey DOI or exact revision/date, even though the paper uses it for current-state frontier claims.
+- `sources.bib:29-35`, `sources.bib:38-44`, and `sources.bib:1-7` could all be strengthened with fuller journal metadata.
+- `sources.bib:175-180` (`lehavirepo`) is acceptable as an artifact citation but would be stronger with a tag, commit, or release anchor.
+
+Status: metadata weakness, not hallucination.
+
+### 9. `results/research_context.md` still presents lexical false positives as `Closest Prior Art`.
+
+- `results/research_context.md:14-18` still lists biomedical and robotics false positives as the closest prior art.
+- This is not a direct manuscript citation defect, since the paper itself avoids them.
+- It is still a downstream traceability risk for any later synthesis pass that reuses the context file.
+
+Status: residual pipeline context risk.
+
+## Key Claim Coverage
+
+| Key claim | Current support | Status | Notes |
 | --- | --- | --- | --- |
-| `43 <= R(5,5) <= 46` is the working frontier. | `exoo1989`, `ge2022`, `angeltveitmckay2024`, `radziszowski2024ds1` | supported | Safe to keep as a top-line packet claim. |
-| `H1` should be framed as an obstruction-atlas route, not as a new OVE algorithm. | `ge2022`, `lehavi2024`, `lehavirepo` plus local route docs | supported | Safe for route framing; still a route target, not an achieved result. |
-| Only an independently verified `44`-vertex witness or a checked `45`-vertex impossibility proof counts as a bound improvement. | local claim grammar plus frontier literature anchors | supported | Internal governance claim, appropriately tied to frontier literature. |
-| `H2` must be compared against the split-vertex / transverse-edge gluing line, especially Gauthier 2025. | `mckay1992`, `angeltveit2018`, `angeltveitmckay2024`, corrupted `gauthier2025` row | weak | Comparison intent is valid, but the named `gauthier2025` anchor is not stable enough. |
-| `H3` sits against formal Ramsey proof / Lean formalization baselines. | `gauthier2024`, `gauthierbrown2024arxiv`, corrupted `barakeel2025`, `barakeelramseyrepo` | weak | Needs one verified Lean-formalization paper and one verified proof-logging/certificate baseline. |
-| The current run is `No-go` on bound movement and on any achieved `H1` structural-result claim. | local verification artifacts plus frontier anchors | supported | Safe for the constrained memo. |
+| `43 <= R(5,5) <= 46` is the active frontier. | `research_paper.tex:77`, `research_paper.tex:178`; `exoo1989`, `ge2022`, `angeltveitmckay2024`, `radziszowski2024ds1` | supported | This is the cleanest citation spine in the paper. |
+| The manuscript is a no-go / infrastructure-only checkpoint rather than a bound-improvement paper. | `research_paper.tex:454-483`; `results/verification/benchmark_report.md:28-45`; `results/verification/h1_acceptance_contract.md:27-35` | supported | Internal evidence traceability is good enough here. |
+| `H1` remains the only live route, while `H2` and `H3` are demoted. | `research_paper.tex:572-595`; `results/concept_evolve/bridge_candidates.json`; `results/decision_log.md` | supported | Internal claim; not primarily a literature citation issue. |
+| The lower-bound / OVE / formal-proof framing in Related Work is basically sound. | `research_paper.tex:126-135`; `exoo1989`, `ge2022`, `lehavi2024`, `gauthier2024`, `gauthierbrown2024arxiv`, `narvez2024`, `heule2018schur`, `li2025ramseycert` | mostly supported | The Gauthier strategy note and the overbroad `aijaam2010` paragraph are the main exceptions. |
+| The measurement table is entirely exact and repository-derived. | `research_paper.tex:549-567` plus local packet files | mixed | Most rows check out; `Known papers tracked = 106` does not. |
 
-## Highest-Value Concrete Sources To Add
+## Most Important Concrete Sources Or Repairs To Add
 
-1. Add `Schur Number Five` as an explicit bibliography row.
-   - This is the missing anchor for the `H3` benchmark ladder and proof-logging comparisons now present in `results/swarm/falsifier.md` and `results/swarm/hypotheses.json`.
+### Repair immediately
 
-2. Add `Efficient Certified SAT+CAS Bounds for Ramsey Numbers via Fine-Grained Proof Logging` as an explicit bibliography row.
-   - This is the cleanest nearby exact-certification anchor for the packet's `SAT+CAS verified Ramsey certificates` language.
+1. Fix `gauthier2025` to the official AITP 2025 abstract PDF for paper `3`, not paper `7`.
+2. Add `radziszowski2024ds1` survey DOI (`10.37236/21`) plus the exact revision/date used for the frontier claim.
+3. Replace the `narvez2024` Semantic Scholar mirror URL with the official Springer chapter metadata.
 
-3. Replace `gauthier2025` with the verified official item actually recovered during this audit.
-   - If the packet wants the AITP 2025 overlap note, use `A Strategy for Lowering the Upper Bound of R(5,5)` and treat it as an overlap/strategy source until a stable proceedings record exists.
-   - Do not keep DOI `10.1145/3727993.3728010` on any Ramsey row.
+### Add if the current broad comparison prose stays
 
-4. Replace or remove `barakeel2025`.
-   - If the packet wants a Lean/Ramsey formalization anchor, cite a verified formalization paper rather than the current unrecoverable row.
-   - The closest verified replacement found during this audit was `Formalizing Finite Ramsey Theory in Lean 4`, though that paper is not by the authors currently listed in `sources.bib`.
+1. Add a direct rare-event / RL-style Ramsey-search source if `research_paper.tex:138` continues to reject those narratives explicitly.
+   A strong candidate identified during spot checks was `RamseyRL: A Framework for Intelligent Ramsey Number Counterexample Searching`.
+2. Add a direct analog lower-bound search source if the packet keeps referring to analog Max-SAT overlap.
+   A concrete candidate identified during spot checks was `A high-performance analog Max-SAT solver and its application to Ramsey numbers`.
+3. Add a direct semidefinite-Ramsey source if the packet continues to use "prior SDP/flag-algebra applications to Ramsey numbers" as a comparison family in reviewer-facing documents.
+   A concrete candidate identified during spot checks was `Semidefinite Programming and Ramsey Numbers`.
 
-5. Upgrade `aijaam2010` metadata if the row stays.
-   - Use the QSpace conference metadata and full author name, but continue labeling it as overlap-only rather than comparison-grade.
+### Metadata upgrades with high return
 
-## Required Repair Actions Before Any Stronger Memo
-
-1. Repair `sources.bib` by removing or replacing the corrupted `gauthier2025` and `barakeel2025` rows.
-2. Add explicit bibliography rows for `Schur Number Five` and for the `SAT+CAS verified Ramsey certificates` line if those comparisons remain in any reviewer-facing document.
-3. Downgrade or source the generic comparison language in `results/literature/prior_art_gap.md` and `results/swarm/falsifier.md` where it currently names literature families without bibliography anchors.
-4. Remove or relabel the lexical-noise `Closest Prior Art` block in `results/research_context.md:14-18`.
-5. Update `results/verification/claim_source_map.md:17-18` after the bibliography repair so the `H2` and `H3` rows no longer depend on corrupted anchors.
+1. Fill volume/issue/pages for `exoo1989`, `mckay1992`, and `angeltveit2018`.
+2. Add a stable release or commit anchor for `lehavirepo` if the repository citation remains in the manuscript.
 
 ## Bottom Line
 
-For the current constrained `H1` no-go memo, the citation spine is adequate.
+The manuscript's main scientific ceiling is citation-safe:
 
-For any stronger memo that leans on `H2` or `H3` comparison framing, the packet is not yet citation-safe. The blocker is no longer the Exoo/Ge/Lehavi frontier spine; it is the combination of one corrupted `H2` row, one corrupted `H3` row, and several uncited comparison families that still appear in reviewer-facing reasoning.
+- the frontier claim is well supported;
+- the no-go result is adequately supported by internal packet evidence; and
+- the repaired formal-proof paragraph is substantially stronger than the earlier packet.
 
-## Writer-Stage Repair Addendum (2026-03-13)
+The remaining citation work is targeted, not global:
 
-- `mckay1992` now uses the official Australasian Journal of Combinatorics PDF rather than a discovery mirror.
-- `gauthier2025` has been downgraded to an overlap-only AITP 2025 abstract with an official conference PDF and no bogus DOI.
-- `barakeel2025` has been explicitly demoted to a non-load-bearing placeholder.
-- Added `narvez2024` (`Formalizing Finite Ramsey Theory in Lean 4`) as a verified Lean-formalization anchor for reviewer-facing `H3` context.
-- `results/verification/claim_source_map.md` no longer uses `gauthier2025` or `barakeel2025` as load-bearing bibliography anchors.
-
-
-## Writer Repair Addendum
-
-Date: 2026-03-13
-Owner role: `writer`
-
-The following writer-side citation and context repairs were applied after the audit above so the constrained manuscript no longer depends on the stale packet defects listed in Findings 1, 2, and 6.
-
-- `sources.bib` now treats `gauthier2025` as the verified AITP 2025 strategy abstract `A Strategy for Lowering the Upper Bound of R(5,5)` rather than as a corrupted proceedings or DOI row.
-- The unrecoverable `barakeel2025` placeholder was removed from the active citation spine and replaced, for reviewer-facing H3 context, by the verified Lean 4 formalization source `narvez2024` (`Formalizing Finite Ramsey Theory in Lean 4`).
-- `sources.bib` now includes `heule2018schur` and `li2025ramseycert`, which cover the `Schur Number Five` and certified `SAT+CAS` comparison families named elsewhere in the packet.
-- `results/verification/claim_source_map.md` now routes H3 comparison language through `narvez2024`, `heule2018schur`, and `li2025ramseycert` instead of the earlier corrupted placeholder row.
-- `results/research_context.md` was relabeled so the top-level prior-art section now lists the closest Ramsey-specific overlap and relegates the biomedical and robotics items to an explicitly excluded lexical-watchlist block.
-
-These repairs do not change the scientific verdict. The packet remains benchmark-empty and cannot support any bound-improvement claim or achieved H1 structural-result claim. They do, however, remove the writer-facing citation and context defects that would otherwise have carried into the constrained no-go manuscript.
+1. fix the bad `gauthier2025` URL and keep that source explicitly strategy-only;
+2. repair the stale `106` exact-count row;
+3. either narrow or properly source the overbroad comparison paragraph at `research_paper.tex:138`; and
+4. align the corpus-count story with one authoritative source instead of mixing repaired bibliography rows with a stale literature snapshot.
