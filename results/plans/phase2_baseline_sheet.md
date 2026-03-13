@@ -41,7 +41,26 @@ Witness standards:
 - The stored artifact must include provenance, canonical labeling metadata, and the exact checker used for independent validation.
 - If the candidate cannot be independently revalidated outside the generating workflow, it is intermediate evidence only.
 
-## 4. Baseline Governance Pointer
+## 4. Upper-Bound Baseline Metrics And Certificate Standards
+
+Upper-bound work counts as bound progress only if it yields a machine-checkable `45`-vertex impossibility proof, or a residue with a clear certificate path to such a proof.
+
+Required metrics:
+
+1. Verified residue size after decomposition and pruning.
+2. Proof bytes or certificate size for every impossibility claim.
+3. Checker runtime on the emitted proof or residue certificate.
+4. Exactness or rationalization status of each impossibility step.
+5. Matched-baseline runtime against the split-vertex and transverse-edge gluing line.
+6. Transferability of any learned kernel, obstruction, or lemma object across decomposition families.
+
+Certificate standards:
+
+- Smaller residues without a certificate path count as intermediate evidence, not an upper-bound improvement.
+- Solver speed alone does not count unless the emitted residue or proof object is also improved under matched conditions.
+- Every accepted upper-bound artifact must record the checker, proof format, and whether rational reconstruction or exact replay is still pending.
+
+## 5. Baseline Governance Pointer
 
 - `results/plans/ramsey_research_program.md` remains the source of truth for route arbitration, metric definitions, exact ladder order, and claim grammar.
 - This sheet exists to make the executable baseline stack auditable without reopening the full program document.
