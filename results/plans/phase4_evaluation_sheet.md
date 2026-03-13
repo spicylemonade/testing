@@ -47,3 +47,22 @@ Start from the cheapest falsifiers named by the current falsifier and probe arti
 Expansion gate:
 
 - No broader compute, no H2 opening, and no structural claim beyond intermediate evidence before all four rungs complete cleanly.
+
+## 4. Prior-Work Evaluation Matrix
+
+Every evaluation table in this project must include the following named comparison rows:
+
+| Prior work | Shared comparison object | Required result-type column |
+| --- | --- | --- |
+| Exoo 1989 lower-bound line | verified witness family or parent lineage | `improves bound` / `improves certificate path` / `improves neither` |
+| Ge et al. 2022, `Study of Exoo's Lower Bound for Ramsey number R(5,5)` | Exoo-line witness analysis and low-defect near-miss structure | `improves bound` / `improves certificate path` / `improves neither` |
+| Lehavi 2024, `Ramsey Number Counterexample Checking and One Vertex Extension Linearly Bound by s and t` | one-vertex extension and counterexample-checking surface area | `improves bound` / `improves certificate path` / `improves neither` |
+| Aija'am 2010, `Can genetic algorithms with the symmetric heuristic find the Ramsey number R(5,5)` | optimizer-only or symmetry-only lower-bound claims | `improves bound` / `improves certificate path` / `improves neither` |
+| McKay-Radziszowski 1992, `A new upper bound on the Ramsey number R(5,5)` | exact upper-bound case-analysis ancestor | `improves bound` / `improves certificate path` / `improves neither` |
+| Angeltveit-McKay 2018, `R(5,5) <= 48` | exact upper-bound decomposition and residue line | `improves bound` / `improves certificate path` / `improves neither` |
+| Angeltveit-McKay 2024, `R(5,5) <= 46` | current best published upper-bound line | `improves bound` / `improves certificate path` / `improves neither` |
+| Gauthier 2025, `Decreasing the upper bound on the Ramsey number R(5,5)` | split-vertex and transverse-edge gluing successor line | `improves bound` / `improves certificate path` / `improves neither` |
+
+Comparison-table rule:
+
+- No row is allowed to compare an `H1` structural object to an upper-bound paper without filling the `shared comparison object` column first.
