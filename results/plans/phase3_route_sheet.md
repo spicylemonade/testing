@@ -122,3 +122,30 @@ Required later ConceptEvolve passes:
 
 - Before Phase 4 experiments, run `.archivara/concept_evolve.py reframe "Improve the Ramsey number R(5,5) bound"` and use the result only to re-express existing promoted folders rather than widen the route set.
 - After the verification artifacts exist, run `.archivara/concept_evolve.py iterate "Improve the Ramsey number R(5,5) bound"` and update `concept_delta` with promoted or retired bridges.
+
+## 10. Bounded `H2` And `H3` Routes
+
+Concrete `H2` decomposition primitives:
+
+1. Adjacent-pair split
+   Success criteria: smaller verified residue or smaller proof footprint than the split-vertex and transverse-edge gluing baseline under the same matched-compute tuple.
+   Non-claims: no credit for faster SAT alone, better branch ordering alone, or smaller unverified residues.
+
+2. Nonadjacent-pair split
+   Success criteria: better certificate class or verified residue size on the same rung set without regressing a higher-priority metric in the fixed upper-bound win rule.
+   Non-claims: no credit for using warm starts, cached clauses, or symmetry priors unavailable to the baseline.
+
+3. Small-shell decomposition
+   Success criteria: better verified residue size, proof bytes, or checker runtime under the same proof format and replay conditions.
+   Non-claims: no credit for case splits that cannot be explained as a genuinely different proof object.
+
+One `H3` certificate-carrying attachment:
+
+- Canonical obstruction certificate library attached to `H1` or `H2`
+  Success criteria: the same canonical core identity survives cross-branch or cross-family transfer and reduces checked proof size or checker runtime.
+  Non-claims: not a standalone formal proof pipeline, not generic proof logging, and not a new route before a transferable structural object exists.
+
+Route discipline:
+
+- No standalone `H3` track proceeds before `H1` or `H2` yields a transferable structural object.
+- `H2` stays closed until the `H1` transfer or soundness gates fail.
