@@ -1,0 +1,433 @@
+[
+  {
+    "symbolic_name": "orbit_stable_obstruction_atlas",
+    "route": "H1",
+    "description": "Build a canonical atlas of known 42-vertex frontier colorings together with orbit-distinct 42 -> 43 extension failures. The target object is a small reusable dictionary of minimal obstruction cores rather than another low-defect witness search.",
+    "domains": [
+      "Ramsey theory",
+      "computational group theory",
+      "graph mining"
+    ],
+    "mathematical_formalization": "Given parent colorings G_i on 42 vertices and orbit classes E_i of one-vertex extensions, learn a map phi: union_i E_i -> C where C is a small set of canonical obstruction cores minimizing |C| subject to witness completeness.",
+    "analogical_connections": [
+      "motif mining in biological networks",
+      "failure-mode atlases in formal verification"
+    ],
+    "implementation_hypothesis": "Canonicalize parents by automorphism data, enumerate orbit-distinct extensions, extract minimal red/blue K5-forcing patterns, and cluster them across parent families.",
+    "experiment_seed": "Use the saved Exoo/Ge/Lehavi line as the initial parent set and measure how many failed extensions are covered by the top-k cores.",
+    "closest_prior_art": [
+      {
+        "paperId": "3731e1a2fd6dfaefa5166c772b2b48149fe1bed0",
+        "title": "Study of Exoo's Lower Bound for Ramsey number R(5,5)",
+        "year": 2022
+      },
+      {
+        "paperId": "557c8eb730cf681529dc73745c5fe477a59643d1",
+        "title": "Ramsey Number Counterexample Checking and One Vertex Extension Linearly Bound by s and t",
+        "year": 2024
+      },
+      {
+        "paperId": "arxiv:2409.15709",
+        "title": "R(5,5) <= 46",
+        "year": 2024
+      }
+    ],
+    "novelty_claim": "The novelty is a transfer-tested obstruction library that can serve both lower-bound pruning and upper-bound lemma generation.",
+    "differentiation": "This is not a nicer search engine. It claims a reusable Ramsey object that persists across parent families.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "minimal_core_canonicalization",
+    "route": "H1",
+    "description": "Define a canonical representation for failure witnesses so that obstruction cores from different parent families can be compared exactly. The aim is to separate genuine recurrence from superficial isomorphism noise.",
+    "domains": [
+      "graph isomorphism",
+      "combinatorics",
+      "proof certificates"
+    ],
+    "mathematical_formalization": "For each failure witness W, compute canon(W) such that canon(W)=canon(W') iff W and W' are symmetry-equivalent and induce the same forcing pattern.",
+    "analogical_connections": [
+      "canonical UNSAT core extraction",
+      "hash-consing for symbolic states"
+    ],
+    "implementation_hypothesis": "Represent each witness as a colored induced subgraph with attachment labels to the extension vertex, then canonicalize with orbit labels before counting frequency.",
+    "experiment_seed": "Run canonicalization on all cores found in the first atlas pass and compare compression ratio before and after canon().",
+    "closest_prior_art": [
+      {
+        "paperId": "557c8eb730cf681529dc73745c5fe477a59643d1",
+        "title": "Ramsey Number Counterexample Checking and One Vertex Extension Linearly Bound by s and t",
+        "year": 2024
+      },
+      {
+        "paperId": "e8bff1e1937aacfbeb6b8ffb1ab2bf319d0f85a2",
+        "title": "A Formal Proof of R(4,5)=25",
+        "year": 2024
+      }
+    ],
+    "novelty_claim": "Canonical obstruction cores would let exact Ramsey computation accumulate proof-grade objects instead of re-discovering equivalent failures.",
+    "differentiation": "The focus is proof object normalization, not generic graph hashing for convenience.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "leave_one_parent_out_transfer",
+    "route": "H1",
+    "description": "Treat obstruction discovery like a held-out validation problem: mine on all but one parent family, then test on the withheld family. This is the fastest honest check that the atlas is structural rather than memorized.",
+    "domains": [
+      "statistical validation",
+      "software testing",
+      "Ramsey search"
+    ],
+    "mathematical_formalization": "Partition parent families F = F_train union F_test and require coverage_train(C) high while coverage_test(C) remains nontrivial for the same core set C.",
+    "analogical_connections": [
+      "leave-one-cluster-out validation",
+      "cross-family regression tests"
+    ],
+    "implementation_hypothesis": "Define parent-family labels from symmetry and seed provenance, then score obstruction coverage on held-out families.",
+    "experiment_seed": "Hold out the most non-Exoo-like parent family and compare recurrence counts against the training-only atlas.",
+    "closest_prior_art": [
+      {
+        "paperId": "3731e1a2fd6dfaefa5166c772b2b48149fe1bed0",
+        "title": "Study of Exoo's Lower Bound for Ramsey number R(5,5)",
+        "year": 2022
+      },
+      {
+        "paperId": "64a7aff133af1ebd2fbeffd7de7b654cd495c9dd",
+        "title": "Can genetic algorithms with the symmetric heuristic find the Ramsey number R(5,5)",
+        "year": 2010
+      }
+    ],
+    "novelty_claim": "Transfer is elevated from a narrative claim to a first-class acceptance test for any structural object.",
+    "differentiation": "The contribution is the acceptance protocol itself, not just another heuristic benchmark.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "witness_safe_filter_bank",
+    "route": "H1",
+    "description": "Turn only those obstruction-derived filters that survive witness audits into an approved filter bank. Every candidate rule must prove it does not kill known 42- or 43-vertex witnesses.",
+    "domains": [
+      "formal methods",
+      "search pruning",
+      "computational combinatorics"
+    ],
+    "mathematical_formalization": "A filter f is admissible only if for every known witness H, f(H)=safe, and for every tested failure family, f removes a positive fraction of impossible extensions.",
+    "analogical_connections": [
+      "sound abstract interpretation",
+      "whitelisted static-analysis rules"
+    ],
+    "implementation_hypothesis": "Audit each candidate rule independently against known witnesses before composing them into a bank.",
+    "experiment_seed": "Create a witness-survival matrix with rows = known witnesses and columns = candidate filters.",
+    "closest_prior_art": [
+      {
+        "paperId": "arxiv:2409.15709",
+        "title": "R(5,5) <= 46",
+        "year": 2024
+      },
+      {
+        "paperId": "acmdl:3727993.3728010",
+        "title": "Decreasing the upper bound on the Ramsey number R(5,5)",
+        "year": 2025
+      },
+      {
+        "paperId": "557c8eb730cf681529dc73745c5fe477a59643d1",
+        "title": "Ramsey Number Counterexample Checking and One Vertex Extension Linearly Bound by s and t",
+        "year": 2024
+      }
+    ],
+    "novelty_claim": "This gives a concrete route from obstruction mining to sound pruning, rather than heuristic rejection rules.",
+    "differentiation": "It explicitly rejects unsound upper-bound-derived filters that only look plausible.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "certificate_carrying_obstruction_library",
+    "route": "H3",
+    "description": "Package the most stable obstruction cores as certificate-carrying lemmas that can be reused across exact branches. The value is cumulative proof state, not archival solver debris.",
+    "domains": [
+      "proof logging",
+      "theorem proving",
+      "Ramsey certificates"
+    ],
+    "mathematical_formalization": "Each library item L_j carries (core_j, proof_j, transfer_scope_j) with machine-checkable proof_j and empirically validated transfer_scope_j.",
+    "analogical_connections": [
+      "lemma libraries in interactive theorem proving",
+      "learned clause reuse across SAT instances"
+    ],
+    "implementation_hypothesis": "Emit a small proof object for each core, then track whether it prunes or certifies future branches under symmetry changes.",
+    "experiment_seed": "Start from the top recurring H1 cores and attach a proof-format stub plus checker-time accounting.",
+    "closest_prior_art": [
+      {
+        "paperId": "e8bff1e1937aacfbeb6b8ffb1ab2bf319d0f85a2",
+        "title": "A Formal Proof of R(4,5)=25",
+        "year": 2024
+      },
+      {
+        "paperId": "springer:10.1007/978-3-031-66998-9_13",
+        "title": "Formalizing Ramsey Theory in Lean: Towards the proof that Ramsey(4,5)=25",
+        "year": 2025
+      },
+      {
+        "paperId": "acmdl:3727993.3728010",
+        "title": "Decreasing the upper bound on the Ramsey number R(5,5)",
+        "year": 2025
+      }
+    ],
+    "novelty_claim": "Reusable obstruction certificates would make failed branches cumulative rather than disposable.",
+    "differentiation": "This is not generic proof logging; reuse across held-out branch families is mandatory.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "orbit_balanced_pair_split",
+    "route": "H2",
+    "description": "Replace one-vertex split decomposition with orbit-balanced adjacent- or nonadjacent-pair anchors. The hypothesis is that a stronger case partition shrinks the exact residue more than a stronger solver on the old partition.",
+    "domains": [
+      "exact decomposition",
+      "group actions",
+      "SAT search"
+    ],
+    "mathematical_formalization": "Choose anchor pair (u,v) modulo automorphism orbits and decompose partial colorings by the joint neighborhood signature sigma(u,v) instead of sigma(v) alone.",
+    "analogical_connections": [
+      "two-variable branching in CSPs",
+      "separator-based case splits"
+    ],
+    "implementation_hypothesis": "Benchmark adjacent and nonadjacent anchor pairs under the same proof-logging pipeline used by the split/gluing baseline.",
+    "experiment_seed": "Compare residue size and proof bytes for one-vertex vs pair-split decomposition on solved ladder rungs.",
+    "closest_prior_art": [
+      {
+        "paperId": "160081e3e1f57e3478499da04264f84564db90f2",
+        "title": "A new upper bound on the Ramsey number R(5,5)",
+        "year": 1992
+      },
+      {
+        "paperId": "a9604442aea6ca62ee3cf6ff83d0f281d6afeb83",
+        "title": "R(5,5) <= 48",
+        "year": 2018
+      },
+      {
+        "paperId": "acmdl:3727993.3728010",
+        "title": "Decreasing the upper bound on the Ramsey number R(5,5)",
+        "year": 2025
+      }
+    ],
+    "novelty_claim": "The decomposition primitive changes, not just the engine underneath it.",
+    "differentiation": "If the primitive does not improve residue or checker cost, this route is killed.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "shell_based_gluing_primitives",
+    "route": "H2",
+    "description": "Use small shells around a forced K4 or independent 4-set as decomposition units. The goal is to expose stronger local rigidity before the SAT back end sees the branch.",
+    "domains": [
+      "extremal combinatorics",
+      "exact search",
+      "certificate engineering"
+    ],
+    "mathematical_formalization": "Define shell S around a constrained 4-vertex pattern and branch on boundary types B(S), measuring whether B(S) collapses unknown-edge structure faster than split-vertex gluing.",
+    "analogical_connections": [
+      "boundary-condition factoring",
+      "cluster expansions in statistical mechanics"
+    ],
+    "implementation_hypothesis": "Construct shell signatures from local forbidden-pattern templates and benchmark them on the same proof ladder as H2 pair splits.",
+    "experiment_seed": "Measure unknown-edge count and proof-core reuse under K4-shell vs independent-4-shell partitions.",
+    "closest_prior_art": [
+      {
+        "paperId": "arxiv:2409.15709",
+        "title": "R(5,5) <= 46",
+        "year": 2024
+      },
+      {
+        "paperId": "acmdl:3727993.3728010",
+        "title": "Decreasing the upper bound on the Ramsey number R(5,5)",
+        "year": 2025
+      }
+    ],
+    "novelty_claim": "A shell primitive could compress the residue at the representation level before any solver optimization.",
+    "differentiation": "The claim fails immediately if the shell representation does not outperform the current split/gluing language.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "association_scheme_residue_screen",
+    "route": "H2",
+    "description": "Use association-scheme or theta-body style screens only as finite-n residue filters, not as standalone numerical bounds. The point is to shrink the exact endgame while preserving a certificate path.",
+    "domains": [
+      "coding theory",
+      "semidefinite programming",
+      "finite Ramsey computation"
+    ],
+    "mathematical_formalization": "Let R be the surviving residue after combinatorial decomposition; apply an exact-or-rationalizable screen S(R) that discards parameter signatures inconsistent with finite-n rigidity statements.",
+    "analogical_connections": [
+      "preconditioners for exact search",
+      "algebraic coarse screens before proof search"
+    ],
+    "implementation_hypothesis": "Evaluate whether low-order block-diagonal screens reduce residue families before exact checking, without claiming a floating-point Ramsey bound.",
+    "experiment_seed": "Prototype on benchmark residues and measure how much exact work survives after the screen.",
+    "closest_prior_art": [
+      {
+        "paperId": "a9604442aea6ca62ee3cf6ff83d0f281d6afeb83",
+        "title": "R(5,5) <= 48",
+        "year": 2018
+      },
+      {
+        "paperId": "arxiv:2409.15709",
+        "title": "R(5,5) <= 46",
+        "year": 2024
+      },
+      {
+        "paperId": "0329bdbceece990cc7fbe036160a64318dfc15cf",
+        "title": "Recent advances in probabilistic and extremal combinatorics",
+        "year": 2022
+      }
+    ],
+    "novelty_claim": "This uses algebraic structure only as a residue screen inside a certificate-bearing pipeline.",
+    "differentiation": "It is explicitly not a generic SDP tightening claim.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "ic3_orbit_invariant_learning",
+    "route": "H3",
+    "description": "Borrow invariant learning from IC3/PDR, but only as an attachment to a changed decomposition or obstruction object. Learned invariants must block orbit families of partial colorings and remain certificate-carrying.",
+    "domains": [
+      "model checking",
+      "SAT solving",
+      "symmetry reduction"
+    ],
+    "mathematical_formalization": "Learn invariant clauses I such that I is inductive over a quotient state graph Q of partial colorings and each I_k is checkable and transferable across symmetry conventions.",
+    "analogical_connections": [
+      "proof obligations in hardware verification",
+      "orbitopal fixing in combinatorial search"
+    ],
+    "implementation_hypothesis": "Start from H1 or H2 branch families and test whether learned kernels survive held-out branches and symmetry choices.",
+    "experiment_seed": "On a verified ladder rung, compare proof bytes with and without invariant reuse on disjoint branch families.",
+    "closest_prior_art": [
+      {
+        "paperId": "acmdl:3727993.3728010",
+        "title": "Decreasing the upper bound on the Ramsey number R(5,5)",
+        "year": 2025
+      },
+      {
+        "paperId": "e8bff1e1937aacfbeb6b8ffb1ab2bf319d0f85a2",
+        "title": "A Formal Proof of R(4,5)=25",
+        "year": 2024
+      }
+    ],
+    "novelty_claim": "The invariant is valuable only if it becomes a reusable forbidden-partial-coloring lemma.",
+    "differentiation": "A stronger SAT engine on the same decomposition does not count.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "seed_family_diversification_audit",
+    "route": "H1",
+    "description": "Audit whether the search and atlas are overfitting Exoo-like or cyclic families by forcing alternative seed sources. The goal is not a new construction per se, but a robust negative control for novelty claims.",
+    "domains": [
+      "design theory",
+      "experimental design",
+      "Ramsey lower bounds"
+    ],
+    "mathematical_formalization": "Partition seed families by provenance P and require obstruction/core statistics to remain stable under changes in P.",
+    "analogical_connections": [
+      "dataset shift audits",
+      "control families in experimental science"
+    ],
+    "implementation_hypothesis": "Mix Exoo-derived, asymmetric perturbative, and cyclic/design-theoretic seeds before mining obstruction recurrence.",
+    "experiment_seed": "Compare atlas statistics under Exoo-only parents versus diversified parents.",
+    "closest_prior_art": [
+      {
+        "paperId": "2c85d9682e2587f048886b1b498319c08a1292dd",
+        "title": "A lower bound for R(5,5)",
+        "year": 1989
+      },
+      {
+        "paperId": "3731e1a2fd6dfaefa5166c772b2b48149fe1bed0",
+        "title": "Study of Exoo's Lower Bound for Ramsey number R(5,5)",
+        "year": 2022
+      },
+      {
+        "paperId": "64a7aff133af1ebd2fbeffd7de7b654cd495c9dd",
+        "title": "Can genetic algorithms with the symmetric heuristic find the Ramsey number R(5,5)",
+        "year": 2010
+      }
+    ],
+    "novelty_claim": "A stability audit prevents the main H1 object from being a disguised Exoo memorizer.",
+    "differentiation": "This is a falsification control, not a claim of a new lower bound family by itself.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  },
+  {
+    "symbolic_name": "defect_ensemble_rare_event_bridge",
+    "route": "H1",
+    "description": "Use rare-event sampling only as an obstruction-discovery bridge: sample structurally diverse near-misses to expose recurring failure cores. This route is intentionally demoted if it turns into optimizer theater.",
+    "domains": [
+      "statistical physics",
+      "rare-event sampling",
+      "graph optimization"
+    ],
+    "mathematical_formalization": "Sample near-miss colorings from a tilted measure exp(-beta * defect(H)) and mine obstruction frequencies conditional on low defect but non-extension.",
+    "analogical_connections": [
+      "multicanonical sampling of rare failures",
+      "defect manifolds in energy landscapes"
+    ],
+    "implementation_hypothesis": "Treat rare-event sampling as a data source for H1 cores, not as a standalone route to a 44-vertex witness.",
+    "experiment_seed": "Compare core diversity from rare-event sampling versus atlas-only extension failures.",
+    "closest_prior_art": [
+      {
+        "paperId": "64a7aff133af1ebd2fbeffd7de7b654cd495c9dd",
+        "title": "Can genetic algorithms with the symmetric heuristic find the Ramsey number R(5,5)",
+        "year": 2010
+      },
+      {
+        "paperId": "70cebdea915fbae706e5d7e737e63c739501815c",
+        "title": "The triangle-free process and the Ramsey number R(3,k)",
+        "year": 2013
+      },
+      {
+        "paperId": "0329bdbceece990cc7fbe036160a64318dfc15cf",
+        "title": "Recent advances in probabilistic and extremal combinatorics",
+        "year": 2022
+      }
+    ],
+    "novelty_claim": "Only retained if it increases obstruction diversity without becoming a search-performance claim.",
+    "differentiation": "Explicitly banned as a standalone novelty route by the falsifier memo.",
+    "folder_plan": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ]
+  }
+]
