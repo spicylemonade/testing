@@ -1,19 +1,20 @@
 # Research Context
 
 Date: 2026-03-13
-Stage: phase_5_documentation
+Stage: phase_5_final_review
 Task: Improve the Ramsey number `R(5,5)` bound
 
 ## Current State
 
-- Rubric progress: `21/25` completed
+- Rubric progress: `25/25` completed
 - Active hypothesis: `H1` = `Cross-family canonical obstruction atlas for failed 42 -> 43 extensions in R(5,5)`
 - Route status: `H1` champion, `H2` backup only, `H3` attachment-only infrastructure
 - Current frontier target: `43 <= R(5,5) <= 46`
 - Bound-moving threshold: independently verified `44`-vertex witness or machine-checkable `45`-vertex impossibility proof
-- Current claim ceiling: no bound-improvement claim; only bounded `H1` structural work is authorized
+- Current claim ceiling: constrained no-go memo only; `H1` remains a route target until the fixed `H1` acceptance contract and the `results/h1/*` artifact requirements are satisfied
 - `sources.bib` entries: `18`
 - Verification packet present: yes
+- Final review present: yes
 
 ## Major Route Changes
 
@@ -48,7 +49,7 @@ Task: Improve the Ramsey number `R(5,5)` bound
   - orbit-distinct `42 -> 43` extension enumerator
   - independent `44`-vertex witness verifier
   - `45`-vertex certificate checker
-  - stronger primary Lehavi 2024 citation and remaining bibliography repairs
+  - missing `results/h1/*` evidence artifacts for the fixed `H1` acceptance contract
 - Differentiation notes:
   - Against Ge et al. 2022 and Exoo-line work: no structural claim is allowed unless obstruction recurrence transfers across held-out parent families.
   - Against Lehavi 2024: the project cannot describe itself as an OVE or emptiness-checking advance without collapsing into prior work.
@@ -60,7 +61,13 @@ Task: Improve the Ramsey number `R(5,5)` bound
 - No orbit-distinct `42 -> 43` extension enumerator
 - No independent `44`-vertex witness verifier
 - No machine-readable `45`-vertex certificate checker
-- Citation audit still requires primary Lehavi 2024 and stronger metadata for several load-bearing rows
+- No `results/h1/*` evidence artifacts yet exist, so `H1` is still a route target rather than an achieved structural contribution
+
+## Memo-Safe State
+
+- Safe memo type now: constrained no-go or planning memo only
+- Not safe to claim now: bound improvement, achieved `H1` structural intermediate result, or material novelty over Lehavi 2024 on evidence
+- Authoritative gate: `results/verification/h1_acceptance_contract.md`
 
 ## Nearest Real Prior Art
 
@@ -74,5 +81,6 @@ Task: Improve the Ramsey number `R(5,5)` bound
 - Literature search memory: `results/literature/semantic_scholar_manifest.json`
 - Route and kill criteria: `results/plans/phase3_route_sheet.md`
 - Evaluation order and anti-proxy rules: `results/plans/phase4_evaluation_sheet.md`
+- Fixed `H1` pass/fail contract: `results/verification/h1_acceptance_contract.md`
 - Verification gate: `results/verification/verification_summary.md`
 - Reporting policy: `results/plans/claim_grammar.md`

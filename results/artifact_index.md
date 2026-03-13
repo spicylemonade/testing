@@ -14,20 +14,24 @@ Use this packet as the reviewer entry point. Raw search caches and helper byprod
 
 ## Literature And Prior Art
 
-- `results/literature/literature_snapshot.json`: curated Ramsey-specific literature snapshot and frontier notes
+- `results/literature/literature_snapshot.json`: use the `ramsey_specific_review` section only; the broader snapshot retains noisy discovery traces
 - `results/literature/prior_art_gap.md`: overlap analysis plus dated route-change differentiation notes
 - `results/literature/semantic_scholar_manifest.json`: canonical memory of saved searches and seed-paper expansion
 - `sources.bib`: bibliography spine for papers, repositories, and artifact pages
 
 ## Concept-Tree Outputs
 
-- `results/concept_evolve/concept_delta.md`: evolve, probe, and reframe deltas
+- `results/concept_evolve/concept_delta.md`: evolve, probe, reframe, and iterate deltas; recovered planning outputs are labeled explicitly inside
+- `results/concept_evolve/bridge_candidates.json`: iterate re-ranking of strong, held, and retired bridges
+- `results/concept_evolve/concept_delta.json`: iterate summary of promoted and retired bridges plus next experiments
 - `results/concept_evolve/probe_result.json`: structured probe output for the main `H1` bottleneck
+- `results/concept_evolve/recurrent_state.json`: current champion bridge and feedback digest after the verification packet
 - `results/concept_evolve/reframings.json`: bounded experiment-entry reframings
 - `results/concept_evolve/tree/001_orbit_stable_obstruction_atlas/README.md`: promoted `H1` concept card
 - `results/concept_evolve/tree/002_minimal_core_canonicalization/README.md`: promoted `H1` concept card
 - `results/concept_evolve/tree/003_leave_one_parent_out_transfer/README.md`: promoted `H1` concept card
 - `results/concept_evolve/tree/004_witness_safe_filter_bank/README.md`: promoted `H1` concept card
+- `results/concept_evolve/tree/010_seed_family_diversification_audit/README.md`: promoted negative-control `H1` concept card from the iterate re-ranking
 
 ## Experiment And Evaluation Specs
 
@@ -47,6 +51,8 @@ Use this packet as the reviewer entry point. Raw search caches and helper byprod
 - `results/verification/benchmark_report.md`: baseline-integrity audit
 - `results/verification/citation_audit.md`: bibliography-strength audit
 - `results/verification/claim_source_map.md`: claim-to-artifact and claim-to-bibliography spine
+- `results/verification/final_review.md`: final findings-first review and zero-critical-issue verdict for the constrained no-go memo
+- `results/verification/h1_acceptance_contract.md`: authoritative pass/fail contract for when `H1` remains a route target or becomes a structural intermediate result
 - `results/verification/novelty_report.md`: closest-overlap and differentiation audit
 - `results/verification/verification_summary.md`: current go or no-go state
 - `results/verification/evaluation_rehearsal.md`: sequencing-risk rehearsal before any compute-heavy run

@@ -44,3 +44,20 @@ The lower-bound line, upper-bound line, and proof-certification context are all 
 - Replace mirror-only `ge2022` metadata with the arXiv record for `2212.12630`.
 - Replace or split `gauthier2024` so the proceedings paper uses the ITP DOI `10.4230/LIPIcs.ITP.2024.16`, with the arXiv version cited separately only if needed.
 - Strengthen `aijaam2010` with a primary repository or publication record, or demote it to a weak-overlap note instead of a comparison-grade citation.
+
+## Post-Repair Addendum (2026-03-13)
+
+The item_023 citation-repair pass resolved the core live blockers identified above:
+
+- `ge2022` now points to the primary arXiv record `2212.12630`.
+- `lehavi2024` now points to the primary arXiv record `2411.04267`.
+- `exoo2023` and `pontiveros2013` now use arXiv records rather than discovery mirrors.
+- `gauthier2024` is now split into the ITP proceedings record and a separate arXiv companion record.
+
+What remains live after those repairs is narrower:
+
+- `mckay1992` still uses a discovery mirror rather than a journal-hosted landing page.
+- `aijaam2010` remains overlap-only and is grounded only by institutional-repository or conference-level metadata.
+- `noga2022` remains background-only and should not be used as a load-bearing source.
+
+This file therefore remains accurate as an item_018 audit snapshot, but it is no longer the authoritative statement of live citation blockers by itself; use `sources.bib`, `results/verification/claim_source_map.md`, and `results/verification/verification_summary.md` for the current packet state.
