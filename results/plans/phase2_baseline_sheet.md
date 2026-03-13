@@ -22,7 +22,26 @@ Scope: Phase 2 baseline implementation and metrics for `R(5,5)`
 - No existing repo utility independently verifies a `44`-vertex witness.
 - No existing repo utility checks a machine-readable `45`-vertex impossibility certificate.
 
-## 3. Baseline Governance Pointer
+## 3. Lower-Bound Baseline Metrics And Witness Standards
+
+Lower-bound work counts as bound progress only if it yields an independently verified `44`-vertex witness.
+
+Required metrics:
+
+1. Witness recovery from neutral starts, not only Exoo-like seeds or hand-picked warm starts.
+2. Family diversity beyond Exoo-like seeds, tracked by non-isomorphic parent families that contribute candidate improvements.
+3. Witness-safety under filters: every pruning or screening rule must be tested against all known `42`- and `43`-vertex witnesses before it is trusted.
+4. Equalized search effort, including edge flips, neighborhood evaluations, SAT or LP calls, and wall-clock budget.
+5. Failure-mode logging with explicit reasons such as overfit seeds, transfer collapse, unsound pruning, or stalled defect reduction.
+6. Held-out transfer score for any learned obstruction object, so proxy defect gains do not masquerade as structural progress.
+
+Witness standards:
+
+- Any candidate `44`-vertex witness must be recoverable from a seed-neutral run or from multiple distinct parent families.
+- The stored artifact must include provenance, canonical labeling metadata, and the exact checker used for independent validation.
+- If the candidate cannot be independently revalidated outside the generating workflow, it is intermediate evidence only.
+
+## 4. Baseline Governance Pointer
 
 - `results/plans/ramsey_research_program.md` remains the source of truth for route arbitration, metric definitions, exact ladder order, and claim grammar.
 - This sheet exists to make the executable baseline stack auditable without reopening the full program document.
