@@ -66,3 +66,19 @@ Every evaluation table in this project must include the following named comparis
 Comparison-table rule:
 
 - No row is allowed to compare an `H1` structural object to an upper-bound paper without filling the `shared comparison object` column first.
+
+## 5. Compute Governance And Fail-Fast Pivot Map
+
+| Stop condition | Meaning | Action |
+| --- | --- | --- |
+| Proxy-only gain | Better defect score, pruning count, branch count, or solver speed without a witness or certificate path | Roll back the claim to intermediate evidence only |
+| Unsound pruning | Any core-derived filter kills a known `42`- or `43`-vertex witness | Shut down that branch immediately and record the failure code `witness_killed` |
+| Non-transfer | Held-out coverage falls below the `H1` floor or the atlas collapses to one family | Kill or demote `H1` and keep `H2` as the only next pivot |
+| Missing certificate path | Upper-bound residue cannot be rationalized, replayed, or checked | Block any upper-bound claim and relabel the artifact as `residue_only` |
+| Stale baseline | Candidate and baseline use mismatched compute tuples or tuning privileges | Re-audit the comparison and invalidate the headline table until the manifest is frozen |
+| Overfit seed family | Gains disappear off Exoo-like seeds or one family contributes more than half of accepted support | Demote the result to overfit evidence and stop scaling compute on that branch |
+| Replay failure | Witness or certificate artifact cannot be replayed outside the generating workflow | Treat the artifact as unverified and stop any publishability claim |
+
+Authorization rule:
+
+- No expensive run is authorized unless the benchmark manifest, failure-code taxonomy, and replay path are fixed in advance.
