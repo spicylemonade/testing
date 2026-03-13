@@ -60,7 +60,33 @@ Certificate standards:
 - Solver speed alone does not count unless the emitted residue or proof object is also improved under matched conditions.
 - Every accepted upper-bound artifact must record the checker, proof format, and whether rational reconstruction or exact replay is still pending.
 
-## 5. Baseline Governance Pointer
+## 5. ConceptEvolve First-Pass Contract
+
+First concept exploration step after Phase 1:
+
+- `.archivara/concept_evolve.py evolve "Improve the Ramsey number R(5,5) bound"` has already been executed and its recovery artifacts were materialized under `results/concept_evolve/`.
+- `.archivara/concept_evolve.py walk --depth 4` has already been executed and saved `results/concept_evolve/walk_session.json`.
+
+Current first-pass state:
+
+- `results/concept_evolve/tree/` contains 11 concept folders, which clears the acceptance floor of 10.
+- `results/concept_evolve/tree/index.json` maps every folder to `H1`, `H2`, or `H3`.
+- Each folder contains `concept.json`, `README.md`, and `literature.json`.
+- Each `concept.json` records a concrete `experiment_seed`.
+- Each `concept.json` or `literature.json` records the closest prior-art packet for that concept.
+
+Route coverage in the current tree:
+
+- `H1`: 6 folders
+- `H2`: 3 folders
+- `H3`: 2 folders
+
+No-drift rule:
+
+- No further concept branching or promotion happens until `Rung 0` frontier reconstruction is defined.
+- Later `probe`, `reframe`, and `iterate` actions must update existing folders instead of creating `_v2` clutter.
+
+## 6. Baseline Governance Pointer
 
 - `results/plans/ramsey_research_program.md` remains the source of truth for route arbitration, metric definitions, exact ladder order, and claim grammar.
 - This sheet exists to make the executable baseline stack auditable without reopening the full program document.
