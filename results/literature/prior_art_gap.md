@@ -2,6 +2,39 @@
 
 Update this file throughout the run. If you discover a branch that is already well-covered by prior work, document it here and pivot rather than repeating it.
 
+## Major Route Change Log
+
+### 2026-03-13: Fixed Ramsey Corpus, `H1` Champion
+
+- Chosen hypothesis: `H1` = `Cross-family canonical obstruction atlas for failed 42 -> 43 extensions in R(5,5)`
+- Active blockers: no local `frontier_parent` corpus, no orbit-distinct `42 -> 43` enumerator, no independent `44`-vertex witness verifier, no `45`-vertex certificate checker.
+- Closest-prior-art differentiation:
+  - Ge et al. 2022 remains the closest lower-bound overlap, but the planned contribution is transfer-safe minimal obstruction cores across parent families rather than witness re-verification or low-defect Exoo analysis.
+  - Lehavi 2024 is treated as the operative one-vertex-extension input regime, not as a novelty template to be rebranded.
+  - Aija'am 2010 remains an overlap kill-switch for optimizer-only or symmetry-only narratives.
+
+### 2026-03-13: `H2` And `H3` Demoted After Stress Test
+
+- Chosen hypothesis: keep `H1`; demote `H2` to bounded backup and `H3` to attachment-only infrastructure.
+- Active blockers: unchanged technical blockers plus unresolved citation weakness around Lehavi 2024 and several mirror-only bibliography rows.
+- Closest-prior-art differentiation:
+  - Any `H2` claim must be materially different from Angeltveit-McKay 2024 and Gauthier 2025 at the decomposition-primitive level, not only at the engine or branching-order level.
+  - Any `H3` claim must stay attached to a transferable structural object; proof packaging alone overlaps too heavily with existing formal-verification lines.
+
+### 2026-03-13: Evaluation Rehearsal Locked The Current No-Go State
+
+- Chosen hypothesis: keep `H1`, but authorize only bounded intermediate structural work.
+- Active blockers:
+  - local `frontier_parent` corpus
+  - orbit-distinct `42 -> 43` extension enumerator
+  - independent `44`-vertex witness verifier
+  - `45`-vertex certificate checker
+  - primary Lehavi 2024 citation and remaining bibliography repairs
+- Closest-prior-art differentiation:
+  - Exoo/Ge-style witness work is not enough without cross-family transfer.
+  - Lehavi-style OVE checking is not enough without a new reusable structural object.
+  - Angeltveit-McKay / Gauthier-style upper-bound work is not enough without a certificate path and checked impossibility proof.
+
 ## Ramsey-Specific Overlap Notes (2026-03-13)
 - Branch: Plain evolutionary / GA / generic metaheuristic lower-bound search.
 - Why it is already covered: This overlaps with Exoo-style computational search, `Can genetic algorithms with the symmetric heuristic find the Ramsey number R(5,5)`, later statistical-physics framing of Ramsey lower bounds, and more recent RL-style graph generation work.
