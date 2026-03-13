@@ -100,3 +100,25 @@ Pivot rule:
 
 - `H2` unlocks only after the transfer or soundness gates above fail.
 - If `H1` fails only on reuse but not on witness-safety, keep the atlas as intermediate structural evidence and treat `H3` as infrastructure-only.
+
+## 9. ConceptEvolve Steering For `H1`
+
+Selected bottleneck:
+
+- `Which failed 42 -> 43 extension patterns in R(5,5) recur across diverse frontier parents strongly enough to form a transfer-safe canonical obstruction atlas?`
+
+Probe artifact:
+
+- `results/concept_evolve/probe_result.json`
+
+Promoted folders after the probe recovery:
+
+- `results/concept_evolve/tree/001_orbit_stable_obstruction_atlas`
+- `results/concept_evolve/tree/002_minimal_core_canonicalization`
+- `results/concept_evolve/tree/003_leave_one_parent_out_transfer`
+- `results/concept_evolve/tree/004_witness_safe_filter_bank`
+
+Required later ConceptEvolve passes:
+
+- Before Phase 4 experiments, run `.archivara/concept_evolve.py reframe "Improve the Ramsey number R(5,5) bound"` and use the result only to re-express existing promoted folders rather than widen the route set.
+- After the verification artifacts exist, run `.archivara/concept_evolve.py iterate "Improve the Ramsey number R(5,5) bound"` and update `concept_delta` with promoted or retired bridges.
