@@ -1,43 +1,25 @@
 # Research Context
 
-- Stage: phase_5_complete
+- Stage: post_writer
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
-- Note: The corridor research package is complete: H1 failed by exact obstruction, H2 failed as a screening layer, the direct corridor controls were ablated, the verification artifacts were assembled, and the final handoff memo is now on disk.
+- Note: paper draft and compilation stage completed
 - Rubric progress: 25/25 completed
-- Known papers tracked: repaired snapshot plus 15 curated `sources.bib` entries
+- Known papers tracked: 135
+- `sources.bib` entries: 29
 - Swarm hypotheses: 3
 - Verification summary present: yes
 
-## Current Objective
+## Closest Prior Art
+- Cohomological splitting conditions of vector bundles on ${\mathbf P}^{n_1}\times\cdots\times{\mathbf P}^{n_s}$ (2024)
+- $\mathbf{{\mathbb Z}_2\ \times {\mathbb Z}_2}$-graded Lie (super)algebras and generalized quantum statistics (2025)
+- Exceptional theta correspondence $\mathbf{F}_{4}\times\mathbf{PGL}_{2}$ for level one automorphic representations (2025)
+- Functions on products $X \times Y$ with applications to Ascoli spaces, $k_{\mathbb{R}}$-spaces and $s_{\mathbb{R}}$-spaces (2025)
 
-- Current objective satisfied: the frozen width-2 corridor family did not produce a certificate with score `<= 1.675`, and the run now stands as a documented finite-size no-go for the tested CA routes plus a residual direct-search control frontier around score `2.0`.
-- Keep the live claim narrow in any follow-up: exact verifier-backed corridor benchmark-and-falsification workflow only, not a new theorem and not a new formulation of arithmetic Kakeya.
-
-## Frozen Route Order
-
-- Champion: `H1_macrocell_substitution`
-- Backup: `H2_target_direction_abelian`
-- Reserve: `H3_slope_bloom`
-
-## Active Blockers
-
-- None inside the current rubric. Any continuation would require leaving the dead frozen H1/H2 corridor route or widening the exact graph family under a new benchmark gate.
-
-## ConceptEvolve Status
-
-- `concept_evolve evolve` completed and its tree/summary artifacts were used to tighten the route order.
-- The mandatory `probe` command completed on the main bottleneck and pointed to three live H1 audits:
-  cooperative residue interfaces, bandwidth-first rejection tests, and affine-core / nonlinear-shell architecture checks.
-- The probe also reinforced the main anti-overclaim rule: if level-2 gains survive only because of hidden interface bandwidth or repair logic, H1 fails even if a legal certificate can be extracted afterward.
-- The exact Phase 4 obstruction is even stronger than the probe warning: the frozen H1 template list injects only one seed and no initial solved vertices, so the route fails before transfer can even be measured.
-- The narrow H2 screen confirmed that raw support/rank features already separate the failed H1 family from the direct corridor controls, so no abelian-screening gain survived.
-- The ablation suite then showed that the best direct corridor witness is boundary-sensitive, not seed-robust, not scale-stable, and not strongly tied to the chosen `X` labels.
-- The final iterate-style bridge re-ranking promoted exact falsification and boundary-sensitivity screens while retiring the frozen H1/H2 bridges.
-
-## Closest Prior-Art Pressure
-
-- The original watchlist papers remain documented as query-corruption false positives only.
-- The real nearby line is Green-Ruzsa, Katz-Tao, Cowen-Breen et al., Pohoata-Zakharov, Tao 2025, and Lemm.
-- The live novelty burden is now resolved for this run: H1 failed by exact obstruction, H2 failed as a non-additive screening layer, and the remaining claim is only a narrow negative/direct-search result in a tiny fixed-`X` corridor regime.
+## Recent Semantic Scholar Activity
+- bibtex :: 22a58310070e99febbbe49d0472691a961bb1c70 (results=1, cache_hits=0, network_calls=1)
+- bibtex :: 387272235e7799b244f57695187b718eea2c1ba6 (results=1, cache_hits=0, network_calls=1)
+- bibtex :: dc13ea1d96ee60bfaa7a2148e4b5369216f8cd23 (results=1, cache_hits=1, network_calls=0)
+- bibtex :: 22a58310070e99febbbe49d0472691a961bb1c70 (results=1, cache_hits=1, network_calls=0)
+- bibtex :: 387272235e7799b244f57695187b718eea2c1ba6 (results=1, cache_hits=1, network_calls=0)

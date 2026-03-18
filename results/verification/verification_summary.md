@@ -1,43 +1,64 @@
 # Verification Summary
 
-## Status
+## Decision
 
-The frozen corridor research program does **not** produce a certificate with score `<= 1.675`.
+**Disposition: REVISE**
 
-The verified outcome is a finite-size no-go for the current CA routes plus a narrow direct-search residual:
+The specialist reports agree that the current artifact set supports only a **narrow negative result**:
 
-- `H1_macrocell_substitution`: rejected
-- `H2_target_direction_abelian`: rejected
-- direct corridor controls: exact witnesses around score `2.0`, but not robust or scalable
+- `H1_macrocell_substitution` is dead by an exact one-seed obstruction.
+- `H2_target_direction_abelian` adds no useful screening power on the tiny tested family set.
+- direct no-CA corridor controls reach only about score `2.0`, look fragile, and do not justify any stronger mechanism claim.
 
-## Exact Frontier
+This should not be accepted as a positive novelty, new framework, or publication-grade benchmark section in its current form. It does **not** need a wide new search pass to become internally consistent; it needs a tighter writeup.
 
-- `H1_L1_exact`: verification failure before scoring
-- `H1_L2_exact`: verification failure before scoring
-- best matched direct control on `2 x 4`: score `2.0`
-- best matched direct control on `2 x 6`: score `2.0`
-- best recorded exploratory `2 x 8` control: `29/14 = 2.071428...`
+## Must-Fix Issues
 
-No verified row reached the `1.70` neighborhood.
+1. Rewrite the contribution as a narrow negative operational result.
+   - Remove or explicitly reject claims that the repo establishes a new arithmetic-Kakeya formulation, a successful CA mechanism, a useful abelian-network mechanism, a decoder-style route, or a new verifier-first framework.
+   - State the surviving claim directly: exact verifier-backed corridor experiments falsify H1 and H2 and leave only small direct controls around `2.0`.
 
-## Pivot And Kill Decisions
+2. Tighten the benchmark claim to what is actually supported.
+   - Do not present the current artifact set as a publication-quality CA-guided benchmark.
+   - Limit benchmark language to: exact H1 failure, no H2 lift on the tested families, and fragile direct corridor witnesses that do not approach the `1.70` range.
 
-- H1-to-H2 pivot: justified. The frozen H1 template family has an exact one-seed obstruction, so transfer never reaches a forceable level.
-- H2 kill: justified. The abelian-style invariant package added no screening value beyond raw support size, rank, and target-solvable counts on the same family IDs.
-- Direct-search residual: weakened heavily by ablations. The surviving `2.0` witness is boundary-sensitive, fails seed and `T` randomization, and does not scale under frozen `X`.
+3. Clean up citation boundaries.
+   - Cite repo-backed experimental claims to the repo artifacts, not to external literature.
+   - Cite mathematical history and frontier statements to primary papers, not to FrontierMath/Epoch summaries alone.
+   - Remove or replace under-supported background claims until the missing primary citations are added.
 
-## Finite-Size Caveats
+4. Soften inference-heavy comparison language.
+   - Keep bounded-slope / low-rational-complexity remarks only as interpretation or consistency language unless explicit measurements are added.
+   - Avoid novelty-positioning sentences that overread Tao (2025) or other literature without precise support.
 
-- The successful rows are tiny width-2 corridor controls only.
-- The direct-search frontiers are heuristic search results, not exhaustive optima.
-- The whole surviving frontier remains in a tiny fixed-`X` corridor regime consistent with the bounded-slope / rational-complexity warning literature.
-- Random `X` relabelings often preserve the same `2.0` score, so the surviving witness should not be interpreted as evidence for a special CA arithmetic mechanism.
-- Stage-order perturbation became not applicable once no substitution-mediated family survived.
+5. Normalize bibliography records before any paper-facing reuse.
+   - Fix hybrid preprint/journal entries and broken metadata in `sources.bib`.
+   - Verify the exact intended references for the Hausdorff-dimension and frontier-history statements.
 
-## Verification Verdict
+## Optional Improvements
 
-The current evidence supports a constrained negative claim only:
+1. Add the missing primary citations for the intro and frontier discussion.
+   - This includes the Bourgain Kakeya-dimension paper, the intended Leng-Sah-Sawhney citation, the Katz/Tao historical frontier papers, and the primary source(s) behind the stronger `1.6751308` and `3/2` statements if those statements remain.
 
-- exact verifier-backed corridor search found small witnesses around score `2.0`;
-- the frozen CA routes fail before producing a competitive certificate;
-- nothing in the verified artifact set supports a CA route to the `1.675` target.
+2. Make the benchmark section publication-grade if that remains a goal.
+   - Run the missing matched `2 x 8` no-CA baseline with the same palette and budgets.
+   - Execute the missing pre-registered non-CA baselines: low-height asymmetric `X`, explicit bounded-slope, and slowly growing-`X`.
+   - Re-run ablations under matched budgets and expand width-8 / H2 evaluation beyond the current tiny sample.
+
+3. Improve auditability of experiment traces.
+   - Add per-trial verifier success/failure, failure reason, score, active-state count, grammar length, search budget, and `X`-complexity summaries.
+   - Report frontiers over budget and family size instead of best-row snapshots only.
+
+4. Measure the literature-comparison quantities directly.
+   - If the writeup wants to keep bounded-slope / rational-complexity comparisons as factual claims, add explicit slope and complexity summaries for the surviving width-4/6/8 rows.
+
+## Publication-Safe Position Right Now
+
+The current work is defensible only as follows:
+
+- exact verification kills the frozen H1 corridor family before scoring;
+- H2 adds no value on the tiny screened family set;
+- direct corridor search still finds only fragile exact witnesses around score `2.0`;
+- nothing in the current verified artifacts supports a CA route to the `1.675` target.
+
+If the team wants a stronger benchmark or broader novelty claim, that is a **deepen-next** program. For the current draft, the correct move is **revise the framing and citations now**.
