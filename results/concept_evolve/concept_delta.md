@@ -147,3 +147,20 @@
 - Novelty Delta:
   - The live CA claim is now less tied to one coordinate chart: the rule is expressed over orbit-level transport shapes rather than over packet indices.
   - That makes the result more transferable and more defensible against the critique that the branch only memorizes one hand-picked frontier representative.
+
+## 2026-03-18: Population Refresh -> Self-Stabilization No-Go
+
+- Suggestion:
+  - Test whether the control-trained orbit rule can be lifted into a true self-stabilizing population CA whose coupling creates a contraction phase that the zero-coupling ablation cannot match.
+- Implementation:
+  - Added `hadamard_ca/population_ca.py` plus `scripts/run_population_ca.py`.
+  - Trained exactly one orbit rule table on non-frontier controls only, then ran equal seed coverage (`11, 13, 17, 19, 23`) for the coupled population CA and the zero-coupling ablation on the canonical frontier seed and the full barrier ladder.
+  - Generated `results/branches/H_population_self_stabilizing_ca_668.md`, `results/experiments/order_668_population_ca/summary.{json,md}`, and `results/analysis/frontier_population_phase_map.{json,md}`.
+  - Also retried with a persistence-based contraction rule and stronger coupling; the retry never opened a coupling-specific contraction regime and was not promoted as the final artifact.
+- Result:
+  - The coupled population CA does beat the deterministic single-action local baselines on the canonical seed and several ladder states.
+  - However, its median best objective ties the zero-coupling ablation on the canonical seed and on every ladder state.
+  - The phase map stays in the diffusion regime across the tested coupling / threshold grid, so the population layer never earns a distinct self-stabilization claim.
+- Novelty Delta:
+  - This closes one ambitious branch honestly rather than by rhetoric: the repo now has evidence that the stronger locality branches do not automatically lift to a robust population self-stabilizer.
+  - The surviving positive contribution is therefore narrower and cleaner: explicit local carrier rules and orbit-level transfer survive, but population-level robustness does not.
