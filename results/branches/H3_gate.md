@@ -1,64 +1,41 @@
 # H3 Gate
 
-`H3_spacetime_row_emission_ca` stays reserve-only. It is more exposed to prior CA-construction overlap than H1 or H2 and should not consume serious budget unless the earlier branches fail for representation reasons.
+`H3_spacetime_row_emission_ca` remains reserve-only unless both earlier branches fail for representation reasons rather than for ordinary implementation weakness.
 
 ## Activation Rule
 
-Do not open H3 unless both of these are true:
+Do not open H3 unless:
 
-1. H1 fails for principled locality reasons rather than weak implementation.
-2. H2 is either not opened because of immediate family leakage, or H2 also fails for representation reasons rather than simple tuning debt.
-
-If H1 or H2 still look like viable branches under the locked benchmark rules, keep H3 closed.
+- H1 fails because the q/s packet lattice cannot support honest locality;
+- H2 fails because lag space still collapses into known structured-family syntax or cannot localize the defect dynamics;
+- the failure summary points to representation mismatch, not to missing control work or weak coding.
 
 ## Tight Exploratory Budget
 
-If H3 opens, the budget is intentionally small:
+If H3 is opened at all, keep it inside a very small exploratory envelope:
 
-1. One short exploratory pass only.
-2. Radius limited to a narrow family such as radius-`1` or radius-`2`.
-3. No broad Wolfram-style rule-table sweeps.
-4. No large random search over rule/seed pairs.
-5. No claim of a live branch unless H3 first shows frontier-relevant behavior on a sharply reduced pilot.
+- one compact rule family at a time;
+- one reduced-control mimicry check before any order-668 claim;
+- no broad rule enumeration;
+- no Wolfram-style sweep over large rule tables;
+- no wide search over seeds, radii, and update schedules simultaneously.
 
-H3 is allowed only enough budget to test whether the idea is structurally mismatched, not enough budget to become a sprawling separate program.
+The first H3 task is only to test whether a compact spacetime rule can mimic the qualitative defect profile of the current frontier seed on reduced settings. It is not to launch a full generative Hadamard search program.
 
-## Required Overlap Check Before Any Build-Out
+## Prior-Art Overlap Check
 
-Before writing substantial H3 code or running a serious sweep, explicitly check overlap against the direct CA-construction literature already noted in the repo:
+Before any substantial H3 build-out, explicitly check overlap against direct CA-construction literature already flagged in the repo:
 
-1. **Linear bipermutive CA constructions**
-   - If the useful rules are linear, bipermutive, or finite-field constructive in the usual way, H3 has likely collapsed into known CA-construction territory.
+- linear bipermutive CA and Hadamard-adjacent constructions;
+- CA-derived orthogonal arrays / orthogonal Latin square pipelines;
+- CA-derived bent-function / MUB style constructive regimes;
+- compact rule-table CA generation work in prime-power or power-of-two friendly settings.
 
-2. **CA-derived bent-function / Hadamard-adjacent pipelines**
-   - If the route goes through bent functions, mutually unbiased bases, orthogonal arrays, or orthogonal Latin-square constructions, relabel the branch as prior-art overlap rather than as a new order-668 direction.
+If H3 drifts into one of those direct-construction regimes, relabel it as overlap with existing CA construction work rather than as a fresh order-668 direction.
 
-3. **Compact rule-table generative search**
-   - If H3 is just brute-force or black-box search over a large local rule table, stop. The branch is only defensible if the rule family is tiny and the order-668 relevance is explicit.
+## Explicit Prohibitions
 
-4. **Power-of-two or prime-power constructive bias**
-   - If the rules only reproduce the power-of-two / prime-power regimes where prior CA constructions are already strongest, H3 is mismatched to the `167` prime core behind order `668`.
-
-## Immediate Stop Conditions
-
-Stop H3 immediately if any of the following happens:
-
-1. The first useful rules are linear or bipermutive in a way already covered by the known CA-construction literature.
-2. The search requires enumerating many rules or seeds to get any Hadamard-adjacent behavior.
-3. The branch cannot even imitate the qualitative defect profile of the recovered 64-modular order-668 seed.
-4. The branch drifts into a construction story for other orders or other regimes instead of the real order-668 bottleneck.
-
-## Decision Rule
-
-- `keep H3 closed`: default.
-- `open H3 briefly`: only after H1 and H2 fail for representation reasons and the overlap check above stays clean.
-- `stop H3`: immediately if it starts looking like direct CA-construction prior art or wide brute-force rule search.
-
-## Evidence Artifacts To Check First
-
-- `results/swarm/hypotheses.json`
-- `results/swarm/falsifier.md`
-- `results/swarm/hypothesis_negative_space.md`
-- `results/swarm/hypothesis_bridge.md`
-- `results/literature/code_watchlist.md`
-- `results/literature/prior_art_gap.md`
+- No brute-force rule-table search.
+- No narrative that CA is "new for Hadamard matrices."
+- No substantial H3 budget before H1 and H2 both fail for representation reasons.
+- No claims of order-668 progress unless the shared exactness gate is passed.
