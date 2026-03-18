@@ -80,3 +80,20 @@
 - Novelty Delta:
   - This changes the live CA claim again: the packet-space direction is now only defensible as a retained composite actuator library, not as single-packet local CA.
   - That is a materially sharper negative-positive split than the repo had before. The new evidence says "composite locality exists in principle, but the actual order-668 frontier still blocks improvement inside that local basis."
+
+## 2026-03-18: Reframe Refresh -> Causal-Cone Hypergraph Branch
+
+- Suggestion:
+  - Move locality from a static retained action graph to short-horizon dynamics: if single retained composites are still frontier-frozen, test whether exact `2`-step local cones on that retained graph can cross the barrier.
+- Implementation:
+  - Ran the mandatory `concept_evolve.py reframe "solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it"` checkpoint, which refreshed `results/concept_evolve/reframings.json` toward decoder graphs, local decoders, warning propagation, and number-conserving transport ideas.
+  - Added `hadamard_ca/retained_state_graph.py` and `scripts/run_hypergraph_ca.py`.
+  - Built the exact retained-library quotient with `9` retained actions and `512` unique packet-parity states, then ran the fixed `2`-step causal-cone hypergraph rule against `pairwise_graph_ca`, `zero_coupling`, `zero_refractory`, and `scorer_only`.
+  - Saved the branch brief under `results/branches/H_causal_cone_hypergraph_ca_668.md` and the experiment pack under `results/experiments/order_668_hypergraph_ca/`.
+- Result:
+  - The canonical frontier seed is a structural barrier state for every single-action retained-basis baseline: no baseline can leave `13/2880/512`.
+  - The hypergraph branch accepts one precomputed local cone `[3, 7]` and reaches `13/2744/480` on the canonical seed.
+  - The same fixed rule also wins on every ladder state selected by the structural criterion “no immediate improvement but at least one improving 2-step cone.”
+- Novelty Delta:
+  - This is the first branch in the repo that turns the retained composite library into a genuine frontier-improving local dynamic rather than another negative pilot.
+  - The surviving novelty claim is now sharper and stronger: not “cellular automata might help in general,” but “a fixed short-horizon hypergraph CA over a retained low-splash action basis can beat every matched single-action retained-basis control on the real order-668 frontier seed.”
