@@ -1,0 +1,494 @@
+[
+  {
+    "symbolic_name": "anisotropic_current_screening",
+    "description": "Treat each nonzero vector in X as a particle species in a number-conserving cellular automaton. Instead of decoding every trajectory, rank trajectories by how strongly they suppress the forbidden (1,-1) channel relative to legal slope channels, then exact-decode only the best candidates.",
+    "domains": [
+      "cellular_automata",
+      "additive_combinatorics",
+      "signal_flow"
+    ],
+    "mathematical_formalization": "State lattice s_t : \\Lambda -> \\{0\\} \\cup (X \\setminus \\{(0,0)\\}). For each species x define a directional current J_x(T) = \\sum_{t<T}\\sum_{u\\in\\Lambda} \\langle d_x, \\mathrm{step}_t(u)\\rangle. Decode a trajectory to a witness W and rank by \\Psi(W) = S(W) + \\lambda \\max\\{0, J_{(1,-1)} - \\beta \\min_{x\\in X\\setminus\\{0\\}} J_x\\}.",
+    "analogical_connections": [
+      "A multispecies lattice gas where one current channel should be suppressed.",
+      "Projection growth behaving like flux through oriented cuts.",
+      "Witness search reframed as transport design instead of direct graph enumeration."
+    ],
+    "implementation_hypothesis": "Enumerate small radius-1 conservative CA on tori, assign one species per candidate slope, evolve sparse seeds, extract periodic worldlines and collision graphs, and decode only the top-ranked trajectories into candidate nonzero f_i entries and seed R/T data.",
+    "experiment_seed": "Use X={(0,0),(1,0),(0,1),(1,1),(2,1)} on 4x4 and 5x5 tori. Compare current-ranked decoding against random decoding and species-label shuffles at the same trajectory budget.",
+    "closest_prior_art": [
+      {
+        "title": "On the arithmetic Kakeya conjecture of Katz and Tao",
+        "paperId": "10.1007/s10998-018-0270-z"
+      },
+      {
+        "title": "Additive conserved quantities in discrete-time lattice dynamical systems",
+        "paperId": "10.1016/0167-2789(91)90150-8"
+      },
+      {
+        "title": "Cellular automaton rules conserving the number of active sites",
+        "paperId": "10.1088/0305-4470/31/28/014"
+      }
+    ],
+    "novelty_claim": "The new ingredient is a score-aware directional-current statistic tied directly to arithmetic witness decoding, rather than generic conservation-law analysis or bounded-slope heuristics.",
+    "differentiation": "This is not a reimplementation of number-conserving CA classification because the automaton is only a ranking prior, and it is not a restatement of arithmetic Kakeya because the output is an explicit local dynamical compiler into witnesses.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/001_anisotropic_current_screening",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "spatially_coupled_peeling_ladders",
+    "description": "View forcing propagation as a peeling wave on a Tanner-like graph whose variable nodes are witness vertices and whose check nodes are local certificate templates. Then use spatial coupling across recursive layers so a tiny boundary seed launches a long exact-certificate wave with lower cost density than uncoupled repetition.",
+    "domains": [
+      "coding_theory",
+      "additive_combinatorics",
+      "cellular_automata"
+    ],
+    "mathematical_formalization": "Let H=(V,C,E) with variable nodes V and local certificate checks C. Define T_{t+1}=T_t \\cup \\{v\\in V\\setminus T_t : \\exists c\\in C,\\ \\mathrm{supp}(c)\\subseteq T_t\\cup\\{v\\},\\ c(v)=(a,-a)\\}. Partition V=\\bigsqcup_i V_i with coupling window w and search for geometries where activation of V_i forces activation of V_{i+1} while minimizing S=(m+r)/(n-t).",
+    "analogical_connections": [
+      "Forcing pairs as peeling decoders on sparse graphs.",
+      "Recursive copies as spatially coupled code sections.",
+      "Exact certificate growth as a decoding avalanche."
+    ],
+    "implementation_hypothesis": "Start from a small verified gadget, chain copies into d_1 x d_2 x d_3 ladders with sparse inter-slab edges, estimate wave viability by density-evolution style simulation, and exact-verify only geometries whose wave front survives.",
+    "experiment_seed": "Use 6-10 coupled slabs built from one tiny verified gadget, sweep coupling width and boundary seeds, and compare exact score against uncoupled repeats at matched edge density.",
+    "closest_prior_art": [
+      {
+        "title": "Threshold Saturation via Spatial Coupling: Why Convolutional LDPC Ensembles Perform So Well over the BEC",
+        "paperId": "10.1109/TIT.2010.2095072"
+      },
+      {
+        "title": "The effect of spatial coupling on compressive sensing",
+        "paperId": "10.1109/ALLERTON.2010.5706927"
+      },
+      {
+        "title": "Pattern Problems related to the Arithmetic Kakeya Conjecture",
+        "paperId": "arXiv:2011.07056"
+      }
+    ],
+    "novelty_claim": "The novelty is importing spatial coupling specifically to engineer exact arithmetic-certificate propagation, not parity-check decoding or sparse recovery.",
+    "differentiation": "The checks are signed arithmetic singleton certificates rather than parity constraints, and the objective is witness score density instead of communication threshold.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/002_spatially_coupled_peeling_ladders",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "bootstrap_certificate_percolation",
+    "description": "Approximate R/T closure by an anisotropic bootstrap-percolation rule on the product grid, where a site activates once nearby certificate templates can synthesize an (a,-a) singleton there. This gives a fast local phase diagram for which recursive geometries can sustain sparse but self-amplifying forcing growth.",
+    "domains": [
+      "statistical_physics",
+      "cellular_automata",
+      "additive_combinatorics"
+    ],
+    "mathematical_formalization": "On V=d_1\\times\\cdots\\times d_k let \\eta_t(v)=1_{v\\in T_t}. Choose a template family \\mathcal{K}. Update \\eta_{t+1}(v)=1 if \\eta_t(v)=1 or if there exists K\\in\\mathcal{K}_v and signed weights \\lambda_u with \\sum_{u\\in K}\\lambda_u R_u=(a,-a)e_v modulo already active sites. Search anisotropic template sets that fully activate V at low m+r.",
+    "analogical_connections": [
+      "Certificate nucleation as deterministic infection.",
+      "Low-score witnesses as sparse supercritical media.",
+      "Metastable droplet growth translated into proof growth."
+    ],
+    "implementation_hypothesis": "Mine local certificate templates from exact small witnesses, run fast bootstrap simulations on larger geometries, and exact-verify only the geometries predicted to fully activate with sparse templates.",
+    "experiment_seed": "Fit templates from all exact witnesses with n<=25, then predict which 4x4x4 or 3x3x5 geometries fully activate. Compare exact verification hit rate to random geometry search.",
+    "closest_prior_art": [
+      {
+        "title": "Sharp metastability threshold for two-dimensional bootstrap percolation",
+        "paperId": "10.1007/s00440-002-0239-x"
+      },
+      {
+        "title": "Bootstrap percolation, and other automata",
+        "paperId": "10.1016/j.ejc.2017.06.024"
+      },
+      {
+        "title": "Pattern Problems related to the Arithmetic Kakeya Conjecture",
+        "paperId": "arXiv:2011.07056"
+      }
+    ],
+    "novelty_claim": "This makes bootstrap-style threshold analysis depend on arithmetic certificate templates learned from exact witnesses, rather than on generic nearest-neighbor infection rules.",
+    "differentiation": "It is not just a percolation analogy because activation kernels are derived from verifier-legal linear combinations and are tested against exact closure.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/003_bootstrap_certificate_percolation",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "rotor_router_discrepancy_balancer",
+    "description": "Use rotor-router dynamics to deterministically balance how nonzero slopes are deployed across copies of a recursive gadget. The hypothesis is that low discrepancy in slope exposure can flatten non-target projections while preserving repeatable cancellation patterns that are useful for arithmetic forcing.",
+    "domains": [
+      "discrete_dynamics",
+      "additive_combinatorics",
+      "cellular_automata"
+    ],
+    "mathematical_formalization": "Assign each interface vertex v a rotor state \\rho(v)\\in X\\setminus\\{0\\}. Each launch increments \\rho(v) cyclically and routes a token along label \\rho(v). Let D_x(U) be the discrepancy of visits along slope x inside region U. Search periodic rotor schedules minimizing \\max_x D_x while the decoded witness score S remains small.",
+    "analogical_connections": [
+      "Slope labels as deterministic load-balancing packets.",
+      "Projection control as low-discrepancy transport.",
+      "Certificate supply as rotor-router aggregation with arithmetic sinks."
+    ],
+    "implementation_hypothesis": "Fix a recursive scaffold, replace free nonzero labels by rotor schedules with short periods, decode one rotor period into f_i dictionaries, and test whether low-discrepancy schedules yield better forcing coverage than random label placement.",
+    "experiment_seed": "Use layered-square-lattice style rotors on d_1 x d_2 witnesses with 3-4 nonzero slopes. Compare periodic rotor schedules, random schedules, and label shuffles at equal density.",
+    "closest_prior_art": [
+      {
+        "title": "Rotor-Router Aggregation on the Layered Square Lattice",
+        "paperId": "10.37236/424"
+      },
+      {
+        "title": "Abelian Networks I. Foundations and Examples",
+        "paperId": "10.1137/15M1030984"
+      },
+      {
+        "title": "Bounds on arithmetic projections, and applications to the Kakeya conjecture",
+        "paperId": "10.4310/MRL.1999.v6.n6.a3"
+      }
+    ],
+    "novelty_claim": "The new move is to treat rotor discrepancy as a design variable for arithmetic projection control rather than as a deterministic random-walk surrogate.",
+    "differentiation": "Classical rotor-router work studies shape and load balancing. Here the rotor phase is decoded into exact witness data and judged only by arithmetic score.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/004_rotor_router_discrepancy_balancer",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "reversible_collision_gadget_ca",
+    "description": "Build partitioned reversible cellular automata whose particle collisions implement only verifier-legal signed-vector operations. Reversibility narrows the search toward low-hidden-state gadgets that can be reused as sparse collision libraries for constructible witnesses.",
+    "domains": [
+      "reversible_computation",
+      "cellular_automata",
+      "additive_combinatorics"
+    ],
+    "mathematical_formalization": "Let F be a Margolus-block rule on local states carrying slope species and phase bits. Require F to be bijective and every nontrivial collision to decode to a legal signed update such as (x@u,x@v) \\leftrightarrow (x@u,-x@v) plus transport states. Decode a periodic spacetime diagram \\Omega into witness W and minimize S(W) subject to reversibility.",
+    "analogical_connections": [
+      "Edge updates as elastic particle collisions.",
+      "Forcing steps as reversible scattering events.",
+      "Certificate economy as low-entropy circuit design."
+    ],
+    "implementation_hypothesis": "Enumerate tiny reversible block rules with 3-6 active symbols, mine short collision motifs, compose motifs into macro-gadgets for recursive interfaces, and keep only motifs whose decoded operations are exactly verifier-legal.",
+    "experiment_seed": "Exhaustively enumerate 2x2 block rules with two species plus vacancy, decode all period<=8 collision motifs, and measure motif reuse versus exact-score performance.",
+    "closest_prior_art": [
+      {
+        "title": "Reversibility and surjectivity problems of cellular automata",
+        "paperId": "10.1016/S0022-0000(05)80025-X"
+      },
+      {
+        "title": "Finding Gliders in Cellular Automata",
+        "paperId": "10.1007/978-1-4471-0129-1_13"
+      },
+      {
+        "title": "On the arithmetic Kakeya conjecture of Katz and Tao",
+        "paperId": "10.1007/s10998-018-0270-z"
+      }
+    ],
+    "novelty_claim": "Reversibility becomes a structural prior for arithmetic witness gadgets, turning low-entropy collision libraries into candidate proof components.",
+    "differentiation": "This is not reversible-CA classification for its own sake; every accepted rule must decode into exact forcing operations in the witness format.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/005_reversible_collision_gadget_ca",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "tile_assembly_constructible_grammar",
+    "description": "Compile recursive constructibility into a tile grammar where each macro-tile encodes a small verified gadget and boundary colors encode allowed gluing interfaces. Sparse nonzero edges become sparse defect tiles, so the search shifts from graph enumeration to local grammar design.",
+    "domains": [
+      "algorithmic_self_assembly",
+      "symbolic_dynamics",
+      "additive_combinatorics"
+    ],
+    "mathematical_formalization": "Let \\mathcal{T} be a Wang-tile set whose edge colors encode interface states (copy index, boundary certificate, slope class). A valid tiling \\tau of an L_1\\times\\cdots\\times L_k board induces d_i, the support of each f_i, and seed data R,T. Search tile sets and defect budgets q minimizing S(\\tau) while preserving local matching constraints.",
+    "analogical_connections": [
+      "Constructible graphs as locally assembled crystals.",
+      "Nonzero edge labels as catalytic defects.",
+      "Witness search as grammar induction over a finite alphabet."
+    ],
+    "implementation_hypothesis": "Start from a tile set for a tiny verified gadget, expose only defect tiles and boundary colors to search, decode each completed tiling to the six-line witness format, and exact-verify it.",
+    "experiment_seed": "Use 8-16 tile types on a 3x3 macroboard, then test whether tile grammars that work on 3x3 generalize to 4x4 and 5x5 boards with stable score density.",
+    "closest_prior_art": [
+      {
+        "title": "Theory of algorithmic self-assembly",
+        "paperId": "10.1145/2380656.2380675"
+      },
+      {
+        "title": "Algorithmic Self-Assembly of DNA Sierpinski Triangles",
+        "paperId": "10.1371/journal.pbio.0020424"
+      },
+      {
+        "title": "Pattern Problems related to the Arithmetic Kakeya Conjecture",
+        "paperId": "arXiv:2011.07056"
+      }
+    ],
+    "novelty_claim": "This transfers algorithmic self-assembly from target-pattern construction to exact arithmetic witness generation with a verifier-defined semantics.",
+    "differentiation": "Unlike DNA-pattern papers, the tiles do not merely realize a picture; they assemble explicit arithmetic proof data that is scored by the verifier.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/006_tile_assembly_constructible_grammar",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "macrocell_curriculum_nca",
+    "description": "Use a neural cellular automaton whose cell states are not raw edges but small verified gadget fragments with conservation flags. Training proceeds by size curriculum and only rewards outputs that decode exactly, forcing the model to learn reusable local proof-growth rules rather than memorize single witnesses.",
+    "domains": [
+      "machine_learning",
+      "cellular_automata",
+      "additive_combinatorics"
+    ],
+    "mathematical_formalization": "Each macrocell state z_t(v) lies in a simplex over a fragment library \\mathcal{G}. A local update z_{t+1}(v)=\\Phi_\\theta(\\{z_t(u):u\\in N(v)\\}) evolves the board. A discretizer D maps z_T to a witness W, and training minimizes \\mathbb{E}[S(W)+\\mu\\,1_{W\\ \\mathrm{invalid}}] with held-out larger boards used as the generalization test.",
+    "analogical_connections": [
+      "Morphogenesis of proof skeletons.",
+      "Macrocell fragments as biological cell types.",
+      "Local growth laws replacing hand-coded recursion."
+    ],
+    "implementation_hypothesis": "Build a library of tiny exact gadgets, use them as the NCA alphabet, train with straight-through or Gumbel-style discretization, and let the exact verifier score only the discretized outputs.",
+    "experiment_seed": "Train on witnesses with n<=36 and test on n around 64. Run label-shuffle and geometry-shuffle ablations to distinguish arithmetic learning from symmetry matching.",
+    "closest_prior_art": [
+      {
+        "title": "Growing Neural Cellular Automata",
+        "paperId": "10.23915/distill.00023"
+      },
+      {
+        "title": "Mathematical discoveries from program search with large language models",
+        "paperId": "10.1038/s41586-023-06924-6"
+      },
+      {
+        "title": "AlphaEvolve: A coding agent for scientific and algorithmic discovery",
+        "paperId": "arXiv:2506.13131"
+      }
+    ],
+    "novelty_claim": "The macrocell representation and exact discrete decode loop make the NCA learn proof growth, not just generic spatial pattern formation.",
+    "differentiation": "This is not the standard neural-CA image-growth setup and not generic program search; the alphabet is proof-carrying and success is exact arithmetic score.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/007_macrocell_curriculum_nca",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "odometer_sink_compilers",
+    "description": "Precompile candidate witness scaffolds into abelian networks with explicit sink placements and use odometer profiles to predict which regions are close to certifiable collapse into T. The distinctive search variable is sink geometry on the product grid and how it concentrates certificate pressure.",
+    "domains": [
+      "abelian_networks",
+      "discrete_dynamics",
+      "additive_combinatorics"
+    ],
+    "mathematical_formalization": "A compiler \\mathcal{C} sends a scaffold H to an abelian network A(H,s) with sink set s. Let u_s(v) be the resulting odometer. Search sink placements and local label templates that maximize \\mathrm{Corr}(u_s(v),1_{v\\in T_\\infty}) while minimizing decoded score S.",
+    "analogical_connections": [
+      "Forcing pressure as sandpile odometer height.",
+      "Certifiable vertices as drainable sinks.",
+      "Local linear span as abelian stabilization."
+    ],
+    "implementation_hypothesis": "For each small scaffold, build the abelian network once, sweep sink placements and local labels, benchmark odometer features against depth and degree baselines, and use winning sink geometries to initialize R or glue edges.",
+    "experiment_seed": "Benchmark 100-500 small scaffolds with matched depth/degree controls and label-shuffled variants. Stop immediately if odometer features do not outperform trivial graph baselines.",
+    "closest_prior_art": [
+      {
+        "title": "Abelian Networks I. Foundations and Examples",
+        "paperId": "10.1137/15M1030984"
+      },
+      {
+        "title": "Integral Flow and Cycle Chip-Firing on Graphs",
+        "paperId": "10.1007/s00026-021-00542-7"
+      },
+      {
+        "title": "Bounds on arithmetic projections, and applications to the Kakeya conjecture",
+        "paperId": "10.4310/MRL.1999.v6.n6.a3"
+      }
+    ],
+    "novelty_claim": "This turns sink placement into a tunable compiler parameter for exact arithmetic forcing rather than treating abelian dynamics as a loose analogy.",
+    "differentiation": "The invariant is used only to choose arithmetic witness geometry and seeds; the abelian network itself is not the target object.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/008_odometer_sink_compilers",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "sat_pruned_local_rule_synthesis",
+    "description": "Encode periodic CA trajectories, local witness-decoding constraints, and symmetry or integrality requirements as a SAT family that enumerates only admissible local rules. This shrinks the CA search space into a proof-carrying rule-synthesis problem before any stochastic search or learning begins.",
+    "domains": [
+      "formal_methods",
+      "cellular_automata",
+      "program_synthesis"
+    ],
+    "mathematical_formalization": "Boolean variables describe local rule-table entries, orbit bits on a periodic torus, and decoded nonzero incidences in f_i,R,T. Constraints enforce locality, optional conservation or reversibility, and exact decoder legality. Solve \\exists F,\\Omega\\; \\mathrm{SAT}(F,\\Omega,\\sigma) where \\sigma bounds score and orbit period.",
+    "analogical_connections": [
+      "Local rule discovery as circuit synthesis.",
+      "Periodic witnesses as model-checking counterexamples.",
+      "Exact verification as satisfiability."
+    ],
+    "implementation_hypothesis": "Start with tiny radii and short periods, add symmetry breaking for rotations and species relabeling, enumerate minimal feasible rules with SAT, and lift those rules into larger exact searches or learned initializations.",
+    "experiment_seed": "Target period-4 or period-6 torus orbits with 2-3 species and compare SAT-enumerated rules against random rule sampling on exact-valid output rate.",
+    "closest_prior_art": [
+      {
+        "title": "SAT-Based Analysis of Cellular Automata",
+        "paperId": "10.1007/978-3-540-30479-1_77"
+      },
+      {
+        "title": "egg: Fast and extensible equality saturation",
+        "paperId": "10.1145/3434304"
+      },
+      {
+        "title": "AlphaEvolve: A coding agent for scientific and algorithmic discovery",
+        "paperId": "arXiv:2506.13131"
+      }
+    ],
+    "novelty_claim": "SAT is used here to synthesize only those CA rules whose spacetime diagrams decode to exact arithmetic witnesses, not merely to analyze a fixed automaton.",
+    "differentiation": "Unlike generic agentic search, the constraints bake in the six-line witness semantics and exact score accounting from the outset.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/009_sat_pruned_local_rule_synthesis",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "egraph_linear_span_rewriting",
+    "description": "Represent derived certificate expressions and local CA motifs inside an e-graph so equivalent linear combinations and repeated gadget compositions collapse to the same node. This makes R-span search reusable across many generated candidates and exposes algebraic normal forms for witness fragments.",
+    "domains": [
+      "program_optimization",
+      "algebraic_rewriting",
+      "additive_combinatorics"
+    ],
+    "mathematical_formalization": "Terms are generated by basis atoms x e_v, edge-difference constructors, subtraction, and motif constructors. Rewrite rules encode bilinearity, support factoring, coefficient normalization, and local motif identities. An e-graph stores equivalence classes and a cost c(t)=|\\mathrm{supp}(t)|+\\lambda\\,\\#\\mathrm{motifs}(t) ranks certificate derivations likely to keep r small.",
+    "analogical_connections": [
+      "Forcing closure as compiler optimization.",
+      "Certificate families as algebraic common subexpressions.",
+      "Proof compression as equality saturation."
+    ],
+    "implementation_hypothesis": "Saturate the algebra of local witness fragments in an e-graph, cache singleton-producing derivations, and let CA or SAT generators query the cache instead of recomputing span closure from scratch.",
+    "experiment_seed": "Build the e-graph over all local motifs with n<=16, measure cache-hit rate on new generated candidates, and track whether canonicalization reduces verifier time or R size.",
+    "closest_prior_art": [
+      {
+        "title": "egg: Fast and extensible equality saturation",
+        "paperId": "10.1145/3434304"
+      },
+      {
+        "title": "On the arithmetic Kakeya conjecture of Katz and Tao",
+        "paperId": "10.1007/s10998-018-0270-z"
+      },
+      {
+        "title": "Abelian Networks I. Foundations and Examples",
+        "paperId": "10.1137/15M1030984"
+      }
+    ],
+    "novelty_claim": "Equality saturation becomes a linear-span compression layer specialized to arithmetic witness search rather than a general compiler backend.",
+    "differentiation": "The rewrite system is tuned to singleton certificate generation and support size, not to program execution speed.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/010_egraph_linear_span_rewriting",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "glider_motif_mining",
+    "description": "Mine gliders, blinkers, and collision motifs from small CA rules, then reinterpret them as portable witness fragments: worldlines become repeated copy interfaces and collisions become candidate certificate births. This yields a reusable gadget library before full witness assembly.",
+    "domains": [
+      "cellular_automata",
+      "pattern_mining",
+      "additive_combinatorics"
+    ],
+    "mathematical_formalization": "For a rule F let M(F) be the set of periodic localized spacetime motifs modulo translation and phase. A decoder D maps m\\in M(F) to partial witness deltas (\\Delta f,\\Delta R,\\Delta T). Search motif multisets maximizing \\Delta(n-t)/(\\Delta m+\\Delta r) subject to compatibility and constructibility constraints.",
+    "analogical_connections": [
+      "Gliders as mobile proof tokens.",
+      "Collisions as local linear-combination factories.",
+      "Motif libraries as arithmetic gadget catalogs."
+    ],
+    "implementation_hypothesis": "Use Wuensche-style exhaustive motif search or SAT-enumerated short orbits to populate a motif database, cluster motifs by decoded effect, and compose only the highest-yield motifs into larger recursive scaffolds.",
+    "experiment_seed": "Enumerate motifs up to bounding box 6x6x8 for a small reversible or conservative rule family and compare motif-composed witnesses against direct random full-witness search.",
+    "closest_prior_art": [
+      {
+        "title": "Finding Gliders in Cellular Automata",
+        "paperId": "10.1007/978-1-4471-0129-1_13"
+      },
+      {
+        "title": "Growing Neural Cellular Automata",
+        "paperId": "10.23915/distill.00023"
+      },
+      {
+        "title": "Pattern Problems related to the Arithmetic Kakeya Conjecture",
+        "paperId": "arXiv:2011.07056"
+      }
+    ],
+    "novelty_claim": "The new step is decoding dynamical motifs into arithmetic proof fragments instead of treating them as purely dynamical curiosities.",
+    "differentiation": "Motif discovery is only accepted when the motifs integrate into exact constructible graphs and forcing pairs with measurable score.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/011_glider_motif_mining",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "compressive_sketch_observers",
+    "description": "Attach cheap sketching observers to CA trajectories so rules can be ranked by a compressed summary of local motif counts, directional currents, and closure precursors before full decoding. The link to spatially coupled compressive sensing is that structured sparse observers may preserve the rare signals that correlate with low witness score.",
+    "domains": [
+      "compressive_sensing",
+      "coding_theory",
+      "cellular_automata"
+    ],
+    "mathematical_formalization": "Let z(F,\\Omega) be a high-dimensional vector of motif and current statistics from trajectory \\Omega of rule F. Observe y=A z with a sparse spatially coupled matrix A. Fit a conservative predictor \\hat{S}(y) and exact-decode only candidates with \\hat{S}(y)\\leq\\tau. The observer is useful only if \\Pr[S\\leq\\sigma\\mid \\hat{S}\\leq\\tau] substantially exceeds random triage.",
+    "analogical_connections": [
+      "Proof search as compressed measurement of dynamics.",
+      "Observer matrices as coupled parity-check devices.",
+      "Exact verification as a second-stage decoder."
+    ],
+    "implementation_hypothesis": "Define 50-200 motif counters, build sparse coupled sketches, train a monotone regressor or conformal lower bound from exact small data, and use the sketch as a budgeted filter in front of SAT, NCA, or evolutionary search.",
+    "experiment_seed": "Collect a few thousand tiny CA trajectories with exact scores, compare sketch-based triage against raw-density heuristics, and keep the idea only if recall at fixed decode budget improves materially.",
+    "closest_prior_art": [
+      {
+        "title": "The effect of spatial coupling on compressive sensing",
+        "paperId": "10.1109/ALLERTON.2010.5706927"
+      },
+      {
+        "title": "Threshold Saturation via Spatial Coupling: Why Convolutional LDPC Ensembles Perform So Well over the BEC",
+        "paperId": "10.1109/TIT.2010.2095072"
+      },
+      {
+        "title": "Mathematical discoveries from program search with large language models",
+        "paperId": "10.1038/s41586-023-06924-6"
+      }
+    ],
+    "novelty_claim": "The sketches are not trying to reconstruct a signal; they are triaging proof-search dynamics by preserving only the statistics that forecast low score.",
+    "differentiation": "This is not standard compressive sensing or decoding because the sensed object is a search trajectory and the target is a proof-discovery budget.",
+    "folder_plan": {
+      "folder": "/home/archivara/work/repo/results/concept_evolve/tree/012_compressive_sketch_observers",
+      "artifacts": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ]
+    }
+  }
+]
