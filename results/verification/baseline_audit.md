@@ -1,75 +1,66 @@
 # Baseline Audit
 
-Pre-run audit date: 2026-03-18 UTC
+Snapshot date: 2026-03-18 UTC
 
-Inputs reviewed:
+## Audit Mode
 
-- `results/baselines/benchmark_spec.md`
-- `results/baselines/witness_spec.md`
-- `results/swarm/falsifier.md`
-- `results/swarm/tool_plan.md`
-- `results/verification/verification_summary.md`
+This is a pre-run audit of the baseline plan only.
 
-Required review roles for this checkpoint:
+Required role-specific review was attempted via:
 
 - `benchmark_auditor`
 - `falsifier`
 - `integrator`
 
-## Verdict
-
-- Baseline-plan status: `pass`
-- Execution status: `blocked`
-
-The baseline matrix is structurally acceptable for a first exact-verification pass, but no run is authorized until an exact verifier exists.
+Those child runs were launched through the Codex CLI but failed with transport-layer stream disconnects before returning final messages. Per the run governance, delegation was then stopped and the checklist below was completed directly against the same criteria.
 
 ## Checklist
 
 ### Label shuffling
 
-- Status: `pass`
+- Judgment: `PASS`
 - Reason:
-  - `results/baselines/benchmark_spec.md` explicitly includes a label-shuffled geometry control with fixed graph geometry and fixed nonzero-label multiset.
+  - `results/baselines/benchmark_spec.md` explicitly requires an `X`-label shuffle control at fixed geometry and fixed nonzero-label multiset.
+  - This closes the main risk that geometry or density, rather than arithmetic structure, is carrying the signal.
 
 ### Decoder leakage
 
-- Status: `pass`
+- Judgment: `FAIL`
 - Reason:
-  - the spec includes a decoder-matched non-CA baseline using the same compiler/extractor path and forbids repair.
-  - this is the minimum control required to test whether the decoder is doing the hard work.
+  - The plan includes a decoder-matched baseline, which is necessary.
+  - But it does not yet require decoder ablation or decoder-randomization, and no exact verifier exists to measure how much of the hard work sits in the decoder.
+  - Until a real exact evaluator exists, decoder leakage remains only partially addressed.
 
 ### Compute parity
 
-- Status: `pass`
+- Judgment: `PASS`
 - Reason:
-  - parity is defined by exact-decode count rather than wall-clock time.
-  - illegal candidates still count against budget.
-  - all methods are required to share the same exact-decode, alphabet, and density budgets.
+  - The benchmark spec fixes equal exact-decode budgets, matched grid blocks, matched `|X|` or fixed `X`, and matched edge-density bands.
+  - It also forbids best-of-many-only reporting.
 
 ### Out-of-distribution grids
 
-- Status: `pass`
+- Judgment: `PASS`
 - Reason:
-  - the benchmark spec now explicitly requires at least one larger or different-aspect-ratio held-out grid family for any promoted method.
+  - The plan requires held-out larger or different-aspect-ratio grids whenever the CA family is tested there.
+  - This is the right minimum check against memorized local tilings.
 
 ### Rational-complexity sweeps
 
-- Status: `pass`
+- Judgment: `PASS`
 - Reason:
-  - the benchmark spec now explicitly requires small-, medium-, and unrestricted-complexity `X` regimes under matched budgets.
+  - The plan explicitly includes small-, medium-, and unrestricted-complexity `X` regimes.
+  - That directly addresses the bounded-slope / low-rational-complexity trap highlighted by Tao (2025) and the falsifier memo.
 
-## Additional Audit Notes
+## Overall Readiness
 
-- Distribution reporting:
-  - `pass`
-  - hit rate and full score distributions are required; best-of-many-only reporting is forbidden.
-- Score accounting:
-  - `pass`
-  - the shared evaluator target remains the full score `(m(G)+|R|)/(n(G)-|T|)`.
-- Verifier dependency:
-  - `fail-open blocker`
-  - no exact evaluator exists, so this audit clears the plan only, not execution.
+- Overall judgment: `FAIL / BLOCKED`
+- Blocking reasons:
+  - no exact verifier;
+  - decoder leakage not fully closed.
 
-## Required Next Step
+## Required Fix Before Any Run
 
-Do not run the CA lane or any baseline until the exact verifier blocker in `results/verification/verification_summary.md` is resolved or the run is formally closed as a no-go.
+1. Locate or obtain a real exact `(X,G,R,T)` verifier.
+2. Add decoder ablation and decoder-randomization checks to the execution plan.
+3. Keep the existing parity, shuffle, OOD, and complexity controls unchanged.
