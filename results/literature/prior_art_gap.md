@@ -133,3 +133,24 @@ These entries remain relevant only as a reminder that the original novelty guard
   - exact extraction needs bespoke global repair,
   - bounded-slope / low rational-complexity behavior survives extraction,
   - imported CA/abelian/decoder language adds no predictive power beyond direct arithmetic features.
+
+## F. Route-Specific Freeze Notes
+
+### 1. H1 macrocell substitution
+
+- Distinction from Green-Ruzsa and Cowen-Breen et al.: H1 is not an alternative formulation or pattern problem. It is a fixed corridor compiler plus an exact verifier.
+- Distinction from Pohoata-Zakharov: H1 does not claim a new generalized theorem line; it lives entirely inside the original finite-certificate setting.
+- Distinction from Tao 2025: H1 survives only if extracted families do not stay bounded-slope / low-rational-complexity after scale-up.
+- Distinction from bootstrap folklore: the claim is not “forcing is a CA.” The only allowed claim is that one frozen CA-style grammar proposes families that beat matched arithmetic baselines after exact extraction.
+
+### 2. H2 target-direction abelian
+
+- Distinction from abelian-network folklore: H2 is screening-only on the same H1 family IDs. It is not a claim that arithmetic Kakeya forcing is an abelian network.
+- Distinction from Green-Ruzsa / Pohoata-Zakharov: H2 adds no new theorem or reformulation burden because it is killed unless it improves candidate screening over direct arithmetic features.
+- Distinction from the watchlist false positives: the overlap is now substantive and narrow rather than symbolic; the relevant comparison is chip-firing / abelian-network screening value, not the corrupted watchlist.
+
+### 3. H3 slope bloom
+
+- Distinction from Tao 2025 bounded-many-slopes: H3 is killed unless its realized slope and rational-complexity statistics move out of the bounded-slope basin while improving exact score.
+- Distinction from local-decoder folklore: H3 keeps the same exact corridor extractor and wins only if the small label schedule improves verified score rather than decoder-style surrogate metrics.
+- Distinction from the corrupted watchlist: no added burden there; the real burden is avoiding a mere rebranding of bounded-slope or local-decoder search.
