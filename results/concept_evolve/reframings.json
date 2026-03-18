@@ -1,8 +1,89 @@
 {
   "problem": "solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it",
-  "framings": [],
-  "timestamp": "2026-03-18T09:37:12.978364+00:00",
-  "input_fingerprint": "c4e5ddd658cefd1c6cbf060e523f88ca68d1f099298810266694a02dc622d679",
+  "framings": [
+    {
+      "domain": "reservoir computing / physical computing",
+      "reframing": "Treat the order-668 search as a nonlinear state-estimation problem rather than a bare combinatorial walk. A local automaton evolves the defect pattern of the best known 64-modular seed, and a trained readout chooses the next repair action from the automaton's transient state.",
+      "key_insight": "The exact phrase \"cellar automata\" already appears in a 2024 reservoir-computing paper, so one literal interpretation is not \"another hand-written CA rule\" but a fixed dynamical reservoir whose internal transients summarize long-horizon defect interactions better than greedy local scores do.",
+      "suggested_technique": "Echo-state / reservoir computing with a fixed random reservoir and a trained linear readout over defect-state histories.",
+      "mapping_back": "Feed the residual Gram-defect pattern of the 64-modular 668 seed, plus short local neighborhoods around candidate row or block edits, into the reservoir. Train the readout on smaller exact Hadamards and perturbed near-misses so it predicts which sign flips, row-pair swaps, or 167-block edits most reduce exact orthogonality debt.",
+      "candidate_folder_name": "reservoir_defect_readout"
+    },
+    {
+      "domain": "formal language theory / visibly pushdown automata",
+      "reframing": "View the four length-167 blocks behind the 4 x 167 structure as words in a constrained language. The search is not over raw bit strings but over prefixes whose deferred correlation obligations are stored in stack state.",
+      "key_insight": "A literal computer-science reading of \"cellar automata\" points to stack memory. That matches the main obstruction in sequence search: many prefixes look locally legal but secretly accumulate unresolved autocorrelation debt that only appears later.",
+      "suggested_technique": "Weighted visibly pushdown automata with shortest-path or beam search over tokenized run-length or sign-pattern words.",
+      "mapping_back": "Tokenize candidate 167-blocks by local motifs or run lengths. Let control state track position, weight, parity, and symmetry, while the stack stores deferred multiscale autocorrelation deficits. Reject any prefix that cannot still complete to the modular or exact target values needed for order 668.",
+      "candidate_folder_name": "pushdown_autocorrelation_filter"
+    },
+    {
+      "domain": "iterative decoding / coding theory",
+      "reframing": "Interpret the order-668 constraints as a noisy syndrome-decoding problem. The current candidate matrix or block tuple is a corrupted codeword candidate, and the objective is to clear its syndrome by coordinated local edits.",
+      "key_insight": "LDPC-style decoders do not search by blind hill-climbing; they use structured messages from violated checks to decide which variables are worth flipping. That is attractive here because the Hadamard search already has a natural defect signal in its nonzero inner products or autocorrelations.",
+      "suggested_technique": "Weighted bit-flipping, min-sum, or belief-propagation decoding on a factor graph built from orthogonality constraints.",
+      "mapping_back": "Choose variables such as row signs, block tokens, or support bits, and treat pairwise inner-product or autocorrelation equations as checks. Run message passing from the violated checks of the 64-modular seed or a 167-block candidate so updates are chosen by syndrome pressure rather than by a generic CA sweep.",
+      "candidate_folder_name": "syndrome_message_passing"
+    },
+    {
+      "domain": "property testing / locally testable codes",
+      "reframing": "Treat the search as repeated local testing and local correction of a near-structured object instead of full global verification at every step. The goal is to build very cheap probes that distinguish promising near-Hadamard regions from hopeless ones.",
+      "key_insight": "Hadamard-code literature shows that highly structured Boolean objects can often be tested or corrected from a tiny number of queries. For order 668, the pay-off would be a front-end that rejects bad local geometry long before exact certification.",
+      "suggested_technique": "BLR-style local tests and local correction oracles adapted to Walsh-spectrum or row-parity probes.",
+      "mapping_back": "Design constant-query probes on row triples, short column windows, or 167-block Fourier slices that estimate whether a local region behaves like a low-defect Hadamard fragment. Use failed probes to suggest repairs and reserve full Gram checks for candidates that pass the tester cascade.",
+      "candidate_folder_name": "local_testability_filters"
+    },
+    {
+      "domain": "chip-firing / abelian sandpiles",
+      "reframing": "Model every nonzero correlation defect as excess mass on a graph and the search as stabilization. Instead of arbitrary local moves, the solver topples unstable sites until all defect mass has either canceled or reached a provable obstruction.",
+      "key_insight": "Chip-firing systems come with an abelian stabilization property and a least-action viewpoint, which is valuable when plain cellular updates risk cycling or merely redistributing the same error forever.",
+      "suggested_technique": "Abelian sandpile stabilization with odometer tracking on a row graph or row-pair defect graph.",
+      "mapping_back": "Place chips proportional to the magnitude of off-diagonal Gram defects on vertices representing rows or row pairs. Define allowed balanced flips as topplings that redistribute defect mass while preserving selected invariants. Use the odometer to rank move schedules that dissipate the most debt with the least extra work.",
+      "candidate_folder_name": "chip_firing_defects"
+    },
+    {
+      "domain": "reaction-diffusion / excitable-media computing",
+      "reframing": "Recast the residual defect landscape as a medium with interacting species. Positive and negative correlation errors diffuse, trigger waves, and annihilate at collision fronts rather than being updated by static rewrite rules.",
+      "key_insight": "Reaction-diffusion systems solve hard spatial problems through wave propagation and collision logic. That is a closer analogy to defect cancellation than the usual \"flip one sign and rescore everything\" search loop.",
+      "suggested_technique": "Discrete Greenberg-Hastings or related excitable-media rules with collision-based annihilation events.",
+      "mapping_back": "Seed an excitable lattice with the violated correlations of the 64-modular seed or with defects in the 167-shift autocorrelation table. When wavefronts collide, trigger deterministic sign flips or token rewrites that eliminate paired defects while keeping block weight or symmetry constraints fixed.",
+      "candidate_folder_name": "reaction_diffusion_defects"
+    },
+    {
+      "domain": "differentiable morphogenesis / neural cellular automata",
+      "reframing": "Replace hand-crafted update rules with a learned regenerative rule. The model is trained to grow or repair Hadamard structure from damaged exemplars, so the automaton becomes a learned repair prior instead of a manually designed search heuristic.",
+      "key_insight": "Neural cellular automata are strongest when the target is regeneration under local information. That matches the current gap in the Hadamard-668 line: the issue is not that local updates exist, but that hand-written rules have not produced a useful basin of attraction.",
+      "suggested_technique": "Growing neural cellular automata trained with damage-recovery objectives and transfer from smaller exact instances.",
+      "mapping_back": "Train on smaller exact Hadamards, inject controlled corruptions, and supervise the automaton to recover the exact matrix or a lower-defect state. Then transfer the learned rule to the 64-modular 668 seed so each cell outputs local edit logits over signs, block types, or support tokens.",
+      "candidate_folder_name": "neural_ca_regeneration"
+    },
+    {
+      "domain": "symbolic dynamics / subshifts of finite type",
+      "reframing": "Treat admissible local motifs of the 167-length blocks as a shift space. The problem becomes finding a path through a sofic or finite-type presentation whose language still supports a full order-668 witness.",
+      "key_insight": "Subshift and de Bruijn-graph methods collapse huge sequence spaces by forbidding local words and studying the surviving graph structure. That exposes entropy bottlenecks and dead components much earlier than full exact search.",
+      "suggested_technique": "Build a de Bruijn or Rauzy graph for allowed local windows and prune by strongly connected components, entropy, and extension tests.",
+      "mapping_back": "Encode run-length or local sign windows as symbols. Forbid windows that already violate partial autocorrelation, balance, or symmetry conditions, then search only inside graph components whose paths can still extend to four compatible length-167 blocks for a 4 x 167 construction.",
+      "candidate_folder_name": "sofic_shift_pruning"
+    },
+    {
+      "domain": "algorithmic self-assembly / tile assembly",
+      "reframing": "Turn the construction into a growth process. Small certified motifs attach only when boundary summaries agree, so a full witness emerges by local compatibility rather than by global backtracking alone.",
+      "key_insight": "Tile assembly shows how local glue rules can enforce nonlocal computation. That is attractive here because the 668 search has natural boundary data such as partial sums, parity, and autocorrelation debt that can be carried on interfaces.",
+      "suggested_technique": "Abstract tile assembly or Wang-tile systems with cooperative binding and boundary-state glues.",
+      "mapping_back": "Define tiles for short row fragments or block motifs whose north, south, east, and west glues encode partial correlation sums, parity, and deferred debt. A completed 2D assembly represents either a candidate 4 x 167 witness or a structured 668 seed that can be passed to the exact verifier.",
+      "candidate_folder_name": "tile_assembly_blocks"
+    },
+    {
+      "domain": "active automata learning / grammar inference",
+      "reframing": "Do not hand-design the acceptor for promising prefixes; learn it from solved instances and counterexamples. The search is guided by an inferred language model that captures which local patterns usually survive to completion.",
+      "key_insight": "Angluin-style learning turns automata design into an iterative teacher-student loop with explicit counterexamples. That is useful when the right prefix filter is plausible but hard to write down cleanly by hand.",
+      "suggested_technique": "Angluin L* or RPNI-style inference of finite automata from membership, equivalence, and counterexample data.",
+      "mapping_back": "Use smaller exact Hadamards, modular near-misses, and SAT- or verifier-generated dead prefixes as the teaching set. Infer an automaton over run-length or support-pattern tokens, then place that automaton in front of the expensive order-668 verifier as a learned pruning layer.",
+      "candidate_folder_name": "learned_prefix_automaton"
+    }
+  ],
+  "timestamp": "2026-03-18T10:10:52.898115+00:00",
+  "input_fingerprint": "128b92d6219d0e1a12035ad74807a58ef3ef54eac5ff19c66a238f44a8739aa9",
   "input_context": {
     "command": "reframe",
     "topic": "solve hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it",
@@ -10,7 +91,7 @@
       {
         "path": "results/research_context.md",
         "exists": true,
-        "sha256": "16347234c777d1d3a9e10f31023d1b533f10f1fe34cf0db7dfa8dba8f286f3d6"
+        "sha256": "7822091fb2671290edab2b6852c1bcec63f5c047634ca185b3bbf1ed3bb5a746"
       },
       {
         "path": "results/literature/prior_art_watchlist.md",
@@ -25,7 +106,7 @@
       {
         "path": "results/literature/semantic_scholar_manifest.json",
         "exists": true,
-        "sha256": "abee3ad6bcc3efd53c3c8ed3702984128b544d2e1f0c933f600c4db26ee8d1a6"
+        "sha256": "39329c257a284945bd408dea75a5f27675b032193e33c7ed63e4940f051a5bab"
       },
       {
         "path": "results/swarm/director_brief.md",
@@ -49,8 +130,8 @@
       },
       {
         "path": "results/concept_evolve/probe_result.json",
-        "exists": false,
-        "sha256": ""
+        "exists": true,
+        "sha256": "de62baf93004c9dee61927b58edc284c025dd626c244a147209ef87621cb0295"
       },
       {
         "path": "results/concept_evolve/concept_delta.md",
@@ -59,8 +140,8 @@
       },
       {
         "path": "results/verification/verification_summary.md",
-        "exists": false,
-        "sha256": ""
+        "exists": true,
+        "sha256": "a760493a405815812485a8786d58d5b25cb3ebf396d418102f302ecba1404937"
       }
     ]
   }

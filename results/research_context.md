@@ -1,15 +1,15 @@
 # Research Context
 
-- Stage: post_orchestrator
+- Stage: researcher_attempt_2_completed
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
-- Note: research rubric created
-- Rubric progress: 0/25 completed
-- Known papers tracked: 28
-- `sources.bib` entries: 0
+- Note: completed=25, failed=0, pending=0
+- Rubric progress: 25/25 completed
+- Known papers tracked: 123
+- `sources.bib` entries: 23
 - Swarm hypotheses: 3
-- Verification summary present: no
+- Verification summary present: yes
 
 ## Closest Prior Art
 - Cellular Automata Applications in Shortest Path Problem (2017)
@@ -18,8 +18,8 @@
 - Engineering Societies in the Agents World (2000)
 
 ## Recent Semantic Scholar Activity
-- search :: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it open problem (results=0, cache_hits=0, network_calls=0)
-- search :: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it (results=0, cache_hits=1, network_calls=0)
-- search :: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it future work (results=0, cache_hits=1, network_calls=0)
-- search :: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it limitation (results=0, cache_hits=1, network_calls=0)
-- search :: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it open problem (results=0, cache_hits=0, network_calls=1)
+- bibtex :: Cellular Automata Applications in Shortest Path Problem (results=1, cache_hits=0, network_calls=1)
+- bibtex :: Learning Automata-Based Solutions to the Single Elevator Problem (results=1, cache_hits=0, network_calls=1)
+- bibtex :: Engineering Societies in the Agents World (results=1, cache_hits=0, network_calls=1)
+- citations :: Convolution numbers: the cyclic case (results=0, cache_hits=0, network_calls=1)
+- recommend :: Convolution numbers: the cyclic case + Combinatorial Designs and Cellular Automata: A Survey (results=10, cache_hits=0, network_calls=1)

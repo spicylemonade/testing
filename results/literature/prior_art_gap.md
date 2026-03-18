@@ -89,3 +89,37 @@ The six watchlist papers above remain useful as lexical-noise guards, but they a
 - Differentiation hypothesis: The CA branch must beat or at least alter reachability relative to same-neighborhood local search; otherwise it is only another heuristic wrapper.
 - Evidence artifact(s): `results/analysis/baseline_benchmark_sheet.md`; `results/analysis/kill_rules.md`; `results/swarm/falsifier.md`
 - Pivot decision (if any): Keep as the comparator family behind the stop/go decision. If the CA does not outperform its direct local-search analogue, stop.
+
+## Final Execution Audit
+
+The literature and experiment packets now support final pass or fail calls on the actual executed branches.
+
+### Executed `H1` support-space CA
+- Differentiation call: pass against the lexical watchlist and against family-parameter restatement risk.
+- Contribution call: fail as a surviving method claim.
+- Evidence artifact(s): `results/analysis/h1_design_brief.md`; `results/analysis/experiment_readout.md`; `results/analysis/phase2_baseline_review.md`
+- Final decision: retire. The branch was specific enough to test fairly, but matched direct search beat it on both decisive sweeps.
+
+### Executed `H2` structured defect-transport CA
+- Differentiation call: pass against the lexical watchlist and against the claim that it merely republishes Eliahou's seed.
+- Contribution call: fail as a surviving method claim.
+- Evidence artifact(s): `results/analysis/h2_design_brief.md`; `results/analysis/experiment_readout.md`; `results/analysis/phase2_baseline_review.md`
+- Final decision: retire. The toy ladder is weakly positive at best, while the decisive order-`668` attempt ties the matched non-CA baseline exactly.
+
+### Literal `cellar` / pushdown reserve branch
+- Differentiation call: pass relative to the executed CA branches.
+- Contribution call: unresolved and unvalidated.
+- Evidence artifact(s): `results/concept_evolve/probe_result.json`; `results/concept_evolve/walk_session.json`; `results/analysis/phase3_hypothesis_selection.md`
+- Final decision: keep only as a reserve pivot. Promote only if it proves better-than-static prefix filtering on the same tokenization and does not collapse into SAT+CAS packaging.
+
+### `convolution_slice_ca` reserve branch
+- Differentiation call: pass if and only if the liability-field state is treated as the primary object, not as a relabeling of raw support search.
+- Contribution call: unresolved and unvalidated.
+- Evidence artifact(s): `results/concept_evolve/probe_result.json`; `results/analysis/phase3_hypothesis_selection.md`
+- Final decision: keep as reserve. It is the cleanest H1-side reopen candidate, but only with a same-representation non-CA comparator.
+
+### `sat_user_propagator_ca` reserve branch
+- Differentiation call: borderline.
+- Contribution call: unresolved and unvalidated.
+- Evidence artifact(s): `results/concept_evolve/probe_result.json`; `results/analysis/phase3_hypothesis_selection.md`
+- Final decision: keep as reserve only if exact conflicts are recycled into online proposal updates; otherwise retire it as SAT+CAS with CA branding.

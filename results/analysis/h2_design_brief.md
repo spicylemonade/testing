@@ -16,6 +16,7 @@ Prepared for rubric `item_012`.
 - Defect encoding:
   - the load-bearing observable is the combined aperiodic autocorrelation vector of `A, B, C, D`,
   - defects are recorded as nonzero shifts with their signed values,
+  - operationally, this is a shift-indexed defect graph collapsed from the full row-pair Gram defect pattern to the exact verifier state actually optimized in the branch,
   - quality is summarized by `two_adic_modulus`, `l1_defect`, `defect_count`, and `max_defect_magnitude`.
 - Canonical orbit representative: signed reversal on the `(q, s)` pair.
 
