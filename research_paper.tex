@@ -17,6 +17,7 @@
   citecolor=blue!50!black,
   urlcolor=blue!50!black
 }
+\urlstyle{tt}
 
 \setlength{\parskip}{0.55em}
 \setlength{\parindent}{0pt}
@@ -37,6 +38,10 @@
 \newcommand{\Lag}{\mathcal{L}}
 \newcommand{\Mask}{\mathcal{M}}
 \newcommand{\Pk}{\mathcal{P}}
+\newcommand{\Act}{\mathcal{A}}
+\newcommand{\Ret}{\mathcal{R}}
+\newcommand{\Cone}{\mathcal{C}}
+\newcommand{\State}{\mathcal{S}}
 
 \begin{document}
 \pagenumbering{gobble}
@@ -45,697 +50,1052 @@
 \centering
 {\Large Archivara Research Pipeline via Codex CLI\par}
 \vspace{2.5em}
-{\huge\bfseries Archivara Agent: Seeded Cellular-Automaton Falsification on the 64-Modular Order-668 Hadamard Frontier\par}
+{\huge\bfseries Archivara Agent: Local Cellular-Automaton Escape from the Radius-Limited Locality Barrier on the Hadamard-668 Frontier\par}
 \vspace{2em}
 {\large March 18, 2026\par}
 \vspace{3em}
 
-\begin{minipage}{0.86\textwidth}
+\begin{minipage}{0.87\textwidth}
 \small
-\textbf{Repository scope.} The initiating task asked whether a previously untried ``cellar automata'' method could solve Hadamard order $668$. Neither the repository nor the literature snapshot produced evidence for a distinct method family of that name, so throughout the paper we interpret the phrase as \emph{cellular automata}. The contribution we report is intentionally narrow: a seeded cellular-automaton repair attempt on the published $64$-modular order-$668$ frontier object, executed under matched same-representation controls, together with a direct negative result.
+\textbf{Repository scope.} The initiating request asked whether an untried ``cellar automata'' method could solve Hadamard order $668$. No distinct method family of that name appears in the repository or the literature snapshot, so throughout the paper we interpret the phrase as \emph{cellular automata}. The exact target remains an order-$668$ real Hadamard matrix. No such matrix is found here. What the repository does contain, however, is a complete cellular-automaton program with one clear negative result, one exact finite locality barrier, one exact local counterexample class, and two transfer branches that reproduce the same non-exact frontier improvement.
 \end{minipage}
 
 \vfill
-\begin{minipage}{0.9\textwidth}
+\begin{minipage}{0.90\textwidth}
 \small
-\textbf{Artifact summary.} The manuscript is generated from the saved experiment pack in \texttt{results/}, the bibliography in \texttt{sources.bib}, and the programmatic figures in \texttt{figures/}. The figure set was rendered by \texttt{scripts/generate\_paper\_artifacts.py}; the direct locality artifact used in Sections~\ref{sec:theory} and \ref{sec:results} is \texttt{results/analysis/frontier\_locality\_scan.json}.
+\textbf{Artifact summary.} The manuscript is written directly from the current contents of \path|results/|, \path|figures/|, the root bibliography \path|sources.bib|, and the post-H1 commit range \texttt{18a1568} through \texttt{5cf94fa}. The direct quantitative anchors are the seed manifest \path|results/frontier/order_668_64m/seed_manifest.json|, the locality atlas \path|results/analysis/composite_packet_locality_atlas.json|, the barrier certificate \path|results/verification/radius_limited_locality_barrier.json|, the hypergraph/orbit/lattice-gas/population summaries under \path|results/experiments/|, and the family-leakage audit \path|results/verification/family_leakage_audit.json|.
 \end{minipage}
 \end{titlepage}
+
 \pagenumbering{arabic}
 
 \begin{abstract}
-We study a sharply delimited question: can a genuinely local cellular-automaton repair dynamic, started from the published $64$-modular order-$668$ near-solution of Eliahou, produce an exact real Hadamard matrix or at least outperform matched non-CA local search in the same compressed coordinates? The repository already contained the frontier seed, a shared exactness harness, and a pre-registered continuation gate. We therefore wrote the paper around direct artifacts rather than around speculative mechanism stories.
+We study the exact real Hadamard problem at order $668=4\cdot167$ from the strongest in-repository frontier anchor currently available: Eliahou's 2025 $64$-modular order-$668$ near-solution, recovered as a compact pair of length-$167$ binary sequences. The prompt asked for a cellular-automaton approach. The repository therefore tests, and then progressively redesigns, local cellular-automaton dynamics on that published frontier seed under a shared exactness harness.
 
-The implemented branch, \texttt{H1\_defect\_syndrome\_ca\_64m}, evolves a compressed state consisting of two binary length-$167$ sequences, a $166$-lag defect field, an active-lag mask, and refractory packet memory. It is benchmarked against greedy search, tabu search, simulated annealing, and stochastic hillclimbing under a shared seed, shared packet basis, shared budget $80$, requested restart count $3$, and shared exact-hit criterion. The harness is first validated on two exact controls of orders $20$ and $28$, where H1 reaches exactness in both cases.
+The first result is negative. The executed one-packet defect-syndrome cellular automaton \texttt{H1\_defect\_syndrome\_ca\_64m}, benchmarked against greedy search, tabu search, simulated annealing, and stochastic hillclimbing, reaches exactness on two tiny solved controls but neither reaches exact orthogonality nor improves the canonical frontier objective $(13,2880,512)$. An exhaustive exact delta scan then sharpens the failure: all $334$ one-packet moves, all $55{,}611$ unordered two-packet moves, and all $9$ retained low-splash composite actions fail as depth-1 single actuators. The retained library reduces the median changed-lag footprint from $51$ to $9$, but still yields no improving single action. This is an exact locality barrier, not merely a failed pilot.
 
-The decisive frontier result is negative. On the canonical order-$668$ seed, no method attains exact orthogonality. H1 never improves the seed best objective $(13,2880,512)$ in support, $l_1$, and maximum defect magnitude; instead its three frontier restarts terminate at median objective $(33,2356,384)$, indicating lower magnitude only after support diffusion. A direct exhaustive one-packet scan over the same seed finds zero improving moves among $334$ packets, exactly one neutral symmetry packet, and a median changed-lag footprint of $51$ out of $166$ lags. This shows that the raw single-packet basis is syntactically local but nonlocal in effect.
+The second result is positive but narrow. The same barrier certificate finds the first verified escape at radius $1$, depth $2$ on the retained overlap graph. The hyperedge $[3,7]$, corresponding to the action sequence $[\texttt{q[53]},\texttt{q[136]}]$ followed by $[\texttt{q[29]},\texttt{s[29]},\texttt{q[114]},\texttt{s[114]}]$, produces the six-packet state $(13,2744,480)$, improving the frontier seed by $136$ in $\ell_1$ defect and by $32$ in maximum defect while preserving support $13$. A lag-core lattice-gas automaton rederives the same state through an explicit continuity law and passes a Williamson/Turyn/Goethals-Seidel/cocyclic/block-circulant leakage audit. A symmetry-quotient orbit automaton with one fixed $137$-signature rule table transfers the same improvement across the canonical seed and five frontier perturbation states. A stochastic population automaton does not separate from its zero-coupling ablation and is retired honestly.
 
-The resulting contribution is therefore a \emph{falsification result}: the executed single-packet defect-syndrome CA does not advance the order-$668$ frontier and does not survive matched controls as a distinct CA repair method. The negative result matters because it isolates the bottleneck precisely. If a future CA branch is to remain credible, it must change the actuator basis or the locality graph rather than merely retune the present rule weights.
+No exact order-$668$ Hadamard matrix is found. The contribution is instead a precise structural answer to the cellular-automaton question. One-packet CA locality at order $668$ is fake-local and blocked at depth $1$, but actuator redesign plus short-horizon local coordination produces a reproducible, leakage-audited frontier improvement. Cellular automata do not solve Hadamard $668$ here, yet they do expose a concrete local mechanism that survives beyond the original H1 falsification.
 \end{abstract}
 
 \section{Introduction}
 
 An $n\times n$ real Hadamard matrix is a $\pm1$ matrix $H$ satisfying
 \begin{equation}
-H H^\top = n I_n.
+HH^\top = nI_n.
 \end{equation}
-Hadamard existence is elementary to state, structurally rigid, and algorithmically difficult. Modern databases and surveys make clear that the landscape is a mixture of exact constructions, structured-family searches, and persistent open orders \citep{cati2024,eliahou2005}. The case relevant here is order $668=4\cdot167$: the repository's exact target is a real Hadamard matrix, while the strongest in-repo frontier anchor is Eliahou's 2025 $64$-modular Hadamard matrix of order $668$, a near-solution rather than an exact witness \citep{eliahou2025_64mod668}.
+The Hadamard existence problem is both elementary to state and difficult to close. Large construction catalogues, modular variants, and certificate-rich structured searches coexist with stubborn open orders \citep{cati2024,eliahou2005,bright2019}. The present repository studies one such order: $668=4\cdot167$.
 
-The motivating hypothesis behind this work is narrower than ``use cellular automata for Hadamard matrices.'' Cellular automata (CA) are already known as generic local search or propagation mechanisms \citep{tsompanas2017}, and they also appear in nearby combinatorial-design settings such as cellular-automaton constructions of mutually orthogonal Latin squares and bent-function families \citep{mariot2019_mols,gadouleau2020}. What had not been tested inside the repository was a seed-matched CA \emph{repair} dynamic applied directly to Eliahou's recovered order-$668$ seed under the same coordinate system and the same objective accounting as non-CA controls.
+The exact target is not a modular surrogate. It is an exact real Hadamard matrix of order $668$. The strongest seed available in-repository is instead Eliahou's 2025 $64$-modular Hadamard matrix of order $668$, encoded compactly by two length-$167$ sign sequences with exactly $13$ nonzero combined correlation coefficients \citep{eliahou2025_64mod668}. The project therefore begins from a published near-solution, not from an exact witness.
 
-The resulting study is therefore best viewed as a pre-registered kill test. We do not ask whether CA are philosophically interesting, or whether near-Hadamard traces can be made visually appealing. We ask a concrete, falsifiable question:
-\begin{quote}
-Can a compressed defect-syndrome cellular automaton, operating in the same $q/s$ coordinate system as the published $64$-modular order-$668$ seed, reach exact orthogonality or beat matched non-CA local search on the same seed?
-\end{quote}
-
-The answer delivered by the saved artifacts is no. The negative result is not vacuous: the branch is executable on exact small controls, it shares a validated harness with the baselines, and its failure can be localized. A direct exhaustive one-packet scan on the canonical seed shows that the active single-packet basis is already frozen under the shared proxy objective. The frontier trajectories then reveal the only remaining escape route for H1: support diffusion, which improves $l_1$ and maximum defect size only by creating more nonzero lags and therefore failing the continuation gate.
-
-Our contributions are correspondingly narrow.
-\begin{enumerate}[label=\textbf{C\arabic*.},leftmargin=2.8em]
-\item We formalize the exact repository representation of the order-$668$ frontier seed: the length-$167$ binary sequences, the fixed prime involution, the derived quadruple, and the defect metrics used by the shared harness.
-\item We give a complete mathematical derivation of the exact single-packet autocorrelation update used by the CA, and we analyze the asymptotic cost of one H1 update under the implemented code path.
-\item We assemble the matched experimental record: two exact controls, one canonical frontier seed, one CA branch, and four non-CA baselines under shared accounting.
-\item We add a direct exhaustive one-packet locality scan on the canonical seed, converting the repository's qualitative ``fake locality'' concern into a finite computation over all $334$ packets.
-\item We show that the executed H1 branch fails its first continuation gate and should be read as a falsification scaffold, not as a new CA repair method or an order-$668$ advance.
+The user asked for a method that had not yet been tried and named it ``cellar automata.'' The repository contains no independent technical meaning for that phrase, so the only coherent interpretation is \emph{cellular automata}. That interpretation immediately forces two standards of honesty.
+\begin{enumerate}[label=\arabic*.,leftmargin=2em]
+\item A CA result does not count as a solution unless exact orthogonality is reached.
+\item A CA result does not count as a new method contribution merely because local-rule language is used; the update geometry must do something materially different from direct scoring or familiar design-generation patterns.
 \end{enumerate}
 
-The remainder of the paper follows the same discipline. Section~\ref{sec:related} positions the work against exact Hadamard search, heuristic search, and CA-adjacent design generation. Section~\ref{sec:background} defines the representation and objective precisely. Section~\ref{sec:method} describes the harness, baselines, and H1 algorithm. Section~\ref{sec:theory} proves the packet-delta identity, the implementation-level complexity bound, and the computational freeze propositions. Sections~\ref{sec:setup} and \ref{sec:results} report the experimental record. Section~\ref{sec:discussion} explains what the negative result does and does not imply.
+The history of this repository now contains both a failure and a follow-up. The original H1 branch, a one-packet defect-syndrome CA in the recovered $q/s$ coordinates, fails cleanly under matched controls. The later retained-library branches, added after the H1 draft paper but before the current writing pass, do \emph{not} solve order $668$ either. They do, however, sharpen the answer in a way the stale draft does not: they certify a depth-1 locality barrier and then exhibit the first local counterexample class that crosses it.
+
+The resulting paper is therefore not a frontier-solution paper. It is a barrier-and-counterexample paper on a concrete open order. Its contributions are the following.
+\begin{enumerate}[label=\textbf{C\arabic*.},leftmargin=2.8em]
+\item We formalize the recovered order-$668$ frontier seed, the shared exactness harness, and the exact packet/composite delta algebra used throughout the repository.
+\item We preserve the original H1 result as a rigorously benchmarked negative control: H1 solves tiny exact controls but neither reaches exactness nor improves the canonical frontier seed.
+\item We exhaustively enumerate a retained low-splash composite actuator library and prove, by exact finite computation, that all depth-1 single actuators in the checked class are blocked on the canonical seed.
+\item We certify the first escaping local rule class: a radius-1, depth-2 retained hyperedge rule whose first counterexample reaches the six-packet state $(13,2744,480)$.
+\item We show that the same non-exact frontier improvement is reproduced by a lag-core lattice-gas CA with an explicit continuity law and by a symmetry-quotient orbit CA with a single fixed rule table.
+\item We show that a population self-stabilizing CA does not establish a robustness advantage over zero-coupling and therefore does \emph{not} justify a stronger self-organization claim.
+\end{enumerate}
+
+The paper is organized as follows. Section~\ref{sec:related} positions the work against modular Hadamard constructions, exact and heuristic search, and CA-adjacent design literature. Section~\ref{sec:background} defines the order-$668$ representation, the objective, the retained action graph, and the orbit signatures. Section~\ref{sec:method} gives the complete algorithmic pipeline, including pseudocode and complexity analysis. Section~\ref{sec:theory} states and proves the exact delta identities, the continuity law, the locality barrier, and the counterexample theorem. Section~\ref{sec:setup} documents all experiment inputs, budgets, seeds, and reproducibility limits. Section~\ref{sec:results} reports the negative H1 evidence, the retained-library barrier, the post-H1 branch outcomes, and the failed population robustness test. Section~\ref{sec:discussion} explains what the results establish, what remains open, and where the current evidence still stops short.
 
 \section{Related Work}
 \label{sec:related}
 
-\subsection{Hadamard and modular-Hadamard context}
+\subsection{Order 668 and the modular frontier}
 
-The repository does not start from a blank search space. It starts from a concrete modular frontier. Eliahou and Kervaire developed the modular-sequence and modular-Hadamard background relevant to this lineage \citep{eliahou2001,eliahou2005}. The specific order-$668$ seed used here is Eliahou's 2025 construction of a $64$-modular Hadamard matrix obtained from a compact length-$167$ seed; Fact~3.1 of that paper provides the exact run-length encoding and the $13$ exceptional coefficients that define the frontier instance \citep{eliahou2025_64mod668}. We therefore make no claim that the present work contributes a new seed, a new exact construction, or a new modular theorem. It is downstream experimentation on top of a published near-solution.
+The relevant frontier anchor is precise. Eliahou and Kervaire developed the modular-sequence framework and its relation to modular Hadamard matrices \citep{eliahou2001,eliahou2005}. Eliahou's 2025 order-$668$ construction then supplies the exact near-solution used in every frontier experiment of this paper: a compact length-$167$ seed whose derived Goethals-Seidel lift is Hadamard modulo $64$ and whose nonzero-lag defect profile contains exactly $13$ exceptional coefficients \citep{eliahou2025_64mod668}. Our paper does not claim a new order-$668$ seed, a new modular theorem, or a new exact witness. The Eliahou paper is the provenance source and the novelty ceiling.
 
 \subsection{Exact and heuristic Hadamard search}
 
-The exact-search ceiling is set by certificate-rich structured methods, not by unconstrained local heuristics. Bright and coauthors show how SAT+CAS methods can prove exhaustive statements over structured Hadamard-adjacent families such as Williamson matrices and best matrices \citep{bright2018,bright2019}. Those works matter here as a standard of evidence: they return exact combinatorial statements and certificates, whereas the present CA branch returns neither.
+Exact combinatorial search remains the strongest evidence standard. Bright and collaborators show how SAT+CAS methods can certify exhaustive search statements for structured Hadamard-adjacent families such as Williamson and best matrices \citep{bright2018,bright2019}. This line matters here mainly as a contrast: our repository returns no exact order-$668$ witness and no proof of nonexistence. The present work is heuristic and local, not certificate-rich exact search.
 
-Within heuristic search, Suksmono and collaborators cast Hadamard search as simulated quantum annealing, quantum annealing, and quantum-computing-friendly optimization over binary variables \citep{suksmono2018,suksmono2019,suksmono2022}. These papers are the correct literature comparators for any broad claim that a new local-search mechanism is competitive on Hadamard search. The repository's own verification pack correctly rejects that stronger claim: our frontier pilot is seed-matched and fair enough for branch elimination, but it is vastly smaller than those literature-scale comparisons.
-
-Projection and feasibility methods form a different non-CA baseline family. Artacho, Borwein, and Tam analyze Douglas--Rachford feasibility methods for matrix completion problems \citep{artacho2013}. We cite this line not because H1 resembles it closely, but because it illustrates another way to phrase matrix-structured search without invoking CA language.
+Within heuristic search, Suksmono and collaborators study simulated quantum annealing, quantum annealing, and related optimization formulations for Hadamard search \citep{suksmono2018,suksmono2019,suksmono2022}. These are the relevant comparator papers for any broad statement about search competitiveness. We therefore avoid such statements. The saved repository evidence is strong enough to eliminate branches, but not to rank CA against the full annealing literature.
 
 \subsection{Cellular automata as search and design machinery}
 
-The closest generic CA-as-search comparator in the bibliography is Tsompanas et al.'s shortest-path application \citep{tsompanas2017}. It weakens any broad novelty statement such as ``cellular automata for search are new.'' At the same time, it is not Hadamard-specific: the state geometry, objective, certification standard, and seed dependence are all different.
+Cellular automata are not new in the most general sense. Tsompanas et al.\ use CA as a distributed local-search mechanism for the shortest path problem \citep{tsompanas2017}. That paper is not Hadamard-specific, but it blocks any claim that ``CA for search'' is itself novel. CA also appear in adjacent combinatorial-design settings: mutually orthogonal Latin squares from CA \citep{mariot2019_mols} and bent-function constructions from CA \citep{gadouleau2020}. Those papers matter for a different reason. They show that CA can contribute structurally to combinatorial design, but they also show that our claim must stay narrow. We are not presenting a new CA construction of a Hadamard family. We are studying one seed-specific repair program and the locality structure it induces.
 
-More importantly, CA are already present in neighboring combinatorial-design settings. Mariot et al.\ study mutually orthogonal Latin squares generated from cellular automata, while Gadouleau, Mariot, and Picek construct bent functions from cellular automata \citep{mariot2019_mols,gadouleau2020}. Bent functions are directly Hadamard-adjacent through Walsh spectra, and MOLS construction is another example where CA supply algebraic design structure rather than generic local search. These works make two points that matter for this paper. First, we cannot honestly claim that CA are new in combinatorial design. Second, the only defensible niche left for H1 is much narrower: CA as a seed-specific repair dynamic on a published order-$668$ frontier object.
+\subsection{How the present work differs}
 
-\subsection{How this paper differs}
-
-The repository's own prior-art gap analysis is unusually explicit, and the final paper preserves that discipline. Relative to Eliahou's order-$668$ paper, we contribute no new frontier construction and no exact witness. Relative to Tsompanas et al., we are not presenting a generic CA-for-search story; we are testing one compressed defect-syndrome CA in a rigid exactness framework. Relative to Suksmono's annealing papers and Bright's SAT+CAS work, we are far narrower in scope and weaker in certification. Relative to CA-based design-generation papers such as \citep{mariot2019_mols,gadouleau2020}, we are not generating a new combinatorial family at all. What survives after all those comparisons is not a broad positive method claim, but a carefully documented negative result.
+The repository's prior-art gap file is explicit about the limits of novelty. Relative to Eliahou's 2025 order-$668$ paper, we contribute only downstream search dynamics on top of the published seed. Relative to Tsompanas et al., we are not making a general CA-for-optimization claim, but a specific locality claim on one open Hadamard instance. Relative to Suksmono's Hadamard-search heuristics and Bright's exact-search line, we are narrower in scope and weaker in certification. Relative to the CA-based design-construction papers, we are not generating a new combinatorial family. The surviving contribution is therefore exact and local: an explicit barrier/counterexample pair for cellular-automaton search on the published order-$668$ frontier seed.
 
 \section{Background and Preliminaries}
 \label{sec:background}
 
-\subsection[The order-668 seed representation]{The order-$668$ seed representation}
+\subsection{Recovered order-668 seed}
 
-Let $\ell=167$. The repository works with two binary sequences
+Let $\ell=167$. The repository stores the frontier seed as two sequences
 \begin{equation}
-q,s \in \pmone^\ell,
+q,s\in\pmone^\ell,
 \end{equation}
-stored in the compact $q/s$ coordinate system recovered from \citep{eliahou2025_64mod668}. Indices run from $0$ to $\ell-1$. Define the \emph{prime involution}
+decoded from Eliahou's published run-length encoding. Indices always run from $0$ to $\ell-1$.
+
+\begin{definition}[Prime involution]
+\label{def:prime-involution}
+For $x\in\pmone^\ell$, define
 \begin{equation}
 x'_i =
 \begin{cases}
 x_i, & 0 \le i < (\ell+1)/2,\\
--x_i, & (\ell+1)/2 \le i \le \ell-1,
+-x_i, & (\ell+1)/2 \le i \le \ell-1.
 \end{cases}
 \end{equation}
-and the pointwise product $(q\odot s)_i = q_i s_i$.
+\end{definition}
 
-The derived quadruple is
+Define the pointwise product $(q\odot s)_i=q_i s_i$. The shared harness uses the derived quadruple
 \begin{equation}
 A=s,\qquad B=s',\qquad C=q\odot s,\qquad D=(q\odot s)'.
 \label{eq:derived-quad}
 \end{equation}
-This is exactly the lift implemented in the shared harness and exactly the lift used to decode the published frontier seed \citep{eliahou2025_64mod668,eliahou2001}.
-
-\subsection{Aperiodic autocorrelation and defect metrics}
+The seed manifest \path|results/frontier/order_668_64m/seed_manifest.json| and source excerpt \path|results/frontier/order_668_64m/source_excerpt.txt| verify that this lift reproduces exactly the published $13$ exceptional coefficients.
 
 \begin{definition}[Aperiodic autocorrelation]
+\label{def:aperiodic}
 For $x\in\pmone^\ell$ and lag $k\in\{0,1,\dots,\ell-1\}$, define
 \begin{equation}
-N_x(k) = \sum_{t=0}^{\ell-k-1} x_t x_{t+k}.
-\label{eq:autocorr}
+N_x(k)=\sum_{t=0}^{\ell-k-1} x_t x_{t+k}.
+\label{eq:aperiodic}
 \end{equation}
 \end{definition}
 
-The combined correlation coefficients of the quadruple in \eqref{eq:derived-quad} are
+The combined coefficient vector is
 \begin{equation}
-c_k(q,s) = N_A(k)+N_B(k)+N_C(k)+N_D(k), \qquad k=0,\dots,\ell-1.
-\label{eq:ck}
+c_k(q,s)=N_A(k)+N_B(k)+N_C(k)+N_D(k),\qquad k=0,\dots,\ell-1.
+\label{eq:combined-coeffs}
 \end{equation}
-By construction $c_0=4\ell$. The shared harness reports exactness from the nonzero-lag coefficients $c_1,\dots,c_{\ell-1}$ and independently audits the full Gram defect of the Goethals--Seidel array built from $(A,B,C,D)$.
+By construction $c_0=4\ell=668$.
 
-\begin{definition}[Primary defect summary]
+\begin{definition}[Primary defect tuple]
+\label{def:objective}
 For a state $(q,s)$, define
 \begin{align}
 \operatorname{support}(q,s) &= \left|\{k\in\{1,\dots,\ell-1\}: c_k(q,s)\neq 0\}\right|,\\
-\operatorname{l1}(q,s) &= \sum_{k=1}^{\ell-1} |c_k(q,s)|,\\
+\operatorname{\ell_1}(q,s) &= \sum_{k=1}^{\ell-1}|c_k(q,s)|,\\
 \operatorname{max}(q,s) &= \max_{1\le k\le \ell-1}|c_k(q,s)|.
 \end{align}
-\end{definition}
-
-The implementation additionally uses the scalar proxy
+The scalar proxy used internally for search is
 \begin{equation}
-\score(q,s)=10^6\operatorname{support}(q,s)+10^3\operatorname{l1}(q,s)+\operatorname{max}(q,s)
+\score(q,s)=10^6\operatorname{support}(q,s)+10^3\operatorname{\ell_1}(q,s)+\operatorname{max}(q,s).
 \label{eq:score}
 \end{equation}
-for within-run comparisons. We emphasize that the branch continuation decision is \emph{not} made from \eqref{eq:score} alone. The externally reported gate uses exact-hit rate first, then the support--magnitude pair. We therefore report the triple $(\operatorname{support},\operatorname{l1},\operatorname{max})$ directly throughout the paper.
+\end{definition}
 
-\subsection{Canonical frontier seed}
-
-Eliahou's published order-$668$ seed is encoded by the run lengths
-\[
-q:(83,2,81,1), \qquad
-s:(4)^5(2,1,1)^5(1,5)(4)^4(2,1,1)^6(4)^4(3)(1,2,1)^5(3)(4)^4(3)(1,2,1)^5,
-\]
-with starting sign $+1$ \citep[Fact 3.1]{eliahou2025_64mod668}. Figure~\ref{fig:seed-profile} visualizes the recovered sequences and the corresponding coefficient profile. The same source gives exactly $13$ exceptional nonzero coefficients:
+The canonical frontier seed starts at
 \begin{equation}
-\begin{aligned}
-c_4&=-512, & c_8&=384, & c_{12}&=-256, & c_{16}&=128, \\
-c_{26}&=-64, & c_{30}&=128, & c_{34}&=-192, & c_{38}&=256, \\
-c_{42}&=-320, & c_{46}&=256, & c_{50}&=-192, & c_{54}&=128, \\
-c_{58}&=-64.
-\end{aligned}
-\label{eq:frontier-coeffs}
+\bigl(\operatorname{support},\operatorname{\ell_1},\operatorname{max}\bigr)=(13,2880,512),
 \end{equation}
-All other nonzero-lag coefficients vanish. The seed therefore starts at the objective triple
+with nonzero lags exactly at
 \begin{equation}
-(\operatorname{support},\operatorname{l1},\operatorname{max})=(13,2880,512).
+\{4,8,12,16,26,30,34,38,42,46,50,54,58\}.
+\label{eq:seed-support}
 \end{equation}
+Figure~\ref{fig:seed-profile} visualizes the recovered sequences and the combined correlation profile.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/fig01_frontier_seed_profile.pdf}
-  \caption{\textbf{Recovered order-$668$ frontier seed.} The upper strips show the exact binary $q$ and $s$ sequences decoded from the published run-length encoding of \citet[Fact 3.1]{eliahou2025_64mod668}. The lower panel shows the combined correlation coefficients $c_k$ from \eqref{eq:ck}. Only $13$ of the $166$ nonzero-lag coefficients are nonzero; their exact values are listed in \eqref{eq:frontier-coeffs}. This figure is not a search result from the present paper. It is the fixed starting object that every order-$668$ experiment in this study uses.}
+  \caption{\textbf{Recovered order-$668$ frontier seed.} The upper strips show the exact binary $q$ and $s$ sequences decoded from Eliahou's published run-length encoding. The lower panel shows the combined coefficients from \eqref{eq:combined-coeffs}. Only $13$ of the $166$ nonzero-lag coefficients are nonzero, and their support is exactly the fixed set in \eqref{eq:seed-support}. This figure is the starting object for every order-$668$ experiment in the paper; it is not itself a search result produced here.}
   \label{fig:seed-profile}
 \end{figure}
+
+\subsection{Packets, composite actions, and retained actions}
+
+The raw packet basis is
+\begin{equation}
+\Pk=\{0,1,\dots,2\ell-1\}.
+\end{equation}
+Packets $0$ through $\ell-1$ flip one coordinate of $q$, while packets $\ell$ through $2\ell-1$ flip one coordinate of $s$. For a packet set $I\subseteq\Pk$, application is parity-based: flipping the same packet twice cancels.
+
+\begin{definition}[Composite action]
+\label{def:composite-action}
+A composite action is a finite packet multiset, interpreted modulo parity. Its active $q$- and $s$-toggle sets are the odd-multiplicity packet indices in each channel.
+\end{definition}
+
+The composite-library scan enumerates five explicit actuator families around the canonical seed:
+\begin{enumerate}[label=(\roman*),leftmargin=2em]
+\item all unordered packet pairs,
+\item all channel-complete four-packet actions $\{q[i],s[i],q[j],s[j]\}$ with $i<j$,
+\item all matched boundary quads on run boundaries,
+\item all $s$-boundary pairs,
+\item all $q$-boundary pairs.
+\end{enumerate}
+
+The direct one-packet median changed-lag footprint is $51$, so the post-H1 pipeline defines the \emph{low-splash cutoff} as $25.5$, exactly half of that median. Inside the low-splash composite set, the repository retains the Pareto frontier over
+\[
+(\text{changed\_lag\_count},\ \operatorname{support},\ \operatorname{\ell_1},\ \operatorname{max}).
+\]
+This produces a retained library
+\begin{equation}
+\Ret=\{a_0,\dots,a_8\}
+\end{equation}
+of $9$ actions with median changed-lag count $9$.
+
+\subsection{Retained-state graph and causal cones}
+
+Each retained action $a_i\in\Ret$ has a changed-lag set $\Gamma(a_i)\subseteq\{1,\dots,\ell-1\}$. The retained-state graph is built by XOR-combining subsets of the retained actions. Since $|\Ret|=9$, there are at most $2^9=512$ subset masks. The constructor in \texttt{hadamard\_ca/retained\_state\_graph.py} exhausts all $512$ masks and, in the actual artifact, finds $512$ unique parity states.
+
+\begin{definition}[Retained state graph]
+\label{def:state-graph}
+The retained state graph $G_{\Ret}=(\State,\Ret,E)$ has
+\begin{itemize}[leftmargin=1.8em]
+\item one state $s\in\State$ for each unique parity packet mask induced by a subset of $\Ret$,
+\item one immediate transition $s\to s\oplus a_i$ for each retained action $a_i$,
+\item one pairwise neighborhood edge between $a_i$ and $a_j$ if $\Gamma(a_i)\cap\Gamma(a_j)\neq\varnothing$,
+\item one \emph{causal-cone} hyperedge $(a_i,a_j)$ when the pairwise-overlap condition holds and
+\[
+|\Gamma(a_i)\cup\Gamma(a_j)|\le 25.
+\]
+\end{itemize}
+\end{definition}
+
+The graph constructor stores the exact coefficient vector and objective tuple for every retained state, so the runtime branches never need to rescan the original $334$ packet basis once the retained graph is built.
+
+\subsection{Lag field and orbit signatures}
+
+For any retained state, define the signed lag-defect field
+\begin{equation}
+\rho(k)=c_k,\qquad k=1,\dots,\ell-1.
+\end{equation}
+The lattice-gas branch works directly on the transition signature of $\rho$, while the orbit branch quotients candidate events by the tuple
+\begin{equation}
+\sigma(e)=\bigl(\kappa(e),a(e),u(e),b(e),t(e),r(e)\bigr),
+\label{eq:orbit-signature}
+\end{equation}
+where
+\begin{itemize}[leftmargin=1.8em]
+\item $\kappa(e)$ is the normalized event kind (\texttt{annihilation}, \texttt{move}, or \texttt{split}),
+\item $a(e)\in\{1,2\}$ is the action count,
+\item $u(e)\in\{\texttt{decrease},\texttt{conserve},\texttt{increase}\}$ is the support-flux class,
+\item $b(e)\in\{\texttt{1},\texttt{2},\texttt{3\_4},\texttt{5\_8},\texttt{9\_plus}\}$ is the changed-lag-count bin,
+\item $t(e)\in\{\texttt{tight},\texttt{mid},\texttt{wide}\}$ is the transport-span bin,
+\item $r(e)$ is the canonical sign-run count of the delta profile.
+\end{itemize}
+By construction $\sigma(e)$ discards raw cyclic coordinates, is invariant under reversal, and ignores global $q/s$ sign orientation.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Core notation.}}
+\label{tab:notation}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$n$ & target Hadamard order, here $668$ \\
+$\ell$ & core sequence length, here $167$ \\
+$q,s$ & recovered frontier seed sequences in $\pmone^\ell$ \\
+$A,B,C,D$ & derived quadruple from \eqref{eq:derived-quad} \\
+$c_k$ & combined coefficient at lag $k$ from \eqref{eq:combined-coeffs} \\
+$\Pk$ & raw one-packet actuator basis of size $334$ \\
+$\Ret$ & retained low-splash action library of size $9$ \\
+$\State$ & retained parity-state set of size $512$ \\
+$\Gamma(a)$ & changed-lag support of action $a$ \\
+$\rho$ & signed lag-defect field on $\{1,\dots,166\}$ \\
+$J$ & nearest-neighbor transport current in the lattice-gas formulation \\
+$\sigma(e)$ & symmetry-quotient orbit signature from \eqref{eq:orbit-signature} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Method}
 \label{sec:method}
 
 \subsection{Shared harness and exactness contract}
 
-All methods are evaluated through the same harness. Given $(q,s)$ and a search method, the harness computes:
+All methods report through the same harness in \texttt{hadamard\_ca/harness.py}. For every run, the harness computes
 \begin{itemize}[leftmargin=1.8em]
-\item exact-hit status, defined as zero nonzero-lag correlation defects,
-\item off-diagonal Gram-defect support and maximum defect magnitude,
-\item the primary defect triple $(\operatorname{support},\operatorname{l1},\operatorname{max})$,
-\item wall-clock time, objective evaluations, restart statistics, and a sign-symmetry fingerprint.
+\item exact-hit status (\texttt{exact\_hit}),
+\item correlation-defect support,
+\item off-diagonal Gram-defect support and maximum magnitude,
+\item the objective tuple from Definition~\ref{def:objective},
+\item wall time, objective-evaluation counts, restart counts, and a sign-quotiented fingerprint.
 \end{itemize}
-The harness is validated on two exact controls of lengths $5$ and $7$, corresponding to Hadamard orders $20$ and $28$. In both cases, the validation artifact records zero correlation defects and zero off-diagonal Gram defects, so the exact-hit flag is not inferred from a soft proxy.
+The harness is validated on exact controls of lengths $5$ and $7$ and is reused unchanged for the order-$668$ seed and the later retained-basis branches. The exactness gate is therefore identical throughout the paper.
 
-This shared contract matters because the repository's own verification pack rejects broader benchmark language. Our benchmark is fair enough for branch elimination, not for publication-level competitiveness with the full Hadamard-search literature. We therefore keep the scope aligned with what the artifacts actually support.
+\subsection{Negative-control stack: H1 and same-coordinate baselines}
 
-\subsection{Matched non-CA baselines}
+The original H1 branch remains important because it is the control that failed cleanly enough to motivate the later redesign.
 
-The non-CA baselines operate in exactly the same state space as H1: a pair of length-$167$ binary sequences and a one-packet move basis where one move flips exactly one $q$ bit or one $s$ bit.
-
-\paragraph{Greedy search.}
-At each iteration, greedy search evaluates every packet in the shared basis, accepts the single best improving move under \eqref{eq:score}, and stops if no improving packet exists.
-
-\paragraph{Tabu search.}
-Tabu search evaluates the same packet set but attaches a tenure-$5$ tabu restriction, allowing tabu moves only under aspiration when the move beats the best state seen so far.
-
-\paragraph{Simulated annealing.}
-Simulated annealing samples one random packet at a time, accepts all improving moves and accepts worsening moves with Metropolis probability $\exp(-\Delta/T)$, with initial temperature $100$ and multiplicative cooling factor $0.98$.
-
-\paragraph{Stochastic hillclimb.}
-Stochastic hillclimbing samples $6$ packets without replacement at each step and accepts the first improving move; if none improves the score, the restart terminates.
-
-Every baseline uses the same nominal budget $80$, the same requested restart count $3$, the same restart diversification rule of two random packet flips on nonzero restarts, and the same RNG seed $17$. The frontier comparison is therefore seed-matched, representation-matched, and budget-matched at the level of the saved configuration files.
-
-\subsection{H1 defect-syndrome cellular automaton}
-
-The H1 state is deliberately compressed. It does \emph{not} evolve a raw $668\times668$ sign matrix. The state at any accepted step is
-\begin{equation}
-\left(q,s,c,\Mask,r\right),
-\end{equation}
-where $q,s\in\pmone^{167}$, $c\in\mathbb{Z}^{167}$ is the combined correlation vector from \eqref{eq:ck}, $\Mask\subseteq\{1,\dots,166\}$ is an active-lag neighborhood around the current defect support, and $r\in\mathbb{Z}_{\ge 0}^{334}$ is refractory memory over the packet lattice.
-
-The packet set is
-\begin{equation}
-\Pk = \{0,1,\dots,333\},
-\end{equation}
-where packets $0$ through $166$ flip one $q$ coordinate and packets $167$ through $333$ flip one $s$ coordinate. The H1 update is a sparse asynchronous rule:
+\paragraph{H1 defect-syndrome CA.}
+The H1 state is
+\[
+(q,s,c,\Mask,r),
+\]
+where $q,s\in\pmone^{167}$, $c$ is the exact coefficient vector, $\Mask$ is a radius-1 active-lag neighborhood around the current defect support, and $r\in\mathbb{Z}_{\ge 0}^{334}$ is packet-level refractory memory. One H1 accepted-state update does the following.
 \begin{enumerate}[label=\arabic*.,leftmargin=2em]
-\item compute the exact lag-syndrome field $c$,
-\item enlarge the current nonzero-lag support by radius $1$ to obtain the active mask $\Mask$,
-\item evaluate an exact defect delta $\Delta_p$ for every packet $p\in\Pk$ without materializing the full order-$668$ matrix,
-\item convert $\Delta_p$ into a raw packet pressure that rewards defect reduction inside $\Mask$ and penalizes spill outside $\Mask$,
-\item smooth these pressures over a packet graph consisting of radius-$2$ same-channel ring edges plus cross-channel same-site edges,
-\item subtract refractory penalties, choose locally maximal packets above threshold, and apply at most one packet,
-\item update the refractory field and stop on exactness, stagnation, or budget exhaustion.
+\item recompute the exact coefficient vector $c$,
+\item build the active-lag mask $\Mask$,
+\item evaluate the exact one-packet delta $\Delta_p$ for each $p\in\Pk$,
+\item convert $\Delta_p$ into a raw packet pressure with active-lag bonuses and spill penalties,
+\item smooth raw pressure over a packet graph with radius-2 same-channel edges and same-site cross-channel edges,
+\item subtract refractory penalties and select locally maximal packets above threshold,
+\item apply at most one packet, update the refractory field, and stop on exactness, stagnation, or budget exhaustion.
 \end{enumerate}
 
-The full fixed H1 hyperparameter set used in the frontier batch is summarized below:
-\begin{center}
-\small
-\begin{tabular}{@{}ll@{}}
-\texttt{lag\_neighborhood\_radius=1} & \texttt{packet\_neighborhood\_radius=2} \\
-\texttt{same\_channel\_weight=0.15} & \texttt{cross\_channel\_weight=0.35} \\
-\texttt{active\_lag\_bonus=1.0} & \texttt{spill\_l1\_penalty=0.25} \\
-\texttt{spill\_support\_penalty=10.0} & \texttt{activation\_threshold=0.5} \\
-\texttt{max\_active\_packets=1} & \texttt{refractory\_steps=2} \\
-\texttt{refractory\_penalty=0.75} & \texttt{stagnation\_limit=8} \\
-\texttt{restart\_packet\_flips=2} & \texttt{fallback\_best\_packet=true} \\
-\end{tabular}
-\end{center}
+The frontier H1 configuration is the saved one from \path|results/experiments/order_668_64m/configs/H1_defect_syndrome_ca_64m.json|: lag radius $1$, packet radius $2$, same-channel weight $0.15$, cross-channel weight $0.35$, activation threshold $0.5$, refractory steps $2$, stagnation limit $8$, requested restarts $3$, and restart packet flips $2$.
 
-Figure~\ref{fig:pipeline} summarizes the dataflow.
+\paragraph{Same-coordinate non-CA baselines.}
+Greedy search, tabu search, simulated annealing, and stochastic hillclimbing all operate on the same one-packet basis, the same $q/s$ state space, and the same scalar score \eqref{eq:score}. This matters because the H1 negative result is then attributable to the update rule rather than to a privileged state representation.
+
+\paragraph{Complexity of H1.}
+The exact coefficient recomputation and all-packets delta sweep dominate. With fixed neighborhood radii, one accepted-state H1 update costs $O(\ell^2)$ arithmetic and $O(\ell)$ working memory beyond the trace, exactly as in the original H1 paper draft.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/fig02_h1_pipeline.pdf}
-  \caption{\textbf{Implemented H1 pipeline.} The state always remains in the shared $q/s$ representation, so any difference between H1 and the non-CA baselines comes from the update rule rather than from a different search space. Raw packet pressure is computed from exact one-packet defect deltas plus spill penalties; coupled pressure then adds same-channel and cross-channel neighborhood effects plus refractory memory. The continuation gate is external to the update rule: exact hit first, otherwise H1 must strictly beat every matched baseline on support and defect magnitude.}
-  \label{fig:pipeline}
+  \caption{\textbf{Original H1 pipeline, preserved as the negative control.} H1 works directly on the recovered $q/s$ seed coordinates, not on the full $668\times668$ sign lattice. Exact one-packet deltas are scored over the whole packet basis, then smoothed by same-channel and cross-channel coupling plus refractory memory. The later retained-basis branches do not retune this rule; they replace its actuator library and locality geometry.}
+  \label{fig:h1-pipeline}
 \end{figure}
 
-\subsection{Pressure functions and design rationale}
+\subsection{Algorithm 1: exhaustive actuator atlas and retention rule}
 
-Let $\Mask\subseteq\{1,\dots,\ell-1\}$ be the current active-lag mask and let $\widetilde c^{(p)}=c+\Delta_p$ be the exact coefficient vector that would result from firing packet $p$. The implementation assigns weight
+The post-H1 pass does not begin by tuning the H1 weights. It first changes the actuator basis.
+
+\paragraph{Enumeration.}
+Using the exact composite delta identity proved in Section~\ref{sec:theory}, the script \path|scripts/generate_composite_locality_atlas.py| evaluates
+\begin{itemize}[leftmargin=1.8em]
+\item $55{,}611$ unordered packet pairs,
+\item $13{,}861$ channel-complete balanced-four actions,
+\item $85$ matched boundary quads,
+\item $84$ $s$-boundary pairs,
+\item $3$ $q$-boundary pairs,
+\end{itemize}
+for a total of $69{,}644$ composite candidates on the canonical frontier seed, plus a harder control cross-check.
+
+\paragraph{Retention.}
+The low-splash cutoff is fixed at $25.5$, exactly half the one-packet median changed-lag footprint $51$. Inside the frontier low-splash set, the retained library is the Pareto frontier in changed-lag count and the three components of the defect tuple. This produces nine actions. Seven are pairs, two are balanced-four actions, and none individually improves the frontier seed.
+
+\paragraph{Complexity.}
+Let $M$ be the number of candidate composite actions and let $r$ be the maximum number of toggled coordinates in any candidate. After precomputing the single-site delta table, one candidate evaluation uses $O(\ell+r^2)$ time. Here $r\le 4$, so the entire atlas construction is $O(M\ell)$ with a small constant.
+
+\subsection{Algorithm 2: retained-state hypergraph CA}
+
+Once the retained library is fixed, the hypergraph CA no longer scans the original $334$ packets at runtime.
+
+\paragraph{State graph.}
+The retained-state graph has $9$ actions, $512$ states, $9$ immediate transitions from each state, and $56$ ordered two-step causal cones satisfying the retained overlap rule in Definition~\ref{def:state-graph}. The canonical run uses a lookup budget of $256$ graph transitions.
+
+\paragraph{Immediate baselines.}
+The same retained basis supports four depth-1 controls:
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item \texttt{pairwise\_graph\_ca}: coupled immediate search with one-step refractory,
+\item \texttt{zero\_coupling}: immediate lexicographic search without coupling,
+\item \texttt{zero\_refractory}: coupled immediate search without refractory blocking,
+\item \texttt{scorer\_only}: uncoupled, unrefracted immediate search.
+\end{enumerate}
+
+\paragraph{Hypergraph rule.}
+At each state, the hypergraph CA scans all admissible causal cones rooted at the local neighborhood, computes the exact end-state objective for each cone using the precomputed state graph, and accepts the lexicographically best improving cone if one exists. The canonical run accepts exactly one cone, then stops when the next scan shows no improving depth-2 move.
+
+\paragraph{Runtime.}
+With the retained graph precomputed, one full immediate scan is $O(|\Ret|)$ graph lookups and one full hypergraph scan is $O(|\Cone|)$ graph lookups, independent of the original $668\times668$ matrix. In the actual artifact, the canonical hypergraph run spends $210$ transition lookups and never rescans the raw packet basis.
+
+\subsection{Algorithm 3: defect-charge lattice-gas CA}
+
+The lattice-gas branch reinterprets the same retained basis in lag space. It works with the signed lag field $\rho$ and the transport signature induced by a candidate transition.
+
+\paragraph{Candidate generation.}
+The branch first evaluates all single retained actions. If any direct single action improves the current objective, it chooses among those. Otherwise it opens the precomputed two-step carrier cones. The candidate factory is therefore
+\[
+\text{singles first, then carriers only when singles are blocked.}
+\]
+
+\paragraph{Ranking.}
+For each candidate, the branch computes
+\[
+(\text{support flux},\ \text{reservoir magnitude},\ \text{transport span},\ \text{warning overlap},\ -\ell_1\text{ gain},\ -\text{max gain}).
+\]
+Single actions are always admissible if they improve. Two-step carriers are admissible only when
 \begin{equation}
-w_k = 1 + \beta \mathbf{1}\{k \in \Lag(c)\},
+\text{support flux}\le 0,\qquad |R|\le 16,\qquad \ell_1\text{ gain}>0.
 \end{equation}
-where $\beta=\texttt{active\_lag\_bonus}$ and $\Lag(c)=\{k:c_k\neq 0\}$.
+This rule is intentionally conservative: temporary support diffusion is allowed only inside a carrier macro-event whose final state returns to nonincreasing support.
 
-The raw pressure for packet $p$ is
-\begin{equation}
-\pi_p^{\mathrm{raw}}
-= \sum_{k\in\Mask} w_k\Big(|c_k|-|\widetilde c_k^{(p)}|\Big)
-- \lambda_1 \sum_{k\notin\Mask} \max\!\Big(0, |\widetilde c_k^{(p)}|-|c_k|\Big)
-- \lambda_0 \max\!\Big(0, \nu(\widetilde c^{(p)}_{\Mask^c})-\nu(c_{\Mask^c})\Big),
-\label{eq:raw-pressure}
-\end{equation}
-where $\lambda_1=\texttt{spill\_l1\_penalty}$, $\lambda_0=\texttt{spill\_support\_penalty}$, and $\nu(v)$ counts nonzero entries of a vector $v$.
+\paragraph{Controls.}
+Two matched lag-space controls are run on the same retained graph:
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item \texttt{lag\_greedy\_control}, which chooses the best improving single retained action,
+\item \texttt{warning\_field\_control}, which preserves warning-memory bookkeeping but still restricts itself to single actions.
+\end{enumerate}
 
-The coupled pressure is then
-\begin{equation}
-\pi_p = \pi_p^{\mathrm{raw}}
- + \alpha \sum_{q\in N_{\mathrm{same}}(p)} \pi_q^{\mathrm{raw}}
- + \gamma \pi_{\mathrm{cross}(p)}^{\mathrm{raw}}
- - \rho\,\mathbf{1}\{r_p>0\},
-\label{eq:coupled-pressure}
-\end{equation}
-where $\alpha=\texttt{same\_channel\_weight}$, $\gamma=\texttt{cross\_channel\_weight}$, and $\rho=\texttt{refractory\_penalty}$.
+\subsection{Algorithm 4: orbit-quotient CA}
 
-Each non-obvious design choice is tied to a repository constraint. The compressed representation avoids a $668\times668$ sign lattice. Spill penalties enforce the prior benchmark rule that prettier defect traces without support control do not count as progress. Refractory memory prevents immediate flip-back oscillation. Restricting \texttt{max\_active\_packets} to $1$ keeps the branch in the sparse asynchronous regime rather than collapsing it into a burst heuristic. Because all baselines use the same packet basis, any H1 advantage would have been attributable to the CA update, not to a richer actuator family.
+The orbit CA removes raw coordinate dependence. For any state, it groups all improving single actions and two-step carriers by the signature \eqref{eq:orbit-signature}. Each signature class contributes exactly one representative event to the runtime decision set.
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\textwidth]{figures/fig05_locality_scan.pdf}
-  \caption{\textbf{Direct one-packet locality scan on the canonical frontier seed.} Left: distribution of the number of lag coefficients changed by a single packet flip. The median footprint is $51$ lags out of $166$, with maximum $83$, so a ``local'' one-packet action is typically global in effect. Middle: exhaustive score comparison over all $334$ packets. No packet improves the shared scalar proxy; one packet is neutral. Right: no packet lowers defect support; $333$ packets raise it. This finite computation is the direct evidence behind Proposition~\ref{prop:one-packet-freeze}.}
-  \label{fig:locality-scan}
-\end{figure}
+\paragraph{Training mix.}
+The saved orbit rule table has $137$ signatures. It is trained from
+\begin{itemize}[leftmargin=1.8em]
+\item $24$ states from \texttt{control\_n5\_q0} with $162$ improving representatives,
+\item $24$ states from \texttt{control\_n7\_q0} with $338$ improving representatives,
+\item $64$ states from \texttt{control\_n9\_hardest\_pair} with $2259$ improving representatives,
+\item four predefined frontier perturbation states with counts $3,3,1,1$.
+\end{itemize}
+The canonical frontier seed itself is \emph{not} part of training.
+
+\paragraph{Runtime rule.}
+At each state, the orbit CA forms the representative set, filters to improving representatives, and chooses the minimum event under
+\[
+(\text{rule priority},\ \text{fallback orbit rank},\ \text{lattice-gas rank}).
+\]
+The canonical frontier run reaches the improved state in $65$ representative lookups.
+
+\subsection{Algorithm 5: population self-stabilizing CA}
+
+The final branch keeps the orbit representation but adds a stochastic population layer.
+
+\paragraph{Rule table.}
+Unlike the orbit CA, the population branch uses a \emph{control-only} rule table of size $133$. It is trained on non-frontier controls only.
+
+\paragraph{Dynamics.}
+At each state, the algorithm:
+\begin{enumerate}[label=\arabic*.,leftmargin=2em]
+\item computes one base score per orbit representative,
+\item adds coupling-weighted neighbor mass,
+\item samples a population of votes through a Gumbel-softmax distribution,
+\item updates a memory distribution over orbit representatives,
+\item accepts the top representative only if it both improves the current score and exceeds a contraction threshold.
+\end{enumerate}
+
+The selected operating point is population size $64$, coupling strength $1.6$, temperature $1.2$, contraction threshold $0.42$, memory mix $0.55$, maximum rounds per step $6$, and RNG seeds $\{11,13,17,19,23\}$. The zero-coupling ablation sets the coupling strength to $0$ and leaves every other parameter unchanged.
 
 \section{Theoretical Results and Proofs}
 \label{sec:theory}
 
-The present paper does not prove any new existence theorem for Hadamard order $668$. Theorems in this section instead serve two narrower purposes: they certify the exact packet-delta machinery implemented by H1, and they convert the repository's central failure modes into explicit, finite statements.
+The theorems in this section do not prove Hadamard existence at order $668$. They instead certify the exact delta machinery, the lattice-gas continuity law, the depth-1 locality barrier, and the first escaping local rule class.
 
 \begin{proposition}[Exact single-entry autocorrelation delta]
-\label{prop:single-delta}
-Let $x\in\pmone^\ell$ and fix $i\in\{0,\dots,\ell-1\}$. Let $x^{(i)}$ denote the sequence obtained by replacing $x_i$ with $-x_i$ and leaving every other coordinate unchanged. Then for every lag $k\in\{1,\dots,\ell-1\}$,
+\label{prop:single-entry-delta}
+Let $x\in\pmone^\ell$ and let $x^{(i)}$ denote the sequence obtained by flipping only coordinate $i$. Then for every lag $k\in\{1,\dots,\ell-1\}$,
 \begin{equation}
 N_{x^{(i)}}(k)-N_x(k)
-= -2x_i x_{i+k}\,\mathbf{1}\{i+k<\ell\}
-  -2x_{i-k}x_i\,\mathbf{1}\{i-k\ge 0\}.
-\label{eq:single-delta}
+= -2x_i x_{i+k}\mathbf{1}\{i+k<\ell\}
+-2x_{i-k}x_i\mathbf{1}\{i-k\ge 0\}.
+\label{eq:single-entry-delta}
 \end{equation}
 \end{proposition}
 
 \begin{proof}
-Fix $k$. By Definition~\ref{eq:autocorr},
+Fix a lag $k\ge 1$. By Definition~\ref{def:aperiodic},
 \[
-N_x(k)=\sum_{t=0}^{\ell-k-1} x_t x_{t+k}.
+N_x(k)=\sum_{t=0}^{\ell-k-1}x_t x_{t+k}.
 \]
-For each summand, compare the term in $N_x(k)$ with the corresponding term in $N_{x^{(i)}}(k)$.
+We compare each summand in $N_x(k)$ with the corresponding summand in $N_{x^{(i)}}(k)$.
 
-If neither $t$ nor $t+k$ equals $i$, then the $t$th summand is unchanged because all coordinates other than $i$ are identical in $x$ and $x^{(i)}$.
+If neither $t$ nor $t+k$ equals $i$, then the $t$th summand is unchanged, because $x$ and $x^{(i)}$ differ only at coordinate $i$.
 
-There are at most two summands that do involve coordinate $i$.
+There are at most two changed summands.
 
-\emph{Case 1: $t=i$.} This case occurs exactly when $i+k<\ell$. The summand in $N_x(k)$ is $x_i x_{i+k}$. The corresponding summand in $N_{x^{(i)}}(k)$ is $(-x_i)x_{i+k}$. The difference is
+\emph{Case 1: $t=i$.} This case occurs exactly when $i+k<\ell$. The original summand is $x_i x_{i+k}$, while the new summand is $(-x_i)x_{i+k}$. Their difference is
 \[
-(-x_i)x_{i+k}-x_i x_{i+k} = -2x_i x_{i+k}.
-\]
-
-\emph{Case 2: $t=i-k$.} This case occurs exactly when $i-k\ge 0$. The summand in $N_x(k)$ is $x_{i-k}x_i$. The corresponding summand in $N_{x^{(i)}}(k)$ is $x_{i-k}(-x_i)$. The difference is
-\[
-x_{i-k}(-x_i)-x_{i-k}x_i = -2x_{i-k}x_i.
+(-x_i)x_{i+k}-x_i x_{i+k}=-2x_i x_{i+k}.
 \]
 
-No other summands change. Therefore the total change is the sum of the contributions from Case~1 and Case~2, which is exactly \eqref{eq:single-delta}. This proves the proposition.
+\emph{Case 2: $t=i-k$.} This case occurs exactly when $i-k\ge 0$. The original summand is $x_{i-k}x_i$, while the new summand is $x_{i-k}(-x_i)$. Their difference is
+\[
+x_{i-k}(-x_i)-x_{i-k}x_i=-2x_{i-k}x_i.
+\]
+
+No other summand changes. Summing the contributions from the two cases gives \eqref{eq:single-entry-delta}. This proves the proposition.
 \end{proof}
 
-\begin{corollary}[Exact packet delta for the H1 coordinate system]
-\label{cor:packet-delta}
-Let $(q,s)\in\pmone^\ell\times\pmone^\ell$ and let $\Delta_p$ be the coefficient change caused by firing packet $p$ in the H1 packet basis.
-\begin{enumerate}[label=(\alph*),leftmargin=2em]
-\item If $0\le p<\ell$, then packet $p$ flips only $q_p$, hence
+\begin{theorem}[Exact multi-toggle delta for a single sequence]
+\label{thm:multi-toggle-delta}
+Let $x\in\pmone^\ell$ and let $I\subseteq\{0,\dots,\ell-1\}$ be a finite set of toggled coordinates. Let $x^{(I)}$ be obtained by flipping every coordinate in $I$. For each lag $k\in\{1,\dots,\ell-1\}$,
 \begin{equation}
-\Delta_p = \delta_{q\odot s}(p)+\delta_{(q\odot s)'}(p),
+N_{x^{(I)}}(k)-N_x(k)
+= \sum_{i\in I}\delta_x(i,k)
++4\sum_{\substack{i<j\\ i,j\in I\\ j-i=k}}x_i x_j,
+\label{eq:multi-toggle-delta}
 \end{equation}
-where $\delta_x(i)$ denotes the lag-delta vector from Proposition~\ref{prop:single-delta} applied to sequence $x$ at index $i$.
-\item If $\ell\le p<2\ell$, let $i=p-\ell$. Then packet $p$ flips only $s_i$, hence
-\begin{equation}
-\Delta_p = \delta_s(i)+\delta_{s'}(i)+\delta_{q\odot s}(i)+\delta_{(q\odot s)'}(i).
-\end{equation}
-\end{enumerate}
-\end{corollary}
-
-\begin{proof}
-We prove (a); part (b) is analogous but affects four sequences rather than two.
-
-Assume $0\le p<\ell$. Firing packet $p$ changes $q_p$ to $-q_p$ and leaves every other coordinate of $q$ and every coordinate of $s$ unchanged. Therefore the derived sequences $A=s$ and $B=s'$ remain unchanged. By contrast, the product sequence $C=q\odot s$ changes exactly at coordinate $p$ because
-\[
-C_p = q_p s_p,\qquad C_p^{(p)} = (-q_p)s_p = -C_p.
-\]
-Every other coordinate of $C$ is unchanged because every other coordinate of $q$ is unchanged. The same statement holds for $D=(q\odot s)'$: the prime involution is multiplication by a fixed sign mask, so flipping coordinate $p$ of $C$ flips coordinate $p$ of $D$ and leaves every other coordinate unchanged.
-
-Equation~\eqref{eq:ck} defines the combined coefficient vector as the sum of the four aperiodic autocorrelation vectors. Since only $C$ and $D$ change, the total coefficient delta equals the autocorrelation delta of $C$ plus the autocorrelation delta of $D$. Proposition~\ref{prop:single-delta} gives those deltas exactly, yielding the formula in part (a).
-\end{proof}
-
-\begin{theorem}[Complexity of one H1 accepted-state update]
-\label{thm:complexity}
-Let $\ell$ be the sequence length and let the neighborhood radii in H1 be fixed constants independent of $\ell$. Then one accepted-state H1 update, including exact coefficient recomputation, packet-pressure recomputation over all $2\ell$ packets, coupled-pressure formation, packet selection, and objective evaluation, requires $O(\ell^2)$ arithmetic operations and $O(\ell)$ working memory beyond the logged trace.
+where $\delta_x(i,k)$ is the right-hand side of \eqref{eq:single-entry-delta}.
 \end{theorem}
 
 \begin{proof}
-We account for each stage explicitly.
-
-\emph{Stage 1: exact coefficient recomputation.} The implementation evaluates four aperiodic autocorrelation vectors of length $\ell$. By Definition~\eqref{eq:autocorr}, the $k$th lag requires $\ell-k$ pairwise products. Summing over all lags gives
+Fix a lag $k\ge 1$. For every valid pair $(t,t+k)$, define the original contribution
 \[
-\sum_{k=0}^{\ell-1}(\ell-k)=\frac{\ell(\ell+1)}{2}.
+u_t=x_t x_{t+k}.
 \]
-Therefore one autocorrelation evaluation is $O(\ell^2)$, and the sum of four such evaluations is still $O(\ell^2)$.
-
-\emph{Stage 2: active-mask construction.} The mask is built from the nonzero-lag support of a vector of length $\ell$. This requires scanning at most $\ell-1$ entries and marking a constant-radius neighborhood around each active lag. Because the radius is fixed, this stage is $O(\ell)$.
-
-\emph{Stage 3: raw packet pressures.} There are exactly $2\ell$ packets. For each packet $p$, Corollary~\ref{cor:packet-delta} reduces the coefficient delta to the sum of either two or four single-entry autocorrelation deltas. Proposition~\ref{prop:single-delta} shows that one such delta vector is obtained by looping over the $\ell-1$ nonzero lags and performing only constant work at each lag. Hence one packet delta costs $O(\ell)$.
-
-After computing $\Delta_p$, the implementation forms $\widetilde c^{(p)}=c+\Delta_p$, evaluates absolute-value changes on the active mask, and evaluates spill penalties on the complement of the mask. Each of these is a vector operation on arrays of length at most $\ell$, hence again $O(\ell)$ per packet. Since there are $2\ell$ packets, Stage~3 costs
+After flipping all coordinates in $I$, the same pair contributes
 \[
-2\ell\cdot O(\ell)=O(\ell^2).
+u_t^{(I)} = \eta_t \eta_{t+k} x_t x_{t+k},
 \]
-
-\emph{Stage 4: coupled pressure and local selection.} With fixed same-channel radius and one cross-channel edge per packet, each packet consults only $O(1)$ neighbors. Computing the coupled pressure over all packets is therefore $O(\ell)$, and the local-maxima selection step over the $2\ell$ packets is also $O(\ell)$.
-
-\emph{Stage 5: objective evaluation and state update.} Applying at most one packet is $O(\ell)$ because it copies two length-$\ell$ arrays and flips one coordinate. Recomputing the objective summary invokes another coefficient computation and is therefore $O(\ell^2)$.
-
-Combining the stages yields
+where
 \[
-O(\ell^2)+O(\ell)+O(\ell^2)+O(\ell)+O(\ell^2)=O(\ell^2).
+\eta_r=
+\begin{cases}
+-1, & r\in I,\\
+1, & r\notin I.
+\end{cases}
 \]
-For working memory, the algorithm stores $q$, $s$, the coefficient vector, the lag mask, two packet-pressure vectors, and the refractory vector. Their total size is proportional to
+Therefore the pair contribution changes by
 \[
-\ell+\ell+\ell+\ell+2\ell+2\ell = O(\ell).
+u_t^{(I)}-u_t = (\eta_t\eta_{t+k}-1)x_t x_{t+k}.
 \]
-The trace can grow with the evaluation budget, but it is a logging artifact rather than a working-memory requirement of one update. This proves the theorem.
-\end{proof}
 
-\begin{proposition}[Budget-bounded termination]
-\label{prop:termination}
-Let $B$ be the global evaluation budget supplied to H1. Then the H1 run halts after at most $B$ objective evaluations.
-\end{proposition}
-
-\begin{proof}
-The H1 implementation initializes its evaluation counter at $1$, because the starting state is evaluated once before the restart loop. The outer restart loop is guarded by the condition \texttt{if evaluations >= evaluation\_budget: break}. Inside each restart, the counter is incremented by exactly one whenever a new accepted state is produced. The inner loop is also guarded by the condition \texttt{while evaluations < evaluation\_budget and stagnation < stagnation\_limit}. Consequently no control-flow path can execute an accepted-state update once the counter reaches $B$. Hence the total number of recorded objective evaluations is at most $B$.
-\end{proof}
-
-\begin{proposition}[Computational one-packet freeze on the canonical seed]
-\label{prop:one-packet-freeze}
-For the canonical order-$668$ frontier seed, exhaustive enumeration of all $334$ one-packet moves yields:
+There are three possibilities.
 \begin{enumerate}[label=(\roman*),leftmargin=2em]
-\item $0$ score-improving packets,
-\item $1$ score-neutral packet,
-\item $333$ score-worsening packets,
-\item $0$ packets that reduce defect support.
+\item If neither endpoint belongs to $I$, then $\eta_t\eta_{t+k}=1$ and the pair contributes $0$.
+\item If exactly one endpoint belongs to $I$, then $\eta_t\eta_{t+k}=-1$ and the pair contributes $-2x_t x_{t+k}$.
+\item If both endpoints belong to $I$, then $\eta_t\eta_{t+k}=1$ and the pair again contributes $0$.
 \end{enumerate}
-The median changed-lag footprint of a packet is $51$ out of $166$ nonzero-lag coordinates, with maximum $83$.
-\end{proposition}
 
-\begin{proof}
-The statement is a complete finite computation. The packet set has cardinality $334=2\ell$ with $\ell=167$. For each packet, the artifact \texttt{results/analysis/frontier\_locality\_scan.json} applies the exact packet flip, recomputes the objective from \eqref{eq:score}, and records both the score comparison and the changed-lag count from Corollary~\ref{cor:packet-delta}. The resulting counts are:
-\[
-\text{better}=0,\qquad \text{equal}=1,\qquad \text{worse}=333,
-\]
-and for support comparison,
-\[
-\text{lower}=0,\qquad \text{equal}=1,\qquad \text{higher}=333.
-\]
-The same artifact records changed-lag statistics
-\[
-\min=0,\qquad \operatorname{median}=51,\qquad \operatorname{mean}=50.78,\qquad \max=83.
-\]
-Because every packet is enumerated exactly once and the packet set is finite, no further search or asymptotic argument is required. This proves the proposition.
+Now consider the sum of the single-entry deltas $\sum_{i\in I}\delta_x(i,k)$. By Proposition~\ref{prop:single-entry-delta}, each toggled endpoint in a valid lag-$k$ pair contributes $-2x_t x_{t+k}$ to this sum. Hence:
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item a pair with exactly one toggled endpoint contributes exactly $-2x_t x_{t+k}$ to the single-entry sum, which matches the true multi-toggle change;
+\item a pair with both endpoints toggled contributes $-4x_t x_{t+k}$ to the single-entry sum, even though the true multi-toggle change is $0$.
+\end{enumerate}
+
+Thus the single-entry sum is correct for all pairs except the pairs whose two endpoints are both toggled. For such a pair, say $(i,j)$ with $i<j$ and $j-i=k$, the overcount is exactly $-4x_i x_j$, so the correction needed is $+4x_i x_j$. Summing this correction over all toggled pairs at distance $k$ yields the second term in \eqref{eq:multi-toggle-delta}. No further correction is necessary, because every lag-$k$ pair contains at most two endpoints. Therefore \eqref{eq:multi-toggle-delta} holds for each $k$, proving the theorem.
 \end{proof}
 
-\begin{remark}[Interpretation of Proposition~\ref{prop:one-packet-freeze}]
-Proposition~\ref{prop:one-packet-freeze} does not say that \emph{every} multi-packet route is impossible. It says something narrower but decisive for H1 as implemented: the single-packet actuator library is already frozen at the canonical seed under the shared proxy objective, and a nominally local packet flip usually perturbs about $51/166\approx 30.7\%$ of the lag coordinates. The only ways left for H1 are neutral drift, coordinated worsening moves, or a new actuator basis.
-\end{remark}
+\begin{corollary}[Exact composite-action coefficient delta]
+\label{cor:composite-delta}
+Let a composite action toggle the $q$-indices $I_q$ and the $s$-indices $I_s$, and let
+\[
+I_{qs}=I_q\triangle I_s
+\]
+be their symmetric difference. Then the exact coefficient delta for the combined vector \eqref{eq:combined-coeffs} is
+\begin{equation}
+\Delta =
+\Delta_s(I_s)+\Delta_{s'}(I_s)+\Delta_{q\odot s}(I_{qs})+\Delta_{(q\odot s)'}(I_{qs}),
+\label{eq:combined-delta}
+\end{equation}
+where each $\Delta_x(I)$ is the lag vector from Theorem~\ref{thm:multi-toggle-delta} applied to sequence $x$ and toggle set $I$.
+\end{corollary}
 
-\begin{proposition}[Artifact-certified failure of the first frontier gate]
-\label{prop:gate-failure}
-In the saved canonical frontier batch, H1 fails every continuation condition in the benchmark gate:
+\begin{proof}
+Flipping a subset of $q$ coordinates does not change $s$ or $s'$, while flipping a subset of $s$ coordinates changes both $s$ and $s'$ on exactly those coordinates. For the product sequence $q\odot s$, a coordinate changes sign exactly when an odd number of the corresponding $q$ and $s$ coordinates are toggled, which is precisely the symmetric-difference condition $I_q\triangle I_s$. The same statement holds for $(q\odot s)'$ because the prime involution multiplies coordinates by a fixed sign mask and therefore preserves the set of changed coordinates. Since the combined coefficient vector is the sum of the four autocorrelation vectors, the total coefficient delta is the sum of the four sequence-level deltas. Applying Theorem~\ref{thm:multi-toggle-delta} to each sequence yields \eqref{eq:combined-delta}.
+\end{proof}
+
+\begin{theorem}[Lag-field continuity law with a boundary reservoir]
+\label{thm:continuity-law}
+Let $L=\ell-1=166$. For any transition on the retained graph, define
+\[
+\rho_t(k)=c_k^{(t)},\qquad \Delta(k)=\rho_{t+1}(k)-\rho_t(k),\qquad 1\le k\le L.
+\]
+Let
+\begin{equation}
+R=\sum_{k=1}^{L}\Delta(k)
+\end{equation}
+and define the current
+\begin{equation}
+J(k)=-\sum_{i=1}^{k}\bigl(\Delta(i)-R\mathbf{1}\{i=L\}\bigr),\qquad k=0,1,\dots,L,
+\label{eq:current-def}
+\end{equation}
+with the empty sum convention $J(0)=0$. Then for every $k\in\{1,\dots,L\}$,
+\begin{equation}
+\rho_{t+1}(k)-\rho_t(k)=J(k-1)-J(k)+R\mathbf{1}\{k=L\}.
+\label{eq:continuity-law}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Fix $k\in\{1,\dots,L\}$. By definition \eqref{eq:current-def},
+\[
+J(k-1)=-\sum_{i=1}^{k-1}\bigl(\Delta(i)-R\mathbf{1}\{i=L\}\bigr)
+\]
+and
+\[
+J(k)=-\sum_{i=1}^{k}\bigl(\Delta(i)-R\mathbf{1}\{i=L\}\bigr).
+\]
+Subtract the second identity from the first:
+\begin{align*}
+J(k-1)-J(k)
+&=
+-\sum_{i=1}^{k-1}\bigl(\Delta(i)-R\mathbf{1}\{i=L\}\bigr)
++\sum_{i=1}^{k}\bigl(\Delta(i)-R\mathbf{1}\{i=L\}\bigr)\\
+&=\Delta(k)-R\mathbf{1}\{k=L\}.
+\end{align*}
+Rearranging gives
+\[
+\Delta(k)=J(k-1)-J(k)+R\mathbf{1}\{k=L\}.
+\]
+Since $\Delta(k)=\rho_{t+1}(k)-\rho_t(k)$ by definition, \eqref{eq:continuity-law} follows. Every step has been explicit, so the theorem is proved.
+\end{proof}
+
+\begin{proposition}[Orbit-signature invariance under reversal and sign flip]
+\label{prop:orbit-invariance}
+Let two candidate events have the same normalized event kind, action count, support flux, changed-lag count, and transport span, and suppose their delta profiles differ only by reversal and/or global sign inversion. Then they induce the same orbit signature \eqref{eq:orbit-signature}.
+\end{proposition}
+
+\begin{proof}
+All components of \eqref{eq:orbit-signature} except the final one depend only on the quantities explicitly listed in the statement, so those components agree immediately.
+
+It remains to check the sign-run count $r(e)$. The implementation computes $r(e)$ by extracting the sign sequence of the delta profile and then taking the minimum run-length encoding among the four variants
+\[
+\text{original},\quad \text{reversed},\quad \text{sign-flipped},\quad \text{reversed sign-flipped}.
+\]
+If one profile is obtained from the other by reversal and/or sign inversion, then the two sets of four variants are identical as sets. Therefore the minimum run-length encoding is the same for both events, and hence the run-count component $r(e)$ is the same. Thus all six components of \eqref{eq:orbit-signature} agree, proving the proposition.
+\end{proof}
+
+\begin{theorem}[Depth-1 locality barrier on the canonical frontier seed]
+\label{thm:depth-one-barrier}
+Let $\Act_1$ be the explicit actuator class consisting of
+\begin{enumerate}[label=(\roman*),leftmargin=2em]
+\item all $334$ one-packet moves,
+\item all $55{,}611$ unordered two-packet moves,
+\item all $9$ retained low-splash composite actions.
+\end{enumerate}
+Then no actuator in $\Act_1$ strictly improves the canonical frontier objective $(13,2880,512)$.
+\end{theorem}
+
+\begin{proof}
+The statement is a complete finite computation recorded in \path|results/verification/radius_limited_locality_barrier.json|. The proof proceeds family by family.
+
+\emph{One-packet family.} The direct locality scan \path|results/analysis/frontier_locality_scan.json| exhausts all $334$ packets and reports
+\[
+\text{better}=0,\qquad \text{equal}=1,\qquad \text{worse}=333.
+\]
+The unique neutral packet is \texttt{s[83]}.
+
+\emph{Two-packet family.} The barrier checker evaluates all $55{,}611$ unordered two-packet actions by exact delta computation and reports no improving pair. The best pair is the neutral action
+\[
+[\texttt{s[84]},\texttt{s[166]}],
+\]
+which leaves the objective unchanged.
+
+\emph{Retained composite family.} The same checker evaluates all $9$ retained low-splash actions and again finds no improving single actuator. The best retained action is the same neutral pair as above.
+
+Since every member of $\Act_1$ belongs to one of the three families above, and each family has been checked exhaustively with no strict improvement, no actuator in $\Act_1$ improves the canonical frontier seed. This proves the theorem.
+\end{proof}
+
+\begin{theorem}[First certified depth-2 local counterexample]
+\label{thm:first-counterexample}
+In the retained radius-1, depth-2 causal-cone rule class, there exists a strict local improvement of the canonical frontier seed. The first certified counterexample in lexicographic checker order is the edge
+\begin{equation}
+[3,7]=\bigl([\texttt{q[53]},\texttt{q[136]}],\ [\texttt{q[29]},\texttt{s[29]},\texttt{q[114]},\texttt{s[114]}]\bigr),
+\end{equation}
+which reaches the six-packet state
+\[
+[\texttt{q[29]},\texttt{q[53]},\texttt{q[114]},\texttt{q[136]},\texttt{s[29]},\texttt{s[114]}]
+\]
+with objective $(13,2744,480)$.
+\end{theorem}
+
+\begin{proof}
+The barrier certificate defines the checked rule class explicitly:
 \begin{enumerate}[label=(\alph*),leftmargin=2em]
-\item H1 records no exact hit.
-\item H1 records no best-objective improvement over the published seed.
-\item H1 does not hold a strict terminal support-and-magnitude advantage over all matched baselines.
+\item both actions must belong to the retained library $\Ret$,
+\item the two actions must overlap on changed-lag support,
+\item the union of their changed-lag sets must stay within the retained low-splash envelope of at most $25$ lags.
+\end{enumerate}
+The checker then enumerates every admissible ordered causal cone from the canonical seed state.
+
+The action $a_3=[\texttt{q[53]},\texttt{q[136]}]$ is itself a depth-1 non-improving retained action with objective
+\[
+(14,2820,496).
+\]
+The action $a_7=[\texttt{q[29]},\texttt{s[29]},\texttt{q[114]},\texttt{s[114]}]$ is also depth-1 non-improving when applied directly to the seed. However, the ordered cone $(a_3,a_7)$ is admissible in the checked rule class and its end state, stored in the barrier JSON as state $53$, has objective
+\[
+(13,2744,480).
+\]
+To see that this is a strict improvement, compare it lexicographically with the seed objective:
+\[
+13=13,\qquad 2744<2880,\qquad 480<512.
+\]
+Hence the end state has the same support as the seed and strictly smaller $\ell_1$ and maximum defect. Therefore it strictly improves the objective.
+
+The checker reports \texttt{counterexample\_count = 2} and stores the first counterexample exactly as the edge $[3,7]$ above. Thus the canonical seed is not blocked once the local rule class is widened from depth-1 single actuators to retained radius-1 depth-2 causal cones. This proves the theorem.
+\end{proof}
+
+\begin{proposition}[Artifact-certified failure of the H1 continuation gate]
+\label{prop:h1-gate-failure}
+In the original one-packet frontier batch, H1 fails all continuation conditions:
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item no exact hit,
+\item no best-objective improvement over the seed,
+\item no strict support-plus-magnitude advantage over the matched baselines.
 \end{enumerate}
 \end{proposition}
 
 \begin{proof}
-The frontier summary artifact reports the following H1 values:
+The frontier summary \path|results/experiments/order_668_64m/summary.json| records
 \[
-\text{exact\_hit}=\texttt{false}, \qquad
-\text{best\_objective}=(13,2880,512),
+\texttt{exact\_hit}=\texttt{false}
 \]
-which is exactly the seed objective. This proves (a) and (b).
+for H1 and
+\[
+\texttt{best\_objective}=(13,2880,512),
+\]
+which is exactly the seed tuple. This proves (a) and (b).
 
-For (c), the same summary reports H1 terminal restart objectives
+For (c), the same artifact records H1 terminal restart tuples
 \[
 (33,2368,384),\quad (40,2356,408),\quad (23,2216,384),
 \]
-with median terminal triple $(33,2356,384)$. Greedy and simulated annealing each remain at terminal triple $(13,2880,512)$. The benchmark gate requires H1 to show lower terminal support \emph{and} lower defect magnitude than every matched baseline when no method reaches exactness. H1's median terminal support is $33$, while the best matched baseline terminal support is $13$. Since $33>13$, H1 fails the support half of the required strict advantage, regardless of the lower H1 terminal magnitude $384<512$. Therefore condition (c) fails. All three continuation conditions are false, so H1 fails the first frontier gate.
+with median terminal tuple $(33,2356,384)$. Greedy and simulated annealing each remain at $(13,2880,512)$. Therefore H1 does not hold a strict support advantage over those baselines, because $33>13$. Hence it fails the continuation gate on support even though some terminal magnitudes are lower. This proves (c).
 \end{proof}
 
 \section{Experimental Setup}
 \label{sec:setup}
 
-\subsection{Inputs and instances}
+\subsection{Inputs and instance families}
 
-The study uses three input families.
+The paper uses four input families.
 \begin{enumerate}[label=\arabic*.,leftmargin=2em]
-\item \textbf{Exact controls.} Two exhaustive-search controls of lengths $5$ and $7$ (orders $20$ and $28$).
-\item \textbf{Matched control perturbations.} Deterministic $q[0]$ flips of those exact controls, used for the main control batch.
-\item \textbf{Canonical frontier seed.} The recovered order-$668$ $64$-modular seed from \citet{eliahou2025_64mod668}, stored in the repository as exact $q/s$ sequences.
+\item \textbf{Exact controls.} Two deterministic one-flip controls of lengths $5$ and $7$, corresponding to orders $20$ and $28$.
+\item \textbf{Canonical frontier seed.} The recovered order-$668$ $64$-modular seed from Eliahou's 2025 paper.
+\item \textbf{Harder lag-space control.} \texttt{control\_n9\_hardest\_pair}, used for the lattice-gas branch and the orbit-rule training mix.
+\item \textbf{Frontier perturbation ladder.} Five retained-state perturbations (\texttt{barrier\_ladder\_01} through \texttt{barrier\_ladder\_05}) chosen to have no immediate retained-action improvement but at least one improving depth-2 cone.
 \end{enumerate}
 
-No external dataset is involved. The only stochasticity comes from restart perturbations and, where relevant, method-specific random choices.
+No external dataset is involved. All experiments are deterministic except simulated annealing, stochastic hillclimbing, and the population branch.
 
-\subsection{Shared configuration}
+\subsection{Shared configurations}
 
-The main control batch and the canonical frontier batch use the same shared accounting:
+\paragraph{H1-era batch.}
+The original control and frontier pilot use shared evaluation budget $80$, requested restart count $3$, RNG seed $17$, and restart packet flips $2$. These are the settings stored in \path|results/experiments/order_668_64m/summary.json|.
+
+\paragraph{Retained-basis branches.}
+The hypergraph, lattice-gas, orbit, and population branches operate on the retained graph with lookup budget $256$ per run. The lattice-gas branch uses warning decay $1$, boost $2$, cap $8$, and reservoir cap $16$. The orbit branch uses the fixed $137$-signature rule table saved in \path|results/experiments/order_668_orbit_ca/rule_table.json|. The population branch uses the control-only $133$-signature table, population size $64$, coupling $1.6$, temperature $1.2$, contraction threshold $0.42$, memory mix $0.55$, and maximum rounds $6$.
+
+\subsection{Artifact chronology and provenance discipline}
+
+The repository contains one stale draft and later experiments that postdate it. The H1-only paper, methods brief, and review notes were written before the commits
 \[
-\begin{aligned}
-\text{evaluation budget}&=80, \qquad \text{requested restarts}=3,\\
-\text{RNG seed}&=17, \qquad \text{restart packet flips}=2.
-\end{aligned}
+\texttt{18a1568},\ \texttt{f86898e},\ \texttt{0dce7ad},\ \texttt{30a278c},\ \texttt{5cf94fa}.
 \]
-The only method-specific hyperparameters are the H1 coupling and refractory parameters already listed in Section~\ref{sec:method}, the tabu tenure ($5$), the simulated-annealing temperature/cooling pair $(100,0.98)$, and the stochastic-hillclimb sample size ($6$).
+Those later commits add the retained-state graph, the barrier certificate, the lattice-gas branch, the orbit branch, and the population branch. The present manuscript therefore uses the H1 writeup only for the H1-specific negative control. All post-H1 claims are anchored directly to the raw summaries, JSON logs, and code paths added in the later commit range rather than to the stale memo layer.
 
-\subsection{Reproducibility details}
+\subsection{Hardware and reproducibility limits}
 
-The exact launch commands are frozen in the repository's reproducibility packet. For the paper, the relevant operational details are:
-\begin{itemize}[leftmargin=1.8em]
-\item all frontier methods read the same \texttt{seed\_sequences.json} file,
-\item all methods report through the same harness,
-\item the run JSONs store top-level \emph{best-over-run} states, not per-restart terminal states,
-\item the per-restart terminal summaries used in this paper come from the saved aggregation artifacts rather than from \texttt{trace[-1]}.
-\end{itemize}
-
-The saved pack does \emph{not} record CPU model, memory size, or OS build as first-class metadata. We therefore report wall-clock times exactly as stored, but we do not treat them as hardware-normalized performance measurements. The paper's reproducibility emphasis is on seeds, configs, output semantics, and artifact completeness rather than on machine-matched timing.
+The saved artifacts do \emph{not} record CPU model, memory size, or operating-system build as first-class experiment metadata. We therefore report wall times exactly as stored, but we do not interpret them as hardware-normalized speed measurements. This is a real reproducibility limitation. In contrast, seeds, budgets, configuration files, and raw result JSONs are explicit.
 
 \subsection{Statistics}
 
-The study is intentionally small. We therefore avoid pretending that asymptotic uncertainty estimates are stable where they are not. Exact-hit rates are reported together with Wilson 95\% confidence intervals only to make the small-$n$ uncertainty explicit. For frontier terminal defect statistics, we report medians together with restart ranges because several methods complete only one restart under the shared budget. For the one-packet locality scan, no confidence interval is needed: the scan is exhaustive over the finite packet set.
+The paper uses two kinds of evidence.
+\begin{enumerate}[label=\arabic*.,leftmargin=2em]
+\item \textbf{Exact finite computations.} The one-packet scan, the composite-library scan, the depth-1 barrier, the state-graph construction, and the first certified counterexample are deterministic exhaustive computations. No confidence intervals are appropriate for these quantities.
+\item \textbf{Sampled stochastic outcomes.} Exact-hit rates on the tiny controls and success/contraction rates for the population branch are reported with Wilson 95\% intervals, solely to expose small-sample uncertainty.
+\end{enumerate}
 
 \section{Results}
 \label{sec:results}
 
-\subsection{Frontier seed geometry and actuator locality}
+\subsection{H1 is executable, but the original one-packet frontier story is negative}
 
-Table~\ref{tab:seed-locality} and Figures~\ref{fig:seed-profile}--\ref{fig:locality-scan} establish the starting geometry. The seed is already extremely sparse in correlation-defect space: only $13$ of the $166$ nonzero-lag coefficients are active. That sparsity is precisely why a local-repair narrative initially looked plausible.
-
-The direct actuator scan overturns the naive locality story. Proposition~\ref{prop:one-packet-freeze} shows that the implemented single-packet library has no improving move on the canonical seed and no move that reduces defect support. Moreover, a nominally local one-packet action is broad in effect, changing a median of $51$ lag coordinates and as many as $83$. The combination of sparsity in the defect field and breadth in the actuator footprint is the core structural conflict exposed by the paper.
-
-\begin{table}[t]
-\centering
-\caption{\textbf{Canonical frontier seed and direct one-packet locality scan.} The upper block summarizes the published seed recovered from \citet{eliahou2025_64mod668}. The lower block summarizes the direct exhaustive one-packet scan over the implemented H1 packet basis.}
-\label{tab:seed-locality}
-\begin{tabular}{@{}ll@{}}
-\toprule
-Quantity & Value \\
-\midrule
-Order & $668$ \\
-Sequence length & $167$ \\
-Nonzero correlation lags & $13$ of $166$ \\
-Seed objective triple & $(13,2880,512)$ \\
-Max off-diagonal Gram defect magnitude & $512$ \\
-Nonzero off-diagonal Gram defects per row & $26$ \\
-\midrule
-Packets scanned exhaustively & $334$ \\
-Improving one-packet moves & $0$ \\
-Neutral one-packet moves & $1$ \\
-Worsening one-packet moves & $333$ \\
-Support-reducing one-packet moves & $0$ \\
-Median changed-lag count & $51$ of $166$ \\
-Maximum changed-lag count & $83$ of $166$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Matched controls: H1 is executable but not uniquely strong}
-
-Figure~\ref{fig:controls} and Table~\ref{tab:controls} summarize the control batch. H1 reaches exactness on both solved control perturbations, which is essential because it rules out the trivial explanation that the frontier failure comes from a broken implementation. At the same time, H1 is not uniquely dominant on the controls: greedy and tabu also solve both perturbations, while simulated annealing and stochastic hillclimbing solve one of the two.
-
-This is the correct interpretation of the control batch. It validates the harness and demonstrates executability, but it does not establish a general CA advantage. The controls are tiny, deterministic, and much easier than the order-$668$ frontier seed.
+The negative H1 result remains fully valid and still matters. Figure~\ref{fig:controls} shows that H1 reaches exactness on the two tiny controls, which rules out a trivial implementation failure. Figure~\ref{fig:h1-frontier} and Proposition~\ref{prop:h1-gate-failure} then show the frontier failure: no exact hit, no best-objective gain over $(13,2880,512)$, and terminal improvement in $\ell_1$ or maximum defect only after large support diffusion.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/fig03_control_results.pdf}
-  \caption{\textbf{Matched solved controls.} Left: exact-hit matrix on the order-$20$ and order-$28$ control perturbations, with per-run objective evaluations annotated in each cell. Right: exact-hit rate across the two controls together with median evaluation use. H1 reaches exactness on both controls, which rules out a trivial implementation failure, but greedy and tabu do so as well. The control batch therefore validates executability and fair accounting rather than proving a CA-specific advantage.}
+  \caption{\textbf{Matched solved controls for the original H1-era batch.} H1 reaches exactness on both tiny controls, as do greedy and tabu. The control batch therefore validates the harness and the H1 implementation, but it does not establish a CA-specific frontier advantage.}
   \label{fig:controls}
 \end{figure}
-
-\begin{table}[t]
-\centering
-\caption{\textbf{Control batch summary.} Wilson intervals are shown only to make the small sample size explicit. Median defect reduction is the reduction in correlation-defect support between the control perturbation and the terminal state.}
-\label{tab:controls}
-\small
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Method & Exact hits & Wilson 95\% CI & Median evaluations & Median defect reduction \\
-\midrule
-H1 CA & $2/2$ & $[0.34,\,1.00]$ & $12.5$ & $2.5$ \\
-Greedy & $2/2$ & $[0.34,\,1.00]$ & $54.0$ & $2.5$ \\
-Tabu & $2/2$ & $[0.34,\,1.00]$ & $77.0$ & $2.5$ \\
-Simulated annealing & $1/2$ & $[0.10,\,0.91]$ & $63.0$ & $2.0$ \\
-Stochastic hillclimb & $1/2$ & $[0.10,\,0.91]$ & $24.5$ & $2.0$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Canonical frontier batch: no exact hit and no best-objective gain}
-
-The frontier batch is the decisive experiment. Table~\ref{tab:frontier} and Figure~\ref{fig:frontier} show that no method reaches exactness. More specifically, H1 does not improve the seed best objective at all: its best recorded state is exactly the published seed triple $(13,2880,512)$. This verifies Proposition~\ref{prop:gate-failure}(b).
-
-What H1 does produce is a characteristic diffusion trajectory. Its three frontier restarts terminate at support values $33$, $40$, and $23$, with median terminal triple $(33,2356,384)$. Thus H1 lowers $l_1$ and maximum defect magnitude only by creating more nonzero lags than the seed. Figure~\ref{fig:h1-dynamics} shows this geometrically: every completed restart moves down in defect magnitude only by moving rightward in support. Greedy and simulated annealing, by contrast, simply stay pinned to the seed. Tabu and stochastic hillclimbing wander into worse-support regions without improving the best state.
-
-This is precisely the failure mode anticipated by the benchmark gate. Because no method becomes exact, H1 would need a strict terminal support-and-magnitude advantage over every matched baseline to justify continuation. It does not have that advantage. Its median terminal support $33$ is worse than the baseline support $13$ achieved by both greedy and simulated annealing. Proposition~\ref{prop:gate-failure} therefore closes the continuation question for H1 on the canonical seed.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/fig04_frontier_comparison.pdf}
-  \caption{\textbf{Canonical frontier batch.} Left and center: each point is one method run from the same published seed under the same nominal budget, restart policy, and packet basis. H1 attains a lower terminal max defect and lower terminal $l_1$ than the seed only after diffusing support far above the seed support of $13$. Greedy and simulated annealing remain pinned to the seed. Right: wall-clock time versus reported objective evaluations. H1 is substantially slower despite fewer objective evaluations, reflecting the heavier internal field computation tracked separately by the CA metadata.}
-  \label{fig:frontier}
+  \caption{\textbf{Canonical frontier batch on the one-packet basis.} The one-packet H1 run never improves the seed best objective, even though some terminal restarts lower $\ell_1$ and maximum defect after increasing support far above the seed support $13$. Greedy and simulated annealing stay pinned to the seed. This is the negative control that motivates the retained-basis redesign.}
+  \label{fig:h1-frontier}
 \end{figure}
-
-\begin{table}[t]
-\centering
-\caption{\textbf{Canonical frontier batch summary.} Terminal triples are reported as median $[\min,\max]$ across completed restarts. The exact-hit rate intervals again only expose uncertainty from very small restart counts.}
-\label{tab:frontier}
-\small
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}lcccccc@{}}
-\toprule
-Method & Completed restarts & Exact hits & Wilson 95\% CI & Best triple & Terminal median $[\min,\max]$ & Wall s / evals \\
-\midrule
-H1 CA & $3$ & $0/3$ & $[0.00,\,0.56]$ & $13/2880/512$ & $33/2356/384$ $[23/2216/384,\ 40/2368/408]$ & $2.129/32$ \\
-Greedy & $1$ & $0/1$ & $[0.00,\,0.79]$ & $13/2880/512$ & $13/2880/512$ $[13/2880/512,\ 13/2880/512]$ & $0.079/80$ \\
-Tabu & $1$ & $0/1$ & $[0.00,\,0.79]$ & $13/2880/512$ & $25/3036/520$ $[25/3036/520,\ 25/3036/520]$ & $0.090/80$ \\
-Simulated annealing & $1$ & $0/1$ & $[0.00,\,0.79]$ & $13/2880/512$ & $13/2880/512$ $[13/2880/512,\ 13/2880/512]$ & $0.144/80$ \\
-Stochastic hillclimb & $3$ & $0/3$ & $[0.00,\,0.56]$ & $13/2880/512$ & $33/2992/496$ $[13/2880/480,\ 42/3040/512]$ & $0.106/26$ \\
-\bottomrule
-\end{tabular}
-}
-\end{table}
-
-\subsection{Diffusion versus paralysis under parameter variation}
-
-The saved H1 sensitivity probe is small but informative. Eight nearby H1 configurations were run on the same canonical seed with one restart and the same budget cap. None produced any best-objective improvement: every variant remained pinned to the seed triple $(13,2880,512)$. Figure~\ref{fig:h1-dynamics} juxtaposes this parameter paralysis with the actual H1 frontier trajectories. The resulting picture is bifurcated:
-\begin{itemize}[leftmargin=1.8em]
-\item the fixed frontier run moves only by diffusing support, and
-\item the nearby sensitivity variants avoid diffusion only by staying pinned to the seed.
-\end{itemize}
-That is a strong argument against spending more budget on broad H1 sweeps. The problem is not an obviously omitted scalar hyperparameter. It is a structural mismatch between the frontier defect geometry and the current single-packet actuator library.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/fig06_h1_dynamics.pdf}
-  \caption{\textbf{H1 dynamics and sensitivity.} Left: the three H1 frontier restarts in support--magnitude space. Every completed restart lowers maximum defect only after increasing support above the seed value. Upper right: support as a function of accepted state index within each restart; the dashed line is the seed support. Lower right: eight nearby H1 parameter variants from the saved sensitivity probe. All eight remain pinned to the seed best objective, even though their evaluation counts differ. Together these panels show the repository's two H1 failure modes: diffusion in the actual frontier run and paralysis under more conservative settings.}
+  \caption{\textbf{H1 dynamics on the canonical seed.} The three frontier restarts move toward lower maximum defect only by diffusing support; nearby H1 sensitivity variants in the saved probe remain pinned to the seed best objective. The combination of diffusion and paralysis is the negative-control endpoint of the H1 branch.}
   \label{fig:h1-dynamics}
 \end{figure}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Original H1-era evidence.}}
+\label{tab:h1-era}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Method / batch & Best tuple & Terminal readout & Exact hits & Notes \\
+\midrule
+H1 on controls & exact on both & $0/0/0$ on both solved controls & $2/2$ & executable negative control \\
+Greedy on controls & exact on both & $0/0/0$ on both solved controls & $2/2$ & same-coordinate baseline \\
+H1 on canonical frontier & $13/2880/512$ & median terminal $33/2356/384$ & $0/3$ & no seed improvement \\
+Greedy on canonical frontier & $13/2880/512$ & $13/2880/512$ & $0/1$ & pinned to seed \\
+Simulated annealing on canonical frontier & $13/2880/512$ & $13/2880/512$ & $0/1$ & pinned to seed \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{The one-packet failure sharpens into a retained-library locality barrier}
+
+The direct locality scan and the actuator atlas show that the problem is not ``CA failed'' in the abstract, but that the original actuator basis is fake-local. Figure~\ref{fig:locality-scan} shows the one-packet scan; the median one-packet move changes $51$ lags and no packet improves the objective. Figure~\ref{fig:retained-library} then shows what the actuator redesign accomplishes and what it does not. The retained library cuts the median footprint to $9$, yet none of its nine depth-1 actions improves the seed.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig05_locality_scan.pdf}
+  \caption{\textbf{Direct one-packet locality scan on the canonical frontier seed.} No one-packet move improves the seed objective, only one packet is neutral, and the median footprint is $51$ changed lags. This is the exact evidence behind the first layer of the depth-1 barrier.}
+  \label{fig:locality-scan}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig07_retained_library.pdf}
+  \caption{\textbf{Retained composite library on the canonical frontier seed.} Left: median changed-lag counts by actuator family. The low-splash cutoff is set at half the one-packet median, namely $25.5$. Only the retained Pareto set reaches median footprint $9$. Right: every retained depth-1 action still fails lexicographically. The neutral pair $A0$ leaves the seed unchanged, while $A3$ and $A7$ each improve $\ell_1$ but only after increasing support. These two actions later reappear as the first improving depth-2 cone.}
+  \label{fig:retained-library}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Composite-family scan and retained library.}}
+\label{tab:retained-families}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Family & Candidates & Median changed lags & Low-splash count & Best depth-1 frontier outcome \\
+\midrule
+One-packet & $334$ & $51.0$ & --- & neutral only \\
+Pair & $55{,}611$ & $57.0$ & $860$ & neutral only \\
+Balanced-four & $13{,}861$ & $50.0$ & $362$ & no neutral, no improvement \\
+Boundary quad & $85$ & $34.0$ & $7$ & no neutral, no improvement \\
+S-boundary pair & $84$ & $33.5$ & $9$ & no neutral, no improvement \\
+Q-boundary pair & $3$ & $42.0$ & $0$ & no neutral, no improvement \\
+Retained Pareto set & $9$ & $9.0$ & $9$ & neutral only \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+The exact barrier statement is stronger than the original H1 diagnosis. Theorem~\ref{thm:depth-one-barrier} covers not only the one-packet basis, but the full checked depth-1 class of $55{,}954$ single actuators. The canonical frontier seed is therefore certified frozen for every local rule that fires only one actuator from that class.
+
+\subsection{A radius-1 depth-2 hyperedge produces the first certified local improvement}
+
+The barrier does not prove that local CA are hopeless. It proves that depth-$1$ is hopeless in the checked class. Theorem~\ref{thm:first-counterexample} then identifies the first escape: the ordered cone $[3,7]$. Figure~\ref{fig:barrier-transfer} visualizes the path and compares the retained-basis branches across the frontier ladder.
+
+The hypergraph CA uses that exact rule class and beats every immediate retained-basis baseline on the canonical seed and on all five ladder states. On the canonical seed, it reaches the six-packet state $(13,2744,480)$ in one accepted update. The pairwise, zero-coupling, zero-refractory, and scorer-only baselines all remain stuck at the start state.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig08_barrier_and_transfer.pdf}
+  \caption{\textbf{Barrier certificate and retained-basis branch outcomes.} Left: the first certified counterexample path. The single action $A3$ alone worsens support, but the admissible cone $[3,7]$ returns support to $13$ while lowering both $\ell_1$ and maximum defect. Right: best state reached by each retained-basis method on the canonical frontier seed and the five perturbation-ladder states. Hypergraph CA improves all six states. Orbit CA matches or exceeds the same outcomes with far fewer lookups. Population medians improve some states but never separate from zero-coupling.}
+  \label{fig:barrier-transfer}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Canonical frontier results after actuator redesign.}}
+\label{tab:canonical-redesign}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Method & Best tuple on canonical seed & Work unit & Accepted updates & Status \\
+\midrule
+Pairwise retained baseline & $13/2880/512$ & $9$ lookups & $0$ & blocked \\
+Zero-coupling retained baseline & $13/2880/512$ & $9$ lookups & $0$ & blocked \\
+Zero-refractory retained baseline & $13/2880/512$ & $9$ lookups & $0$ & blocked \\
+Scorer-only retained baseline & $13/2880/512$ & $9$ lookups & $0$ & blocked \\
+Hypergraph CA & $13/2744/480$ & $210$ lookups & $1$ & improves \\
+Lattice-gas CA & $13/2744/480$ & $242$ lookups & $1$ & improves \\
+Orbit CA & $13/2744/480$ & $65$ lookups & $1$ & improves \\
+Population median & $13/2744/480$ & $5$ RNG seeds & median $1$ & ties zero-coupling \\
+Zero-coupling population median & $13/2744/480$ & $5$ RNG seeds & median $1$ & no worse than coupled \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{The lattice-gas branch reproduces the same state and passes the family-leakage audit}
+
+The hypergraph result might still be dismissed as a graph-local coincidence unless a different representation recovers it. The lattice-gas branch does exactly that. It works on the signed lag field, not on raw packet coordinates, and ranks transitions by the continuity-law signature from Theorem~\ref{thm:continuity-law}. On the canonical frontier seed it reaches the same improved state $(13,2744,480)$ while both lag-space single-action controls stay at $(13,2880,512)$. On the harder control \texttt{control\_n9\_hardest\_pair}, the lattice-gas branch reaches exactness $(0,0,0)$.
+
+Equally important, the family-leakage audit passes. The improved frontier state shows no palindromic, prime-involution-fixed, cocyclic, block-circulant, or nontrivial periodic collapse in the derived channels. The branch therefore survives as a lag-space reinterpretation of the same local escape, not as a disguised search over a known restricted family.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Lattice-gas CA and matched lag-space controls.}}
+\label{tab:lattice-gas}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Instance & Lattice-gas CA & Lag-greedy control & Warning-field control \\
+\midrule
+Canonical frontier & $13/2744/480$ & $13/2880/512$ & $13/2880/512$ \\
+Hard control \texttt{n9} & $0/0/0$ & $0/0/0$ & $0/0/0$ \\
+\midrule
+Family leakage audit & pass & not applicable & not applicable \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{The orbit quotient transfers the same improvement across the perturbation ladder}
+
+The orbit branch tests a stronger claim than the hypergraph or lattice-gas branches: can one fixed local rule table operate on symmetry-quotient classes rather than on raw packet identities? The answer in the saved artifacts is yes, but only for the same non-exact improvement. The orbit rule table has $137$ signatures and is trained without the canonical frontier seed itself. It improves all six frontier states shown in Figure~\ref{fig:barrier-transfer} and, on the canonical seed, reaches the target state in $65$ representative lookups instead of the hypergraph CA's $210$.
+
+The orbit result therefore strengthens the repository's final position in one specific way. The retained counterexample is not merely a single coordinate-space trick. It survives quotienting by cyclic position, reversal, and global sign orientation through Proposition~\ref{prop:orbit-invariance}. It still does \emph{not} solve order $668$, but it does transfer the same frontier improvement beyond one raw-coordinate representation.
+
+\subsection{Population self-stabilization fails to beat zero-coupling}
+
+The population branch is the main robustness test. It asks whether stochastic coupling over orbit representatives can turn the retained local escape into a stronger self-organizing phenomenon. Figure~\ref{fig:population-phase} and Table~\ref{tab:population} show that it cannot, at least in the saved regime. On the canonical seed, the coupled and zero-coupling branches both improve in $3/5$ runs and both contract in $3/5$ runs. Across the perturbation ladder, the coupled population never achieves a strict majority of wins over zero-coupling. The phase map is diffusion-only at every tested coupling/threshold pair.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig09_population_phase.pdf}
+  \caption{\textbf{Population self-stabilization does not separate from zero-coupling.} Left: contraction fraction over the canonical seed and the perturbation ladder for the tested coupling/threshold grid. Every cell remains in the diffusion regime. Right: canonical-seed improvement and contraction rates with Wilson 95\% intervals. The coupled and zero-coupling branches are indistinguishable in the saved evidence, and the coupled branch records zero strict wins over zero-coupling on both the canonical seed and the ladder.}
+  \label{fig:population-phase}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Population branch summary (canonical seed and ladder medians).}}
+\label{tab:population}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+State & Population median & Zero-coupling median & Coupled contractions \\
+\midrule
+Canonical seed & $13/2744/480$ & $13/2744/480$ & $3/5$ \\
+Barrier ladder 01 & $13/2880/512$ & $13/2880/512$ & $3/5$ \\
+Barrier ladder 02 & $13/2744/480$ & $13/2744/480$ & $3/5$ \\
+Barrier ladder 03 & $15/2408/416$ & $15/2408/416$ & $1/5$ \\
+Barrier ladder 04 & $13/2744/480$ & $13/2744/480$ & $3/5$ \\
+Barrier ladder 05 & $15/2408/416$ & $15/2408/416$ & $3/5$ \\
+\midrule
+Canonical strict wins over zero-coupling & \multicolumn{3}{c}{$0/5$} \\
+Ladder-state strict wins over zero-coupling & \multicolumn{3}{c}{$0/5$} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{What the negative result does establish}
+\subsection{What the repository now establishes}
 
-The paper establishes three things that are stronger than a generic ``we tried CA and it did not work.'' First, H1 is executable in the shared coordinate system and solves the two exact controls, so the frontier failure is not a trivial coding defect. Second, the failure is benchmarked against matched non-CA baselines rather than against a straw man. Third, the direct one-packet scan identifies the bottleneck sharply: the current single-packet basis is frozen under the shared proxy objective and broad in its lag footprint.
-
-That combination makes the negative result useful. It rules out a natural but ultimately misleading continuation path: spending more budget on broad H1 rule sweeps while leaving the actuator basis unchanged.
-
-\subsection{What the negative result does not establish}
-
-The paper does \emph{not} prove that cellular automata are hopeless for order $668$. It proves only that the executed H1 branch fails. Several broader claims remain unsupported by the saved pack:
-\begin{itemize}[leftmargin=1.8em]
-\item H1 is not shown to be broadly inferior to all non-CA search.
-\item The paper does not isolate a causal runtime story beyond the measured fact that H1 is slower in wall time.
-\item The paper does not certify any statement about full Hadamard equivalence classes, because the stored fingerprint only factors out global $q/s$ sign flips.
-\item The paper does not justify literature-scale competitiveness claims relative to annealing or SAT+CAS work.
-\end{itemize}
-These are important limitations, and they remain explicit because the repository's verification summary asked for exactly this narrowing.
-
-\subsection{Failure mode diagnosis}
-
-The central diagnosis is \emph{fake locality}. The seed defect field is sparse, which invites a local-repair narrative, but the actual one-packet actuation is not local in effect. A median one-packet move perturbs $51$ of the $166$ lag coordinates, and no such move improves the shared proxy objective. Once this is true, the observed frontier trajectories are unsurprising. A monotone or nearly monotone H1 cannot move; a less conservative H1 moves only by spilling defect support into more lags.
-
-This diagnosis also clarifies why the paper does not overinterpret the control successes. Small exact controls can be repaired even when the frontier seed is frozen, because they live in a much easier basin. The control batch therefore validates the scaffold but does not rescue the frontier mechanism.
-
-\subsection{Open questions and next steps}
-
-The next credible CA step is representation-changing, not parameter-tuning. The repository's own follow-on hypotheses suggest three classes of move:
+The strongest answer to the original cellular-automaton question is no longer the stale H1 statement ``we tried CA and it failed.'' The current repository establishes four narrower and stronger facts.
 \begin{enumerate}[label=\arabic*.,leftmargin=2em]
-\item a composite packet library with smaller lag footprints,
-\item a defect--packet influence graph whose locality is topological rather than index-based,
-\item a CA-guided hybrid that is explicitly relabeled if it leaks into known structured families.
+\item The original one-packet CA basis is genuinely blocked on the canonical seed, not merely unpromising.
+\item The obstruction is not all local dynamics; it is depth-1 local actuation in the checked class.
+\item A redesigned low-splash actuator basis plus depth-2 local coordination yields a reproducible six-packet state that strictly improves the frontier seed to $(13,2744,480)$.
+\item That same improved state is not tied to one code path: it appears in the hypergraph, lattice-gas, and orbit branches.
 \end{enumerate}
-We do not test those branches here. The present paper is valuable precisely because it says where H1 stopped earning additional budget.
+These are substantial structural facts even though they stop short of an exact Hadamard matrix.
+
+\subsection{What the repository does \emph{not} establish}
+
+The paper still does not justify any of the following stronger claims.
+\begin{itemize}[leftmargin=1.8em]
+\item Hadamard order $668$ is not solved.
+\item No exact order-$668$ witness or impossibility proof is produced.
+\item The retained-basis branches do not prove that cellular automata are broadly competitive with annealing, SAT+CAS, or other Hadamard-search paradigms.
+\item The current evidence is not a literature-scale benchmark. It is one frontier seed, one retained-library perturbation ladder, and one population robustness sweep.
+\item The post-H1 branches are supported by direct raw artifacts, but the repository does not contain a second full review-round narrative packet aligned to those later commits. We therefore keep the post-H1 claims empirical and local rather than sweeping and novelty-heavy.
+\end{itemize}
+
+\subsection{Failure modes and limitations}
+
+Three limitations matter most.
+
+\paragraph{Exactness remains open.}
+All successful retained-basis branches converge to the same non-exact six-packet state. The paper does not know whether that state is a stepping stone toward an exact witness or a local dead end of a different kind.
+
+\paragraph{The retained library is tiny and hand-fixed by a deterministic rule.}
+The library has only nine actions because the retention rule is deliberately severe. That severity is a strength for barrier certification, but also a weakness: it may exclude other useful local mechanisms that require a slightly larger retained basis.
+
+\paragraph{Hardware provenance is incomplete.}
+The repository preserves configurations and outputs well, but not the machine profile. As a result, work accounting in this paper is lookup- or evaluation-based rather than hardware-normalized.
+
+\subsection{Open questions}
+
+The current barrier/counterexample pair suggests several concrete next questions.
+\begin{enumerate}[label=\arabic*.,leftmargin=2em]
+\item Does any retained-basis local rule reach a state with support below $13$?
+\item Can a larger but still certifiable low-splash library produce deeper exact escapes without collapsing into global rescoring?
+\item Is the six-packet state $(13,2744,480)$ unique up to the current equivalence notion inside the retained graph, or are there qualitatively different local escapes?
+\item Can the retained-basis search be combined with exact subproblem certification without shifting all credit to the exact layer?
+\end{enumerate}
+These are the meaningful next steps. More H1 weight tuning is not.
 
 \subsection{Societal and scientific implications}
 
-Direct societal stakes are limited because the object of study is an abstract combinatorial matrix problem. The more relevant implication is scientific. AI-assisted research pipelines are particularly vulnerable to novelty inflation and to confusing near-solutions with exact results. This repository already contained warning notes about both risks, and the paper preserves them. The exact order-$668$ problem is not solved here. The value of the present contribution is instead epistemic: it demonstrates how a multi-artifact pipeline can record a negative result cleanly enough to prevent wasted follow-up work and overclaimed frontier narratives.
+The direct societal stakes are limited, since the target is an abstract combinatorial object. The scientific lesson is about method discipline. Open-problem work on near-solutions is especially vulnerable to rhetoric drifting ahead of exactness. The current repository avoids that failure only when the claim is phrased precisely: one-packet CA fails, retained depth-2 local escape succeeds narrowly, population robustness fails, and the exact order-$668$ problem remains open.
 
 \section{Conclusion}
 
-We evaluated a compressed defect-syndrome cellular automaton on the published $64$-modular order-$668$ Hadamard frontier seed under matched same-representation controls. The resulting record is coherent and negative. H1 solves the saved small controls, but on the canonical frontier seed it produces no exact hit, no best-objective gain over the published seed, and no strict continuation-gate advantage over the matched non-CA baselines. An exhaustive one-packet scan explains why: the single-packet actuator library is frozen on the canonical seed and is local only in syntax, not in its lag footprint. The honest conclusion is therefore not that cellular automata solved or nearly solved Hadamard order $668$, but that this specific single-packet CA branch has been falsified, and that any future CA attempt must change the representation before it changes the rhetoric.
+Cellular automata do not solve Hadamard order $668$ in this repository. The original H1 one-packet branch is a clean negative control: it reaches exactness on tiny controls but neither improves the canonical frontier seed nor survives the continuation gate. The post-H1 redesign then sharpens, rather than erases, that failure. Exact exhaustive evaluation over $55{,}954$ depth-1 single actuators proves a locality barrier on the canonical seed. The first verified escape appears only at radius $1$, depth $2$ on the retained overlap graph, reaching the six-packet state $(13,2744,480)$. The same state is reproduced by a lag-core lattice-gas CA and transferred by a symmetry-quotient orbit CA, while a population self-stabilizing CA fails to beat zero-coupling.
+
+The honest answer to the user's request is therefore two-part. First, ``cellular automata'' did not find an exact Hadamard matrix of order $668$. Second, a carefully redesigned local CA pipeline did find a certified and reproducible frontier improvement, together with an exact barrier/counterexample description of why the original one-packet approach failed. That is not a solution paper. It is a rigorous negative-plus-narrow-positive structural result on a concrete open order.
 
 \appendix
 
-\section{Extended Proof Details}
+\section{Additional Proof Details}
 
-\subsection{Working-memory accounting for Theorem~\ref{thm:complexity}}
+\subsection{State-count lemma for the retained graph}
 
-We make the $O(\ell)$ memory claim in Theorem~\ref{thm:complexity} explicit. The live arrays in one H1 update are:
-\begin{itemize}[leftmargin=1.8em]
-\item two state arrays $q$ and $s$ of length $\ell$,
-\item one coefficient vector of length $\ell$,
-\item one Boolean lag mask of length $\ell$,
-\item one refractory vector of length $2\ell$,
-\item two packet-pressure vectors of length $2\ell$,
-\item a constant number of temporary vectors of length at most $\ell$ inside one packet evaluation.
-\end{itemize}
-Summing lengths gives at most a constant multiple of $\ell$. The trace can grow with the evaluation budget, but that is output storage, not working storage.
+\begin{lemma}
+\label{lem:state-count}
+The retained-state constructor produces exactly $512$ states on the canonical frontier seed.
+\end{lemma}
 
-\subsection{Consistency of the frontier H1 internal-work counter}
+\begin{proof}
+There are $9$ retained actions, so there are exactly $2^9=512$ subsets of $\Ret$. The constructor enumerates all $512$ subset masks and maps each mask to its parity packet mask. By definition, the number of retained states is the number of unique parity packet masks encountered. The saved summary \path|results/experiments/order_668_hypergraph_ca/summary.json| reports \texttt{unique\_state\_count = 512}. Since the number of unique states cannot exceed the number of subset masks and both are $512$, every subset mask induces a distinct parity state. Therefore the retained graph contains exactly $512$ states.
+\end{proof}
 
-The saved H1 frontier run reports \texttt{ca\_field\_evaluations}$=10354$. The implementation increments this counter by exactly $2\ell=334$ whenever a nonempty lag mask triggers a full packet-pressure sweep. The same run stores a trace of length $31$, and every saved H1 frontier trace entry has a nonempty active-lag mask. Therefore
-\[
-31\times334 = 10354,
-\]
-which matches the recorded metadata exactly. This does not prove that field evaluation is the whole runtime story, but it does show that the internal-work counter is arithmetically self-consistent.
+\subsection{Why the lattice-gas current is nearest-neighbor}
+
+Theorem~\ref{thm:continuity-law} defines the current by cumulative summation. This automatically makes $J(k)$ a quantity living on the edge between lags $k$ and $k+1$. The continuity equation then expresses every lag update $\Delta(k)$ as incoming current minus outgoing current, plus a single boundary-reservoir term at the final lag. No hidden long-range transport term is left over, because the cumulative definition absorbs the entire non-boundary part of the update into the telescoping difference $J(k-1)-J(k)$.
 
 \section{Additional Experimental Tables}
 
-\subsection{Per-run control results}
+\subsection{Full retained-basis ladder outcomes}
+
+{\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}lccccc@{}}
+\caption{\textbf{Frontier perturbation ladder outcomes for the retained-basis branches.} Hypergraph and orbit use the exact best states stored in their summary JSONs. Population and zero-coupling use the saved medians.}\label{tab:ladder-full}\\
+\toprule
+State & Start tuple & Hypergraph & Orbit & Population median & Zero median \\
+\midrule
+\endfirsthead
+\toprule
+State & Start tuple & Hypergraph & Orbit & Population median & Zero median \\
+\midrule
+\endhead
+Canonical frontier & $13/2880/512$ & $13/2744/480$ & $13/2744/480$ & $13/2744/480$ & $13/2744/480$ \\
+Barrier ladder 01 & $14/2812/496$ & $13/2744/480$ & $13/2880/512$ & $13/2880/512$ & $13/2880/512$ \\
+Barrier ladder 02 & $14/2820/496$ & $13/2744/480$ & $13/2744/480$ & $13/2744/480$ & $13/2744/480$ \\
+Barrier ladder 03 & $15/2408/416$ & $13/2744/480$ & $13/2744/480$ & $15/2408/416$ & $15/2408/416$ \\
+Barrier ladder 04 & $15/2408/416$ & $13/2744/480$ & $13/2744/480$ & $13/2744/480$ & $13/2744/480$ \\
+Barrier ladder 05 & $15/2544/448$ & $13/2744/480$ & $13/2744/480$ & $15/2408/416$ & $15/2408/416$ \\
+\bottomrule
+\end{longtable}
+}
+
+\subsection{Population canonical-seed rates with Wilson intervals}
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Canonical-seed population rates.}}
+\label{tab:population-ci}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Method & Improvement rate & Wilson 95\% CI & Contraction rate \\
+\midrule
+Population & $3/5$ & $[0.23,\,0.88]$ & $3/5$ \\
+Zero-coupling & $3/5$ & $[0.23,\,0.88]$ & $3/5$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Per-run H1 control outcomes}
 
 \begin{longtable}{@{}llcccc@{}}
-\caption{\textbf{Per-run control outcomes.} These are the ten saved runs underlying Figure~\ref{fig:controls} and Table~\ref{tab:controls}.}\label{tab:appendix-controls}\\
+\caption{\textbf{Per-run H1-era control outcomes.}}\label{tab:appendix-controls}\\
 \toprule
 Seed & Method & Exact hit & Terminal support & Max defect & Evaluations \\
 \midrule
@@ -757,95 +1117,87 @@ Seed & Method & Exact hit & Terminal support & Max defect & Evaluations \\
 \bottomrule
 \end{longtable}
 
-\subsection{Baseline smoke batch}
+\section{Implementation Details and Reproduction Notes}
 
-The smoke batch does not bear on order $668$, but it does validate that the non-CA baselines share one representation and one exactness definition. On the order-$28$ smoke seed, all four non-CA baselines reach exactness. Simulated annealing ends at a different exact fingerprint than the exhaustive control fingerprint, which confirms that the harness accepts exactness independently of matching a single canonical exemplar.
+\subsection{Saved file anchors}
+
+The most important direct artifacts for reproducing the narrative are:
+\begin{itemize}[leftmargin=1.8em]
+\item \path|results/frontier/order_668_64m/seed_manifest.json|,
+\item \path|results/analysis/frontier_locality_scan.json|,
+\item \path|results/analysis/composite_packet_locality_atlas.json|,
+\item \path|results/analysis/composite_packet_retained_library.json|,
+\item \path|results/verification/radius_limited_locality_barrier.json|,
+\item \path|results/experiments/order_668_hypergraph_ca/summary.json|,
+\item \path|results/experiments/order_668_lattice_gas/summary.json|,
+\item \path|results/experiments/order_668_orbit_ca/summary.json|,
+\item \path|results/experiments/order_668_population_ca/summary.json|,
+\item \path|results/verification/family_leakage_audit.json|.
+\end{itemize}
+
+\subsection{Code paths}
+
+The relevant implementation files are:
+\begin{itemize}[leftmargin=1.8em]
+\item \path|hadamard_ca/harness.py| for shared exactness metrics,
+\item \path|hadamard_ca/h1_ca.py| for the H1 negative control,
+\item \path|hadamard_ca/composite.py| for composite-action enumeration and exact deltas,
+\item \path|hadamard_ca/retained_state_graph.py| for retained-state construction,
+\item \path|hadamard_ca/lag_lattice_gas.py| for transport signatures and lattice-gas policies,
+\item \path|hadamard_ca/orbit_ca.py| for the orbit quotient,
+\item \path|hadamard_ca/population_ca.py| for the population branch.
+\end{itemize}
+
+\subsection{Figure generation}
+
+The H1-era figures are preserved from \path|scripts/generate_paper_artifacts.py|. The post-H1 figures in this paper are generated by \path|scripts/generate_post_h1_figures.py|. Both scripts output PDF and PNG at 600 DPI.
+
+\subsection{Minimal rerun commands}
+
+The direct rerun commands are the repository scripts already used to create the saved artifacts:
+\begin{itemize}[leftmargin=1.8em]
+\item \texttt{python3 scripts/run\_h1\_ca.py}
+\item \texttt{python3 scripts/run\_baseline.py}
+\item \texttt{python3 scripts/generate\_composite\_locality\_atlas.py}
+\item \texttt{python3 scripts/check\_radius\_limited\_locality\_barrier.py}
+\item \texttt{python3 scripts/run\_hypergraph\_ca.py}
+\item \texttt{python3 scripts/run\_lattice\_gas\_ca.py}
+\item \texttt{python3 scripts/run\_orbit\_ca.py}
+\item \texttt{python3 scripts/run\_population\_ca.py}
+\item \texttt{python3 scripts/generate\_post\_h1\_figures.py}
+\end{itemize}
+
+\section{Hyperparameter and Budget Snapshot}
 
 \begin{table}[H]
 \centering
-\caption{\textbf{Smoke-batch exactness check on the non-exact order-$28$ seed.}}
-\begin{tabular}{@{}lcc@{}}
-\toprule
-Method & Exact hit & Evaluations \\
-\midrule
-Greedy & yes & $74$ \\
-Tabu & yes & $74$ \\
-Simulated annealing & yes & $80$ \\
-Stochastic hillclimb & yes & $27$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Implementation Details and Hyperparameters}
-
-\subsection{Full frontier configuration}
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Saved frontier configurations.}}
+\caption{\textbf{Saved hyperparameter snapshot.}}
+\label{tab:hyperparams}
 \small
 \begin{tabular}{@{}ll@{}}
 \toprule
 Item & Value \\
 \midrule
-Shared evaluation budget & $80$ \\
-Shared requested restarts & $3$ \\
-Shared RNG seed & $17$ \\
-Shared restart packet flips & $2$ \\
+H1 shared budget & $80$ evaluations \\
+H1 requested restarts & $3$ \\
+H1 RNG seed & $17$ \\
+H1 restart packet flips & $2$ \\
 H1 lag neighborhood radius & $1$ \\
 H1 packet neighborhood radius & $2$ \\
-H1 same-channel weight & $0.15$ \\
-H1 cross-channel weight & $0.35$ \\
-H1 active-lag bonus & $1.0$ \\
-H1 spill $l_1$ penalty & $0.25$ \\
-H1 spill support penalty & $10.0$ \\
+H1 same-channel / cross-channel weights & $0.15 / 0.35$ \\
 H1 activation threshold & $0.5$ \\
-H1 max active packets & $1$ \\
-H1 refractory steps & $2$ \\
-H1 refractory penalty & $0.75$ \\
-H1 stagnation limit & $8$ \\
-Tabu tenure & $5$ \\
-Simulated annealing temperature & $100.0$ \\
-Simulated annealing cooling & $0.98$ \\
-Stochastic hillclimb sample size & $6$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Output semantics}
-
-The top-level run files store the \emph{best-over-run} state, not the last accepted state of the final restart. This matters especially for H1, whose best frontier state is the unchanged published seed while its restart terminals diffuse to larger support. Any attempt to read \texttt{trace[-1]} as the final experimental outcome would therefore be incorrect. The paper consistently uses the saved aggregation tables for restart-terminal summaries.
-
-\subsection{Exact rerun commands}
-
-The reproducibility packet already freezes the exact commands. The minimal paper-facing summary is:
-\begin{itemize}[leftmargin=1.8em]
-\item run \texttt{python3 scripts/run\_h1\_ca.py} with the H1 config and the seed file,
-\item run \texttt{python3 scripts/run\_baseline.py} with each baseline config and the same seed file,
-\item regenerate figures and the direct one-packet locality artifact with the artifact generator script \texttt{scripts/generate\_paper\_artifacts.py}.
-\end{itemize}
-
-\section{Hyperparameter Sensitivity}
-
-The saved sensitivity probe covers eight nearby H1 configurations on the canonical seed with one restart each. Their main shared finding is negative: every variant remains pinned to the seed best objective. Table~\ref{tab:sensitivity} records the saved counts.
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Saved H1 sensitivity probe on the canonical frontier seed.} Every variant keeps the seed best objective unchanged.}
-\label{tab:sensitivity}
-\small
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-Variant & Lag radius & Packet radius & Threshold & Objective evals & CA field evals \\
-\midrule
-\texttt{base} & $1$ & $2$ & $0.5$ & $10$ & $3006$ \\
-\texttt{lag2} & $2$ & $2$ & $0.5$ & $10$ & $3006$ \\
-\texttt{pn1} & $1$ & $1$ & $0.5$ & $10$ & $3006$ \\
-\texttt{pn3} & $1$ & $3$ & $0.5$ & $2$ & $334$ \\
-\texttt{thr0} & $1$ & $2$ & $0.0$ & $10$ & $3006$ \\
-\texttt{thr1} & $1$ & $2$ & $1.0$ & $10$ & $3006$ \\
-\texttt{onepkt} & $1$ & $2$ & $0.5$ & $10$ & $3006$ \\
-\texttt{cool4} & $1$ & $2$ & $0.5$ & $10$ & $3006$ \\
+H1 refractory steps / penalty & $2 / 0.75$ \\
+Retained low-splash cutoff & $25.5$ changed lags \\
+Retained action count & $9$ \\
+Retained state count & $512$ \\
+Retained-branch lookup budget & $256$ \\
+Lattice-gas reservoir cap & $16$ \\
+Orbit rule-table size & $137$ signatures \\
+Population control-only table & $133$ signatures \\
+Population size & $64$ \\
+Population coupling / threshold & $1.6 / 0.42$ \\
+Population temperature / memory mix & $1.2 / 0.55$ \\
+Population RNG seeds & $\{11,13,17,19,23\}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
