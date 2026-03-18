@@ -2,223 +2,388 @@
 
 ## Scope
 
-- `research_paper.tex` is absent, so this audit covers the claim-bearing repo artifacts instead:
-  - `results/research_context.json`
-  - `results/research_context.md`
-  - `sources.bib`
-  - `results/literature/semantic_scholar_manifest.json`
-  - `results/phase4_h1_frontier.md`
-  - `results/phase4_h2_screen.md`
-  - `results/phase4_ablations.md`
-  - `results/verification/verification_summary.md`
-  - `results/phase5_ca_vs_search_prior.md`
-  - `results/final_handoff.md`
-  - `results/swarm/gap_map.md`
-  - `results/swarm/falsifier.md`
-- I distinguish:
-  - repo-backed experimental claims, which should cite result files inside `results/`;
-  - literature/background claims, which need support from `sources.bib` or additional primary sources.
+Reviewed:
+
+- `research_paper.tex`
+- `sources.bib`
+- `results/research_context.md`
+- `results/literature/semantic_scholar_manifest.json`
+- `results/literature/literature_snapshot.json`
+
+Checked cited repo support where needed:
+
+- `results/phase2_certificate_grammar.md`
+- `results/phase3_h1_program.md`
+- `results/phase3_h2_program.md`
+- `results/phase3_h3_hedge.md`
+- `results/phase4_h1_frontier.md`
+- `results/phase4_h1_obstruction.json`
+- `results/phase4_width4_seed601.json`
+- `results/phase4_width6_seed602.json`
+- `results/phase4_width8_seed501.json`
+- `results/phase4_sparse_unrestricted_seed502.json`
+- `results/phase4_h2_screen.md`
+- `results/phase4_h2_screen.json`
+- `results/phase4_ablations.md`
+- `results/phase4_ablations.json`
+- `results/phase1_planning_note.md`
+- `results/phase4_experiment_matrix.md`
+- `results/literature/prior_art_watchlist.md`
+- `results/literature/prior_art_gap.md`
+- `results/verification/verification_summary.md`
+- `results/verification/benchmark_report.md`
+- `scripts/ca_kakeya_search.py`
+- `scripts/phase4_ablations.py`
+- `scripts/phase4_h2_screen.py`
+- `scripts/generate_paper_figures.py`
+
+Focus:
+
+- whether key paper claims have traceable support;
+- missing citations;
+- weak citations;
+- likely citation hallucinations or claim-to-source mismatches;
+- uncited comparisons.
+
+## Bottom Line
+
+The narrow negative result is mostly supportable:
+
+- exact H1 failure before scoring is well supported;
+- width-4 and width-6 exact best scores of `2.0` are well supported;
+- the H2 "no lift" claim is supportable on the tiny four-family screen;
+- the width-4 ablation story is locally supportable.
+
+The main citation risk is not fabricated outside literature. It is claim-to-source mismatch inside the repo:
+
+- the benchmark target / threshold provenance is uncited;
+- the `0/16` width-8 boundary-stress claim is not present in the cited ablation artifacts;
+- the exact H1 identity-word / extracted-instance description is cited to the wrong artifacts;
+- the false-positive prior-art paragraph cites the wrong repo artifact.
+
+I did not find an obviously nonexistent external paper in `sources.bib`, but I did find at least one concrete metadata error:
+
+- `sources.bib:54-59` lists `Cristian Pohoata`; the saved literature snapshot records `C. Pohoata`.
+
+## Key Claim Support
+
+| Claim in paper | Status | Best supporting source(s) | Notes |
+| --- | --- | --- | --- |
+| H1 fails before scoring by an exact one-seed obstruction | supported | `results/phase4_h1_obstruction.json`; `results/phase4_h1_frontier.md` | good citation boundary |
+| Best verified direct controls are `2.0` at widths 4 and 6 | supported | `results/phase4_width4_seed601.json`; `results/phase4_width6_seed602.json` | exact scores and certificate lines match |
+| Width-8 witnesses are worse than width-4/6 controls | supported locally | `results/phase4_width8_seed501.json`; `results/phase4_sparse_unrestricted_seed502.json` | true numerically, but not a matched baseline comparison |
+| H2 adds no screening value on the tested family set | supported locally | `results/phase4_h2_screen.json`; `results/phase4_h2_screen.md` | only four family IDs |
+| Width-4 witness is fragile under ablation | supported locally | `results/phase4_ablations.json`; `results/phase4_ablations.md` | sample sizes are tiny |
+| Direct controls do not scale under frozen `X` | weak / overstated | `results/phase4_ablations.json`; `scripts/phase4_ablations.py`; `results/verification/benchmark_report.md` | saved scale test changes search parameters |
+| Benchmark target `1.675` and `1.70` plan threshold | missing / uncited | `results/phase1_planning_note.md`; `results/phase4_experiment_matrix.md`; existing `epochai2025arithmetickakeya` bib entry | paper currently gives no source |
 
 ## Findings
 
-### 1. Missing core citations in the intro / problem background
+### 1. Missing source for the benchmark formalism and the `1.675` / `1.70` thresholds
 
 Severity: high
 
-The task text embedded in `results/research_context.json` makes several mathematical-history claims that are not fully supported by the current bibliography:
+Affected paper locations:
 
-- arithmetic Kakeya was implicitly formulated by Katz and Tao;
-- `AK(2)` is trivial;
-- `AK(alpha)` implies the Hausdorff-dimension lower bound
-  `alpha^{-1} d + 1 - alpha^{-1}`;
-- Bourgain established the `method of slices` / Minkowski-dimension version;
-- the Hausdorff-dimension upgrade follows from work of Leng, Sah, and Sawhney.
+- `research_paper.tex:65`
+- `research_paper.tex:81`
+- `research_paper.tex:145`
+- `research_paper.tex:565-570`
 
-Current support is incomplete:
+Problem:
 
-- `sources.bib` has Katz-Tao / Green-Ruzsa / Cowen-Breen / Pohoata-Zakharov, but no Bourgain Kakeya-dimension paper.
-- `sources.bib` does not include the specific Leng-Sah-Sawhney paper named in the prose.
-- There is no direct citation for the exact Hausdorff-dimension-upgrade sentence.
+- The paper repeatedly uses the FrontierMath-style benchmark, the exact target `<= 1.675`, and the broader `1.70` plausibility threshold without citing any source for them.
 
-Verdict:
+What exists in-repo:
 
-- The background section is under-cited and should not be used in a paper as-is.
+- `results/phase1_planning_note.md:3` gives the exact `<= 1.675` target.
+- `results/phase4_experiment_matrix.md:88-89` gives the `1.70` neighborhood decision rule.
+- `sources.bib` already contains `epochai2025arithmetickakeya`, but the paper never cites it.
 
-### 2. Frontier-status claims are being sourced too indirectly
+Why this matters:
+
+- These numbers are not self-justifying. They are part of the benchmark framing.
+- Without a citation, readers cannot tell whether `1.675` is a repo-local target, a FrontierMath task threshold, or a theorem frontier number.
+
+Recommended repair:
+
+- Cite `epochai2025arithmetickakeya` for FrontierMath task context.
+- Add repo bibliography entries for `results/phase1_planning_note.md` and `results/phase4_experiment_matrix.md` if the paper wants to document local planning provenance for `1.675` and `1.70`.
+
+### 2. The `0/16` width-8 boundary-stress claim is not supported by the cited ablation artifacts
 
 Severity: high
 
-`results/swarm/gap_map.md` currently treats the FrontierMath / Epoch note as support for research-state claims:
+Affected paper locations:
 
-- current explicit limit `1.6751308`;
-- `X` must grow without bound near that limit;
-- the easy `3/2` barrier for elementary arguments.
+- `research_paper.tex:519`
+- `research_paper.tex:638-643`
 
-That is too weak for a paper citation trail.
+Problem:
 
-Current support:
+- The paper states that the width-8 boundary-stress archive contains `0/16` successes and gives a Wilson upper bound of about `0.19`.
+- The only citation attached to this discussion is `archivara_ablations`, but neither `results/phase4_ablations.md` nor `results/phase4_ablations.json` contains that boundary-stress row.
 
-- `sources.bib` contains `epochai2025arithmetickakeya`, which is acceptable as task context.
-- `sources.bib` contains `tao2025`, which is good support for "the current best upper bound is about `1.67513...`" and for the bounded-slope / rational-complexity warning line.
-- `sources.bib` does not contain the primary papers needed for the stronger `1.6751308`, unbounded-`X`, or `3/2`-barrier statements.
+What the cited artifact actually contains:
 
-Verdict:
+- `results/phase4_ablations.json:43-182` has randomized `R/T/X`, isotropic variants, boundary-seed removal, and two frozen-`X` scale rows.
+- `results/phase4_ablations.md:19-30` matches that same set of rows.
 
-- Keep `epochai2025arithmetickakeya` only as a task/frontier note.
-- Replace theorem/history statements with primary citations before publication.
+Where the `0/16` number actually comes from:
 
-### 3. The negative experimental result is mostly supported, but it must be cited to repo artifacts, not to the bibliography
+- there are 16 raw files matching `results/phase4_sparse_boundary*.json`;
+- all 16 have `best: null`;
+- `scripts/generate_paper_figures.py:619-624` hard-codes `("boundary\nwidth-8 stress": (0, 16))`.
 
-Severity: medium
+Why this matters:
 
-The central negative claims are traceable in the repo:
+- As written, this is a claim-level citation hallucination: the cited source does not contain the quoted evidence.
+- It also makes `research_paper.tex:487` false, because not every quantitative claim in Results/Discussion is traced to a cited JSON/markdown artifact.
 
-- H1 exact one-seed obstruction:
-  - `results/phase4_h1_frontier.md`
-  - `results/phase4_h1_obstruction.json`
-- H2 adds no screening value on the tested family set:
-  - `results/phase4_h2_screen.md`
-  - `results/phase4_h2_screen.json`
-- direct width-4 / width-6 controls around score `2.0`:
-  - `results/phase4_width4_seed601.json`
-  - `results/phase4_width6_seed602.json`
-- width-4 fragility under seed / `R` / `T` perturbations:
-  - `results/phase4_ablations.md`
-  - `results/phase4_ablations.json`
+Recommended repair:
 
-This supports a narrow claim only:
+- package the 16 `phase4_sparse_boundary*.json` files into one summary artifact and cite that; or
+- add a bibliography entry for `results/verification/benchmark_report.md`, which documents the 16-file archive; or
+- remove the `0/16` claim from the paper until a proper artifact is cited.
 
-- the frozen H1 route is exactly obstructed;
-- H2 adds no value on the tiny screened family set;
-- surviving direct corridor controls stay around `2.0` and are fragile.
+### 3. The exact H1 identity-word / extracted-instance narrative is cited to the wrong source
 
-Verdict:
+Severity: high
 
-- These claims are supportable if the writeup cites the actual result files.
-- They should not be cited to Green-Ruzsa, Tao 2025, or any other external paper.
+Affected paper locations:
 
-### 4. Several literature-comparison sentences are only partially supported
+- `research_paper.tex:273-276`
+- `research_paper.tex:531`
 
-Severity: medium
+Problem:
 
-The final narrative repeatedly says that the surviving controls remain in a bounded-slope / low-rational-complexity basin:
+- The paper describes a specific representative H1 family:
+  - identity-style word built from `L_a`, `M_a`, and `R_a`;
+  - top row carries `u`;
+  - bottom row is zero;
+  - vertical edges carry `z`;
+  - exactly one singleton seed at the left boundary.
+- The citations given are `archivara_h1_program` and `archivara_h1_obstruction`.
+- Those artifacts support the template family, one-seed/empty-`T` obstruction, and extractor rules in general, but not that exact representative identity instance.
 
-- `results/phase4_h1_frontier.md`
-- `results/phase4_ablations.md`
-- `results/verification/verification_summary.md`
-- `results/phase5_ca_vs_search_prior.md`
+Where the exact representative is actually encoded:
 
-What is supported:
+- `scripts/phase4_h2_screen.py:38-68`
+  - `h1_identity_word`
+  - `h1_identity_instance`
 
-- `tao2025` is the correct barrier paper for bounded-slope / rational-complexity caution.
+Why this matters:
 
-What is missing:
+- The paper is not only using the H1 family definition. It is pointing to one specific representative extraction.
+- That specific representative needs its own source, or the prose should be weakened.
 
-- the repo does not store an explicit rational-complexity measurement for the width-4 / width-6 / width-8 survivors;
-- the claim is therefore interpretive, not directly measured.
+Recommended repair:
 
-Verdict:
+- add a bibliography entry for `scripts/phase4_h2_screen.py`; or
+- export the representative H1 identity instance to a small saved artifact and cite that; or
+- rewrite the prose to stay at the level actually supported by `archivara_h1_program` and `archivara_h1_obstruction`.
 
-- Keep this language only if it is explicitly framed as "consistent with" or "suggestive of", and cite both:
-  - the local result artifact; and
-  - `tao2025`.
-- If the sentence is meant as a measured fact, add the missing slope / complexity summaries first.
-
-### 5. `sources.bib` contains several hybrid records
+### 4. The false-positive prior-art paragraph cites the wrong repo artifact
 
 Severity: medium
 
-I do not see an obviously fabricated paper in `sources.bib`, but I do see multiple weak records that combine preprint-year metadata with journal DOI / journal venue metadata.
+Affected paper location:
 
-Most important keys to normalize:
+- `research_paper.tex:116`
 
-- `green2017`
-- `bond2013`
-- `bond2014`
-- `bond2015`
-- `bollobas2014`
-- `hartarsky2018`
-- `kubica2018`
-- `hemenway2013`
+Problem:
 
-Pattern:
+- The paragraph about spurious watchlist items and token overlap cites `archivara_verification`.
+- `results/verification/verification_summary.md` does not record the specific false-positive titles or the token-overlap explanation.
 
-- arXiv/preprint year in `year={...}`;
-- later journal venue and DOI in the same entry;
-- in one case (`bollobas2014`) the author spelling is also garbled.
+Where the support actually is:
 
-Verdict:
+- `results/literature/prior_art_watchlist.md:1-40`
+- `results/literature/prior_art_gap.md:1-55`
 
-- These are weak citations, not clear hallucinations.
-- Normalize each one to a single version:
-  - either preprint metadata only;
-  - or journal metadata only, with the journal publication year.
+Why this matters:
 
-### 6. Some novelty-positioning claims are uncited inferences or likely overreads
+- The claim is true in the repo, but the citation target is wrong.
+- This is another claim-to-source mismatch, not a missing fact.
+
+Recommended repair:
+
+- add a bibliography entry for `results/literature/prior_art_gap.md` or `results/literature/prior_art_watchlist.md`;
+- keep `archivara_verification` for high-level framing, not for the specific watchlist titles.
+
+### 5. Setup and uncertainty statements are weakly traced or uncited
 
 Severity: medium
 
-The most important ones:
+Affected paper locations:
 
-- `results/swarm/gap_map.md` says the verifier-friendly `X`-constructible / forcing-pair language is a repackaging of Katz-Tao small-graph methods rather than a mature standalone subliterature.
-- `results/swarm/gap_map.md` says Tao 2025 shows automated experiments improved lower bounds more readily than upper bounds.
-- `results/swarm/falsifier.md` says abelian networks explicitly contain bootstrap percolation as an example.
+- `research_paper.tex:515`
+- `research_paper.tex:519`
+- `research_paper.tex:304`
 
-These may be reasonable working interpretations, but the current repo does not attach precise citations to them.
+Problems:
 
-Verdict:
+- hardware/software environment (`Linux x86_64`, `20` logical cores, `1.0 TiB`, exact package versions) is uncited;
+- the ablation RNG seed `1901` is not cited in the paper and appears only in `scripts/phase4_ablations.py`;
+- the uncertainty paragraph mixes supported saved rows with the unsupported width-8 boundary-stress count;
+- "runtime remained negligible on a commodity multi-core server" is an uncited performance claim.
 
-- Treat them as author inference unless exact sources are added.
-- The Tao 2025 lower-bound / upper-bound gloss is the closest thing here to a likely citation overread.
+What I found:
 
-## Claim Support Matrix
+- `scripts/phase4_ablations.py:214` sets the default RNG seed to `1901`;
+- I did not find a saved environment artifact supporting the exact OS / CPU / RAM / package-version paragraph.
 
-| Claim | Support status | What should be cited |
-| --- | --- | --- |
-| H1 fails before scoring by an exact one-seed obstruction | supported | `results/phase4_h1_obstruction.json`, `results/phase4_h1_frontier.md` |
-| H2 adds no screening value on the tested family set | supported, local only | `results/phase4_h2_screen.json`, `results/phase4_h2_screen.md` |
-| Best direct controls are around score `2.0` on width 4 and 6 | supported | `results/phase4_width4_seed601.json`, `results/phase4_width6_seed602.json`, plus summary markdown if desired |
-| Width-4 survivor is boundary-sensitive / fragile under ablation | supported | `results/phase4_ablations.json`, `results/phase4_ablations.md` |
-| Surviving controls sit in a bounded-slope / low-rational-complexity basin | partially supported | local artifacts plus `tao2025`, or else soften wording |
-| Arithmetic Kakeya background and Hausdorff-dimension implication paragraph | under-supported | add primary math citations; current `sources.bib` is insufficient |
-| Current explicit limit `1.6751308`, unbounded-`X` near the limit, `3/2` elementary barrier | under-supported | add primary frontier/history papers; do not rely on `epochai2025arithmetickakeya` alone |
+Recommended repair:
 
-## Most Important Sources To Add
+- if the setup paragraph stays, add a saved environment artifact and cite it;
+- if the `1901` seed stays, add a bibliography entry for `scripts/phase4_ablations.py` or a run log that records it;
+- otherwise trim these details.
 
-1. Jean Bourgain, *On the dimension of Kakeya sets and related maximal inequalities*.
+### 6. Some comparisons are true only in a narrow or interpretive sense
 
-- Needed for the `method of slices` / Minkowski-dimension discussion in the intro.
+Severity: medium
 
-2. The exact Leng-Sah-Sawhney paper intended by the Hausdorff-dimension-upgrade sentence.
+Affected paper locations:
 
-- The obvious candidate is *Improved Bounds for Szemeredi's Theorem*.
-- Verify that it is in fact the paper being used before citing it.
+- `research_paper.tex:102`
+- `research_paper.tex:615-638`
+- `research_paper.tex:686`
 
-3. Nets Katz and Terence Tao, *New bounds for Kakeya problems*.
+Problems:
 
-- Needed if the writeup keeps the historical improvement line around `AK(7/4)` or the small-graph / concrete-construction discussion.
+- `tao2025` is the right barrier paper for bounded slopes / rational complexity, but the line
+  "it identifies a natural basin in which small, low-complexity certificate families can stagnate"
+  is interpretive rather than directly measured here;
+- the "frozen-`X` non-transfer" claim is stronger than the saved ablation actually warrants.
 
-4. The Katz paper behind the `3/2` elementary-argument ceiling.
+Why the frozen-`X` claim is weak:
 
-- `gap_map.md` and `falsifier.md` use this as a live objection, but `sources.bib` does not currently support it.
+- `scripts/phase4_ablations.py:193-205` runs the scale rows with `seed_budget=6` and `boundary_band=2`;
+- this differs from the base saved direct-search settings reported in the paper;
+- `results/verification/benchmark_report.md` already flags that confound.
 
-5. The primary paper(s) behind the current explicit `1.6751308` construction.
+Recommended repair:
 
-- If the writeup only needs "the current best upper bound is about `1.67513...`", `tao2025` is adequate.
-- If it keeps the stronger `1.6751308` plus unbounded-`X` wording, add the primary construction papers instead of citing the Epoch page.
+- keep the Tao comparison as "consistent with" / "interpretive";
+- rewrite the ablation conclusion as:
+  - "no forcing witness was found under the saved fixed-motif frozen-`X` stress test"
+  instead of
+  - "the direct controls do not improve with width under frozen-`X` scaling."
 
-## Highest-Leverage Repairs Inside `sources.bib`
+### 7. The H2 and ablation claims are supportable, but only with the paper's current local qualifiers
 
-- Normalize the hybrid preprint/journal entries listed above.
-- Add full journal metadata to `katz1999` if the journal version is intended.
-- Decide whether `cowenbreen2020`, `pohoata2024`, and `tao2025` should stay as preprint-style entries rather than incomplete `@article` records.
+Severity: medium
 
-## Audit Verdict
+Affected paper locations:
 
-The final narrow negative position is supportable, but only if the writeup keeps the citation boundary clean:
+- `research_paper.tex:585-609`
+- `research_paper.tex:615-643`
 
-- experimental outcomes must cite repo artifacts;
-- historical and frontier claims must cite primary papers, not just Semantic Scholar or FrontierMath pages;
-- bounded-slope / rational-complexity comparisons must be framed as interpretation unless explicit measurements are added.
+Assessment:
 
-No obvious nonexistent paper was found in `sources.bib`, but there is substantial metadata drift and several uncited comparison sentences. The main citation risk is over-claiming from secondary sources or from inference-heavy novelty language, not a single fake reference.
+- The H2 screen is supportable only "on the tested family set," which is four family IDs total.
+- The ablation story is supportable only for the one saved width-4 base witness and tiny randomized samples (`0/4`, `0/4`, `3/4`).
+
+Recommended repair:
+
+- keep the local qualifiers already present;
+- do not widen those claims beyond the saved family set and saved samples.
+
+### 8. The bootstrap / abelian / decoder citations are weak only if they are read as direct prior art
+
+Severity: low
+
+Affected paper locations:
+
+- `research_paper.tex:81`
+- `research_paper.tex:108`
+- `research_paper.tex:112`
+
+Assessment:
+
+- I did not find evidence that these are fabricated references.
+- The issue is framing: these are analogy / nearby-language citations, not direct arithmetic-Kakeya support.
+
+Recommended repair:
+
+- leave them in only as conceptual-overlap citations;
+- avoid wording that implies these papers directly motivate or validate the corridor benchmark.
+
+### 9. Bibliography hygiene: one concrete metadata error, plus some version-mixing
+
+Severity: medium
+
+Concrete error:
+
+- `sources.bib:54-59` gives `Cristian Pohoata`.
+- `results/literature/literature_snapshot.json:155-160` records the same paper with author `C. Pohoata`.
+
+Likely intended fix:
+
+- verify the preferred author spelling from the primary source and update `pohoata2024`.
+
+Lower-priority style issue:
+
+- several entries mix preprint-year naming with later journal metadata.
+- This is sloppy, but it is weaker than the claim-to-source mismatches above.
+
+## Likely Citation Hallucinations Or Misattributions
+
+These are the main claim-level hallucination risks I found:
+
+1. `archivara_ablations` cited as support for the width-8 boundary-stress `0/16` claim.
+   - The cited artifact does not contain that row.
+
+2. `archivara_h1_program` plus `archivara_h1_obstruction` cited as support for the exact H1 identity representative.
+   - The exact identity representative is actually encoded in `scripts/phase4_h2_screen.py`.
+
+3. `archivara_verification` cited as support for the specific false-positive watchlist titles and token-overlap explanation.
+   - Those specifics live in the prior-art files, not the verification summary.
+
+No obvious nonexistent external paper was detected in `sources.bib`.
+
+## Most Important Concrete Sources To Add
+
+1. `epochai2025arithmetickakeya`
+   - already present in `sources.bib`, but currently unused;
+   - best immediate source for the FrontierMath-style task context.
+
+2. A new bibliography entry for `results/phase1_planning_note.md`
+   - supports the local `<= 1.675` target as a planned repo objective.
+
+3. A new bibliography entry for `results/phase4_experiment_matrix.md`
+   - supports the local `1.70` plausibility threshold and decision rule.
+
+4. A new bibliography entry for `results/literature/prior_art_gap.md`
+   - best repo-local support for the false-positive watchlist discussion.
+
+5. A new bibliography entry for `scripts/phase4_h2_screen.py`
+   - needed if the paper keeps the exact H1 identity representative in prose or figure captions.
+
+6. A new summary artifact for the 16 `results/phase4_sparse_boundary*.json` files
+   - needed if the paper keeps the `0/16` width-8 boundary-stress claim.
+
+7. A saved environment artifact
+   - needed only if the hardware/software paragraph stays.
+
+8. Keep `tao2025`
+   - good support for the bounded-slopes / rational-complexity caution and for the "best upper bound is about `1.67513...`" frontier note;
+   - not enough by itself for the local `1.675` benchmark target or `1.70` plan threshold.
+
+## Publication-Safe Position Right Now
+
+With current evidence and citations, the paper can safely claim only:
+
+- exact H1 failure before scoring;
+- exact direct controls at `2.0` for widths 4 and 6;
+- exploratory width-8 rows are worse than those saved width-4/6 controls;
+- H2 adds no visible screening lift on the tiny four-family screen;
+- the width-4 direct witness is locally fragile under the saved ablations.
+
+The paper is not yet citation-clean on:
+
+- the provenance of the `1.675` target and `1.70` threshold;
+- the `0/16` width-8 boundary-stress count;
+- the exact representative H1 identity narrative;
+- the false-positive prior-art paragraph;
+- the hardware/software setup paragraph.
