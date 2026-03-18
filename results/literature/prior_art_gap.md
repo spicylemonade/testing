@@ -57,7 +57,7 @@ These entries remain relevant only as a reminder that the original novelty guard
 ## B. Actual Arithmetic Kakeya / Sum-Difference Line
 
 ### 1. Katz-Tao (1999), `BOUNDS ON ARITHMETIC PROJECTIONS, AND APPLICATIONS TO THE KAKEYA CONJECTURE`
-- Why it is close: Foundational source of the arithmetic-projection formulation that the current verifier-friendly certificate language descends from.
+- Why it is close: Foundational source of the arithmetic-projection formulation that the current verifier-friendly certificate language sits within.
 - Differentiation hypothesis: Any surviving contribution must be an exact certificate search or extracted witness family inside this line, not a new foundational reformulation.
 - Evidence artifact(s): `sources.bib`, `results/literature/literature_snapshot.json`, `results/swarm/gap_map.md`
 - Pivot decision (if any): Treat as the baseline ancestor; do not claim a new projection framework.
@@ -75,7 +75,7 @@ These entries remain relevant only as a reminder that the original novelty guard
 - Pivot decision (if any): Treat as a reason not to market the work as “another reformulation.”
 
 ### 4. Pohoata-Zakharov (2024), `Generalized Arithmetic Kakeya`
-- Why it is close: Closest theorem-level extension in the repaired snapshot.
+- Why it is close: Nearby theorem-level work in the repaired snapshot.
 - Differentiation hypothesis: Unless the work proves new sum-difference inequalities or a generalized theorem, the honest claim stays “computational search protocol in the original verifier setting.”
 - Evidence artifact(s): `sources.bib`, `results/literature/literature_snapshot.json`, `results/swarm/gap_map.md`
 - Pivot decision (if any): Do not present CA search as a competing theorem.
@@ -154,3 +154,29 @@ These entries remain relevant only as a reminder that the original novelty guard
 - Distinction from Tao 2025 bounded-many-slopes: H3 is killed unless its realized slope and rational-complexity statistics move out of the bounded-slope basin while improving exact score.
 - Distinction from local-decoder folklore: H3 keeps the same exact corridor extractor and wins only if the small label schedule improves verified score rather than decoder-style surrogate metrics.
 - Distinction from the corrupted watchlist: no added burden there; the real burden is avoiding a mere rebranding of bounded-slope or local-decoder search.
+
+## G. Final Outcome Notes
+
+- Final status of H1:
+  - killed by an exact one-seed obstruction before any level-1 versus level-2 score comparison.
+  - consequence for novelty: no surviving bootstrap/CA-style positive claim remains.
+
+- Final status of H2:
+  - killed because target-direction abelian invariants added no screening value beyond raw support/rank/solvability features on the same family IDs.
+  - consequence for novelty: no surviving abelian-network differentiation remains beyond a negative screening comparison.
+
+- Final status of the direct corridor witnesses:
+  - small exact controls survive around score `2.0`, but only as finite-size, boundary-sensitive controls in the same tiny fixed-`X` corridor regime.
+  - consequence for novelty: the surviving claim is operational and negative, not theorem-level and not a new formulation.
+
+- Final honest differentiation from the closest lines:
+  - from Katz-Tao / Green-Ruzsa / Cowen-Breen / Pohoata-Zakharov:
+    - no new theorem or formulation; only an exact corridor benchmark-and-falsification workflow.
+  - from Tao 2025:
+    - the surviving controls never leave the tiny fixed-`X` corridor regime flagged by that barrier note, so they do not challenge it.
+  - from bootstrap/critical CA folklore:
+    - the intended CA route failed; the final artifact is evidence against overclaiming that forcing behaves like a useful CA mechanism here.
+  - from abelian-network folklore:
+    - the abelian language was tested only as a screen and failed.
+  - from local-decoder folklore:
+    - no H3 activation, no decoder-like positive route, no slope-bloom evidence.
