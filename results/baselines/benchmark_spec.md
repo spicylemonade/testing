@@ -1,108 +1,111 @@
-# Benchmark Specification
+# Benchmark Spec
 
-This file freezes the matched baseline matrix for the first exact-verification pass. No runs are authorized yet because `results/verification/verification_summary.md` records that the exact verifier is missing.
+## Scope
 
-## Shared Evaluation Budget
+This file defines the matched non-CA baseline matrix for the `H1` lane. It is a planning artifact only until an exact verifier exists. No baseline may claim success using a proxy score or a permissive decoder.
 
-- Active lane only: `H1`
-- Tiny-grid scope only:
-  - `d_1 x d_2` and `d_1 x d_2 x d_3`
-  - no larger grids before the first audit
-- Exact-decode budget:
-  - at most `10^3` exact decodes per CA family
-  - every baseline receives the same exact-decode budget per matched condition
-- Family count:
-  - at most `3` H1 rule families before review
-  - each baseline must be evaluated on the same grid set, alphabet budget, and decode budget
+## Shared Fairness Rules
 
-## Shared Structural Budgets
+Every promoted CA family and every baseline must use:
 
-- Same legal alphabet class:
-  - matched `|X|`
-  - matched rational-complexity regime
-  - matched prohibition on nonzero `(a,b)` with `a+b=0`
-- Same graph-shape budget:
-  - matched `d`-shape family
-  - matched number of stages `k`
-- Same density budget:
-  - matched nonzero `f_i` density
-  - matched initial `|R|` and `|T|` budget range
-- Same decoder:
-  - identical legality filter
-  - identical exact score accounting
-  - no repair on any method
-- Same holdout policy:
-  - every promoted condition must be retested on at least one larger or different-aspect-ratio grid family
-  - no method may be evaluated only on the training/search grid shapes
+- the same exact decoder and exact score function;
+- the same legal grid shapes in a given comparison block;
+- the same `|X|` budget or the same explicit `X` alphabet when `X` is fixed;
+- the same target nonzero-edge density band;
+- the same exact-decode budget.
 
-## Required Non-CA Baselines
+For the first gate, the budget envelope is:
+
+- at most `3` H1 rule families;
+- at most `10^3` exact decodes per family;
+- therefore at most `10^3` exact decodes per baseline family per comparison block.
+
+## Matched Budgets
+
+### Exact-decode budget
+
+- Each baseline receives exactly the same number of exact witness evaluations as the CA family it is compared against.
+- If the CA family uses `N` exact decodes on a grid block, the baseline also gets `N`.
+
+### Alphabet budget
+
+- If the CA family fixes `X`, each baseline must use that same `X`.
+- If the CA family searches over `X`, the baseline must use the same allowed `|X|` range and the same legality rule `a+b != 0` for nonzero labels.
+
+### Edge-density budget
+
+- Let `rho = m(G) / n(G)` for a decoded witness.
+- Each baseline must target the same density band as the CA family on the same grid block.
+- For the tiny-grid gate, use a comparison band of `rho_target +/- 10%` relative error unless the CA family already has a tighter fixed density.
+
+## Baseline Matrix
 
 ### Baseline A: Random Local Search
 
-- Representation:
-  - sample legal `X`, `d`, `f_i`, `R`, and `T` directly in the same witness encoding.
-- Search move:
-  - local random edits to one coordinate block, one edge label, one seed element of `R`, or one vertex in `T`.
+- Proposal type:
+  - randomly sample legal local edits to a witness parameterization while staying within the matched `|X|` and density budget.
 - Purpose:
-  - tests whether any apparent CA gain is better than plain local mutation under the same verifier.
+  - tests whether simple local perturbation already matches the CA signal.
+- Fairness condition:
+  - no learned rule, no extra decoder logic, and no extra exact decodes.
 
 ### Baseline B: Whole-Witness Mutation
 
-- Representation:
-  - same full witness encoding as the CA output target.
-- Search move:
-  - mutate whole witness objects between decodes, including stage counts, grid sizes, label sets, and sparse-support seeds.
+- Proposal type:
+  - mutate the six-line witness as a whole: modify `X`, `d`, the `f_i` dictionaries, `T`, and singleton-supported `R` entries directly.
 - Purpose:
-  - controls against the claim that the CA is only helping because the space has a convenient global encoding.
+  - checks whether the CA framing is doing anything beyond generic search over the same witness space.
+- Fairness condition:
+  - mutations must obey the same legality filters and the same exact-decode budget as the CA family.
 
 ### Baseline C: Decoder-Matched Search
 
-- Representation:
-  - same compiler/extractor path that would decode CA states into `(X,G,R,T)`.
-- Search move:
-  - replace the CA with a non-CA proposal mechanism, such as iid proposal sampling, coordinate descent, or beam mutation over the same decoded object.
+- Proposal type:
+  - keep the same compiler or decoder interface as `H1`, but replace the CA generator with non-CA proposal mechanisms such as random symbolic templates or direct parameter search.
 - Purpose:
-  - isolates whether the decoder or compiler contains the real arithmetic content.
+  - isolates whether the arithmetic content sits in the decoder rather than in the CA rule.
+- Fairness condition:
+  - the decoder, extractor, legality checks, and exact scorer must be identical to those used by the CA lane.
 
-## Optional Negative Controls
+## Reporting Requirements
 
-- Label-shuffled geometry control:
-  - keep graph geometry and nonzero-label multiset fixed, shuffle the label assignment in `X`.
-- Out-of-distribution grid control:
-  - retest any promoted method on held-out larger or different-aspect-ratio `d`-shapes.
-- Rational-complexity sweep:
-  - evaluate small-, medium-, and unrestricted-complexity `X` regimes under the same exact-decode budget.
-- Background-only control for sparse-defect stories:
-  - reserved for `H2` only if opened later.
+Each comparison block must report:
 
-## Required Reporting
+- legality hit rate:
+  - fraction of proposals that decode to legal witnesses;
+- forcing hit rate:
+  - fraction of legal witnesses that pass exact forcing verification;
+- best verified score;
+- median verified score;
+- full score distribution:
+  - at minimum count, min, median, quartiles, max;
+- failure-reason distribution:
+  - illegal `X`, malformed `f_i`, malformed `R`, failed forcing, denominator failure, or other explicit category.
 
-For every method-condition pair, report:
+Best-of-many only reporting is forbidden.
 
-- total exact decodes attempted
-- number of legal decodes
-- hit rate for any prespecified threshold event
-- full score distribution over legal decodes
-- median verified score
-- quartiles or equivalent distribution summary
-- best verified score
-- failure-mode histogram:
-  - illegal `X`
-  - malformed dictionaries
-  - forcing failure
-  - denominator failure
-  - verifier rejection for any other reason
+## Comparison Blocks
 
-Best-of-many reporting alone is forbidden.
+Each baseline must be compared against the same CA family on:
 
-## Compute-Parity Rules
+- the same tiny legal `d_1 x d_2` or `d_1 x d_2 x d_3` grids;
+- the same alphabet or `|X|` budget;
+- the same density target;
+- the same decode count.
 
-- Same wall-clock cap is not enough; parity is defined by exact-decode count.
-- If a method generates many illegal candidates before decode, those failures still count against its budget.
-- Any caching, warm start, or curriculum advantage given to the CA must also be available to the non-CA decoder-matched baseline or be reported as asymmetry.
+If held-out larger or different-aspect-ratio grids are used for `H1`, the decoder-matched baseline must also be evaluated there.
 
-## Why This Matrix Is Frozen Before Runs
+## Negative Controls Built Into The Matrix
 
-- It prevents post hoc baseline weakening.
-- It keeps the first audit focused on exact verified score rather than proxy metrics.
-- It makes the missing-verifier blocker explicit: the matrix exists, but execution remains closed until an exact evaluator is available.
+- label-shuffle control:
+  - keep geometry and nonzero-label multiset fixed, shuffle labels in `X`, and rerun;
+- decoder-matched control:
+  - same decoder, different non-CA proposal mechanism;
+- out-of-distribution control:
+  - larger or different-aspect-ratio grids under the same decode budget;
+- complexity sweep:
+  - small-, medium-, and unrestricted-complexity `X` regimes.
+
+## Current Status
+
+The benchmark matrix is frozen for audit, but execution remains blocked until a real exact verifier is available.
