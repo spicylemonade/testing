@@ -1,53 +1,64 @@
 # Phase 1 Literature Synthesis
 
-## Review Status
+## Inputs Reviewed
 
-- Required child-review roles attempted: `explorer`, `citation_auditor`, `integrator`.
-- Execution method: separate `codex exec` child runs with role-specific prompts and file outputs.
-- Result: all three runs failed with upstream response-stream disconnects before returning a memo.
-- Failure artifacts:
-  - `results/swarm/_agent_explorer_item005.md`
-  - `results/swarm/_agent_citation_item005.md`
-  - `results/swarm/_agent_integrator_item005.md`
-- Because the failures were infrastructural rather than evidentiary, the synthesis below is a direct integration of the already-curated local literature artifacts rather than a new broad search.
+- `results/literature/literature_snapshot.json`
+- `results/literature/prior_art_gap.md`
+- `results/context_sync.md`
+- `results/swarm/director_brief.md`
+- `results/swarm/falsifier.md`
+- `sources.bib`
+- Multi-agent memos from `explorer`, `citation_auditor`, and `integrator`
+
+## Bottom-Line Decision
+
+- Keep `H1` as the only champion lane.
+- Keep `H2` as backup-only.
+- Keep `H3` reserve-only.
+- Treat the malformed watchlist as a novelty-sanity check, not as a real bibliography.
 
 ## Champion Lane
 
-- Keep `H1`: Proof-Carrying Symbolic Forcing-Front CA.
-- Reason:
-  - It is the only lane selected by the director brief.
-  - It fits the product-grid witness representation instead of treating the final graph as a flat image.
-  - It is the least derivative route only if the CA state is proof-aware and candidates compile directly to legal `(X,G,R,T)` witnesses with no repair step.
+`H1`, the proof-carrying symbolic forcing-front CA, remains the least derivative direction. It is the only lane that uses the product-grid witness representation itself as the automaton substrate and requires local state to carry verifier-relevant symbolic information rather than heuristic pattern statistics. That makes it meaningfully different from generic neural CA, fixed-pattern search, or AlphaEvolve-style automation only if the decoder compiles outputs directly to legal `(X,G,R,T)` witnesses with no repair step.
 
 ## Strongest Adjacent Prior-Art Pressure
 
-- The strongest real pressure is not the malformed watchlist.
-- The real cluster is:
-  - Katz-Tao (1999): foundational arithmetic-projection target.
-  - Green-Ruzsa (2017): modular/finite-field distinction.
-  - Cowen-Breen et al. (2020): nearby pattern formulations that can become proxy objectives.
-  - Pohoata-Zakharov (2024): generalized arithmetic-Kakeya reformulations.
-  - Tao (2025): bounded-slope and rational-complexity warning.
-- Among these, Tao (2025) is the sharpest structural constraint on a CA story, because a small fixed alphabet naturally pushes the search toward the low-complexity regime he warns about.
+The genuine pressure comes from the real arithmetic-Kakeya and adjacent-method literature, not from the malformed watchlist.
+
+- Katz-Tao (1999) fixes the target: any claim must land on the original arithmetic-projection / forcing-pair problem.
+- Green-Ruzsa (2017) blocks modular-only or finite-field CA stories.
+- Cowen-Breen et al. (2020) blocks drift into nearby pattern problems while claiming forcing-pair progress.
+- Pohoata-Zakharov (2024) blocks novelty-by-reformulation.
+- Tao (2025) is the main structural warning that a small fixed CA alphabet risks becoming bounded-slope search in disguise.
+- Bond-Levine (2013, 2014), Dennunzio et al. (2023), and Faldor-Cully (2024) are method-side anchors, but they are adjacent scaffolding rather than evidence of arithmetic-Kakeya progress.
+- AlphaEvolve (2025) and `Mathematical exploration and discovery at scale` (2025) block novelty claims based on automation alone.
 
 ## Main Novelty Risk
 
-- The main novelty risk is methodological, not bibliographic:
-  - without exact witness verification, the program becomes generic automated search over a pretty encoding;
-  - with a small fixed CA alphabet, it risks bounded-slope search in CA clothing;
-  - with aggressive decoders or repairs, the real contribution would lie in the decoder rather than the automaton.
-- The closest methodological overlap is the automated-discovery line represented by AlphaEvolve and `Mathematical exploration and discovery at scale`.
-- Therefore the novelty bar is: verifier-coupled exact decoding, label-shuffle collapse, and evidence that the CA contributes beyond generic search infrastructure.
+The primary failure mode is not that CA ideas are irrelevant. It is that the project collapses into one of three already-criticized stories:
+
+1. bounded-slope or low-rational-complexity search in CA clothing;
+2. modular or finite-alphabet mirages that never lift back to `\mathbb{Z}`;
+3. generic automated search where the compiler or decoder does the real intellectual work.
+
+That means the novelty bar is narrow. The lane only survives if it remains verifier-coupled, fails under label shuffling, escapes low-complexity slope traps, and eventually survives exact integer verification.
 
 ## Watchlist Triage
 
-- `2x2-Convexifications for convex quadratic optimization with indicator variables`: false overlap caused by token collisions.
-- `On Hopf hypersurfaces of the homogeneous nearly Kähler S^3 x S^3`: false overlap caused by token collisions.
-- `Continued A_2-fractions and singular functions`: false overlap caused by token collisions.
+The required watchlist comparisons are negative:
 
-## Decision For Phase 2
+- `2x2-Convexifications for convex quadratic optimization with indicator variables` is a false overlap caused by LaTeX-token pollution.
+- `On Hopf hypersurfaces of the homogeneous nearly Kahler S^3 x S^3` is a false overlap caused by product-notation token collision.
+- `Continued A_2-fractions and singular functions` is a false overlap caused by token noise.
 
-- Proceed with `H1` only.
-- Keep `H2` closed until `H1` is killed or stalls after a real exact-verification gate.
-- Keep `H3` reserve-only.
-- Do not claim any CA progress toward score `<= 1.675` until an exact evaluator is located or the blocker is formally closed.
+These are not genuine novelty constraints for the arithmetic-Kakeya CA lane.
+
+## Sufficiency Check
+
+The citation-audit pass judged the current phase-1 literature set sufficient for synthesis: the curated extension contains 12 relevant entries and `sources.bib` contains 12 BibTeX records. One optional next source is Bourgain’s original arithmetic-projection / method-of-slices paper, but it is not blocker-grade for the current phase.
+
+## Phase-1 Decision
+
+- Promote the concept card `Proof-Carrying Symbolic Forcing-Front CA`.
+- Keep a pressure card for the real adjacent arithmetic-Kakeya literature.
+- Keep a risk card for the generic-search novelty failure mode.

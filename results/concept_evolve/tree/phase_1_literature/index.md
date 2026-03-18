@@ -1,7 +1,7 @@
-# Phase 1 Literature Concept Cards
+# Phase 1 Literature Cards
 
-- `001_champion_h1`: active champion lane
-- `002_adjacent_pressure_cluster`: strongest adjacent prior-art pressure
-- `003_novelty_risk_generic_search`: main novelty risk
+- `001_proof_carrying_symbolic_forcing_front_ca`
+- `002_arithmetic_kakeya_adjacency_pressure`
+- `003_generic_search_novelty_failure`
 
-These cards were created after the required multi-agent review attempt failed with upstream response-stream disconnects. The content is synthesized from the local literature artifacts already curated in this run.
+These cards summarize the phase-1 literature outcome after direct repo analysis plus the required `explorer`, `citation_auditor`, and `integrator` review pass.
