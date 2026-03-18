@@ -1,132 +1,78 @@
-# Hypothesis Negative Space: Hadamard 668 via Cellular Automata
+# Hypothesis Negative Space: Hadamard 668 After the Flat-CA No-Go
 
-Interpret "cellar automata" as **cellular automata**.
+## Context
 
-## Local constraints from this run
+- `results/literature/gap_frontier.md` is effectively empty, so the next frontier has to come from the repo's own failed-branch evidence rather than another broad survey.
+- `H1` support-space CA and `H2` flat defect-transport CA are already retired under matched baselines. Spending more budget on those families would be derivative.
+- The phrase `cellar automata` is too unstable to carry novelty on its own. The only defensible use here is a literal memory-bearing automaton over structured Hadamard search states, not another homogeneous cellular rule.
 
-- `results/literature/gap_frontier.md` and `results/literature/gap_frontier.json` contain no ranked frontier items.
-- `results/research_context.json` shows `concept_evolve: {}` and `director_brief_present: false`.
-- The bootstrap watchlist is mostly polluted by generic "automata" matches rather than actual Hadamard-668 prior art, so novelty has to be enforced manually.
+## Families To Avoid Repeating
 
-## Over-explored families to avoid by default
+- Raw support-space CA or density-classifier repairs on weight-`80` subsets of `Z_167`.
+- Flat modular-seed defect transport, CA-annealer hybrids, or other `H2` restarts with the same information channel.
+- Generic `GS` / `Williamson` / `SDS` / `SAT+CAS` / annealing packaging with an automata label on top.
+- Reservoir or neural-CA variants that are farther from the exact `167/80` obstruction than the reserve branches already in the repo.
 
-- Standard algebraic construction stacks: Paley, Williamson, Goethals-Seidel, Cooper-Wallis, Baumert-Hall, Ehlich, supplementary difference sets, cocyclic variants.
-- Structured exhaustive search over those same families: SAT+CAS enumeration, Turyn/Williamson sequence enumeration, direct matching/hashing over SDS candidates.
-- Global black-box optimization over matrix entries or structured encodings: simulated annealing, quantum annealing, QAOA, generic GA/EA on the sequence bits alone.
+## 1. Canonical-Path Cellar Automaton With Deferred Autocorrelation Debt
 
-Reason to avoid them here: the literature already keeps revisiting these branches, and recent work still treats order 668 as open while also exposing scaling limits in the structured-search setting. The strongest recent local targets are more specific:
-- in the cyclic Goethals-Seidel reduction, the obstruction is whether a particular length-167, weight-80 binary sequence with a prescribed autocorrelation exists;
-- in a different direction, a 64-modular Hadamard matrix of order 668 now exists, which suggests that lifting a near-solution may be more promising than restarting from scratch.
+- Gap attacked:
+  Prior work sharpens order `668` to the exact `167/80` cyclic obstruction, but search procedures still mostly act on raw bits, static clauses, or family parameters instead of a canonical orbit word with explicit deferred debt.
+- Core idea:
+  Canonicalize each weight-`80` support in `Z_167` to its unique orbit representative, encode it as run-length or path tokens, and let a pushdown-style automaton track `(position, used weight, parity debt, local debt)` plus a stack of multiscale autocorrelation deficits.
+- Why this is negative-space:
+  The search object stops being "a score on a raw support" and becomes "an auditable prefix with a completion certificate." That is materially different from the retired local CA loops.
+- First discriminator:
+  Keep every known smaller same-template witness alive, reject most random prefixes by mid-depth, and beat a matched non-automaton prefix search that uses the same canonicalization and the same exact-completion oracle.
+- Derivative overlap to watch:
+  Canonicalization alone can look strong. If the gain comes only from symmetry quotienting or compression, this collapses into ordinary branch-and-bound.
+- Angle to avoid:
+  Do not sell static prefix pruning or `SAT+CAS` preprocessing as `cellar automata`. The stack state has to add information that the comparator does not already have.
 
-## Direction 1: Autocorrelation-realization CA on the 167-cycle
+## 2. Proof-Carrying Cellar Frontier With Online Exact-Feedback Motifs
 
-**Hypothesis.** Use a 1D cyclic binary CA on 167 cells as a *compressed generator of candidate supports*, and search rule/seed pairs whose orbit slices realize the missing periodic autocorrelation profile needed to close the current 668 reduction.
+- Gap attacked:
+  Exact Hadamard searches usually treat failed completions as terminal verdicts. They do not recycle those failures into reusable local transition guards for later frontier growth.
+- Core idea:
+  Wrap Direction 1 around a small exact completion oracle. When a frontier state fails, convert the failure into short forbidden motifs, stack-transition vetoes, or weighted penalties that update later automaton transitions online.
+- Why this is negative-space:
+  It tests an adaptive exact-feedback loop that the repo has not executed and that standard exact-search work usually leaves implicit inside static encodings.
+- First discriminator:
+  On solved same-template controls, show fewer oracle calls at fixed witness retention than the static pushdown filter.
+- Derivative overlap to watch:
+  If conflicts stay global, nonlocal, or unreusable, this is only `SAT+CAS` with extra plumbing.
+- Angle to avoid:
+  Do not count clause learning by itself as the method. The contribution only survives if exact feedback becomes short, reusable automaton-state updates.
 
-Why this attacks negative space:
-- Recent work reduces the open 668 case to the realizability of one missing binary autocorrelation profile, not to a completely unconstrained 668 x 668 search.
-- Prior work largely searched algebraic templates or structured sequence families directly.
-- A CA search in **rule space** may be smaller and more compositional than direct search in the full sequence space.
+## 3. Hierarchical Defect-Memory Decoder On The `64`-Modular `668` Seed
 
-Why it is not just "do Goethals-Seidel again":
-- The CA is not used as a final certificate family; it is used as a generator of orbit slices whose local dynamics may concentrate probability mass on realizable autocorrelation patterns.
-- The search target is the missing weight-80 sequence itself, not a polished restatement of SDS matching.
+- Gap attacked:
+  The seed-side line already has a strong near-solution, but the repo only tested flat local defect transport there, and that tied the matched non-CA baseline. What remains untested is multiscale memory on the seed's sparse defect pattern.
+- Core idea:
+  Build a coarse-to-fine defect pyramid on the published `64`-modular order-`668` seed. Each level stores deferred defect mass for one block scale, passes repair requests downward, and proposes only those local flips that support cross-scale cancellations. Require a small-order controllability check before any real `668` run.
+- Why this is negative-space:
+  The state is no longer "current row flips plus local score." It is a hierarchy of defect syndromes with explicit memory, which is the missing ingredient in the retired `H2` branch.
+- First discriminator:
+  On injected-defect exact Hadamards and smaller modular controls, beat flat greedy and flat CA under the same neighborhood and move budget. Only then spend any budget on whether the real seed can improve beyond modulus `64` or reduce defect count.
+- Derivative overlap to watch:
+  If the hierarchy adds no benefit beyond seed privilege or merely reweights the same flip schedule, this is just `H2` rebranding.
+- Angle to avoid:
+  Do not rerun flat defect transport, CA-annealer hybrids, or unfair start-cold baselines. No credit without same-seed, same-neighborhood fairness and an ablation showing the hierarchy matters.
 
-First test:
-1. Recover or reconstruct the target length-167 autocorrelation vector implied by the known three blocks.
-2. Search elementary and small-radius binary CA with hard constraints on orbit weight, run count, and cyclic symmetry breaking.
-3. Score orbit slices only by distance to the target periodic autocorrelation and PSD feasibility.
-4. If a slice hits the target exactly, lift it back into the 4-block certificate and verify the corresponding Hadamard construction.
+## Recommended Order
 
-Fast falsifier:
-- If CA-generated slices do not outperform random cyclic subsets of weight 80 on autocorrelation distance after a modest GPU sweep, kill this branch.
+1. Start with Direction 1. It is the cleanest literal reading of `cellar automata` and the sharpest test against the exact `167/80` obstruction.
+2. Promote Direction 2 only if Direction 1 keeps positive controls but still pays too much exact-oracle cost.
+3. Touch Direction 3 only if the team still wants a seed-side branch after the repo's flat `H2` no-go.
 
-Angle to avoid:
-- Do **not** collapse back into direct SDS/Goethals-Seidel matching or into plain Turyn/Williamson sequence enumeration with CA as cosmetic packaging.
+## Not Selected Now
 
-## Direction 2: Modulus-lifting CA from the 64-modular 668 seed
+- `learned_prefix_automaton` stays on hold until Direction 1 exists as a clean teacher. Right now the transfer-risk story is too weak.
+- `convolution_slice_ca` stays secondary reserve only. It is still one step away from relabeling the failed `H1` search space.
+- `density_classifier_support_repair`, `defect_transport_mod64_lift`, `ising_ca_hybrid_annealer`, and `reservoir_defect_readout` stay retired.
 
-**Hypothesis.** Start from the known 64-modular Hadamard matrix of order 668 and use a CA to perform local sign updates that lift modular orthogonality step by step, ideally past modulus 668 where the matrix would become an actual Hadamard matrix.
+## Kill Rules
 
-Why this attacks what prior work ignored:
-- Recent work already gives a 64-modular order-668 object, but not a dynamic mechanism for lifting it to exact orthogonality.
-- Exact searches usually restart from scratch inside a rigid family; they do not exploit a near-solution as a structured warm start.
-- Local update rules can target the residual Gram-matrix defects directly instead of optimizing a global score from a random initialization.
-
-Why it is not derivative:
-- The search is over **repair dynamics on a certified near-solution**, not over another static family.
-- The objective is a modulus ladder, not "solve 668 from zero with a fancier optimizer".
-
-First test:
-1. Reconstruct the published 64-modular order-668 matrix and its defect pattern.
-2. Encode each off-diagonal Gram entry as a local residue state and define CA updates that only accept moves improving a lexicographic objective `(modulus reached, defect count, max defect magnitude)`.
-3. Test whether local updates can lift small benchmark instances from `2^r`-modular to `2^(r+1)`-modular before touching 668.
-4. Try block-local and row-local rule sets separately to see whether one consistently improves the modulus.
-
-Fast falsifier:
-- If the best CA cannot lift solved smaller instances by even one modulus step, or cannot improve the 668 seed beyond modulus 64, kill this branch.
-
-Angle to avoid:
-- Do **not** stop at "another modular paper" or drift back into a plain Goethals-Seidel/SAT search that happens to start from the modular seed.
-
-## Direction 3: Orbit-representative path CA on compressed 167-bit supports
-
-**Hypothesis.** Search the missing weight-80 support through its unique path representative in each cyclic orbit, and run a CA on the compressed run/descent encoding rather than on raw 167-bit strings.
-
-Why this attacks what prior work ignored:
-- The cyclic-convolution analysis gives a natural compressed state space: when length 167 and weight 80 are coprime, each cyclic orbit has a unique path representative.
-- The same analysis shows that runs, descents, and low-dimensional autocorrelation marginals carry real combinatorial information, but current searches still mostly operate on raw sequences or rigid algebraic templates.
-- A path/run CA gives a local dynamical language matched to the combinatorics of the obstruction itself.
-
-Why it is not derivative:
-- The cells are not raw bits; they are run lengths, ascent/descent markers, or short path motifs.
-- Compression is not just preprocessing for SAT or annealing; it is the native search space.
-
-First test:
-1. Convert weight-80 subsets of `Z_167` to canonical path representatives.
-2. Define a CA on run-length tokens or descent indicators that preserves total weight and cyclic admissibility.
-3. Score candidates by distance to the target autocorrelation, plus simple necessary conditions from PSD and low-order marginals.
-4. Compare against a raw-bit CA with the same evaluation budget to see whether path compression actually helps.
-
-Fast falsifier:
-- If the compressed CA offers no better hit rate on the target autocorrelation than a raw-bit baseline, or if it spends most of its time in invalid/noncanonical states, abandon it.
-
-Angle to avoid:
-- Do **not** fall back to raw-sequence SAT/GA search with a tokenization layer on top. If the rules no longer act on path-orbit structure, this direction has collapsed into an old family.
-
-## Best first bet
-
-Start with **Direction 1**.
-
-Reason:
-- It attacks the sharpest currently identified obstruction for 668.
-- It keeps the search target narrow enough to falsify quickly.
-- It uses CA as a genuinely new parameterization of the missing object instead of as a wrapper around an existing search family.
-
-## Pivot rules
-
-- If a branch becomes "search Williamson/Turyn/SDS objects, but with a CA front-end", mark it derivative and stop polishing it.
-- If a branch cannot express either the specific 167/80 autocorrelation target or the 64-modular lifting target with explicit local invariants, it is probably too far from the actual obstruction.
-- If a branch cannot beat random cyclic-subset baselines on the specific 167-length autocorrelation target, kill it early.
-
-## Evidence snapshot
-
-- Order 668 is still treated as open in the standard Hadamard sieve literature and in recent computational work.
-- The 2025 convolution-number paper sharpens the problem to a missing length-167 autocorrelation-realizability question inside a Goethals-Seidel style reduction.
-- A 2025 construction provides a 64-modular Hadamard matrix of order 668, so "repair a near-solution" is a live alternative to "search from scratch".
-- Standard families and their computational variants remain active: Goethals-Seidel plus supplementary difference sets, SAT+CAS enumeration of Williamson variants, simulated annealing from Turyn sequences, and quantum/QAOA formulations of Williamson/Turyn/Baumert-Hall searches.
-- CA is connected to Hadamard-adjacent combinatorics through linear bipermutive CA, MOLS, and bent-function constructions, but that route currently lands in very structured regimes rather than the 668 obstruction.
-
-## Minimal references used for this memo
-
-- Local repo artifacts: `results/research_context.json`, `results/literature/gap_frontier.json`, `results/literature/prior_art_watchlist.md`
-- Piza Volio, *Search of Hadamard Matrices by Turyn Sequences* (2011)
-- Kharaghani, Đoković, and Tayfeh-Rezaie, *Some new orders of Hadamard and skew-Hadamard matrices* (2013/2014)
-- Bright, Kotsireas, Heinle, Ganesh, and Czarnecki, *A SAT+CAS Method for Enumerating Williamson Matrices of Even Order* (2018)
-- Suprijadi et al., *Quantum computing formulation of some classical Hadamard matrix searching methods* (2022)
-- Constantine and Constantine, *Convolution numbers* (2025)
-- Eliahou, *A 64-modular Hadamard matrix of order 668* (2025)
-- Arostegui et al., *A quantum approximate optimization method for finding Hadamard matrices* (2025)
-- Mariot et al., *Mutually Orthogonal Latin Squares based on Cellular Automata* (2019)
-- Gadouleau, Mariot, and Picek, *Bent Functions from Cellular Automata* (2020)
-- Mariot et al., *Heuristic search of (semi-)bent functions based on cellular automata* (2022)
-- Wolnik et al., *A split-and-perturb decomposition of number-conserving cellular automata* (2020)
+- Kill any branch whose advantage disappears against a matched comparator on the same representation.
+- Kill any branch that cannot keep same-template positive controls alive.
+- Kill any branch that drifts back into `GS` / `Williamson` / `SAT+CAS` packaging or generic local search with automata branding.
+- Kill any branch that reports only heuristic score improvement rather than exact witness retention, exact completability, or verified modulus lift.

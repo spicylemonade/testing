@@ -1,109 +1,241 @@
-# Falsifier Memo: Hadamard 668 via "Cellar/Cellular" Automata
+# Falsifier Memo: Hadamard 668 via "Cellar" / Cellular Automata
 
 Scope:
-- This memo targets the CA-flavored hypotheses in `results/swarm/hypothesis_negative_space.md` and `results/swarm/hypothesis_bridge.md`.
-- I interpret "cellar automata" as either a typo for `cellular automata` or an unstable rebrand. Do not build a novelty claim on the phrase itself.
+- This memo attacks the current and likely reopen branches around Hadamard order `668`.
+- It treats the implemented `H1` and `H2` branches as already tested and retired, and the literal `cellar` reading as reserve-only.
+- Budget posture: do not invent new methods here except to state what a reopened branch would have to prove before it deserves any budget.
 
-## Hard external facts that narrow the target
+## Executive kill shot
 
-- As of the 2025 primary literature, order `668` is still treated as the smallest open case in Hadamard's conjecture. That matters because any novelty claim will be judged against an open-problem standard, not against toy-order success. `[Eliahou 2025]`
-- The strongest recent positive result is not an exact Hadamard matrix, but a `64`-modular Hadamard matrix of order `668`. Eliahou's 2025 construction gives rows orthogonal to `641` others, leaving only `26` nonzero off-diagonal Gram entries per row. Any "repair" proposal must compete with this exact near-solution baseline, not with a blank slate. `[Eliahou 2025]`
-- The strongest recent negative-space reduction is even sharper: in the circulant Goethals-Seidel route to order `668`, one must determine whether a binary vector of length `167` and weight `80` exists with a specific prescribed autocorrelation vector once three other length-`167` vectors have been fixed. Any CA proposal that does not touch this exact `167`-length autocorrelation-realizability problem is probably off-target. `[Constantine and Constantine 2025]`
-- The CA/design literature is not blank territory. The 2025 survey is centered on CA-generated orthogonal Latin squares, orthogonal arrays, and cryptographic design objects. CA-derived bent-function work explicitly passes through Hadamard matrices, but through narrow, highly structured subclasses. So the claim cannot be "CA has never touched Hadamard-like objects." The only defensible claim is narrower: "CA has not yet been shown to help with the specific order-668 obstruction." `[Manzoni, Mariot, and Menara 2025] [Gadouleau, Mariot, and Picek 2020]`
-- CA reachability is a real risk, not a formality. Recent controllability work shows that only peripherally linear rules are fully controllable, while for other Boolean 1D CA the reachability ratio vanishes as system size grows. A CA family with poor reachability can fail simply because it never comes near the needed certificate class. `[Bagnoli, Dridi, and Fates 2025]`
+The easiest falsifier is already inside the repo:
 
-## Highest-risk novelty illusions
+- `H1` lost to the matched non-CA baseline on both the solved `4 x 79` control and the real `167/80` target.
+- `H2` tied the matched non-CA baseline exactly on the decisive degraded order-`668` seed attempt.
+- `H3` / literal `cellar` remains unexecuted reserve only and cannot inherit credit from `H1/H2`.
 
-- **"Cellular automata for Hadamard 668 is completely untried."** Too broad. Direct order-`668` CA search appears underexplored, but adjacent CA work already covers orthogonal design generation, bent-function/Hadamard structure, and CA-based heuristic search. A reviewer can kill an overbroad novelty claim immediately. `[Manzoni, Mariot, and Menara 2025] [Gadouleau, Mariot, and Picek 2020] [Mariot et al. 2021/2022]`
-- **"Prime-length `167` CA search is a new search space."** Probably false if the CA stays inside four circulant components or Williamson-type encodings. For odd prime `n`, Williamson-type solutions with circulant components collapse to cyclic shifts of classical Williamson solutions. At `n = 167`, a circulant CA can easily be just a new updater on an old ansatz. `[Fitzpatrick and O'Keeffe 2023]`
-- **"Defect-transport CA is new."** Only partly. CA as a local repair/decoder layer is a known paradigm in other constraint systems. Without a Hadamard-specific invariant or a coverage argument, this looks like generic local search with a CA wrapper. `[Herold et al. 2015]`
-- **"Rule-space search is novel because it is more compact."** Weak. Compactness is not novelty unless it yields better certificate rate, better reachability, or stronger pruning than direct search on the same constrained objects.
-- **"Cellar automata" is a distinct method class.** Weak and unstable. In context it reads like a typo for `cellular automata`; if reinterpreted as a stack/pushdown automaton, the proposal becomes a pruning language for a classical search tree, not a new CA dynamics.
+So the burden is no longer "maybe CA helps with Hadamard 668." The burden is much narrower:
 
-## Hypothesis-by-hypothesis easiest failure modes
+- does a reopened branch use a materially different information channel than the failed raw-support swaps and `s`-flip defect transport;
+- does it beat a same-representation non-CA comparator;
+- does it survive a prior-art collapse audit against exact Hadamard and CA-design literature.
 
-### 1. Autocorrelation-realization CA on the `167`-cycle
+If the answer to any of those is no, kill the branch immediately.
 
-- Fastest failure: CA-generated supports do not outperform direct search on raw weight-`80` subsets when both are scored only against the exact periodic-autocorrelation target from the cyclic reduction. `[Constantine and Constantine 2025]`
-- Cleanest rehash accusation: the CA reachable set stays inside cyclic/circulant/Goethals-Seidel/SDS-like families already studied by exact or structured search.
-- Literature branch that can invalidate weak claims: circulant Williamson-type theory for odd primes. If the state space is effectively four circulant components, the "new" method is probably not new. `[Fitzpatrick and O'Keeffe 2023]`
-- Missing control: compare against direct search over the same weight-`80` support space with the same symmetry reduction, same evaluation budget, and same exact verifier.
-- Missing control: include a solved positive control from the same Goethals-Seidel/circulant template, not just toy orders from unrelated families. The `4 x 79` worked example in the convolution-number paper is the obvious minimum. `[Constantine and Constantine 2025]`
-- Benchmark trap: beating random subsets is not meaningful here. The target is a single highly structured `167/80` object, not a generic low-energy region.
+## Hard facts that make weak claims easy to attack
 
-### 2. Defect-transport / modulus-lifting CA from the `64`-modular seed
+- Order `668` is still treated in the recent literature as an open exact Hadamard case, so toy-order success or soft-metric improvement is not enough.
+- The best current foothold is Eliahou's `64`-modular order-`668` matrix, not an exact Hadamard witness. Any "repair" claim must compete against that published near-solution, not against a cold start.
+- Constantine and Constantine reduce the circulant Goethals-Seidel route at order `668` to the exact `167/80` cyclic autocorrelation realizability problem. Any search branch that does not touch that obstruction or the published modular seed is probably off-target.
+- CA is not new to Hadamard-adjacent objects. The live prior-art burden is against CA work on combinatorial designs and bent-function search, plus direct heuristic Hadamard search.
+- The phrase `cellar automata` is not contribution-grade novelty. In this repo it is, at best, a reserve label for a pushdown/prefix-debt automaton; externally, the phrase already appears in unrelated literature.
 
-- Fastest failure: defect mass decreases but exact certification never improves. The method can look active while never removing the hard `26`-defect residue of the best current seed. `[Eliahou 2025]`
-- Cleanest rehash accusation: the update rule is just simulated annealing, greedy balanced sign-swaps, or quantum/Ising-style local search rewritten in CA language. The Hadamard-search literature already has SA, simulated quantum annealing, quantum annealing, and QAOA formulations. `[Suksmono 2016/2018] [Suksmono 2019/2022] [Suksmono 2025]`
-- Literature branch that can invalidate weak claims: CA decoders/repair layers. Local defect motion by CA is already an established pattern outside Hadamard search, so novelty must come from the Hadamard-specific defect encoding, not from "CA repairs defects." `[Herold et al. 2015]`
-- Missing controls:
-  - same-seed non-CA local search,
-  - same-neighborhood greedy or annealed sign-swaps,
-  - smaller solved modular-to-exact lift tasks before touching `668`.
-- Benchmark trap: letting the CA start from Eliahou's `64`-modular seed while baselines start cold.
+## Current branch status
 
-### 3. Orbit/path-representative CA or visibly-pushdown pruning
+### `H1` raw-support CA on the exact `167/80` obstruction
 
-- Fastest failure: it cannot reconstruct known smaller certificates or even the published `64`-modular `668` seed.
-- Cleanest rehash accusation: this is equivalence-aware branch-and-bound or SAT+CAS filtering on a compressed encoding, not a genuinely new method.
-- Literature branch that can invalidate weak claims: SAT+CAS and exact structured enumeration. If the automaton's pruning power comes from hard-coded algebraic constraints rather than dynamical discovery, the automaton is presentation, not contribution. `[Bright, Kotsireas, and Ganesh 2018]`
-- Missing control: matched exact search on the same path/run-length representation without the automaton.
-- Benchmark trap: reporting only random-prefix rejection rates instead of end-to-end certificate rate and wall clock.
+Immediate failure test:
+- If the reopen keeps the same support-bit state, same adjacent-swap neighborhood, and same exact target-distance objective, it is already dead.
 
-### 4. CA rule/seed quality-diversity
+Why:
+- On the solved `4 x 79` control, `direct_greedy` beat `parallel_gain_ca` on mean best distance (`41.5` vs `48.375`) and median unique orbits (`13` vs `4`).
+- On the actual `167/80` target sweep, neither method found a witness, and `direct_greedy` again beat `parallel_gain_ca` on mean best distance (`147.917` vs `188.5`) while visiting more unique orbits.
 
-- Fastest failure: the archive collapses to trivial periodic or low-entropy orbits that look diverse under weak descriptors but are equivalent under shifts/complements.
-- Cleanest rehash accusation: CA-based heuristic search is already established in adjacent design/Boolean-function work; rule evolution and heuristic optimization are not new on their own. `[Mariot et al. 2021/2022]`
-- Literature branch that can invalidate weak claims: CA-derived bent/semi-bent search. If direct quality-diversity or evolutionary search on raw supports covers the same descriptor space, the CA layer is cosmetic. `[Gadouleau, Mariot, and Picek 2020] [Mariot et al. 2021/2022]`
-- Missing control: direct QD over raw `167`-bit supports with the same descriptors and the same exact verifier.
+Rehash accusation:
+- If the reachable states collapse into a classical circulant / Goethals-Seidel / Williamson-style family, the branch is only a new updater on an old structured ansatz.
+- If the only change is parallel local firing instead of greedy choice on the same swap neighborhood, the branch is a local-search wrapper, not a new method family.
+
+Missing controls that would invalidate any weak claim:
+- same support representation;
+- same symmetry reduction;
+- same move cap and step budget;
+- same exact verifier;
+- same-template solved positive control before touching `167`.
+
+### `H2` defect-transport CA from the published `64`-modular `668` seed
+
+Immediate failure test:
+- If the reopen keeps fixed `q`, searches only by local `s` flips, and optimizes the same modular-defect objective, it is already dead.
+
+Why:
+- The decisive order-`668` attempt starts from a deterministic degradation of the published seed.
+- `parallel_gain_ca` and `direct_greedy` tied exactly on every load-bearing metric:
+  - `two_adic_modulus = 16`
+  - `l1_defect = 2944`
+  - `defect_count = 25`
+  - `max_defect_magnitude = 496`
+  - accepted moves `= 48`
+
+Rehash accusation:
+- If the update rule is only an annealing / greedy / Ising-style local move policy written in CA language, it collapses into the existing heuristic Hadamard-search family.
+- If the branch sells local defect motion itself as novel, it collapses into generic CA-decoder / local-repair rhetoric.
+
+Missing controls that would invalidate any weak claim:
+- same-seed non-CA comparator;
+- same neighborhood and phase schedule;
+- same modular verifier;
+- same cold-start or same-seed conditions across methods;
+- a smaller solved lift task that discriminates better than the current toy ladder.
+
+### Literal `cellar` / pushdown / prefix-debt reserve branch
+
+Immediate failure test:
+- If the branch does not define a new state representation and a same-representation non-CA comparator before experiments, kill it.
+
+Why:
+- The repo keeps the literal `cellar` reading only as `autocorrelation_debt_pushdown`, a reserve concept over canonical path encodings of the exact `167/80` obstruction.
+- No executed benchmark exists.
+- The branch is already flagged as highly vulnerable to collapsing into static prefix pruning, branch-and-bound, or SAT+CAS packaging.
+
+Rehash accusation:
+- If the "automaton" is just a compressed search tree with hard-coded algebraic guards, it is presentation, not contribution.
+- If solver conflicts are only replayed as ordinary propagation constraints, the branch becomes SAT+CAS with CA branding.
+- If the gain comes from canonicalization or compression alone, the automaton is not doing the work.
+
+Missing controls that would invalidate any weak claim:
+- one solved same-template positive control under the same representation;
+- one matched non-automaton search on the same canonical/path encoding;
+- witness retention, false-negative rate, and wall clock, not just prefix rejection;
+- proof that deferred debt carries information the comparator does not already expose.
+
+### Secondary reserve branches
+
+`convolution_slice_ca`
+- Kill it if the liability-field state is only a relabeling of raw support search.
+- Kill it if a same-representation non-CA liability search matches it.
+
+`sat_user_propagator_ca`
+- Kill it if learned conflicts stay global, nonreusable, or equivalent to ordinary exact pruning.
+- Kill it if the only observed gain is fewer solver calls without unchanged witness retention.
+
+## Novelty illusions to reject on sight
+
+- "Cellular automata for Hadamard-like search is untried."
+  False. CA already appears in combinatorial-design generation and bent / semi-bent search.
+
+- "Cellar automata" is a distinct new method class.
+  Weak. The phrase is unstable, already used elsewhere, and in this repo names only a reserve hypothesis.
+
+- "The order-668 search starts from scratch."
+  False. The published `64`-modular seed is already the positive anchor.
+
+- "Soft metric improvement means real progress."
+  False. The repo's own decisive comparison shows that lower defect or distance on toy settings can fail to translate into any exact or modulus-lift gain on the real `668` attempt.
+
+- "More explored states means better reachability."
+  False. Negative controls can explore broadly and still lose on the real objective.
+
+- "Prime-length `167` CA search is automatically new."
+  False if the reachable family reduces to circulant / supplementary-difference-set / Williamson machinery already present in the literature.
 
 ## Missing controls weak papers usually skip
 
-- **Exact-target control:** recover solved smaller instances and, at minimum, reproduce the published `64`-modular `668` seed. `[Eliahou 2025]`
-- **Same-template positive control:** include at least one solved `4 x p` circulant Goethals-Seidel instance before touching `p = 167`. `[Constantine and Constantine 2025]`
-- **Representation control:** compare CA rule-space search against direct search over the exact same structured objects.
-- **Non-CA local-search control:** same neighborhood, same constraints, same verifier, no CA.
-- **Reachability control:** prove or estimate how much of the candidate space the chosen CA family can even reach. `[Bagnoli, Dridi, and Fates 2025]`
-- **Equivalence control:** quotient by cyclic shifts, reversals, complements, and block symmetries before claiming diversity or coverage.
-- **Certificate control:** report exact witnesses or exact modulus lifts, not just lower defect mass, lower autocorrelation distance, or visually interesting patterns.
-- **Negative controls:** random rule families, random balanced subsets, and intentionally weak local rules.
+- exact same-representation comparator;
+- same verifier and same neighborhood;
+- same seed privilege across methods;
+- same-template solved positive control;
+- equivalence-aware accounting;
+- exact witness or exact modulus-lift reporting rather than only surrogate metrics;
+- negative controls that separate "more motion" from "better search";
+- a novelty note against exact Hadamard anchors and CA-design anchors before claiming progress.
+
+If any reopened branch skips these, the paper should be treated as invalid by construction.
 
 ## Benchmark traps
 
-- **Random-baseline trap:** beating uniform random supports proves almost nothing for the `167/80` obstruction.
-- **Metric-leakage trap:** autocorrelation distance or defect mass may not correlate tightly with exact certification.
-- **Seed unfairness trap:** the proposed method gets the `64`-modular seed, baselines do not.
-- **Compression trap:** the proposal uses path/run-length compression but baselines are left in raw coordinates.
-- **Toy-order trap:** strong results only on tiny orders where many methods succeed, while the prime-length `167` case behaves differently.
+- Toy-ladder trap:
+  The current `n = 9` lift ladder is a sanity check, not evidence of CA-specific promise. Random controls also solve most starts.
 
-## Literature branches that can kill weak claims quickly
+- Random-baseline trap:
+  Beating random subsets or random rules proves little about the exact `167/80` obstruction.
 
-- **Exact/structured Hadamard search:** Goethals-Seidel, modular Golay quadruples, supplementary difference sets, Williamson/Turyn variants, and SAT+CAS enumeration. `[Bright, Kotsireas, and Ganesh 2018]`
-- **Heuristic Hadamard search:** simulated annealing, simulated quantum annealing, quantum annealing, and QAOA are already on the board. `[Suksmono 2016/2018] [Suksmono 2019/2022] [Suksmono 2025]`
-- **CA combinatorial-design literature:** orthogonal Latin squares, orthogonal arrays, and CA-derived bent/Hadamard structure already exist. `[Mariot, Formenti, and Leporati 2016] [Gadouleau, Mariot, and Picek 2020] [Manzoni, Mariot, and Menara 2025]`
-- **CA controllability/reachability literature:** many rule families cover vanishingly small fractions of state space at scale. `[Bagnoli, Dridi, and Fates 2025]`
-- **CA decoder/repair literature:** local defect propagation by CA is already mature outside Hadamard search. `[Herold et al. 2015]`
+- Metric-leakage trap:
+  Lower autocorrelation distance or lower defect mass can fail to correlate with exact certification.
+
+- Seed-unfairness trap:
+  Giving the proposed method the published `64`-modular seed while baselines start elsewhere invalidates the comparison.
+
+- Compression trap:
+  Letting the proposed branch use canonical/path compression while the baseline stays in raw coordinates turns representation into hidden budget.
+
+- Family-leakage trap:
+  If family parameters, exact-solver artifacts, or stronger invariants are exposed only to the proposed method, the comparison is broken.
+
+## Literature branches that invalidate weak claims quickly
+
+### Exact Hadamard / structured-search anchors
+
+- Constantine and Constantine (2025): exact `167/80` cyclic obstruction and solved `4 x 79` control.
+- Eliahou (2025): published `64`-modular order-`668` seed.
+- Bright, Kotsireas, and Ganesh (2018): SAT+CAS enumeration of Williamson matrices.
+- Programmatic SAT / exact-search literature around Williamson and complex Golay objects.
+- Fitzpatrick and O'Keeffe (2023) plus Goethals-Seidel / SDS family references: family-level collapse checks.
+
+These kill any branch that quietly becomes exact structured search, family-parameter search, or proof packaging.
+
+### Direct heuristic Hadamard-search competitors
+
+- Simulated annealing of spin vectors.
+- Simulated quantum annealing.
+- Quantum annealing formulations.
+- Quantum-computing reformulations of classical Hadamard search.
+- QAOA for Hadamard matrices.
+
+These kill any claim that "a new heuristic search wrapper for Hadamard matrices" is enough by itself.
+
+### CA-side prior art
+
+- CA survey work on combinatorial designs.
+- Orthogonal Latin squares from linear CA.
+- Bent-function construction from CA.
+- Heuristic search for semi-bent / bent functions based on CA.
+- CA controllability / SAT-reachability work.
+- CA decoder / local-repair work.
+
+These kill any broad claim of novelty for "CA meets Hadamard-like discrete structure" or "CA moves defects locally."
+
+### Phrase-level novelty failure
+
+- The literal phrase `cellar automata` already appears in unrelated literature, so the phrase itself cannot carry novelty.
 
 ## Bottom line
 
-- The only defensible novelty claim is narrow:
-  - target either the exact `167/80` cyclic obstruction or the published `64`-modular `668` defect pattern,
-  - show matched baselines against exact search and non-CA local search,
-  - prove the CA reaches more than a classical structured-family reparameterization.
-- Anything broader is easy to attack as off-target, derivative, or a transfer of known CA ideas into a setting where the hard part remains elsewhere.
+- The implemented cellular-automata program is already a no-go under matched controls.
+- Any reopened branch is falsified immediately if it reuses the `H1` raw-support swap channel or the `H2` `s`-flip defect-transport channel.
+- Any literal `cellar` reopen survives only as a reserve branch with:
+  - a new state representation,
+  - a same-representation non-CA comparator,
+  - a solved same-template positive control,
+  - the same verifier and equivalence accounting,
+  - and a fresh novelty-collapse audit.
 
-## Source anchors
+Without that, the easiest honest verdict is:
 
-- `[Eliahou 2025]` M. Eliahou, *A 64-modular Hadamard matrix of order 668*, Australasian Journal of Combinatorics 93(2), 2025.
-- `[Constantine and Constantine 2025]` G. Constantine and T. Constantine, *Convolution numbers: the cyclic case*, arXiv:2501.18066, 2025.
-- `[Fitzpatrick and O'Keeffe 2023]` P. Fitzpatrick and H. O'Keeffe, *Williamson type Hadamard matrices with circulant components*, Discrete Mathematics 346(12), 113615, 2023.
-- `[Bright, Kotsireas, and Ganesh 2018]` C. Bright, I. S. Kotsireas, and V. Ganesh, *A SAT+CAS Method for Enumerating Williamson Matrices of Even Order*, AAAI 2018.
-- `[Suksmono 2016/2018]` A. B. Suksmono, *Finding a Hadamard Matrix by Simulated Annealing of Spin-Vectors*, arXiv:1606.03815; and *Finding a Hadamard Matrix by Simulated Quantum Annealing*, Entropy 20(2):141, 2018.
-- `[Suksmono 2019/2022]` A. B. Suksmono, *Finding Hadamard Matrices by a Quantum Annealing Machine*, Scientific Reports 9, 2019; A. B. Suksmono and Y. Minato, *Quantum computing formulation of some classical Hadamard matrix searching methods and its implementation on a quantum computer*, Scientific Reports 12, 2022.
-- `[Suksmono 2025]` A. B. Suksmono, *A quantum approximate optimization method for finding Hadamard matrices*, Scientific Reports 15, 2025.
-- `[Mariot, Formenti, and Leporati 2016]` L. Mariot, E. Formenti, and A. Leporati, *Constructing Orthogonal Latin Squares from Linear Cellular Automata*, arXiv:1610.00139, 2016.
-- `[Gadouleau, Mariot, and Picek 2020]` M. Gadouleau, L. Mariot, and S. Picek, *Bent Functions from Cellular Automata*, IACR ePrint 2020/1272.
-- `[Mariot et al. 2021/2022]` L. Mariot, M. Saletta, A. Leporati, and L. Manzoni, *Heuristic Search of (Semi-)Bent Functions based on Cellular Automata*, arXiv:2111.13248 / Natural Computing, 2022.
-- `[Manzoni, Mariot, and Menara 2025]` L. Manzoni, L. Mariot, and G. Menara, *Combinatorial Designs and Cellular Automata: A Survey*, arXiv:2503.10320, 2025.
-- `[Bagnoli, Dridi, and Fates 2025]` F. Bagnoli, S. Dridi, and N. Fates, *Regional Controllability of Cellular Automata as a SAT Problem*, arXiv:2504.03691, 2025.
-- `[Herold et al. 2015]` M. Herold, E. T. Campbell, J. Eisert, and M. J. Kastoryano, *Cellular-automaton decoders for topological quantum memories*, npj Quantum Information 1, 15010, 2015.
+- rehash of prior heuristic search,
+- rebranding of exact pruning,
+- or another local-search wrapper that already failed in this repo.
+
+## Evidence anchors
+
+Local repo:
+- `results/analysis/baseline_benchmark_sheet.md`
+- `results/analysis/kill_rules.md`
+- `results/analysis/experiment_readout.md`
+- `results/analysis/phase2_baseline_review.md`
+- `results/analysis/phase3_hypothesis_selection.md`
+- `results/analysis/novelty_collapse_audit.md`
+- `results/analysis/reserve_concept_audit.md`
+- `results/analysis/phase5_final_evidence_gate.md`
+
+External literature:
+- M. Eliahou, *A 64-modular Hadamard matrix of order 668* (2025).
+- G. Constantine and T. Constantine, *Convolution numbers: the cyclic case* (2025).
+- C. Bright, I. S. Kotsireas, and V. Ganesh, *A SAT+CAS Method for Enumerating Williamson Matrices of Even Order* (2018).
+- P. Fitzpatrick and H. O'Keeffe, *Williamson type Hadamard matrices with circulant components* (2023).
+- A. B. Suksmono heuristic and quantum Hadamard-search papers (2016, 2018, 2019, 2022, 2025).
+- L. Manzoni, L. Mariot, and G. Menara, *Combinatorial Designs and Cellular Automata: A Survey* (2025).
+- L. Mariot, E. Formenti, and A. Leporati, *Constructing Orthogonal Latin Squares from Linear Cellular Automata* (2016).
+- M. Gadouleau, L. Mariot, and S. Picek, *Bent Functions from Cellular Automata* (2020).
+- L. Mariot et al., *Heuristic search of (semi-)bent functions based on cellular automata* (2021/2022).
+- F. Bagnoli, S. Dridi, and N. Fates, *Regional controllability of cellular automata as a SAT problem* (2025).
+- M. Herold et al., *Cellular-automaton decoders for topological quantum memories* (2015).
+- M. L. Scott et al., *Cellar automata models for reservoir computing and stretching of liquid marbles* (2024).

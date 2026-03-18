@@ -1,46 +1,71 @@
 # Director Brief
 
 - Date: 2026-03-18
-- Working interpretation: the swarm outputs consistently treat `cellar automata` as `cellular automata`. If that interpretation is wrong, pause and redefine the method family before any search work.
+- Mode: synthesis-only reopen planning after the repo's flat-CA no-go
+- Decision rule: maximize genuine novelty, penalize overlap with the retired `H1/H2` families and the falsifier memo, and prefer directions with a fast same-representation kill test
 
 ## Champion
 
-`H1` Autocorrelation-Realization CA on the `167`-cycle.
+`autocorrelation_debt_pushdown`
 
-This is the best first direction because it stays closest to the sharpest known obstruction in the local scout outputs: the missing length-`167`, weight-`80` support with the required autocorrelation profile. It is also the cleanest branch to falsify quickly. A matched-budget comparison against direct search on the same symmetry-reduced support space gives a clear go/no-go test, which keeps the novelty claim narrow and defensible.
+Choose the canonical-path cellar automaton with deferred autocorrelation debt as the champion direction.
 
-Non-negotiable guardrails:
+Why this is the right reopen:
 
-- Do not let the proposal collapse into a circulant / Williamson / Goethals-Seidel restatement with a CA wrapper.
-- Do not compare only against random supports; the required control is direct search on the same structured space.
-- Do not spend beyond one modest sweep unless the branch shows either an exact hit, a clear hit-rate advantage, or a reachability argument that justifies more budget.
+- It is the clearest literal reading of `cellar automata` that the repo's reserve packet still treats as materially different from the retired flat CA loops.
+- It stays tied to the exact `167/80` cyclic obstruction that actually matters for order `668`, rather than drifting into a generic Hadamard heuristic claim.
+- It has the cleanest early falsifier: a same-tokenization non-automaton prefix search with the same exact-completion oracle and the same equivalence accounting.
+
+Why it is still risky:
+
+- Canonicalization and compression can look stronger than the automaton itself.
+- If deferred debt does not add information beyond static prefix pruning or exact filtering, the branch collapses into branch-and-bound or SAT+CAS packaging.
+
+Champion stop/go gate:
+
+1. Lock one canonical path or run-length encoding for weight-`80` supports in `Z_167`.
+2. Prove zero false negatives on one solved same-template positive control.
+3. Compare against a non-automaton prefix search on the exact same representation and oracle budget.
+4. Stop unless the automaton preserves witnesses and improves frontier reduction or certificate rate under that matched comparator.
 
 ## Backup
 
-`H2` Defect-Transport CA lift from the `64`-modular order-`668` seed.
+`sat_user_propagator_ca`
 
-Keep this as the backup because it starts from the strongest known near-solution and has crisp verification metrics: modulus reached, defect count, and maximum defect magnitude. Its novelty claim is weaker than `H1`, because it can collapse into ordinary local search with CA branding, but it is still worth testing if `H1` dies early and cleanly.
+Keep the proof-carrying cellar frontier as the backup, not as a co-equal start.
 
-Non-negotiable guardrails:
+Why this is the right backup:
 
-- Use the same seed, neighborhood, and move budget for the non-CA local-search baseline.
-- Require solved smaller modulus-lift controls before spending on order `668`.
-- Kill the branch if it cannot lift solved controls by one modulus step or cannot improve the published `64`-modular seed.
+- It adds a new information channel on top of the champion branch instead of reopening the failed raw-support or flat defect-transport families.
+- It is more novel than the liability-field reserve because it tries to convert exact failures into reusable local guards rather than just relabeling the H1-side state.
+- It remains quickly falsifiable with a static-pushdown baseline on the same canonical representation.
 
-## Not Selected Now
+Why it is not the champion:
 
-Compressed/path-state CA variants remain on reserve only. The swarm outputs repeatedly warn that they are too easy to reinterpret as equivalence-aware branch-and-bound or SAT+CAS filtering, which weakens both the novelty claim and the falsification story.
+- The collapse risk into ordinary SAT+CAS is real and already flagged by the falsifier.
+- It depends on the static pushdown branch surviving first; otherwise there is no clean base representation to compare against.
 
-## Blocker And Handoff
+Backup stop/go gate:
 
-Two blockers remain before any researcher should build or run anything:
+1. Promote only if `autocorrelation_debt_pushdown` survives the solved-control and matched-baseline checks.
+2. Hold the canonical representation fixed and compare only against a static pushdown baseline with the same completion oracle.
+3. Stop immediately if the learned feedback is global, one-off, or reduces solver calls only by losing witness retention.
 
-- If the user intended a literal non-cellular "`cellar automata`" model rather than cellular automata, stop and demand a one-page formal definition of that automaton and why it reaches a materially different search space.
-- Even under the cellular-automata reading, the next step is still exact artifact extraction, not frontier search. The repo needs the exact `167/80` target and one solved same-template control in machine-usable form before the branch can be evaluated fairly.
+## Held In Reserve
 
-## Exact Next Experiment
+`convolution_slice_ca` stays third.
 
-1. Reconstruct the exact `167/80` autocorrelation target and one solved same-template positive control.
-2. Define a symmetry-aware direct-search baseline on that same support space.
-3. Run one modest CA rule/seed sweep with reachability logging and compare exact-hit or closest-target performance against the matched baseline.
-4. Promote `H2` only if `H1` fails that kill test without showing a nontrivial reachability advantage.
+It is the cleanest alternate H1-side state representation, but it sits too close to the retired support-space family and is therefore the easiest branch to over-credit for mere relabeling. Keep it available only if both cellar branches fail for reasons specific to prefix-state design rather than for lack of reachability.
+
+## Blockers Before Spend
+
+- The repo does not yet have a locked machine-usable positive control in the exact canonical representation required by the cellar branch.
+- The same-representation non-automaton comparator must be specified before any researcher is allowed to claim progress.
+- The phrase `cellar automata` still cannot carry novelty by itself. The method has to be described as a pushdown or prefix-debt automaton over the exact `167/80` obstruction.
+
+## Exact Next Experiment For The Researcher
+
+1. Extract one canonical representation for weight-`80` supports of `Z_167` and formalize the deferred-debt state fields.
+2. Build one solved same-template positive control in that exact representation.
+3. Implement the matched non-automaton prefix comparator and freeze the oracle and equivalence-accounting contract.
+4. Only then run one small control-budget comparison between the cellar automaton and the matched comparator.
