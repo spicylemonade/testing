@@ -1,9 +1,19 @@
 # Benchmark Report
 
-## Scope
+Verification phase: `review_round_1`
+
+## Verdict
+
+- Internal branch-gating verdict: `supported`.
+- Publication-quality benchmark verdict: `not supported`.
+
+The current pack supports one narrow benchmark claim: on the canonical frontier seed `results/frontier/order_668_64m/seed_sequences.json`, under the shared q/s representation, `evaluation_budget = 80`, requested `restart_count = 3`, RNG seed `17`, and `restart_packet_flips = 2`, no method reached `exact_hit`, and `H1_defect_syndrome_ca_64m` never improved the seed objective `13/2880/512`.
+
+It does not support broader claims that H1 is generally inferior to non-CA search, that H1 failed specifically because locality or the one-packet basis is wrong, that the runtime artifacts are fully auditable, or that this is a literature-level benchmark relative to `suksmono2018`, `suksmono2019`, or `bright2019`.
+
+## Evidence Reviewed
 
 This audit re-read:
-
 - `research_rubric.json`
 - `results/research_context.md`
 - `results/swarm/falsifier.md`
@@ -11,359 +21,274 @@ This audit re-read:
 - `results/verification/benchmark_gate.md`
 - `results/verification/runtime_audit.md`
 - `results/verification/runtime_benchmark_note.md`
-- `results/writeup/claims_table.md`
 - `results/experiments/controls/summary.md`
 - `results/experiments/controls/summary.json`
 - `results/experiments/order_668_64m/summary.md`
 - `results/experiments/order_668_64m/summary.json`
-- raw run JSONs under `results/experiments/controls/runs/` and `results/experiments/order_668_64m/runs/`
+- `results/experiments/order_668_64m/configs/H1_defect_syndrome_ca_64m.json`
+- `results/branches/H1_precheck.md`
 - `results/branches/H1_frontier_sensitivity_probe.json`
+- `results/writeup/claims_table.md`
+- raw run JSONs under `results/experiments/controls/runs/` and `results/experiments/order_668_64m/runs/`
 
-Primary experiment IDs reviewed:
-
-- `control_n5_q0:H1_defect_syndrome_ca_64m`
-- `control_n5_q0:greedy`
-- `control_n5_q0:simulated_annealing`
-- `control_n5_q0:stochastic_hillclimb`
-- `control_n5_q0:tabu`
-- `control_n7_q0:H1_defect_syndrome_ca_64m`
-- `control_n7_q0:greedy`
-- `control_n7_q0:simulated_annealing`
-- `control_n7_q0:stochastic_hillclimb`
-- `control_n7_q0:tabu`
-- `order_668_64m:H1_defect_syndrome_ca_64m`
-- `order_668_64m:greedy`
-- `order_668_64m:simulated_annealing`
-- `order_668_64m:stochastic_hillclimb`
-- `order_668_64m:tabu`
-
-Paper keys used to bound benchmark claim strength:
-
-- `eliahou2025_64mod668` :: *A 64-Modular Hadamard Matrix of Order 668*
-- `tsompanas2017` :: *Cellular Automata Applications in Shortest Path Problem*
-- `suksmono2018` :: *Finding a Hadamard Matrix by Simulated Quantum Annealing*
-- `suksmono2019` :: *Finding Hadamard Matrices by a Quantum Annealing Machine*
-- `bright2019` :: *The SAT+CAS method for combinatorial search with applications to best matrices*
-
-## Bottom Line
-
-- Adequate for internal branch elimination: `yes`.
-- Adequate for publication-quality benchmark claims: `no`.
-
-The saved pack is strong enough to support one narrow statement: under one canonical order-`668` frontier seed, one RNG seed, one budget (`80`), and one shared q/s harness, `H1_defect_syndrome_ca_64m` fails the first kill test and does not earn broad continuation.
-
-The same pack is not strong enough to support stronger claims such as:
-
-- `H1` is broadly worse than non-CA search.
-- `H1` failed specifically because the locality / actuator basis is wrong.
-- the runtime package is fully auditable.
-- the frontier comparison is restart-robust or seed-robust.
-- the current roster is competitive with the broader Hadamard-search literature represented by `suksmono2018`, `suksmono2019`, and `bright2019`.
-
-## Existing Coverage
-
-- Representation control is real: all frontier methods operate in the same compact q/s coordinates on the canonical seed from `eliahou2025_64mod668`.
-- Exactness control is real: all saved runs report the shared `exact_hit` gate plus support, `l1`, and `max_abs`.
-- Small solved controls exist: `control_n5_q0:*` and `control_n7_q0:*`.
-- One H1 sensitivity artifact exists: `results/branches/H1_frontier_sensitivity_probe.json`.
-
-This is enough for a negative pilot. It is not enough for publication-grade performance or mechanism claims.
+Primary experiment groups reviewed:
+- `control_n5_q0:*`
+- `control_n7_q0:*`
+- `order_668_64m:*`
 
 ## Missing Baselines
 
-### 1. Mechanism baseline
+### 1. No CA-off mechanism baseline
 
-There is no CA-off counterpart that keeps H1's exact packet-delta machinery but removes CA-specific coupling or refractory behavior. The current matched roster compares H1 only against `greedy`, `tabu`, `simulated_annealing`, and `stochastic_hillclimb`. That is enough to test whether H1 beats standard local heuristics under one shared representation, but it does not test whether the CA-specific parts of H1 matter.
+The frontier roster compares H1 only against `greedy`, `tabu`, `simulated_annealing`, and `stochastic_hillclimb`. There is no matched variant that keeps H1's packet-delta scorer but removes CA-specific coupling or refractory behavior.
+
+Why this matters:
+- The current negative result can eliminate the branch.
+- It cannot distinguish `CA dynamics add nothing` from `the H1 implementation is simply a poor local-search policy`.
 
 Missing falsifiable test:
-
-- rerun the controls and canonical frontier seed with:
+- Re-run the full control batch and the canonical frontier seed with:
   - full H1
-  - H1 with `same_channel_weight = 0` and `cross_channel_weight = 0`
-  - H1 with `refractory_steps = 0` and `refractory_penalty = 0`
-  - H1 with `fallback_best_packet = false`
+  - zero-coupling H1 (`same_channel_weight = 0`, `cross_channel_weight = 0`)
+  - zero-refractory H1 (`refractory_steps = 0`, `refractory_penalty = 0`)
+  - scorer-only / fallback-disabled H1 (`fallback_best_packet = false`)
 
-If full H1 does not beat these CA-off variants on exact-hit or median terminal support / `max_abs`, the CA-mechanism claim fails.
+Decision rule:
+- If full H1 does not beat its CA-off variants on `exact_hit` or on median terminal support plus `max_abs`, drop any CA-mechanism claim.
 
-### 2. Difficulty-matched control baseline
+### 2. No chance or recoverability anchors on the easy controls
 
-The only solved controls are tiny deterministic q0-flip seeds: `control_n5_q0` and `control_n7_q0`. Those are useful sanity checks, not frontier-like controls. There is no intermediate control ladder closer to `seed_length = 167`, to support `13`, or to the defect profile of the canonical order-`668` seed.
-
-Missing falsifiable test:
-
-- add multi-flip and frontier-style synthetic controls with larger `seed_length` and higher initial support.
-- require H1 to preserve any control advantage once the controls are no longer one-flip toy cases.
-
-### 3. Seed-robustness baseline
-
-The frontier batch uses one seed file, `results/frontier/order_668_64m/seed_sequences.json`, and one RNG seed, `17`. There is no frontier perturbation suite, no equivalent-seed sweep, and no multi-seed stochastic replication.
+The only solved controls are `control_n5_q0` and `control_n7_q0`. They establish that the harness works, but they do not bound chance performance or optimal recoverability on the tiny cases.
 
 Missing falsifiable test:
+- Add a random-walk baseline on the tiny controls.
+- Add an explicit recoverability/oracle reference for the same controls.
 
-- run the same frontier protocol on a perturbation suite around the canonical seed, including both q-flip and s-flip perturbations.
-- repeat the batch across several RNG seeds.
+Decision rule:
+- If H1 only beats random walk on tiny one-flip controls, treat those wins as scaffold validation, not as evidence of frontier relevance.
 
-If the negative H1 result does not survive those replications, the current branch-kill claim should remain internal only.
+### 3. No publication-level proxy baseline beyond same-coordinate local search
 
-### 4. Broader literature baseline
-
-The current roster is intentionally narrow. That is fine for internal gating, but it is not a literature-level benchmark against the broader search families represented by `suksmono2018`, `suksmono2019`, or `bright2019`.
-
-Missing falsifiable test:
-
-- either keep the claim narrow to "seed-matched negative pilot against same-representation local heuristics"
-- or add at least one stronger exact or certificate-oriented baseline on tractable proxy instances before claiming literature competitiveness
-
-### 5. Chance / oracle anchors on tiny controls
-
-There is no explicit uninformed baseline and no explicit oracle-style recoverability baseline in the saved benchmark tables, even though the only solved controls are tiny. That leaves no anchor for chance performance or optimal recoverability on the easy cases.
+The current roster is intentionally narrow and same-representation. That is acceptable for the first kill test, but it is not enough to support benchmark language implying competitiveness with broader search families discussed in `suksmono2018`, `suksmono2019`, or `bright2019`.
 
 Missing falsifiable test:
-
-- add a random-walk baseline on the tiny controls
-- add an explicit optimal recoverability reference for those controls
-
-## Missing Ablations
-
-### 1. H1 component ablations are not benchmark-quality yet
-
-`results/experiments/order_668_64m/configs/H1_defect_syndrome_ca_64m.json` exposes many H1-specific knobs:
-
-- `lag_neighborhood_radius`
-- `packet_neighborhood_radius`
-- `same_channel_weight`
-- `cross_channel_weight`
-- `active_lag_bonus`
-- `spill_l1_penalty`
-- `spill_support_penalty`
-- `activation_threshold`
-- `max_active_packets`
-- `refractory_steps`
-- `refractory_penalty`
-- `stagnation_limit`
-- `fallback_best_packet`
-
-Only one setting is benchmarked. `results/branches/H1_frontier_sensitivity_probe.json` is useful engineering reconnaissance, but it is not a publication-quality ablation pack because it uses:
-
-- one seed
-- `restart_count = 1`
-- no matched baseline comparators
-- no confidence or variance estimate
-
-It also does not isolate the most important causal questions:
-
-- no zero-coupling run
-- no zero-refractory run
-- no `spill_support_penalty = 0` run
-- no CA-off / scorer-only run
-
-### 2. Actuator-basis ablation is missing
-
-The current frontier result does not distinguish "bad CA rule" from "bad one-packet actuator basis." The falsifier and follow-on writeups infer a locality / actuator-basis mismatch, but the benchmark itself does not isolate that cause.
-
-Missing falsifiable test:
-
-- compare the current H1 packet basis against at least one alternative basis under the same harness and accounting
-- require the representation-changing variant to outperform tuning-only variants before claiming the failure is representation-level
-
-### 3. Synchrony / sparsity ablation is effectively missing
-
-The saved H1 configs keep `max_active_packets = 1`, so the benchmark never tests whether sparse asynchronous activation is necessary, whether broader synchronized updates help, or whether H1 collapses into a burst heuristic when multiple packets are active.
-
-Missing falsifiable test:
-
-- run matched H1 variants with `max_active_packets > 1`
-- compare them against the current sparse setting on both controls and frontier perturbations
+- Either keep the claim narrow to `same-representation negative pilot`
+- Or add at least one stronger exact or certificate-oriented baseline on tractable proxy instances before making literature-level benchmark claims.
 
 ## Missing Controls
 
-### 1. Restart-coverage control is incomplete
+### 1. Restart fairness is matched in config, not in executed evidence
 
-The frontier protocol requests `restart_count = 3`, but the executed restart coverage is not actually matched:
+Every method requests `restart_count = 3`, but the frontier batch does not execute matched restart coverage:
+- `order_668_64m:H1_defect_syndrome_ca_64m`: `3/3`
+- `order_668_64m:stochastic_hillclimb`: `3/3`
+- `order_668_64m:greedy`: `1/3`
+- `order_668_64m:tabu`: `1/3`
+- `order_668_64m:simulated_annealing`: `1/3`
 
-- `order_668_64m:H1_defect_syndrome_ca_64m` completes `3/3`
-- `order_668_64m:stochastic_hillclimb` completes `3/3`
-- `order_668_64m:greedy` completes `1/3`
-- `order_668_64m:simulated_annealing` completes `1/3`
-- `order_668_64m:tabu` completes `1/3`
+The same issue appears on controls: `control_n5_q0:tabu` completes `2/3`, and `control_n7_q0:simulated_annealing` completes `1/3`.
 
-This does not invalidate the negative pilot, but it does make the existing distributional wording too strong. A one-seed frontier batch with unequal executed restart coverage is not publication-grade evidence for restart-robust comparisons.
-
-Missing falsifiable test:
-
-- either equalize executed restarts
-- or switch to a fixed per-restart budget and report the full replicated restart distribution
-
-### 2. Symmetry / equivalence control is partial
-
-The current canonical fingerprint only quotients by global q/s sign flips. There is no full Hadamard-equivalence control over row/column permutations or broader structured-family symmetries.
-
-That is acceptable for the current narrow negative pilot. It is not enough for stronger novelty or uniqueness claims.
+Why this matters:
+- The current result is still valid for internal branch elimination.
+- If anything, the imbalance favors H1: H1 completed more frontier restarts than `greedy`, `tabu`, and `simulated_annealing` and still never improved the seed objective.
+- It is not publication-grade evidence for restart-robust method ordering.
 
 Missing falsifiable test:
+- Re-run with a fixed per-restart budget, or keep running until every method completes the same number of restarts.
 
-- either implement broader equivalence handling
-- or run an explicit family-leakage audit on every reported near-best frontier state
+Decision rule:
+- Do not claim restart-robust comparisons until the negative H1 result survives equal executed restart coverage.
 
-### 3. Provenance control is incomplete
+### 2. The control ladder is too small and too easy
 
-The run JSONs record seed paths and embedded config values, but not:
+The only matched solved controls are two deterministic q0-flip seeds with `seed_length` `5` and `7`. On these toy cases, H1, greedy, and tabu all achieve `exact_hit_rate = 1.00`, while simulated annealing and stochastic hillclimb hit `0.50`.
 
-- closed seed hashes
-- config checksums
-- code revision identifiers
-
-This is exactly the gap already flagged in `results/verification/runtime_benchmark_note.md`.
-
-Missing falsifiable test:
-
-- require a third party to reconstruct every restart terminal and rerun all `15` saved experiments from recorded code, config, and seed digests alone
-
-Until that test passes, "fully auditable" is too strong.
-
-### 4. Cost control is incomplete for runtime claims
-
-Evaluation budgets are matched, but the internal work accounting is not symmetric:
-
-- H1 logs `ca_field_evaluations = 10354` and takes about `2.13s`
-- the non-CA baselines expose no comparable internal-work counter and finish in about `0.08s` to `0.14s`
-
-The current pack supports one narrow statement: H1 is much slower despite using fewer objective evaluations. It does not isolate CA field evaluation as the cause.
+Why this matters:
+- These are sanity controls, not difficulty-matched proxies for the `seed_length = 167` frontier seed.
+- They do not show that any apparent H1 advantage persists once the defect profile becomes frontier-like.
 
 Missing falsifiable test:
+- Add multi-flip and higher-support controls in the same q/s representation.
+- Add a scale bridge between the current solved controls and the frontier seed.
 
-- instrument wall time by component
-- or add a cached-delta / profiling ablation that shows the wall-time gap tracks field-evaluation work across variants
+Decision rule:
+- If H1's apparent control advantage vanishes once initial support and seed length increase, demote the current control wins to harness-validation evidence only.
+
+### 3. Hold-out tuning control is missing
+
+`results/branches/H1_frontier_sensitivity_probe.json` tunes or probes H1 on the frontier seed itself. There is no held-out control family used for hyperparameter selection.
+
+Why this matters:
+- The same artifact is being used both to shape the H1 explanation and to benchmark the frontier behavior.
+- That is not acceptable for a publication-quality method study.
+
+Missing falsifiable test:
+- Freeze H1 parameters on a held-out synthetic/control ladder before rerunning the frontier batch.
+
+Decision rule:
+- Do not use frontier-seed sensitivity observations as mechanism evidence unless the same parameter choice is frozen before frontier evaluation.
+
+### 4. Equivalence control is still representation-local
+
+The current `canonical_fingerprint` only quotients by global q/s sign flips. That is enough for the present negative pilot, but not enough for stronger uniqueness, diversity, or structured-family claims.
+
+Missing falsifiable test:
+- If future runs produce any improved frontier states, perform a family-leakage / equivalence audit before counting them as distinct benchmark outcomes.
+
+## Missing Ablations
+
+### 1. The saved H1 sensitivity probe is not a benchmark-grade ablation pack
+
+`results/branches/H1_frontier_sensitivity_probe.json` is useful reconnaissance, but it is not a publication-quality ablation:
+- one frontier seed
+- one RNG seed
+- `restart_count = 1`
+- no matched baseline comparators
+- no uncertainty estimate
+
+All eight saved rows stay pinned to the seed objective `13/2880/512`, which is informative engineering evidence but not enough to isolate cause.
+
+### 2. No actuator-basis ablation
+
+The current report logic infers that the one-packet actuator basis may be the blocker, but no matched experiment compares the current packet library against an alternative actuator basis under the same harness.
+
+Missing falsifiable test:
+- Compare the current one-packet basis against at least one alternative packet library under matched accounting on the same controls and frontier seeds.
+
+Decision rule:
+- Do not claim a representation-level failure unless an actuator-changing variant is compared directly against tuning-only variants.
+
+### 3. No synchrony / sparsity ablation
+
+The benchmark never tests whether sparse asynchronous activation is necessary because the saved frontier config fixes `max_active_packets = 1`.
+
+Missing falsifiable test:
+- Re-run H1 with `max_active_packets > 1` under the same accounting on the harder controls and frontier seeds.
+
+Decision rule:
+- If multi-packet activation changes the frontier behavior materially, the current CA interpretation is under-identified.
 
 ## Missing Error Analysis
 
-### 1. Traces are not replay-complete
+### 1. Run outputs are easy to misread
 
-`results/verification/runtime_benchmark_note.md` is right: the traces are sampled accepted-state logs, not evaluation-complete logs. They are enough to see broad behavior, not enough to reconstruct every search trajectory.
+The raw run JSON top level is `best_over_run`, not terminal output. Two concrete examples:
+- `control_n5_q0:H1_defect_syndrome_ca_64m` is `exact_hit = true`, but its last trace point is still `support 1`, `l1 4`, `max_abs 4`.
+- `order_668_64m:H1_defect_syndrome_ca_64m` keeps the seed as `best_objective` `13/2880/512`, while its three restart terminals diffuse to `33/2368/384`, `40/2356/408`, and `23/2216/384`.
 
-### 2. Top-level outputs are `best_over_run`, not terminal-by-restart outputs
+Missing falsifiable test:
+- Add per-restart terminal summaries and an explicit `output_semantics` field.
 
-Two concrete examples matter:
+Decision rule:
+- Treat the batch as publication-grade only if a third party can tell, from the raw artifact alone, whether a number is seed state, terminal state, or best-over-run state.
 
-- `order_668_64m:H1_defect_syndrome_ca_64m` reports the seed as `best_objective`, while its three restart terminals diffuse to support `33`, `40`, and `23`.
-- `control_n5_q0:H1_defect_syndrome_ca_64m` is `exact_hit = true`, but the last trace entry is still nonzero.
+### 2. Traces are sampled accepted-state logs, not replay-complete logs
 
-Without explicit `output_semantics` and per-restart terminal summaries, the raw artifacts are easy to misread.
+Examples from the frontier batch:
+- `greedy`: `2` trace points for `80` objective evaluations
+- `simulated_annealing`: `2` trace points for `80` objective evaluations
+- `tabu`: `3` trace points for `80` objective evaluations
 
-### 3. Failure taxonomy is too shallow
+This is enough for a coarse negative readout. It is not enough for serious failure analysis or auditability claims.
 
-The frontier summary says H1 diffuses support and never beats the seed. That is useful, but it is still coarse. The current artifacts do not log:
+Missing falsifiable test:
+- Emit evaluation-complete traces, or explicitly version a sampled-trace schema that is rich enough to recover every restart terminal and accepted move sequence.
 
-- per-restart lag identities
-- defect-location summaries
-- failure clusters across equivalent frontier states
-- whether the same defect families recur across restarts or seeds
+### 3. Failure clustering is unmeasured
 
-That is not enough to defend a strong mechanism claim such as "locality failed" or "the actuator basis is wrong."
+The current artifacts do not record defect-location summaries, lag identities, or per-restart failure clusters.
 
-### 4. Uncertainty reporting is missing
+Missing falsifiable test:
+- Add per-restart defect-location summaries and cluster whether the same lag families fail repeatedly across restarts and perturbation seeds.
 
-One frontier seed, one RNG seed, and partial frontier restart coverage do not support robust variance or confidence claims. The current control summary reports variance on only two tiny controls; that is not a meaningful uncertainty story for the frontier question.
+Decision rule:
+- Do not claim a mechanism story such as `locality failed` or `the actuator basis is wrong` until repeated failure structure is visible in the saved artifacts.
+
+### 4. Provenance completeness is still inconsistent across verification files
+
+`results/verification/runtime_audit.md` says runtime evidence is complete enough to satisfy the audit, while `results/verification/runtime_benchmark_note.md` says the same batch is still short because output semantics, replay completeness, and digests are missing.
+
+Why this matters:
+- The benchmark pack should not make a stronger auditability claim than its own side notes allow.
+
+Missing falsifiable test:
+- Add seed digests, config checksums, code revision identifiers, and a reproduction test that reconstructs every saved run from recorded artifacts alone.
 
 ## Missing Stress Tests
 
-### 1. Budget sweep
+### 1. No budget sweep
 
 Only `evaluation_budget = 80` is reported.
 
-### 2. RNG sweep
+Missing falsifiable test:
+- Repeat the frontier batch at a small grid such as `40`, `80`, and `160`.
 
-Only `seed = 17` is reported.
+Decision rule:
+- Do not claim the negative result is budget-robust until H1 remains non-competitive across the sweep.
 
-### 3. Restart-perturbation sweep
+### 2. No RNG sweep
+
+Only RNG seed `17` is reported.
+
+Missing falsifiable test:
+- Repeat the frontier batch across several RNG seeds with equal executed restart coverage.
+
+Decision rule:
+- Do not claim seed-robust failure until the same negative conclusion survives the RNG sweep.
+
+### 3. No restart-perturbation sweep
 
 Only `restart_packet_flips = 2` is reported.
 
-### 4. Frontier perturbation stress
+Missing falsifiable test:
+- Repeat with at least a small grid such as `1`, `2`, and `4`.
 
-There is no multi-flip frontier perturbation suite and no s-flip frontier perturbation suite.
+Decision rule:
+- If H1 only fails or only works at one restart perturbation setting, the current conclusion is too configuration-specific.
 
-### 5. Scale bridge
+### 4. No frontier perturbation suite
 
-There are no solved or synthetic controls between `seed_length = 7` and `seed_length = 167`.
+There is no matched q-flip / s-flip perturbation suite around the canonical frontier seed. The saved frontier batch therefore measures only one exact seed instance.
 
-### 6. Hold-out tuning control
+Missing falsifiable test:
+- Build a small perturbation suite around `results/frontier/order_668_64m/seed_sequences.json` and run every method on the same perturbations.
 
-The saved H1 sensitivity work is on the frontier seed itself. That means there is no train/test separation for hyperparameter choice.
+Decision rule:
+- Do not promote the one-seed negative pilot to a method-level benchmark claim unless it survives nearby frontier perturbations.
 
-## Publication-Quality Claim Status
+## Claim Status
 
 | Claim | Status | Why |
 | --- | --- | --- |
-| `H1` failed the first matched pilot on the canonical frontier seed. | Supported | The saved frontier batch is a clear negative result under one locked q/s contract. |
+| `H1` failed the first matched pilot on the canonical frontier seed. | Supported | The saved `order_668_64m:*` batch is a clear negative result under one locked q/s contract. |
 | `H1` is broadly worse than non-CA local search. | Not supported | Only one frontier seed, one RNG seed, one budget, and unequal executed restart coverage. |
-| `H1` failed specifically because the locality / actuator basis is wrong. | Not supported | No matched actuator or mechanism ablations isolate that cause. |
-| The runtime package is fully auditable. | Not supported | `results/verification/runtime_benchmark_note.md` explicitly says artifact completeness is still short of acceptance. |
-| The current roster is competitive with broader Hadamard-search literature. | Not supported | The pack is much narrower than the benchmark expectations implied by `suksmono2018`, `suksmono2019`, and `bright2019`. |
-| The current evidence is enough to reject broad H1 expansion inside this repo. | Supported | For internal branch gating, the one-seed negative pilot is good enough. |
-| The current evidence is enough to justify the H2 pivot as a causal explanation. | Not supported | The H2 rationale is still an inference until tuning-only and actuator-changing ablations are compared under the same harness. |
+| `H1` failed specifically because locality or the one-packet basis is wrong. | Not supported | No CA-off or actuator-basis ablations isolate that cause. |
+| The runtime package is fully auditable. | Not supported | `runtime_audit.md` and `runtime_benchmark_note.md` disagree, and the saved traces/output semantics are incomplete for replay. |
+| The current roster is a literature-level benchmark. | Not supported | The pack is narrower than the benchmark ceiling implied by `suksmono2018`, `suksmono2019`, and `bright2019`. |
+| The current evidence is enough to stop broad H1 expansion inside this repo. | Supported | The one-seed matched negative pilot is sufficient for internal branch elimination. |
 
-## Falsifiable Next Tests
+## Minimum Next Tests
 
-### 1. CA-off mechanism ablation
+1. CA-off mechanism ablation
+- Run full H1, zero-coupling H1, zero-refractory H1, and scorer-only / fallback-disabled H1 on the current controls plus the canonical frontier seed.
+- Reject CA-mechanism language if full H1 does not beat its CA-off variants.
 
-Re-run the controls and canonical frontier seed with:
+2. Replicated frontier batch
+- Repeat `order_668_64m:*` across multiple RNG seeds with equal executed restart coverage or fixed per-restart budgets.
+- Promote the negative result beyond internal gating only if the same ordering survives the replicated batch.
 
-- full H1
-- zero-coupling H1
-- zero-refractory H1
-- scorer-only / fallback-disabled H1
+3. Harder control ladder
+- Add multi-flip, higher-support, and longer-length controls in the same q/s representation.
+- Treat current control wins as sanity checks only if H1 loses its edge on the harder ladder.
 
-Decision rule:
+4. Artifact completeness repair
+- Add per-restart terminal records, `output_semantics`, trace schema/versioning, and code/config/seed digests.
+- Require a third party to reconstruct all saved terminal states from the recorded artifacts.
 
-- if full H1 does not beat its CA-off variants on exact-hit or median terminal support / `max_abs`, drop the CA-mechanism claim
+5. Budget and perturbation stress grid
+- Sweep `evaluation_budget`, `restart_packet_flips`, and nearby q/s perturbations around the canonical frontier seed.
+- Keep publication claims narrow unless the H1-negative result survives those stress tests.
 
-### 2. Replicated frontier batch
+## Bottom Line
 
-Repeat the frontier pilot across multiple RNG seeds and either:
-
-- equalize executed restarts
-- or use a fixed per-restart budget
-
-Decision rule:
-
-- only call the H1 negative result publication-grade if it survives the replicated batch on exact-hit and on terminal support / `max_abs`
-
-### 3. Harder control ladder
-
-Add multi-flip and frontier-style controls with larger `seed_length` and higher initial support.
-
-Decision rule:
-
-- if H1's apparent control advantage disappears once the controls are not one-flip toy cases, treat the current control wins as sanity checks only
-
-### 4. Artifact-completeness test
-
-Emit:
-
-- per-restart terminal summaries
-- explicit `output_semantics`
-- defect-location summaries
-- code / config / seed digests
-
-Decision rule:
-
-- a third party should be able to reconstruct every terminal state and rerun all `15` saved experiments from the recorded artifacts alone
-
-### 5. Runtime-cause test
-
-Profile or ablate cached delta / field computation.
-
-Decision rule:
-
-- if the wall-time gap does not track field-evaluation work after instrumentation, remove the current causal runtime explanation
-
-## Verdict
-
-The present benchmark is a valid falsification scaffold for the current H1 branch. It is not yet a publication-quality benchmark section.
-
-The safe interpretation is narrow:
-
-- seeded, representation-matched negative pilot on the canonical frontier seed from `eliahou2025_64mod668`
-- useful for stopping broad H1 sweeps
-- insufficient for stronger claims about mechanism, robustness, runtime causality, or broader competitiveness
+The current benchmark is strong enough to falsify the present H1 branch under one matched pilot. It is not strong enough to support publication-quality claims about mechanism, robustness, auditability, or broader benchmark competitiveness.

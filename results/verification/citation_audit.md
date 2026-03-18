@@ -1,151 +1,257 @@
 # Citation Audit
 
+Review phase: `review_round_1`
+
 ## Scope
 
-`research_paper.tex` is not present in the repo, so this audit targets the current writeup-facing artifacts instead:
+Read directly:
 
-- `results/writeup/methods_brief.md`
-- `results/writeup/claims_table.md`
-- `results/writeup/repro.md`
-- `results/verification/verification_summary.md`
-- `results/verification/benchmark_report.md`
-- `results/verification/novelty_report.md`
-- `results/verification/runtime_audit.md`
-- `results/analysis/prior_work_comparison.md`
-- `results/frontier/order_668_64m/seed_manifest.json`
-- `results/frontier/order_668_64m/source_excerpt.txt`
-- `results/experiments/order_668_64m/summary.json`
-- `results/experiments/controls/summary.json`
-- `results/experiments/order_668_64m/runs/*.json`
-- `results/experiments/order_668_64m/configs/*.json`
-- `hadamard_ca/harness.py`
+- `research_paper.tex`
 - `sources.bib`
 - `results/research_context.md`
 - `results/literature/semantic_scholar_manifest.json`
 
-This phase checks evidence traceability and citation support only.
+Checked against direct support artifacts:
 
-## Executive Summary
+- `results/frontier/order_668_64m/seed_manifest.json`
+- `results/frontier/order_668_64m/source_excerpt.txt`
+- `results/analysis/frontier_locality_scan.json`
+- `results/experiments/order_668_64m/summary.json`
+- `results/experiments/controls/summary.json`
+- `results/experiments/order_668_64m/runs/H1_defect_syndrome_ca_64m.json`
+- `results/branches/H1_frontier_sensitivity_probe.json`
+- `results/verification/benchmark_gate.md`
+- `hadamard_ca/harness.py`
+- `hadamard_ca/h1_ca.py`
 
-- The strongest claims are well supported by direct internal artifacts: seed provenance, shared-harness accounting, the negative frontier result, the absence of an exact order-668 hit, and runtime-package completeness.
-- The weakest claims are the literature-facing interpretation claims: the narrow novelty framing, the "not competitive with broader literature" framing, the `pivot to H2` mechanism rationale, and the causal explanation for the H1 runtime cost.
-- The main traceability problem is not total absence of evidence; it is over-reliance on derivative summaries. The current writeup repeatedly cites `results/verification/benchmark_report.md`, `results/verification/novelty_report.md`, and this audit file itself where direct artifacts are available.
-- No load-bearing paper key looks fabricated, but several BibTeX entries carry citation-hallucination risk through mixed or weak metadata: `tsompanas2017`, `ghaleb2019`, and `leeuwen2000`. `suksmono2024` should also be corrected before use.
-
-## Claim Support Map
-
-| Claim(s) | Status | Best direct support | Audit note |
-| --- | --- | --- | --- |
-| `C1`, `C11` | supported | `results/frontier/order_668_64m/seed_manifest.json`; `results/frontier/order_668_64m/source_excerpt.txt`; `results/experiments/order_668_64m/summary.json`; `eliahou2025_64mod668` | Strong seed-provenance chain. Prefer the seed manifest and source excerpt over derivative report citations. |
-| `C2` | supported | `results/experiments/controls/summary.json`; control run files under `results/experiments/controls/runs/` | Strongly supported. The control exact-hit readout is directly visible in saved outputs. |
-| `C3`, `C4`, `C5`, `C10`, `C12` | supported | `results/experiments/order_668_64m/summary.json`; frontier run files under `results/experiments/order_668_64m/runs/`; `results/verification/benchmark_gate.md`; `hadamard_ca/harness.py`; configs under `results/experiments/order_668_64m/configs/` | Strong internal support. The current writeup should point to `summary.json` and the harness/config files more often than to `benchmark_report.md`. |
-| `C8` | supported | `results/verification/runtime_inventory.json`; run files in both experiment batches; `results/verification/runtime_audit.md` | Strongly supported. `runtime_audit.md` is acceptable as a summary, but the raw run files and inventory remain the primary evidence. |
-| `C6` | partial / weak | `results/literature/prior_art_gap.md`; `results/verification/novelty_citation_note.md`; `tsompanas2017`; `eliahou2025_64mod668` | The safe narrow claim is defensible, but the current evidence chain is partly circular because the writeup cites `results/verification/citation_audit.md` as support. `tsompanas2017` supports only the generic point that CA-for-search prior art exists; it does not by itself close the question of Hadamard-specific CA novelty. |
-| `C7` | partial / weak | `results/verification/benchmark_gate.md`; `results/experiments/order_668_64m/summary.json`; `suksmono2018`; `suksmono2019`; `bright2019` | "Fair enough for branch elimination" is supported internally. The broader comparison to Hadamard-search literature is under-cited and should be widened if retained. |
-| `C9` | partial / weak | `results/verification/verification_summary.md`; `results/branches/H2_gate.md`; `results/concept_evolve/probe_result.json` | The branch decision is documented. The stronger mechanism statement about `locality / actuator-basis mismatch` is still an inference, not a separately established result. |
-| `C13` | mixed | `results/experiments/order_668_64m/summary.json`; `results/experiments/order_668_64m/runs/H1_defect_syndrome_ca_64m.json` | The numeric part (`32` evaluations, `2.129s`) is direct. The explanation "this reflects CA field-evaluation cost" is plausible but not directly measured. Mark it as interpretation or add profiling evidence. |
-
-## Missing Citations, Weak Citations, And Uncited Comparisons
-
-### 1. Circular or derivative evidence chains
-
-- `results/writeup/claims_table.md` uses `results/verification/citation_audit.md` as evidence for `C1`, `C6`, and `C7`.
-- `results/writeup/methods_brief.md` also cites `results/verification/citation_audit.md` for the novelty and literature-scope claims.
-- That is weak traceability. A citation audit is a synthesis artifact, not a primary source. Replace those links with direct paper keys and direct repo artifacts.
-
-### 2. Derivative summaries are carrying too much weight
-
-- `results/verification/benchmark_report.md` and `results/verification/novelty_report.md` are useful summaries, but many load-bearing claims can point directly to:
-  - `results/frontier/order_668_64m/seed_manifest.json`
-  - `results/frontier/order_668_64m/source_excerpt.txt`
-  - `results/experiments/order_668_64m/summary.json`
-  - `results/experiments/controls/summary.json`
-  - `results/experiments/order_668_64m/configs/*.json`
-  - `hadamard_ca/harness.py`
-- For the current paper, those direct artifacts should be first-line evidence and the reports should be secondary support.
-
-### 3. Comparison language that is really inference
-
-- `results/verification/benchmark_report.md`
-  - "Relative to `tsompanas2017`, the answer in this batch is no."
-  - This is not something `tsompanas2017` itself supports. It is an internal inference from the saved run outcomes plus a generic CA prior-art anchor.
-- `results/analysis/prior_work_comparison.md`
-  - Claims such as "much weaker on certification," "seed dependence is stronger," and "closer to CA-flavored local repair" are reasonable, but they are comparative interpretations, not direct quotations or direct paper-supported facts.
-- `results/verification/verification_summary.md` and `results/writeup/methods_brief.md`
-  - The `pivot to H2` rationale invokes `locality / actuator-basis mismatch`. That is a repo-level interpretation and should be labeled as such unless stronger evidence is added.
-
-### 4. Weak watchlist citations should not carry substantive claims
-
-- `ghaleb2019`, `ghaemi2022`, and `leeuwen2000` are all treated elsewhere in the repo as watchlist or false-positive comparators.
-- That is the correct role for them. They should not be promoted into substantive novelty support for H1/H2/H3.
-- If formal text needs a real novelty comparator, use direct Hadamard-search or modular-Hadamard sources instead.
-
-## Likely Citation Hallucinations Or Metadata Risks
-
-No load-bearing paper appears fabricated. The risk is weaker than "fake paper" and closer to "mixed or unstable metadata that could lead to bad paraphrase."
-
-- `tsompanas2017`
-  - Real paper.
-  - Current BibTeX is internally inconsistent: it combines `journal={arXiv.org}` with a Springer chapter DOI.
-  - Fix by choosing one version and citing it cleanly.
-- `ghaleb2019`
-  - Real learning-automata elevator paper.
-  - Repo notes already flag a single-elevator / multi-elevator metadata mismatch.
-  - Keep only as a broad watchlist comparator until revalidated. Do not paraphrase detailed content from it.
-- `leeuwen2000`
-  - Likely points to an LNCS proceedings volume rather than a chapter-specific contribution.
-  - Adequate only as a lexical false positive or rhetorical-drift warning.
-- `ghaemi2022`
-  - Real paper, but domain-irrelevant to the actual Hadamard-search claims.
-  - Keep it out of claim-bearing verification text.
-- `suksmono2024`
-  - Not currently load-bearing in the writeup.
-  - Correct its metadata before use; the current year field is not reliable enough for a formal citation.
-
-## Most Important Concrete Sources To Add
-
-These are the most useful source additions for the current writeup. Several are already present in `sources.bib` but are not yet carrying the claims they should.
-
-1. `eliahou2005`
-   - Use for modular-Hadamard background and for placing the 2025 frontier object in context.
-   - This is the most important missing background citation if the manuscript explains what a `64`-modular Hadamard matrix is or why the seed matters.
-
-2. `eliahou2001`
-   - Use if the writeup mentions the earlier modular-sequence lineage behind the order-668 result.
-   - This gives the frontier anchor a stronger historical chain than `eliahou2025_64mod668` alone.
-
-3. `bright2018`
-   - Use as a stronger exact structured-search comparator than `bright2019` alone.
-   - Especially important if the H2 family-leakage discussion keeps references to `Williamson`, `Turyn`, or exact structured-family search.
-
-4. `suksmono2022` and/or corrected `suksmono2024`
-   - Use if the paper keeps the sentence about "broader annealing or SAT+CAS Hadamard-search literature."
-   - The current writeup leans too heavily on only `suksmono2018` and `suksmono2019` for that broader claim.
-
-5. `cati2024`
-   - Use for claims about known Hadamard constructions, solved orders, or literature landscape coverage.
-   - This is also a cleaner citation than generic watchlist noise when the text needs a survey/database-style anchor.
-
-6. Add a BibTeX entry for `Learning Automata-Based Solutions to the Multi-Elevator Problem` only if that watchlist comparator will remain in formal prose.
-   - Otherwise, remove the comparator instead of citing it.
-
-7. `sudhakaran2022`
-   - Optional and not needed for the current H1 negative-result writeup.
-   - Add only if future drafts discuss learned or goal-guided CA control, not just fixed-rule seeded repair.
-
-## Recommended Fixes Before Final Paper Assembly
-
-- Replace self-citation to `results/verification/citation_audit.md` with direct evidence.
-- For seed provenance, cite `results/frontier/order_668_64m/seed_manifest.json`, `results/frontier/order_668_64m/source_excerpt.txt`, and `eliahou2025_64mod668`.
-- For benchmark and exactness claims, cite `results/experiments/order_668_64m/summary.json`, the frontier run files, `results/experiments/order_668_64m/configs/*.json`, and `hadamard_ca/harness.py`.
-- Keep `C6`, `C7`, `C9`, and the causal half of `C13` explicitly labeled as interpretation-level claims unless stronger external support is added.
-- Demote `ghaleb2019`, `ghaemi2022`, and `leeuwen2000` to watchlist-only status in any formal manuscript text.
+Also spot-checked a small number of cited bibliography entries against primary web sources to distinguish real citation gaps from metadata problems.
 
 ## Bottom Line
 
-The current repo can support a narrow negative-result paper, but only if the citation structure is cleaned up:
+- The paper's core quantitative negative-result claims are mostly supported by direct repo artifacts.
+- The weakest part of the citation story is not the main numbers. It is the literature-positioning and interpretation language around lines `115-127`, `624`, `650-655`, `686-698`, and `702`.
+- No citation key used in `research_paper.tex` looks fabricated. The real risk is weaker than a fake-paper failure: several BibTeX entries have mixed, incomplete, or likely incorrect metadata.
+- The highest-value fixes are:
+  - tighten or re-cite the related-work comparison paragraphs
+  - label mechanism and runtime explanations as inference unless new evidence is added
+  - correct a few bibliography entries before final paper assembly
+  - promote direct artifact paths near the paper's load-bearing quantitative claims
 
-- primary quantitative claims should cite direct artifacts rather than summary reports
-- novelty and literature-competitiveness claims should stay narrow and inference-labeled
-- weak watchlist citations should not carry any substantive argument
-- the most important missing support is not more rhetoric about CA novelty; it is better grounding in modular-Hadamard background and direct Hadamard-search comparators
+## Prioritized Findings
+
+### 1. Related-work comparison language outruns the cited sources
+
+`research_paper.tex:115-127` contains the strongest citation-support problem in the manuscript.
+
+- Line `115` cites `suksmono2018`, `suksmono2019`, and `suksmono2022` for broader Hadamard-search heuristics, which is fine.
+- The next sentence goes further and says those papers are "the correct literature comparators" and that the repo pilot is "fair enough for branch elimination." Those are author judgments, not claims directly supported by the cited papers.
+- Line `121` uses `tsompanas2017` appropriately for "CA have been used in search," but line `123` then narrows the defensible niche for H1 to seed-specific repair on order `668`. That narrowing is an inference, not something established by `tsompanas2017`, `mariot2019_mols`, or `gadouleau2020`.
+- Line `127` compresses four comparison claims into one paragraph:
+  - versus `eliahou2025_64mod668`
+  - versus `tsompanas2017`
+  - versus the Suksmono papers
+  - versus the Bright papers
+  Only the final clause in that paragraph carries an explicit citation. As written, this reads as an uncited synthesis.
+
+Audit judgment:
+
+- Support status: `partial / weak`
+- Fix: either attach citations to each comparison clause or explicitly label the whole paragraph as the paper's synthesis of the sources cited in the preceding subsections.
+
+### 2. Several mechanism and causal statements are interpretation, not evidence
+
+The manuscript is generally careful, but a few passages still read more strongly than the evidence supports.
+
+- `research_paper.tex:73`
+  - "If a future CA branch is to remain credible, it must change the actuator basis or the locality graph rather than merely retune the present rule weights."
+  - The one-packet scan and sensitivity probe support this as a reasonable recommendation, but not as a proven necessity.
+- `research_paper.tex:624`
+  - "H1 is substantially slower despite fewer objective evaluations, reflecting the heavier internal field computation tracked separately by the CA metadata."
+  - The measured part is supported: H1 is slower and uses fewer objective evaluations.
+  - The causal clause is only partly supported. The appendix proves arithmetic consistency of `ca_field_evaluations`; it does not isolate runtime causality.
+- `research_paper.tex:650-655`
+  - "The problem is not an obviously omitted scalar hyperparameter. It is a structural mismatch between the frontier defect geometry and the current single-packet actuator library."
+  - The sensitivity probe supports "simple nearby parameter changes did not help." It does not fully prove the stronger structural diagnosis.
+- `research_paper.tex:686-698`
+  - The "fake locality" diagnosis is well motivated by the exhaustive one-packet scan.
+  - The next-step claims about representation-changing variants are still recommendation-level inferences, not citation-backed results.
+
+Audit judgment:
+
+- Support status: `mixed`
+- Fix: keep the numerical observations, but relabel the mechanism story as interpretation unless matched actuator-basis ablations or profiling are added.
+
+### 3. Direct quantitative claims are mostly supported, but artifact traceability in the manuscript is thinner than it should be
+
+The paper's main numbers are in good shape when checked against saved artifacts:
+
+- Seed provenance and the `13` exceptional coefficients:
+  - supported by `results/frontier/order_668_64m/seed_manifest.json`
+  - supported by `results/frontier/order_668_64m/source_excerpt.txt`
+  - supported externally by `eliahou2025_64mod668`
+- Control exactness claims:
+  - supported by `results/experiments/controls/summary.json`
+- Frontier negative-result claims:
+  - supported by `results/experiments/order_668_64m/summary.json`
+  - supported by `results/verification/benchmark_gate.md`
+- One-packet freeze and locality-footprint claims:
+  - supported by `results/analysis/frontier_locality_scan.json`
+- H1 sensitivity claims:
+  - supported by `results/branches/H1_frontier_sensitivity_probe.json`
+- Harness and exactness-accounting claims:
+  - supported by `hadamard_ca/harness.py`
+- Internal-work counter discussion:
+  - supported by `hadamard_ca/h1_ca.py`
+  - supported by `results/experiments/order_668_64m/runs/H1_defect_syndrome_ca_64m.json`
+
+The traceability weakness is presentation-level:
+
+- the paper explicitly names `results/analysis/frontier_locality_scan.json`
+- but most other load-bearing result claims are not tied in-text to the exact JSON or code artifact that supports them
+
+Audit judgment:
+
+- Support status: `supported, but artifact pointers should be strengthened`
+- Fix: add artifact-path pointers in Methods, Results, and the appendix for the seed manifest, experiment summaries, sensitivity probe, and harness/code locations.
+
+### 4. Two nontrivial claims need better citation or rewriting
+
+- `research_paper.tex:123`
+  - "Bent functions are directly Hadamard-adjacent through Walsh spectra"
+  - `gadouleau2020` supports CA-generated bent functions and is directionally related, but it is not an ideal citation for the Walsh-spectrum bridge as phrased.
+  - Fix: either add a bent-functions background source that explicitly covers the Walsh/Hadamard relationship, or rephrase the sentence more narrowly.
+
+- `research_paper.tex:702`
+  - "AI-assisted research pipelines are particularly vulnerable to novelty inflation and to confusing near-solutions with exact results."
+  - This is a broad external claim with no citation.
+  - Fix: either cite a relevant metascience / AI-science source or rewrite it as a repo-specific observation.
+
+### 5. `artacho2013` is acceptable only as a distant analogy
+
+`research_paper.tex:117` cites `artacho2013` as "a different non-CA baseline family."
+
+- The manuscript partly protects itself by saying H1 does not resemble that line closely.
+- Even so, "baseline family" is still a bit strong for a matrix-completion feasibility paper that is not a direct Hadamard-search comparator.
+
+Audit judgment:
+
+- Support status: `weak but usable if phrasing stays narrow`
+- Fix: keep it only as an example of matrix-structured search language, not as a close baseline comparator.
+
+## Claim Support Map
+
+| Manuscript area | Status | Direct support | Audit note |
+| --- | --- | --- | --- |
+| `research_paper.tex:82`, `109`, `195`, `213` seed provenance and published coefficient profile | supported | `results/frontier/order_668_64m/seed_manifest.json`; `results/frontier/order_668_64m/source_excerpt.txt`; `eliahou2025_64mod668` | Strong chain. |
+| `research_paper.tex:69-73`, `229`, `586-591`, `604-608` control executability and exactness | supported | `results/experiments/controls/summary.json`; control run JSONs; `hadamard_ca/harness.py` | Strong chain. |
+| `research_paper.tex:71`, `91`, `462-471`, `567-579`, `686-688`, `706` one-packet scan, freeze, and locality-footprint claims | supported | `results/analysis/frontier_locality_scan.json` | Strong chain; already the best-cited artifact in the paper. |
+| `research_paper.tex:615-646`, `706` frontier negative result and gate failure | supported | `results/experiments/order_668_64m/summary.json`; `results/verification/benchmark_gate.md` | Strong chain. |
+| `research_paper.tex:650-655`, `660` H1 sensitivity claim that nearby variants stay pinned to the seed | supported for the observed numbers; partial for the diagnosis | `results/branches/H1_frontier_sensitivity_probe.json` | The numbers are direct; the structural conclusion is inference. |
+| `research_paper.tex:624`, `678`, `725-731` runtime explanation via CA field work | partial | `results/experiments/order_668_64m/summary.json`; H1 run JSON; `hadamard_ca/h1_ca.py` | Slower runtime is measured. Causality is not isolated. |
+| `research_paper.tex:115-127` literature positioning and novelty narrowing | partial / weak | cited literature plus author synthesis | Needs explicit synthesis labeling or tighter support. |
+| `research_paper.tex:702` AI-assisted pipeline vulnerability claim | unsupported | none in manuscript | Cite or rewrite. |
+
+## Missing Citations And Uncited Comparisons
+
+Highest-priority manuscript fixes:
+
+1. `research_paper.tex:115-127`
+   - comparison-heavy synthesis needs either clause-level citations or softer framing
+
+2. `research_paper.tex:123`
+   - add a source for the bent-function / Walsh / Hadamard bridge if that exact phrasing stays
+
+3. `research_paper.tex:624`
+   - runtime interpretation should point to the appendix counter discussion or be rewritten as a plausible explanation
+
+4. `research_paper.tex:702`
+   - add a citation or rewrite as a repo-specific observation
+
+Lower-priority but real:
+
+- `research_paper.tex:84`
+  - "CA are already known as generic local search or propagation mechanisms" is thinly supported by one shortest-path paper
+  - either soften to "have been used" or add a broader CA-search / CA-control source if the generic claim stays
+
+## Likely Citation Hallucinations Or Metadata Risks
+
+No cited key in the manuscript currently looks fabricated. The actual risk is metadata quality.
+
+### Fix now
+
+- `tsompanas2017`
+  - internal inconsistency in `sources.bib`
+  - current entry mixes `journal={arXiv.org}` with Springer chapter DOI `10.1007/978-3-319-77510-4_8`
+  - this should be corrected before final assembly
+
+- `mariot2019_mols`
+  - metadata is too thin for formal use
+  - author list is truncated with `and others`
+  - the cited journal version appears to be a `2020` article rather than `2019`
+  - DOI and pages are missing
+
+- `artacho2013`
+  - usable as a citation, but the BibTeX entry is incomplete for formal use
+  - volume / issue / page metadata should be filled from the journal record
+
+### Fix before future use
+
+- `suksmono2024`
+  - not cited in `research_paper.tex`
+  - this should be corrected to the `2025` `Scientific Reports` record before citation
+
+- `bright2018`
+  - likely better represented as `@inproceedings` than `@article`
+
+- `bright2019_williamson`
+  - unused in the paper
+  - `journal={ACCA}` is too vague to trust without cleanup
+
+### Keep out of the manuscript unless revalidated
+
+- `ghaleb2019`
+- `ghaemi2022`
+- `leeuwen2000`
+
+These are unused in `research_paper.tex` and should remain watchlist-only. They do not help the current paper's citation support.
+
+## Most Important Concrete Sources To Add Or Promote
+
+### Promote direct artifact citations first
+
+These are the most valuable support additions because they directly anchor the paper's own quantitative claims:
+
+1. `results/frontier/order_668_64m/seed_manifest.json`
+2. `results/frontier/order_668_64m/source_excerpt.txt`
+3. `results/experiments/order_668_64m/summary.json`
+4. `results/experiments/controls/summary.json`
+5. `results/analysis/frontier_locality_scan.json`
+6. `results/branches/H1_frontier_sensitivity_probe.json`
+7. `results/verification/benchmark_gate.md`
+8. `hadamard_ca/harness.py`
+9. `hadamard_ca/h1_ca.py`
+
+### Correct or add external bibliography support
+
+1. Correct `tsompanas2017` to the actual Springer chapter metadata.
+   - This is the most urgent external bibliography fix because the current entry is internally inconsistent.
+
+2. Correct `mariot2019_mols` to the full journal metadata.
+   - This is the next most important fix among the sources actually cited in the paper.
+
+3. Fill in the official metadata for `artacho2013`.
+   - This is lower priority than the two entries above, but it is still a cited paper and should not go out with incomplete journal fields.
+
+4. Add a bent-functions background source if line `123` keeps the Walsh-spectrum wording.
+   - A survey or monograph that explicitly links bent functions, Walsh spectra, and Hadamard matrices is the cleanest repair.
+
+5. Add a citation for the AI-assisted research-pipeline sentence at line `702` only if that sentence is worth keeping.
+   - Otherwise rewrite it as a repo-specific observation and avoid widening the citation burden.
+
+## Recommended Disposition
+
+- Keep the paper's narrow quantitative contribution.
+- Revise the literature-positioning paragraphs and discussion so they do not ask the citations to do more than they can support.
+- Correct the bibliography metadata before treating this as submission-grade.
+
+Current citation-support verdict for `research_paper.tex`: `REVISE`, but the problems are fixable without new experiments.
