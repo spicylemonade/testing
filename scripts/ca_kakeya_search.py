@@ -22,12 +22,16 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
-from sympy import Matrix, ZZ
-from sympy.matrices.normalforms import smith_normal_decomp
+from sympy import Matrix
+try:
+    import numpy as np
+except Exception:  # pragma: no cover - optional acceleration only
+    np = None
 
 
 Vector = Tuple[int, int]
 Vertex = Tuple[int, int]
+FAST_PRIMES = (1_000_003, 1_000_033)
 
 
 def same_sum_labels(sum_value: int, count: int) -> List[Vector]:
@@ -92,6 +96,103 @@ def target_vector(unsolved: Sequence[Vertex], target: Vertex, weight: int = 1) -
     return out
 
 
+def nullspace_mod_p(rows: Sequence[Sequence[int]], cols: int, modulus: int) -> List[List[int]]:
+    if not rows:
+        return [[1 if i == j else 0 for i in range(cols)] for j in range(cols)]
+    mat = [[entry % modulus for entry in row] for row in rows]
+    row_count = len(mat)
+    pivot_cols: List[int] = []
+    pivot_row = 0
+    for col in range(cols):
+        pivot = None
+        for row in range(pivot_row, row_count):
+            if mat[row][col] % modulus:
+                pivot = row
+                break
+        if pivot is None:
+            continue
+        mat[pivot_row], mat[pivot] = mat[pivot], mat[pivot_row]
+        inv = pow(mat[pivot_row][col], -1, modulus)
+        mat[pivot_row] = [(value * inv) % modulus for value in mat[pivot_row]]
+        for row in range(row_count):
+            if row == pivot_row or mat[row][col] % modulus == 0:
+                continue
+            factor = mat[row][col] % modulus
+            mat[row] = [
+                (mat[row][j] - factor * mat[pivot_row][j]) % modulus
+                for j in range(cols)
+            ]
+        pivot_cols.append(col)
+        pivot_row += 1
+        if pivot_row == row_count:
+            break
+    free_cols = [col for col in range(cols) if col not in pivot_cols]
+    basis: List[List[int]] = []
+    for free_col in free_cols:
+        vector = [0] * cols
+        vector[free_col] = 1
+        for row_index, pivot_col in enumerate(pivot_cols):
+            vector[pivot_col] = (-mat[row_index][free_col]) % modulus
+        basis.append(vector)
+    return basis
+
+
+@dataclass
+class SpanOracle:
+    left_nullspace: Tuple[Matrix, ...]
+    has_generators: bool
+
+    @classmethod
+    def from_generators(cls, generators: Sequence[Sequence[int]]) -> "SpanOracle":
+        if not generators:
+            return cls(left_nullspace=tuple(), has_generators=False)
+        matrix = Matrix(list(zip(*generators)))
+        return cls(left_nullspace=tuple(matrix.transpose().nullspace()), has_generators=True)
+
+    def solvable_vertices(self, unsolved: Sequence[Vertex]) -> List[Vertex]:
+        if not self.has_generators:
+            return []
+        if not self.left_nullspace:
+            return list(unsolved)
+        out: List[Vertex] = []
+        for pos, vertex in enumerate(unsolved):
+            if all(vector[2 * pos, 0] == vector[2 * pos + 1, 0] for vector in self.left_nullspace):
+                out.append(vertex)
+        return out
+
+
+@dataclass
+class ModSpanOracle:
+    left_nullspace: Tuple[Tuple[int, ...], ...]
+    has_generators: bool
+    modulus: int
+
+    @classmethod
+    def from_generators(cls, generators: Sequence[Sequence[int]], rows: int, modulus: int) -> "ModSpanOracle":
+        if not generators:
+            return cls(left_nullspace=tuple(), has_generators=False, modulus=modulus)
+        basis = nullspace_mod_p(generators, rows, modulus)
+        return cls(
+            left_nullspace=tuple(tuple(vector) for vector in basis),
+            has_generators=True,
+            modulus=modulus,
+        )
+
+    def solvable_vertices(self, unsolved: Sequence[Vertex]) -> List[Vertex]:
+        if not self.has_generators:
+            return []
+        if not self.left_nullspace:
+            return list(unsolved)
+        out: List[Vertex] = []
+        for pos, vertex in enumerate(unsolved):
+            if all(
+                (vector[2 * pos] - vector[2 * pos + 1]) % self.modulus == 0
+                for vector in self.left_nullspace
+            ):
+                out.append(vertex)
+        return out
+
+
 @dataclass(frozen=True)
 class CorridorInstance:
     width: int
@@ -145,25 +246,80 @@ class CorridorInstance:
         return out
 
     def forcing_order(self) -> Optional[List[Vertex]]:
-        solved = list(self.initial_t)
-        order = list(self.initial_t)
         generators = self.generators()
-        remaining = [vertex for vertex in self.vertices if vertex not in solved]
-        while remaining:
-            progress = False
-            for vertex in list(remaining):
-                unsolved = [v for v in self.vertices if v not in solved]
-                if lattice_membership(
-                    [project_vector(self.width, g, unsolved) for g in generators],
-                    target_vector(unsolved, vertex),
-                ):
-                    solved.append(vertex)
-                    order.append(vertex)
-                    remaining.remove(vertex)
-                    progress = True
-                    break
-            if not progress:
+        solved = set(self.initial_t)
+        order = list(self.initial_t)
+        oracle_cache: Dict[Tuple[Vertex, ...], SpanOracle] = {}
+
+        def oracle_for(unsolved: Tuple[Vertex, ...]) -> SpanOracle:
+            if unsolved not in oracle_cache:
+                projected = [project_vector(self.width, g, unsolved) for g in generators]
+                oracle_cache[unsolved] = SpanOracle.from_generators(projected)
+            return oracle_cache[unsolved]
+
+        while len(solved) < len(self.vertices):
+            unsolved = tuple(vertex for vertex in self.vertices if vertex not in solved)
+            oracle = oracle_for(unsolved)
+            candidates = oracle.solvable_vertices(unsolved)
+            if not candidates:
                 return None
+            candidates.sort(key=lambda vertex: (vertex[1], vertex[0]))
+            chosen = candidates[0]
+            solved.add(chosen)
+            order.append(chosen)
+        return order
+
+    def forcing_order_fast(self) -> List[Vertex]:
+        generators = self.generators()
+        solved = set(self.initial_t)
+        order = list(self.initial_t)
+        oracle_cache: Dict[Tuple[Vertex, ...], object] = {}
+
+        def numpy_oracle_for(unsolved: Tuple[Vertex, ...]):
+            if unsolved not in oracle_cache:
+                projected = [project_vector(self.width, g, unsolved) for g in generators]
+                if projected:
+                    matrix = np.array(projected, dtype=float).T
+                else:
+                    matrix = np.zeros((2 * len(unsolved), 0), dtype=float)
+                oracle_cache[unsolved] = (matrix, int(np.linalg.matrix_rank(matrix)))
+            return oracle_cache[unsolved]
+
+        def oracle_for(unsolved: Tuple[Vertex, ...], modulus: int) -> ModSpanOracle:
+            key = (unsolved, modulus)
+            if key not in oracle_cache:
+                projected = [project_vector(self.width, g, unsolved) for g in generators]
+                oracle_cache[key] = ModSpanOracle.from_generators(
+                    projected,
+                    rows=2 * len(unsolved),
+                    modulus=modulus,
+                )
+            return oracle_cache[key]
+
+        while len(solved) < len(self.vertices):
+            unsolved = tuple(vertex for vertex in self.vertices if vertex not in solved)
+            if np is not None:
+                matrix, rank = numpy_oracle_for(unsolved)
+                candidates = []
+                for pos, vertex in enumerate(unsolved):
+                    target = np.zeros((2 * len(unsolved), 1), dtype=float)
+                    target[2 * pos, 0] = 1.0
+                    target[2 * pos + 1, 0] = -1.0
+                    augmented = np.concatenate((matrix, target), axis=1)
+                    if int(np.linalg.matrix_rank(augmented)) == rank:
+                        candidates.append(vertex)
+                if not candidates:
+                    return order
+            else:
+                candidates = set(unsolved)
+                for modulus in FAST_PRIMES:
+                    candidates &= set(oracle_for(unsolved, modulus).solvable_vertices(unsolved))
+                    if not candidates:
+                        return order
+                candidates = sorted(candidates, key=lambda vertex: (vertex[1], vertex[0]))
+            chosen = sorted(candidates, key=lambda vertex: (vertex[1], vertex[0]))[0]
+            solved.add(chosen)
+            order.append(chosen)
         return order
 
     def is_forcing(self) -> bool:
@@ -199,27 +355,12 @@ class CorridorInstance:
 
 
 def lattice_membership(generators: Sequence[Sequence[int]], target: Sequence[int]) -> bool:
-    if not generators:
-        return all(v == 0 for v in target)
-    matrix = Matrix(list(zip(*generators)))
-    target_matrix = Matrix(target)
-    diagonal, left, _right = smith_normal_decomp(matrix, domain=ZZ)
-    transformed = left * target_matrix
-    rows, cols = diagonal.shape
-    rank = min(rows, cols)
-    for i in range(rank):
-        d = diagonal[i, i]
-        value = transformed[i, 0]
-        if d == 0:
-            if value != 0:
-                return False
-        else:
-            if value % d != 0:
-                return False
-    for i in range(rank, rows):
-        if transformed[i, 0] != 0:
-            return False
-    return True
+    oracle = SpanOracle.from_generators(generators)
+    unsolved = tuple((1, i + 1) for i in range(len(target) // 2))
+    target_index = next(
+        idx for idx in range(len(target) // 2) if target[2 * idx] != 0 or target[2 * idx + 1] != 0
+    )
+    return unsolved[target_index] in oracle.solvable_vertices(unsolved)
 
 
 def all_label_patterns(labels: Sequence[Vector], width: int) -> Iterable[Tuple[Tuple[Vector, ...], Tuple[Vector, ...], Vector]]:
@@ -237,12 +378,26 @@ def greedy_seed_search(
     bottom: Sequence[Vector],
     seed_budget: int,
     initial_t_budget: int = 0,
+    boundary_band: int = 0,
 ) -> Optional[CorridorInstance]:
     vertices = index_vertices(width)
-    seed_candidates = [(vertex, label) for vertex in vertices for label in x_labels if label != (0, 0)]
+    if boundary_band > 0:
+        candidate_vertices = [
+            vertex
+            for vertex in vertices
+            if vertex[1] <= boundary_band or vertex[1] > width - boundary_band
+        ]
+    else:
+        candidate_vertices = vertices
+    seed_candidates = [
+        (vertex, label)
+        for vertex in candidate_vertices
+        for label in x_labels
+        if label != (0, 0)
+    ]
     best: Optional[CorridorInstance] = None
 
-    for initial_t in itertools.combinations(vertices, initial_t_budget):
+    for initial_t in itertools.combinations(candidate_vertices, initial_t_budget):
         chosen: List[Tuple[Vertex, Vector]] = []
         current = CorridorInstance(
             width=width,
@@ -270,12 +425,14 @@ def greedy_seed_search(
                     seeds=tuple(chosen + [candidate]),
                     initial_t=tuple(initial_t),
                 )
-                order = trial.forcing_order()
-                closure = len(order) if order else len(initial_t)
-                if order:
-                    if best is None or trial.score < best.score:
-                        best = trial
-                    return trial
+                approx_order = trial.forcing_order_fast()
+                closure = len(approx_order)
+                if closure == trial.n:
+                    order = trial.forcing_order()
+                    if order:
+                        if best is None or trial.score < best.score:
+                            best = trial
+                        return trial
                 if closure > best_closure:
                     best_closure = closure
                     best_local = candidate
@@ -291,7 +448,7 @@ def greedy_seed_search(
                 seeds=tuple(chosen),
                 initial_t=tuple(initial_t),
             )
-            if current.is_forcing():
+            if len(current.forcing_order_fast()) == current.n and current.is_forcing():
                 if best is None or current.score < best.score:
                     best = current
                 return current
@@ -302,6 +459,49 @@ def same_sum_palette(sum_value: int, nonzero_count: int) -> List[Vector]:
     return [(0, 0)] + [(i, sum_value - i) for i in range(nonzero_count)]
 
 
+def frozen_h1_obstruction(sum_value: int, nonzero_count: int) -> Dict[str, object]:
+    """Return the exact one-seed obstruction for the frozen H1 corridor pilot.
+
+    The frozen H1 template list in ``results/phase3_h1_program.md`` has exactly
+    one seeded boundary state (either ``L_a`` or ``L_b``), no seeded middle or
+    right states, and no initial solved vertices. Edge generators contribute
+    zero total label over all vertices, so any singleton relation produced from
+    one seed has total label in ``Z * x`` for the chosen seed label ``x``.
+    Operation 2 would require a singleton anti-diagonal ``(a,-a)``, whose total
+    coordinate sum is zero; this is impossible when ``x_1 + x_2 = sum_value != 0``.
+    """
+
+    x_labels = same_sum_palette(sum_value, nonzero_count)
+    nonzero = [label for label in x_labels if label != (0, 0)]
+    if not nonzero:
+        raise ValueError("frozen H1 obstruction requires at least one nonzero label")
+    sample_seed = nonzero[0]
+    return {
+        "route": "H1_macrocell_substitution",
+        "frozen_height": 2,
+        "template_seed_structure": {
+            "seeded_templates": ["L_a", "L_b"],
+            "unseeded_templates": ["M_a", "M_b", "M_g", "M_ab", "R_a", "R_b"],
+            "initial_t_templates": [],
+        },
+        "level_invariant": {
+            "seed_count": 1,
+            "initial_t_count": 0,
+            "seed_label": list(sample_seed),
+            "seed_label_coordinate_sum": sample_seed[0] + sample_seed[1],
+            "edge_generator_total_label": [0, 0],
+            "required_operation_2_total_label_form": [1, -1],
+            "required_operation_2_coordinate_sum": 0,
+        },
+        "conclusion": (
+            "Every extracted frozen-H1 level has exactly one singleton seed and no "
+            "initial solved vertices, so no nonzero anti-diagonal singleton can be "
+            "generated. The exact verifier therefore fails at every level before any "
+            "score comparison is meaningful."
+        ),
+    }
+
+
 def random_search(
     width_min: int,
     width_max: int,
@@ -309,19 +509,22 @@ def random_search(
     nonzero_count: int,
     seed_budget: int,
     initial_t_budget: int,
+    boundary_band: int,
+    allow_zero_horizontal: bool,
     rng_seed: int,
     output_path: Optional[Path],
 ) -> Dict[str, object]:
     rng = random.Random(rng_seed)
     x_labels = same_sum_palette(1, nonzero_count)
     nonzero_labels = [label for label in x_labels if label != (0, 0)]
+    horizontal_labels = list(x_labels) if allow_zero_horizontal else nonzero_labels
     best: Optional[CorridorInstance] = None
     history: List[Dict[str, object]] = []
     for trial_index in range(1, trials + 1):
         width = rng.randint(width_min, width_max)
         vertical = rng.choice(nonzero_labels)
-        top = tuple(rng.choice(nonzero_labels) for _ in range(width - 1))
-        bottom = tuple(rng.choice(nonzero_labels) for _ in range(width - 1))
+        top = tuple(rng.choice(horizontal_labels) for _ in range(width - 1))
+        bottom = tuple(rng.choice(horizontal_labels) for _ in range(width - 1))
         instance = greedy_seed_search(
             width=width,
             x_labels=x_labels,
@@ -330,6 +533,7 @@ def random_search(
             bottom=bottom,
             seed_budget=seed_budget,
             initial_t_budget=initial_t_budget,
+            boundary_band=boundary_band,
         )
         if instance and instance.is_forcing():
             if best is None or instance.score < best.score:
@@ -351,6 +555,8 @@ def random_search(
         "width_min": width_min,
         "width_max": width_max,
         "trials": len(history),
+        "boundary_band": boundary_band,
+        "allow_zero_horizontal": allow_zero_horizontal,
         "x_labels": x_labels,
         "history": history[-100:],
         "best": None,
@@ -387,8 +593,14 @@ def parse_args() -> argparse.Namespace:
     random_parser.add_argument("--nonzero-count", type=int, default=3)
     random_parser.add_argument("--seed-budget", type=int, default=8)
     random_parser.add_argument("--initial-t-budget", type=int, default=0)
+    random_parser.add_argument("--boundary-band", type=int, default=0)
+    random_parser.add_argument("--allow-zero-horizontal", action="store_true")
     random_parser.add_argument("--rng-seed", type=int, default=0)
     random_parser.add_argument("--output", type=Path, default=None)
+
+    h1_obstruction_parser = subparsers.add_parser("h1-obstruction")
+    h1_obstruction_parser.add_argument("--sum-value", type=int, default=1)
+    h1_obstruction_parser.add_argument("--nonzero-count", type=int, default=4)
     return parser.parse_args()
 
 
@@ -402,8 +614,16 @@ def main() -> None:
             nonzero_count=args.nonzero_count,
             seed_budget=args.seed_budget,
             initial_t_budget=args.initial_t_budget,
+            boundary_band=args.boundary_band,
+            allow_zero_horizontal=args.allow_zero_horizontal,
             rng_seed=args.rng_seed,
             output_path=args.output,
+        )
+        print(json.dumps(payload, indent=2))
+    elif args.command == "h1-obstruction":
+        payload = frozen_h1_obstruction(
+            sum_value=args.sum_value,
+            nonzero_count=args.nonzero_count,
         )
         print(json.dumps(payload, indent=2))
 

@@ -1,0 +1,148 @@
+{
+  "problem": "\\section{Introduction}\n\nA Kakeya set in $\\mathbb{R}^d$ is a bounded set which contains a unit line segment in every direction. While such sets can have measure zero, the Kakeya conjecture posits that they always have the maximal possible (Minkowski and Hausdorff) dimension $d$. The arithmetic Kakeya conjecture was implicitly formulated by Katz and Tao, as a statement strong enough to imply (a form of) the Kakeya conjecture, but which can be formulated as a purely additive combinatorics statement.\n\nOne way to state the arithmetic Kakeya problem is the following: we say that $\\mathrm{AK}(\\alpha)$ holds if for any $\\epsilon>0$ there exists a finite set $X\\subset \\mathbb{Z}^2$ such that $r_1+r_2\\neq 0$ for all $\\mathbf{x}\\in X$, and for all finite $G\\subset \\mathbb{Z}^2$,\n\\[\\lvert(1,-1)\\cdot G\\rvert\\ll_\\epsilon \\max_{\\mathbf{x}\\in X} \\lvert\\mathbf{x}\\cdot G\\rvert^{\\alpha+\\epsilon},\\]\nwhere we write\n\\[\\mathbf{x}\\cdot G = \\{ x_1g_1+x_2g_2 : (g_1,g_2)\\in G\\}.\\]\nNote that we are not interested in the size or nature of $X$ itself -- for the applications to the Kakeya conjecture itself, all that matters is the exponent $\\alpha$.\n\nIt is trivial that $\\mathrm{AK}(2)$ holds (for example by taking $X$ to be any two linearly independent vectors in $\\mathbb{Z}^2$, as then $(1,-1)$ can be expressed as a linear combination of these two). The arithmetic Kakeya conjecture itself is the following.\n\\begin{conjecture}[Arithmetic Kakeya conjecture]\n$\\mathrm{AK}(1)$ holds.\n\\end{conjecture}\n\nThe relation to the Kakeya problem is the following.\n\\begin{theorem}\nIf $\\mathrm{AK}(\\alpha)$ holds then, for all $d\\geq 2$, if $E\\subseteq \\mathbb{R}^d$ is a Kakeya set (a bounded set containing a unit line segment in every direction) then the Hausdorff dimension of $E$ is at least\n\\[\\alpha^{-1}d+1-\\alpha^{-1}.\\]\n\\end{theorem}\nThis was implicitly established by Bourgain using the method of slices, although Bourgain only established this for the Minkowski dimension. The stronger statement that this same bound holds for the Hausdorff dimension is a consequence of combining Bourgain's argument with recent progress on Szemeredi's theorem by Leng, Sah, and Sawhney.\n\n\\section{Intuitive Set-up}\nWe will first explicitly define the kind of structure that is required, and what the score of such a structure is. We first define a collection of constructible configurations iteratively.\n\\begin{definition}\nLet $X\\subset \\mathbb{Z}^2$. An $X$-constructible graph is a finite graph with edges labelled by $\\mathbf{v}\\in \\mathbb{Z}^2$.\n\\end{definition}\n\n\\section{Verifiable Set-up}\nFind a finite set $X\\subset \\mathbb{Z}^2$ such that $(0,0)\\in X$ and if $(a,b)\\in X\\backslash \\{(0,0)\\}$ then $a+b\\neq 0$ and an $X$-constructible graph $G$ with a forcing pair $(R,T)$ with score \\leq 1.675.\n\nReturn this as a multi-line string.",
+  "framings": [
+    {
+      "domain": "Information theory / index coding",
+      "reframing": "Treat each slope observable x.G as a constrained broadcast symbol and the anti-diagonal observable (1,-1).G as the demanded message. The certificate search becomes a side-information design problem: can a small family of broadcasts implied by X make the target message recoverable at low effective rate?",
+      "key_insight": "Entropy methods separate genuine information flow from ad hoc symbolic manipulation. The score behaves like a broadcast-rate surrogate, so entropy inequalities can expose when a proposed forcing pattern is only pretending to compress the target dependency.",
+      "suggested_technique": "Form an entropy linear program on random variables attached to local graph states and slope observables, using Shannon submodularity plus stronger non-Shannon inequalities from the network-coding literature as additional cuts.",
+      "mapping_back": "A dual entropy certificate becomes a weighted inequality showing whether the anti-diagonal observable is genuinely controlled by the X-observables. Infeasible entropy assignments correspond to obstruction patterns that rule out a claimed forcing pair before expensive exact verification.",
+      "candidate_folder_name": "index_coding_entropy_bounds"
+    },
+    {
+      "domain": "Control theory / structural observability",
+      "reframing": "View an X-constructible graph as a structured linear system whose states live on vertices or local gadgets and whose outputs are the slope measurements in X. The forcing problem asks whether the anti-diagonal target is structurally observable from those outputs with low combinatorial cost.",
+      "key_insight": "Structural observability depends on graph pattern, not tuned coefficients. Maximum-matching and output-cactus criteria give a clean way to detect when a target can never be seen from the available measurement pattern, regardless of arithmetic fine-tuning.",
+      "suggested_technique": "Build the system bipartite graph for each candidate certificate and use maximum matching or sensor-placement routines to test whether all target-relevant states are observable from the chosen slope outputs.",
+      "mapping_back": "Only candidates whose observability graph saturates the anti-diagonal support should be sent to the exact verifier. Matching failures identify missing interfaces or dead substructures that would otherwise show up later as hidden-repair dependencies.",
+      "candidate_folder_name": "structural_observability_screen"
+    },
+    {
+      "domain": "Algebraic graph theory / zero forcing",
+      "reframing": "Interpret the forcing pair literally as a color-change process on a dependency graph derived from local constructibility rules. The search asks for a graph where a small, legal seed set propagates deterministically until the anti-diagonal target is forced.",
+      "key_insight": "Zero forcing is designed to detect propagation bottlenecks. It highlights exactly where a purported proof needs branching, hidden repair, or non-monotone reasoning, all of which are dangerous for a low-score exact certificate.",
+      "suggested_technique": "Compute zero-forcing closures, failed zero-forcing sets, and fort-like obstructions on candidate dependency graphs, either directly or via ILP formulations from the zero-forcing literature.",
+      "mapping_back": "If the intended witness region does not zero-force the target, the candidate is structurally weak even before arithmetic labels are checked. If it does, the propagation order suggests a concrete forcing-pair skeleton and a natural verifier trace.",
+      "candidate_folder_name": "zero_forcing_certificate_screen"
+    },
+    {
+      "domain": "Coding theory / Tanner and expander codes",
+      "reframing": "Regard local constructibility constraints as parity-check-like relations in a Tanner graph. The anti-diagonal relation is a distinguished symbol that must be decoded reliably from many weak local checks rather than from one brittle derivation.",
+      "key_insight": "Expansion turns shallow local redundancy into global decodability. That is attractive here because a low-score certificate should be robust to small local perturbations instead of depending on a single narrow chain of identities.",
+      "suggested_technique": "Design candidate graphs with expander-style incidence between slope constraints and local gadgets, then use peeling or local-correction heuristics inspired by expander-code decoding to test whether the target relation is redundantly recoverable.",
+      "mapping_back": "A good candidate X,G should give the anti-diagonal witness multiple low-degree consistency paths. Those redundant paths can be converted into a forcing proof with less hidden fragility, while poor expansion signals overfitting to one exceptional derivation.",
+      "candidate_folder_name": "expander_tanner_forcing"
+    },
+    {
+      "domain": "Compressed sensing / sparse recovery",
+      "reframing": "Treat the unknown combinatorial state of the graph as a sparse signal, the family of slope observables x.G as measurements, and the anti-diagonal statistic as a linear functional to recover exactly. The search becomes measurement design for one especially important coordinate or feature.",
+      "key_insight": "The problem may be easier as identification of a distinguished functional than as full reconstruction. Null-space obstructions tell you exactly how a candidate slope family can fail: two sparse states agree on every x in X but differ on the anti-diagonal target.",
+      "suggested_technique": "Construct measurement matrices from candidate slope sets, solve l1 or reweighted-l1 relaxations on toy instances, and explicitly search for null-space vectors that preserve all X-observables while changing the target observable.",
+      "mapping_back": "Any sparse obstruction vector is an explicit counterexample template against the claimed forcing pair. Conversely, candidates with strong empirical null-space separation are better bets for exact verifier-backed certificates.",
+      "candidate_folder_name": "sparse_recovery_projection_design"
+    },
+    {
+      "domain": "Group testing / combinatorial pooling",
+      "reframing": "Each slope in X acts like a pooled test on many local configurations, and each possible anti-diagonal ambiguity class behaves like a defective pattern that must be separated from all competitors. The objective is not full reconstruction; it is uniquely isolating the target relation with very few pooled queries.",
+      "key_insight": "Disjunct, separable, and list-disjunct designs are built to distinguish structured alternatives under severe measurement budgets. That is close to the arithmetic-Kakeya setting, where the certificate only needs to kill all counter-configurations relevant to one target observable.",
+      "suggested_technique": "Use disjunct or cover-free incidence designs to generate candidate slope families, then score them by how effectively their signature matrix separates local counterexamples that could spoil the anti-diagonal forcing claim.",
+      "mapping_back": "A slope set X with strong separation properties can be used as a preconditioner for certificate search: only graphs whose local ambiguity patterns are already disambiguated by X are worth exact construction and verification.",
+      "candidate_folder_name": "group_testing_slope_pooling"
+    },
+    {
+      "domain": "Electrical networks / discrete potential theory",
+      "reframing": "Interpret the certificate as a resistive network in which local constructible moves provide admissible current paths. The forcing pair asks for a reliable unit potential drop in the anti-diagonal direction using a network with low effective transport cost.",
+      "key_insight": "Thomson and Dirichlet principles turn qualitative propagation into convex energy minimization. Effective resistance makes bottlenecks, leakage paths, and hidden detours visible long before a full symbolic certificate is assembled.",
+      "suggested_technique": "Assign provisional conductances to constructible edges, solve minimum-energy flow or harmonic-potential problems on candidate graphs, and use effective-resistance diagnostics as a ranking signal.",
+      "mapping_back": "Candidates that realize the target direction through a concentrated low-energy corridor are better forcing-pair prospects. High resistance or diffuse current spread points to corridor geometries that will likely need hidden repair logic and should be rejected.",
+      "candidate_folder_name": "electrical_flow_witness"
+    },
+    {
+      "domain": "Petri nets / chemical reaction network theory",
+      "reframing": "Model edge labels as transition vectors in a conservative reaction or Petri network. The certificate search then becomes a reachability-and-invariant problem: can local transitions force the desired anti-diagonal effect without relying on hidden recycling loops or dead zones?",
+      "key_insight": "Siphons, traps, and T-invariants distinguish productive propagation from self-canceling or fragile circulation. These notions are well suited to screening out certificates that only work because of concealed repair subroutines.",
+      "suggested_technique": "Encode a candidate graph as a Petri net, compute siphons, traps, P-invariants, and T-invariants, and reject constructions whose target effect depends on tokens entering a siphon or on large compensating cycles.",
+      "mapping_back": "A valid forcing pair should correspond to a monotone firing pattern that survives exact checking without extra repair machinery. Petri-net invariants give structural kill tests that can be applied before the arithmetic verifier is run.",
+      "candidate_folder_name": "petri_net_invariant_filter"
+    },
+    {
+      "domain": "Matroid theory / oriented matroids",
+      "reframing": "Regard local slope relations as generating circuits in a matroid or oriented matroid. The forcing task is then to derive the distinguished anti-diagonal circuit from a small family of other circuits by controlled elimination.",
+      "key_insight": "Circuit elimination is the right abstraction for turning overlapping local dependencies into one new global dependency. It naturally measures whether the target relation is obtained through short, robust eliminations or through long, high-complexity chains.",
+      "suggested_technique": "Represent candidate incidence data over Z or over small finite fields, compute circuit bases or oriented-matroid signatures, and search for short elimination chains or modular-pair decompositions ending at the anti-diagonal relation.",
+      "mapping_back": "Each elimination chain is a symbolic template for a forcing proof. If the anti-diagonal only appears after long or highly non-modular elimination, the associated X,G is unlikely to support a genuinely low-score certificate.",
+      "candidate_folder_name": "matroid_circuit_elimination"
+    },
+    {
+      "domain": "Algebraic statistics / toric ideals and Grobner elimination",
+      "reframing": "Treat constructible moves as lattice moves and the whole certificate as a toric model. The anti-diagonal forcing question becomes an elimination problem: does the target binomial lie in the low-degree elimination ideal generated by local moves?",
+      "key_insight": "Markov bases and Grobner elimination give a complete algebraic description of how local moves generate global equivalences across fibers. Degree growth is an immediate proxy for hidden complexity and brittle long-range coordination.",
+      "suggested_technique": "Translate a candidate X,G into a toric ideal, compute Grobner bases under elimination orders that prioritize the anti-diagonal variables, and inspect whether low-degree generators or Markov moves already imply the target relation.",
+      "mapping_back": "If the target binomial appears early in elimination, the certificate has an algebraically compact forcing witness. If it only emerges through very high-degree generators, the corresponding graph is likely too intricate to support a credible <= 1.675 score.",
+      "candidate_folder_name": "toric_elimination_certificate"
+    }
+  ],
+  "timestamp": "2026-03-18T21:34:59.386908+00:00",
+  "input_fingerprint": "67682dbac8c9b7c743c8013e98d011a604fa79e1780726c7e9aacd3c4f7cd5c1",
+  "input_context": {
+    "command": "reframe",
+    "topic": "\\section{introduction} a kakeya set in $\\mathbb{r}^d$ is a bounded set which contains a unit line segment in every direction. while such sets can have measure zero, the kakeya conjecture posits that they always have the maximal possible (minkowski and hausdorff) dimension $d$. the arithmetic kakeya conjecture was implicitly formulated by katz and tao, as a statement strong enough to imply (a form of) the kakeya conjecture, but which can be formulated as a purely additive combinatorics statement. one way to state the arithmetic kakeya problem is the following: we say that $\\mathrm{ak}(\\alpha)$ holds if for any $\\epsilon>0$ there exists a finite set $x\\subset \\mathbb{z}^2$ such that $r_1+r_2\\neq 0$ for all $\\mathbf{x}\\in x$, and for all finite $g\\subset \\mathbb{z}^2$, \\[\\lvert(1,-1)\\cdot g\\rvert\\ll_\\epsilon \\max_{\\mathbf{x}\\in x} \\lvert\\mathbf{x}\\cdot g\\rvert^{\\alpha+\\epsilon},\\] where we write \\[\\mathbf{x}\\cdot g = \\{ x_1g_1+x_2g_2 : (g_1,g_2)\\in g\\}.\\] note that we are not interested in the size or nature of $x$ itself -- for the applications to the kakeya conjecture itself, all that matters is the exponent $\\alpha$. it is trivial that $\\mathrm{ak}(2)$ holds (for example by taking $x$ to be any two linearly independent vectors in $\\mathbb{z}^2$, as then $(1,-1)$ can be expressed as a linear combination of these two). the arithmetic kakeya conjecture itself is the following. \\begin{conjecture}[arithmetic kakeya conjecture] $\\mathrm{ak}(1)$ holds. \\end{conjecture} the relation to the kakeya problem is the following. \\begin{theorem} if $\\mathrm{ak}(\\alpha)$ holds then, for all $d\\geq 2$, if $e\\subseteq \\mathbb{r}^d$ is a kakeya set (a bounded set containing a unit line segment in every direction) then the hausdorff dimension of $e$ is at least \\[\\alpha^{-1}d+1-\\alpha^{-1}.\\] \\end{theorem} this was implicitly established by bourgain using the method of slices, although bourgain only established this for the minkowski dimension. the stronger statement that this same bound holds for the hausdorff dimension is a consequence of combining bourgain's argument with recent progress on szemeredi's theorem by leng, sah, and sawhney. \\section{intuitive set-up} we will first explicitly define the kind of structure that is required, and what the score of such a structure is. we first define a collection of constructible configurations iteratively. \\begin{definition} let $x\\subset \\mathbb{z}^2$. an $x$-constructible graph is a finite graph with edges labelled by $\\mathbf{v}\\in \\mathbb{z}^2$. \\end{definition} \\section{verifiable set-up} find a finite set $x\\subset \\mathbb{z}^2$ such that $(0,0)\\in x$ and if $(a,b)\\in x\\backslash \\{(0,0)\\}$ then $a+b\\neq 0$ and an $x$-constructible graph $g$ with a forcing pair $(r,t)$ with score \\leq 1.675. return this as a multi-line string.",
+    "context": [
+      {
+        "path": "results/research_context.md",
+        "exists": true,
+        "sha256": "68dbac4682bb2a31fed11b02c8bf300fd759e1e91034d32b9ab54a1f616f10e4"
+      },
+      {
+        "path": "results/literature/prior_art_watchlist.md",
+        "exists": true,
+        "sha256": "06d56e272d6277cd64b2d7bbaadb772183608ed8c7deac1f08b32b62e01fe1b2"
+      },
+      {
+        "path": "results/literature/prior_art_gap.md",
+        "exists": true,
+        "sha256": "76b914588365bead497d85f781834385474e9d9d6327f607fdd543373296e81a"
+      },
+      {
+        "path": "results/literature/semantic_scholar_manifest.json",
+        "exists": true,
+        "sha256": "8d273b081451899f642d1aa60ce33c9e63bed637ba9930d945af4aff8e53619b"
+      },
+      {
+        "path": "results/swarm/director_brief.md",
+        "exists": true,
+        "sha256": "0f1cdd2b22c04c8c2b1d6c7775000cb041a2e9cd603f24dea6c8570292ceb762"
+      },
+      {
+        "path": "results/swarm/hypotheses.json",
+        "exists": true,
+        "sha256": "bf36f45c0a30e3071a0040b1a927f018699a074c34375e8eaefcf7589e42c39c"
+      },
+      {
+        "path": "results/swarm/tool_plan.md",
+        "exists": true,
+        "sha256": "93b6d3f7c746fae59660c0a82b060e4428afbbff35bff7eb4391dc8dd46fbfdb"
+      },
+      {
+        "path": "results/swarm/falsifier.md",
+        "exists": true,
+        "sha256": "8df23c37fd60be008d431130a3938d2898f31ee70e7276cb2011fd2f3fd41389"
+      },
+      {
+        "path": "results/concept_evolve/probe_result.json",
+        "exists": true,
+        "sha256": "eddc3f1f7efd4a20baecaec8844413080ee5aa42b732abeb1aa2c84792a3f4a3"
+      },
+      {
+        "path": "results/concept_evolve/concept_delta.md",
+        "exists": true,
+        "sha256": "df57a5519c25a0444900c679c18ea435395da929f1097d9ac05ea10d37782f8e"
+      },
+      {
+        "path": "results/verification/verification_summary.md",
+        "exists": false,
+        "sha256": ""
+      }
+    ]
+  }
+}

@@ -18,6 +18,7 @@
 - The near-term implementation path is an exact small-instance verifier/search pipeline rather than new bridge proliferation.
 - The mandatory `probe` run completed and sharpened the implementation audit:
   residue-carrying interfaces must be sufficient statistics, interface bandwidth has to be measured directly, and any diffuse nonlinear repair should be treated as a route failure.
+- The mandatory `reframe` run completed and narrowed the Phase 4 interpretation tools to zero-forcing, structural-observability, and circuit-elimination screens rather than broad new methodological branches.
 
 ## Novelty Delta
 
