@@ -550,19 +550,102 @@ def candidate_signature_key(candidate: dict[str, object]) -> tuple[object, ...]:
     )
 
 
+def _normalized_event_kind(event_kind: str) -> str:
+    text = str(event_kind)
+    if "split_annihilate" in text:
+        return "split_annihilate"
+    if "move_annihilate" in text:
+        return "move_annihilate"
+    if "annihilation" in text:
+        return "annihilation"
+    if "move" in text:
+        return "move"
+    if "split" in text:
+        return "split"
+    return text
+
+
+def _support_class(support_flux: int) -> str:
+    value = int(support_flux)
+    if value < 0:
+        return "decrease"
+    if value == 0:
+        return "conserve"
+    return "increase"
+
+
+def _reservoir_bin(reservoir_abs: int) -> str:
+    value = int(reservoir_abs)
+    if value == 0:
+        return "0"
+    if value <= 4:
+        return "1_4"
+    if value <= 8:
+        return "5_8"
+    if value <= 16:
+        return "9_16"
+    return "17_plus"
+
+
+def _changed_count_bin(changed_count: int) -> str:
+    value = int(changed_count)
+    if value <= 1:
+        return "1"
+    if value <= 2:
+        return "2"
+    if value <= 4:
+        return "3_4"
+    if value <= 8:
+        return "5_8"
+    return "9_plus"
+
+
+def _transport_bin(transport_span: int, *, length: int) -> str:
+    ratio = float(transport_span) / float(max(1, int(length)))
+    if ratio <= 2.0:
+        return "tight"
+    if ratio <= 6.0:
+        return "mid"
+    return "wide"
+
+
+def _canonical_sign_runs(delta_profile: Sequence[Sequence[int]]) -> tuple[tuple[int, int], ...]:
+    signs = [1 if int(value) > 0 else -1 for _, value in delta_profile]
+    if not signs:
+        return tuple()
+
+    def runs(values: Sequence[int]) -> tuple[tuple[int, int], ...]:
+        encoded: list[tuple[int, int]] = []
+        current_sign = int(values[0])
+        current_count = 1
+        for value in values[1:]:
+            if int(value) == current_sign:
+                current_count += 1
+                continue
+            encoded.append((current_sign, current_count))
+            current_sign = int(value)
+            current_count = 1
+        encoded.append((current_sign, current_count))
+        return tuple(encoded)
+
+    variants = [
+        runs(signs),
+        runs(list(reversed(signs))),
+        runs([-value for value in signs]),
+        runs([-value for value in reversed(signs)]),
+    ]
+    return min(variants)
+
+
 def orbit_signature_for_event(candidate: dict[str, object], *, length: int) -> tuple[object, ...]:
     signature = candidate["signature"]
-    reflected_delta = tuple(
-        sorted((int(length - lag), int(-value)) for lag, value in signature["delta_profile"])
-    )
-    direct_delta = tuple(tuple(int(value) for value in pair) for pair in signature["delta_profile"])
-    canonical_delta = min(direct_delta, reflected_delta)
     return (
-        str(candidate["event_kind"]).replace("direct_", "").replace("carrier_", ""),
-        int(signature["support_flux"]),
-        min(int(signature["reservoir_abs"]), 32),
-        min(int(signature["changed_lag_count"]), 12),
-        canonical_delta,
+        _normalized_event_kind(str(candidate["event_kind"])),
+        int(candidate["action_count"]),
+        _support_class(int(signature["support_flux"])),
+        _changed_count_bin(int(signature["changed_lag_count"])),
+        _transport_bin(int(signature["transport_span"]), length=int(length)),
+        len(_canonical_sign_runs(signature["delta_profile"])),
     )
 
 

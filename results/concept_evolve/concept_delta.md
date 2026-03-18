@@ -130,3 +130,20 @@
 - Novelty Delta:
   - This branch keeps the surviving CA claim alive without falling back to a known structured family: the improvement is now explainable as exact conserved transport on the lag core, not as raw-coordinate packet scheduling alone.
   - The novelty claim remains narrow, but it is materially different from the earlier hypergraph memo because the governing object is now an explicit continuity law on signed defect charge.
+
+## 2026-03-18: Orbit Refresh -> Symmetry-Quotient Rule Transfer
+
+- Suggestion:
+  - Remove raw-coordinate memorization from the retained-library dynamics by quotienting candidate events into symmetry-controlled orbit classes and training one orbit rule table away from the canonical frontier seed.
+- Implementation:
+  - Added `hadamard_ca/orbit_ca.py` plus `scripts/run_orbit_ca.py`.
+  - Canonicalized runtime event classes by cyclic index erasure, dihedral reversal invariance, and q/s sign-orientation erasure, then precomputed one canonical representative per orbit at each state.
+  - Trained one fixed rule table on solved controls (`n = 5, 7`) plus the harder control and four predefined barrier-ladder perturbation states, but excluded the canonical frontier seed itself from tuning.
+  - Saved `results/branches/H_orbit_quotient_ca_668.md` and `results/experiments/order_668_orbit_ca/summary.{json,md}` with the learned rule table and training manifest.
+- Result:
+  - The orbit quotient CA reaches `13/2744/480` on the canonical frontier seed in `65` orbit-representative lookups, versus the raw single-action retained baseline and `scorer_only`, both stuck at `13/2880/512`.
+  - The same unchanged rule also beats those two baselines on every barrier-ladder state, although `barrier_ladder_01` lands on the weaker improved state `13/2880/512` rather than the best retained state.
+  - Runtime work is materially smaller than the raw lattice-gas scan because each step inspects orbit representatives instead of every raw candidate.
+- Novelty Delta:
+  - The live CA claim is now less tied to one coordinate chart: the rule is expressed over orbit-level transport shapes rather than over packet indices.
+  - That makes the result more transferable and more defensible against the critique that the branch only memorizes one hand-picked frontier representative.
