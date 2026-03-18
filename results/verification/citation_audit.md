@@ -1,186 +1,203 @@
 # Citation Audit
 
 Snapshot date: 2026-03-18 UTC
+Verification phase: `review_round_1`
 
 ## Scope
 
-- `research_paper.tex` is not present in this snapshot, so this audit is artifact-level rather than manuscript-level.
-- Required inputs checked: `sources.bib`, `results/research_context.md`, and `results/literature/semantic_scholar_manifest.json`.
-- Because the manuscript file is absent, I also checked the claim-bearing files that would most likely feed any writeup:
-  - `results/verification/verification_summary.md`
-  - `results/verification/novelty_report.md`
-  - `results/final_assessment.md`
-  - `results/literature/prior_art_gap.md`
+- Primary inputs audited:
+  - `research_paper.tex`
+  - `sources.bib`
+  - `results/research_context.md`
+  - `results/literature/semantic_scholar_manifest.json`
+- Support tracing also checked against:
+  - `results/baselines/witness_spec.md`
+  - `results/baselines/benchmark_spec.md`
   - `results/core/h1_design.md`
   - `results/core/lane_gates.md`
-  - `results/swarm/falsifier.md`
-  - the repeated introduction/problem statement embedded in `results/concept_evolve/tree/*/README.md`
-
-Important scoping note:
-
-- `sources.bib:1-2` explicitly says the bibliography was frozen to support `design-level and blocker-level claims only`.
-- That scope is narrower than the manuscript-style mathematical introduction copied into the concept-tree READMEs and JSON artifacts.
+  - `results/experiments/h1_tiny_grid_report.md`
+  - `results/experiments/h1_controls.md`
+  - `results/experiments/complexity_sweep.md`
+  - `results/verification/verification_summary.md`
+  - `results/verification/benchmark_report.md`
+  - `results/final_assessment.md`
+  - `results/concept_evolve/concept_delta.md`
+  - `results/concept_evolve/bridge_candidates.json`
+- Web spot-checks were limited to high-risk citation-integrity questions:
+  - `leng2024`
+  - AlphaEvolve
+  - Georgiev et al.
+  - Cowen-Breen et al.
+  - Pohoata-Zakharov
+  - Tao (2025)
+  - Green-Ruzsa
+  - Hickman-Wright
+  - Dennunzio et al.
+  - Faldor-Cully
 
 ## Verdict
 
 - `Pass` for blocker-level and repo-internal negative claims.
-- `Fail / incomplete` for the mathematical introduction and for several literature-comparison claims if they are promoted into a paper without more sources.
+- `Revise` for manuscript-level citation support and evidence traceability.
 
-## Claims With Adequate Support
+Most important issues:
 
-These claims are supported primarily by repo evidence, not by external citations, and that is acceptable:
+1. One likely source misfit / citation hallucination remains in the manuscript (`leng2024`).
+2. The `<= 1.675` target and other prompt-derived formulation details still lack a direct provenance citation.
+3. Several Related Work comparisons are interpretive and only weakly supported by the cited papers.
+4. One important results claim is not fully traceable because repo artifacts disagree on bridge status.
 
-- No exact integer verifier or decoder was found in the repo snapshot:
-  - `results/verification/verification_summary.md:5-33`
-  - `results/repo_map.md:30-50`
-- No exact H1 sweep, controls, or complexity sweep were run:
-  - `results/experiments/h1_tiny_grid_report.md:7-46`
-  - `results/experiments/h1_controls.md:7-49`
-  - `results/experiments/complexity_sweep.md:7-40`
-- No empirical baseline or superiority claim survives:
-  - `results/verification/benchmark_report.md:24-69`
+## Claims With Solid Support
+
+- Missing exact verifier / decoder and blocked phase-4 execution are strongly supported:
+  - `research_paper.tex:109-117`
+  - `research_paper.tex:147-157`
+  - `research_paper.tex:476-492`
+  - `research_paper.tex:808-828`
+  - `research_paper.tex:913-983`
+  - `research_paper.tex:1125-1130`
+  - `results/repo_map.md:32-38`
+  - `results/experiments/h1_tiny_grid_report.md:7-38`
+  - `results/experiments/h1_controls.md:7-45`
+  - `results/experiments/complexity_sweep.md:7-31`
+  - `results/verification/verification_summary.md:21-28`
+
+- The six-line witness format, exact score, no-repair decoder, and matched-budget benchmark contract are well supported internally:
+  - `research_paper.tex:347-558`
+  - `research_paper.tex:621-828`
+  - `results/baselines/witness_spec.md:7-94`
+  - `results/baselines/benchmark_spec.md:7-129`
+  - `results/core/h1_design.md:7-120`
+  - `results/core/lane_gates.md:7-56`
+
+- The paper is generally honest about negative outcomes and does not overclaim a verified witness or benchmark win:
+  - `research_paper.tex:830-835`
+  - `research_paper.tex:1032-1043`
+  - `research_paper.tex:1125-1135`
+  - `results/verification/benchmark_report.md:29-38`
+  - `results/verification/benchmark_report.md:80-90`
   - `results/final_assessment.md:7-28`
-- The surviving contribution is design-level only:
-  - `results/verification/novelty_report.md:7-15`
-  - `results/core/h1_design.md:5`
 
 ## Findings
 
-### 1. Missing citations for the manuscript-style mathematical introduction
+### 1. `leng2024` is a likely source misfit, and currently the closest thing to a citation hallucination
 
-The strongest citation gap is not in the blocker reports. It is in the repeated introduction text used throughout the concept artifacts, for example:
+- Claim location:
+  - `research_paper.tex:340-344`
+  - repeated upstream in `results/research_context.json:5` and `results/research_context.json:46`
+- Citation used:
+  - `sources.bib:126-133`
+- Problem:
+  - The cited paper is `Improved Bounds for Szemeredi's Theorem`, but the manuscript uses it to support a Kakeya-specific motivation claim about a Hausdorff-dimension upgrade.
+  - `results/research_context.md:33-35` shows the repo searched for the Szemeredi paper itself, not for a Kakeya paper by these authors.
+  - Web spot-checks confirm `2402.17995` is a Szemeredi-theorem paper, not a Kakeya paper.
+- Audit judgment:
+  - Real paper, wrong role. This is not a fabricated citation, but it is not adequate support for the sentence as written.
+- Required fix:
+  - Remove the Leng-Sah-Sawhney sentence, or replace it with a real Kakeya-dimension source.
+  - If the sentence is meant as prompt provenance rather than literature support, cite the prompt/provenance artifact instead of `leng2024`.
 
-- `results/concept_evolve/tree/002_spatially-coupled-peeling-ladders/README.md:5-23`
+### 2. The `<= 1.675` target and prompt-derived formulation still lack a direct provenance citation
 
-That text makes several source-dependent claims:
+- Claim location:
+  - `research_paper.tex:91-99`
+  - `research_paper.tex:129-131`
+  - `research_paper.tex:212-213`
+  - `research_paper.tex:324-338`
+- Available support:
+  - `results/research_context.json:5`
+  - `results/research_context.json:46`
+  - `results/verification/verification_summary.md:41-42`
+- Problem:
+  - The manuscript correctly says the `1.675` threshold is task provenance, not a theorem from the repo, but it does not cite the provenance source.
+  - The same issue applies to phrases such as "the repository prompt adopts this formulation" and "the repository prompt uses the notation `AK(alpha)`".
+- Audit judgment:
+  - Missing provenance citation, not missing mathematics citation.
+- Required fix:
+  - Add an explicit provenance reference to the stored task text or another authoritative repo artifact whenever the paper attributes content to "the repository prompt".
 
-- Katz-Tao implicitly formulated the arithmetic Kakeya conjecture.
-- `AK(alpha)` implies a Hausdorff-dimension lower bound for Kakeya sets.
-- Bourgain established the method-of-slices / Minkowski-dimension part.
-- The Hausdorff-dimension upgrade follows from work of Leng, Sah, and Sawhney.
+### 3. Several comparative claims in Related Work are only weakly supported by the cited papers
 
-Current support status:
+- Claim cluster:
+  - `research_paper.tex:213-227`
+  - `research_paper.tex:246-269`
+  - `research_paper.tex:291-301`
+- Examples:
+  - `research_paper.tex:216-225` turns Green-Ruzsa, Cowen-Breen et al., Pohoata-Zakharov, Tao, and Hickman-Wright into very specific warnings about proxy tasks, bounded-slope regimes, and modular mirages.
+  - `research_paper.tex:263-269` and `research_paper.tex:291-295` use AlphaEvolve and Georgiev et al. to support the manuscript's "novelty floor" framing.
+  - The same interpretive layer appears in `results/literature/prior_art_gap.md:72-133`.
+- Problem:
+  - These papers are relevant, but much of the current prose goes beyond straightforward source content and into manuscript interpretation.
+  - The citations support adjacency and relevance; they do not, by themselves, prove each specific comparative statement as currently phrased.
+- Audit judgment:
+  - Mostly weak citations, not false citations.
+- Required fix:
+  - Soften the prose to make the interpretive layer explicit, e.g. "we treat X as a warning/adjacent constraint".
+  - Where stronger phrasing matters, anchor it to a specific theorem/result/abstract claim instead of a title-level comparison.
 
-- `sources.bib` contains Katz-Tao (`katz1999`), but it does **not** contain Bourgain or any Leng-Sah-Sawhney entry.
-- Therefore the introduction as written is not citation-complete.
-- The same uncited background text is duplicated in `results/research_context.json`, `results/concept_evolve/recurrent_state.json`, and multiple `results/concept_evolve/tree/*/README.md` files, so the gap is replicated rather than isolated.
+### 4. The bridge-status narrative is not fully traceable because repo artifacts disagree
 
-### 2. Reframing-domain claims remain uncited
+- Claim location:
+  - `research_paper.tex:989-995`
+  - `research_paper.tex:1013-1021`
+  - `research_paper.tex:1039`
+- Supporting artifacts currently disagree:
+  - `results/concept_evolve/bridge_candidates.json:3-33` gives `2` promoted, `3` held, `4` retired, with `spatially_coupled_peeling_ladders` on `hold`.
+  - `results/concept_evolve/concept_delta.md:20-27` says `spatially_coupled_peeling_ladders` was promoted.
+  - `results/final_assessment.md:32-36` lists three surviving bridges, including `spatially_coupled_peeling_ladders`.
+  - `results/concept_evolve/tree/phase_5_retrospective/001_surviving_exact_decoder_bridges/README.md:9-13` also describes three surviving bridges.
+- Audit judgment:
+  - This is not a literature-citation problem, but it is a major evidence-traceability problem.
+  - The manuscript's `2/3/4` split is defensible if `bridge_candidates.json` is the source of truth, but that needs to be stated explicitly.
+- Required fix:
+  - Choose one authoritative artifact for final bridge status, or explain the stage distinction between "iterate-time decision" and "post-pivot surviving shortlist".
 
-`results/verification/novelty_report.md:81-89` says the run now has `11` reframing domains, and `results/concept_evolve/reframings.json:3-91` spells them out:
+### 5. The results sections are supported, but traceability is thinner than it needs to be in the abstract and introduction
 
-- proof-labeling schemes
-- Petri nets / vector addition systems
-- network coding
-- group testing
-- chemical reaction networks
-- structural observability
-- factor graphs
-- Datalog / chase
-- abstract interpretation
-- applied sheaf theory
-- synchronizing automata
+- Claim cluster:
+  - `research_paper.tex:109-117`
+  - `research_paper.tex:147-157`
+  - `research_paper.tex:171-177`
+- Available support:
+  - `results/experiments/h1_tiny_grid_report.md:20-30`
+  - `results/experiments/h1_controls.md:16-45`
+  - `results/experiments/complexity_sweep.md:20-40`
+  - `results/verification/benchmark_report.md:29-38`
+- Problem:
+  - The claims are supported later in the paper and in repo artifacts, but the early summary sections ask the reader to trust the narrative before seeing the artifact trail.
+- Audit judgment:
+  - Supported but lightly wired.
+- Suggested fix:
+  - Add one short artifact-provenance footnote or parenthetical reference in the abstract or introduction for the `0/3`, `0` decodes, and missing-verifier claims.
 
-Current support status:
+## Bibliography Integrity Notes
 
-- `sources.bib:1-2` already admits these are uncited hypothesis generators.
-- No primary sources for any of these domains were added to the bibliography.
-- These comparisons are therefore not safe to present as literature-grounded prior-art clearance.
+- No obviously fabricated paper was found in the high-risk spot checks.
+- The main integrity problem is source fit, not source existence.
+- Remaining lower-severity hygiene issues:
+  - citation keys such as `green2017`, `bond2013`, and `bond2014` encode older scout/preprint years while the `year` fields point to later publication records (`sources.bib:13-20`, `sources.bib:61-76`);
+  - most entries still use Semantic Scholar URLs instead of canonical publisher/arXiv URLs;
+  - `novikov2025` and `georgiev2025` are adequate, but their `journal={arXiv.org}` style is inconsistent with the other arXiv records.
 
-### 3. Several comparison claims are only weakly supported
+## Most Important Sources To Add Or Replace
 
-The comparison set is directionally reasonable, but many statements are still title-level or abstract-level summaries rather than tightly sourced claims. This shows up in:
+1. Add a provenance citation for the task prompt that supplies:
+   - the `<= 1.675` target,
+   - the prompt-derived `AK(alpha)` wording,
+   - and any statement explicitly attributed to "the repository prompt".
+   Candidate artifact: `results/research_context.json:5`.
 
-- `results/literature/prior_art_gap.md:72-133`
-- `results/literature/prior_art_gap.md:147-238`
-- `results/core/h1_design.md:122-127`
-- `results/core/lane_gates.md:44-50`
-- `results/swarm/falsifier.md:74-89`
+2. Replace `leng2024` as Kakeya motivation.
+   - If the goal is still modern Kakeya-dimension motivation, add an actual Kakeya paper rather than a Szemeredi paper.
+   - Concrete recent option from web spot-checking: Hong Wang and Joshua Zahl, `Volume estimates for unions of convex sets, and the Kakeya set conjecture in three dimensions` (arXiv:2502.17655).
 
-High-risk examples:
-
-- `results/literature/prior_art_gap.md:74-75`
-  - "`Generalized Arithmetic Kakeya` ... shows that formulation changes can create apparent progress."
-  - This is a reasonable inference, but it is stronger than a bare bibliographic citation unless tied to a precise result or section.
-- `results/literature/prior_art_gap.md:81-84`
-  - Tao is described as the main current warning against bounded-slope or low-rational-complexity stories.
-  - The paper is highly relevant, but the phrasing is interpretive and should be either softened or backed by a precise citation.
-- `results/literature/prior_art_gap.md:95-105`
-  - Bond-Levine is used as a rigorous local-processing / halting bridge.
-  - That is an adjacent-method analogy, not direct evidence for this witness-search lane.
-- `results/literature/prior_art_gap.md:123-133`
-  - AlphaEvolve and `Mathematical exploration and discovery at scale` are used as novelty-floor system references.
-  - The overlap argument is plausible, but still qualitative.
-
-These are not necessarily wrong. They are just not yet traceable enough for manuscript-grade claims.
-
-### 4. Bibliography hygiene is weak even where the papers are real
-
-I did not find an obviously fabricated paper in `sources.bib`, but I did find several entries that are weak, inconsistent, or likely to produce misleading references:
-
-- `sources.bib:12-19` (`green2017`)
-  - Uses year `2017` while also citing the final `Periodica Mathematica Hungarica` journal version, which should be treated as the 2019 publication.
-- `sources.bib:51-67` (`bond2013`, `bond2014`)
-  - Uses preprint years `2013` and `2014` together with journal DOIs for later journal publications; the journal versions are 2016-era publications, not 2013/2014 journal records.
-- `sources.bib:78-85` (`faldor2024`)
-  - Mixes ALIFE proceedings venue metadata with an arXiv DOI instead of the proceedings DOI.
-- `sources.bib:21-40` (`cowenbreen2020`, `pohoata2024`, `tao2025`)
-  - Provides only Semantic Scholar URLs; no canonical arXiv IDs or DOIs are recorded.
-- `sources.bib:87-102` (`novikov2025`, `georgiev2025`)
-  - Author names are encoding-damaged.
-
-So the likely hallucination risk here is not "invented papers." It is "real papers with inconsistent or low-fidelity metadata."
-
-### 5. There is no manuscript-ready citation wiring yet
-
-The current writeup artifacts usually mention papers by name in prose. They do not expose a stable citation map from specific claims to specific keys.
-
-That is acceptable for planning notes, but not for a final paper. The absence of `research_paper.tex` means there is no place yet where the repo demonstrates:
-
-- which exact claims get which exact citation keys;
-- whether one citation is carrying too much argumentative weight;
-- and whether the mathematical background claims are actually cited where they appear.
-
-## Highest-Priority Sources To Add Or Fix
-
-### Add for the introduction / mathematical background
-
-1. Bourgain, `On the dimension of Kakeya sets and related maximal inequalities` (GAFA, 1999).
-   - Needed for the method-of-slices / Minkowski-dimension history currently asserted in the introduction.
-2. Leng, Sah, Sawhney, `Improved Bounds for Szemerédi's Theorem` (arXiv:2402.17995), or the exact downstream source actually being relied on for the Hausdorff-dimension upgrade.
-   - Right now the repo names these authors but gives no citation at all.
-
-### Upgrade weak arithmetic-Kakeya adjacency entries to canonical records
-
-3. Cowen-Breen, Karangozishvili, Varadarajan, Wang, `Pattern Problems related to the Arithmetic Kakeya Conjecture` (arXiv:2011.07056).
-4. Pohoata and Zakharov, `Generalized Arithmetic Kakeya` (arXiv:2411.13395).
-5. Tao, `Sum-difference exponents for boundedly many slopes, and rational complexity` (arXiv:2511.15135).
-
-### Normalize publication-state mismatches
-
-6. `green2017`
-   - Either cite the final 2019 journal publication consistently or make it an explicit 2017 preprint entry with eprint metadata.
-7. `bond2013` and `bond2014`
-   - Either cite the final journal versions consistently or mark them as preprints. Do not mix preprint years with 2016 journal metadata.
-8. `faldor2024`
-   - Either cite the ALIFE proceedings paper consistently using DOI `10.1162/isal_a_00827` or cite the arXiv preprint consistently. Do not mix the two.
-
-### Clean up AI-system references before any paper build
-
-9. Fix author encoding and canonicalization for:
-   - `novikov2025`
-   - `georgiev2025`
-
-### Optional provenance source
-
-10. If a future writeup wants to cite the exact FrontierMath problem wording or the provenance of the `<= 1.675` target, add a separate task-provenance source explicitly.
-    - That should be treated as task provenance, not as a substitute for the underlying research literature.
+3. If the stronger Related Work comparisons stay in place, add precise theorem/result anchors or brief section-level references for:
+   - Tao (bounded slopes / rational complexity),
+   - Hickman-Wright (modular adjacency),
+   - AlphaEvolve and Georgiev et al. (automated-discovery comparison class).
 
 ## Bottom Line
 
-- Citation support is currently adequate for blocker accounting, negative experimental claims, and the narrow design-level story.
-- Citation support is currently **not** adequate for:
-  - the manuscript-style mathematical introduction,
-  - the `11` reframing domains,
-  - or section-specific literature-comparison prose that sounds stronger than a title/abstract-level comparison.
-- No clear fake paper was found, but several bibliography entries need canonicalization before they can be trusted in a manuscript.
+- The paper's blocker story and negative empirical claims are well supported.
+- The biggest citation problem is not missing general background; it is one misapplied source (`leng2024`) plus missing provenance wiring for prompt-derived claims.
+- After fixing the Leng citation, adding prompt provenance, and resolving the bridge-status source-of-truth issue, the manuscript will have a much cleaner evidence trail.
