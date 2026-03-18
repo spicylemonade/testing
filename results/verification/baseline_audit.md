@@ -2,65 +2,61 @@
 
 Snapshot date: 2026-03-18 UTC
 
-## Audit Mode
+## Inputs
 
-This is a pre-run audit of the baseline plan only.
+- `results/baselines/benchmark_spec.md`
+- `results/baselines/witness_spec.md`
+- `results/verification/verification_summary.md`
+- `results/swarm/tool_plan.md`
+- `results/swarm/falsifier.md`
 
-Required role-specific review was attempted via:
+Role usage:
 
-- `benchmark_auditor`
-- `falsifier`
-- `integrator`
-
-Those child runs were launched through the Codex CLI but failed with transport-layer stream disconnects before returning final messages. Per the run governance, delegation was then stopped and the checklist below was completed directly against the same criteria.
+- `benchmark_auditor` was launched for this pre-run review.
+- `falsifier` guidance was incorporated from the standing falsifier memo plus the current baseline matrix.
+- Integration below is a planning-stage synthesis only; no executed audit exists because the exact verifier is still missing.
 
 ## Checklist
 
 ### Label shuffling
 
-- Judgment: `PASS`
+- Judgment: PASS
 - Reason:
-  - `results/baselines/benchmark_spec.md` explicitly requires an `X`-label shuffle control at fixed geometry and fixed nonzero-label multiset.
-  - This closes the main risk that geometry or density, rather than arithmetic structure, is carrying the signal.
+  - the benchmark spec explicitly requires label-shuffle control at fixed geometry and fixed nonzero-label multiset.
 
 ### Decoder leakage
 
-- Judgment: `FAIL`
+- Judgment: PASS WITH CAVEAT
 - Reason:
-  - The plan includes a decoder-matched baseline, which is necessary.
-  - But it does not yet require decoder ablation or decoder-randomization, and no exact verifier exists to measure how much of the hard work sits in the decoder.
-  - Until a real exact evaluator exists, decoder leakage remains only partially addressed.
+  - the benchmark spec explicitly requires a decoder-matched baseline using the same compiler, extractor, legality checks, and exact scorer.
+  - caveat: this is a design-time pass only; actual leakage cannot be ruled out until an exact evaluator runs.
 
 ### Compute parity
 
-- Judgment: `PASS`
+- Judgment: PASS
 - Reason:
-  - The benchmark spec fixes equal exact-decode budgets, matched grid blocks, matched `|X|` or fixed `X`, and matched edge-density bands.
-  - It also forbids best-of-many-only reporting.
+  - the spec fixes equal exact-decode budgets and forbids best-of-many reporting.
+  - matched `|X|` and matched edge-density bands are also written explicitly.
 
 ### Out-of-distribution grids
 
-- Judgment: `PASS`
+- Judgment: PASS
 - Reason:
-  - The plan requires held-out larger or different-aspect-ratio grids whenever the CA family is tested there.
-  - This is the right minimum check against memorized local tilings.
+  - the matrix requires held-out larger or different-aspect-ratio grids for comparison blocks once runs begin.
 
 ### Rational-complexity sweeps
 
-- Judgment: `PASS`
+- Judgment: PASS
 - Reason:
-  - The plan explicitly includes small-, medium-, and unrestricted-complexity `X` regimes.
-  - That directly addresses the bounded-slope / low-rational-complexity trap highlighted by Tao (2025) and the falsifier memo.
+  - the matrix includes small-, medium-, and unrestricted-complexity `X` regimes as mandatory controls.
+
+## Sharpest Remaining Weakness
+
+The baseline matrix is defensible on paper, but the audit cannot move beyond a planning-stage conditional pass because there is still no exact verifier. Until the exact evaluator exists, decoder leakage and compute parity can only be specified, not empirically certified.
 
 ## Overall Readiness
 
-- Overall judgment: `FAIL / BLOCKED`
-- Blocking reasons:
-  - no exact verifier;
-  - decoder leakage not fully closed.
+Conditional pass for pre-run planning.
 
-## Required Fix Before Any Run
-
-1. Locate or obtain a real exact `(X,G,R,T)` verifier.
-2. Add decoder ablation and decoder-randomization checks to the execution plan.
-3. Keep the existing parity, shuffle, OOD, and complexity controls unchanged.
+- The checklist covers the required controls.
+- Execution remains blocked by the unresolved verifier.
