@@ -58,3 +58,37 @@ The run must not invent a replacement frontier-search stack and then treat it as
 ## Current Verdict
 
 Verifier blocker unresolved.
+
+## Phase-4 Status
+
+- Tiny-grid exact sweep: blocked
+- Controls: blocked
+- Complexity sweep: blocked
+- Benchmark audit: completed as a blocker-integrity pass; execution still blocked
+- Novelty / citation audit: completed for design-level and blocker-level claims only
+
+## Novelty Status
+
+No exact verified witness behavior was observed in this run. The watchlist papers remain false overlaps, while the real adjacent arithmetic-Kakeya papers and the CA / automated-search method papers still define the novelty boundary. The only defensible claim is a verifier-coupled search design with a no-repair decoder contract and strong anti-overclaim gates.
+
+## Citation Status
+
+`sources.bib` and `results/literature/prior_art_gap.md` support the current blocker and design-level novelty framing. They do not support any empirical-performance claim because no exact experiments were run. Reframing-only domains from `results/concept_evolve/reframings.json` remain hypothesis generators unless their underlying sources are added explicitly.
+
+## Key Artifacts
+
+- `results/repo_map.md`
+- `results/context_sync.md`
+- `results/literature/prior_art_gap.md`
+- `results/baselines/witness_spec.md`
+- `results/baselines/benchmark_spec.md`
+- `results/core/h1_design.md`
+- `results/core/lane_gates.md`
+- `results/experiments/h1_tiny_grid_report.md`
+- `results/experiments/h1_controls.md`
+- `results/experiments/complexity_sweep.md`
+- `results/concept_evolve/reframings.json`
+- `results/concept_evolve/concept_delta.md`
+- `results/verification/benchmark_report.md`
+- `results/verification/novelty_report.md`
+- `results/verification/citation_audit.md`
