@@ -31,3 +31,18 @@
 - Novelty Delta:
   - The concrete contribution is now sharper than the earlier concept card: a spill-penalized packet-lattice CA over the real order-668 frontier seed, benchmarked in the same q/s coordinates as the non-CA baselines, with the probe pushing the next step toward composite packets or a defect-packet graph.
   - The unresolved novelty risk is also sharper: if the branch responds to the frozen frontier only by widening score scans or tuning the same dead single-bit basis, it collapses back toward generic local search rather than surviving as a distinct CA repair method.
+
+## 2026-03-18: Reframe Checkpoint -> Matched Control Batch
+
+- Suggestion:
+  - Reframe the next experiment around the narrowest verification debt: do the CA and non-CA methods behave differently at all when they start from the same small, solved q/s controls under the same restart and budget contract?
+- Implementation:
+  - Ran the mandatory `python3 .archivara/concept_evolve.py reframe "solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it"` checkpoint.
+  - Read `results/concept_evolve/reframings.json`, which returned no alternate framings, so the experiment frame stayed exact-hit-first and representation-matched.
+  - Executed the locked two-seed control batch under `results/experiments/controls/` with identical evaluation budget, restart count, and RNG seed for `H1_defect_syndrome_ca_64m`, `greedy`, `tabu`, `simulated_annealing`, and `stochastic_hillclimb`.
+- Result:
+  - The control batch now has reproducible configs, seeds, raw run logs, and aggregate summaries under `results/experiments/controls/`.
+  - H1 matches `greedy` and `tabu` on exact-hit rate across the two controls and outperforms `simulated_annealing` and `stochastic_hillclimb` on the harder length-7 control under the shared budget.
+- Novelty Delta:
+  - The reframe pass did not open a new direction; it instead forced the evidence standard tighter.
+  - H1 still does not have a frontier advantage, but it now clears the minimal control-validity gate needed before a fair order-668 kill test.
