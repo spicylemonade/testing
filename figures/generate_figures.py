@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import math
 import random
+import sys
 from pathlib import Path
 from statistics import mean
 
@@ -12,8 +13,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch, Rectangle
 
-
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from hadamard668.cellar import control_79_panel, panel_report
+
 FIG_DIR = ROOT / "figures"
 RESULTS_DIR = ROOT / "results"
 ANALYSIS_DIR = RESULTS_DIR / "analysis"
@@ -139,6 +144,7 @@ def compute_metrics() -> dict:
     h1_target = load_json(EXPERIMENT_DIR / "h1_target_sweep.json")
     h2_ladder = load_json(EXPERIMENT_DIR / "h2_ladder.json")
     h2_seed = load_json(EXPERIMENT_DIR / "h2_seed_attempt.json")
+    cellar = load_json(EXPERIMENT_DIR / "cellar_phase6.json")
 
     metrics: dict[str, object] = {
         "artifacts": {
@@ -257,6 +263,65 @@ def compute_metrics() -> dict:
         }
     metrics["h2_seed_attempt"] = seed_block
 
+    def cellar_short_label(label: str) -> str:
+        if label.startswith("control_4x79_tail"):
+            return "c" + label.rsplit("tail", 1)[1]
+        if label.startswith("target_167_tail12::"):
+            return "t" + label.rsplit("::", 1)[1]
+        if "single_flip_0" in label:
+            return "sf0"
+        if "single_flip_41" in label:
+            return "sf41"
+        if "cluster3_" in label:
+            return "cl3"
+        if "cluster5_" in label:
+            return "cl5"
+        return label
+
+    control_family = []
+    for tail in (10, 12, 14):
+        report = panel_report(control_79_panel(free_suffix_length=tail))
+        control_family.append(
+            {
+                "label": report["label"],
+                "short_label": cellar_short_label(report["label"]),
+                "anchor_kind": str(report["anchor_kind"]),
+                "prefix_count": int(report["prefix_count"]),
+                "exact_completion_count": int(report["exact_completion_count"]),
+                "extendable_prefix_count": int(report["extendable_prefix_count"]),
+                "boundary_group_count": int(report["boundary_debt_report"]["group_count"]),
+                "cellar_group_count": int(report["cellar_report"]["group_count"]),
+                "boundary_frontier": int(report["boundary_debt_report"]["frontier_size"]),
+                "cellar_frontier": int(report["cellar_report"]["frontier_size"]),
+            }
+        )
+
+    recorded_panels = list(control_family)
+    for report in cellar["panels"]:
+        if report["label"] == "control_4x79_tail12":
+            continue
+        recorded_panels.append(
+            {
+                "label": report["label"],
+                "short_label": cellar_short_label(str(report["label"])),
+                "anchor_kind": str(report["anchor_kind"]),
+                "prefix_count": int(report["prefix_count"]),
+                "exact_completion_count": int(report["exact_completion_count"]),
+                "extendable_prefix_count": int(report["extendable_prefix_count"]),
+                "boundary_group_count": int(report["boundary_debt_report"]["group_count"]),
+                "cellar_group_count": int(report["cellar_report"]["group_count"]),
+                "boundary_frontier": int(report["boundary_debt_report"]["frontier_size"]),
+                "cellar_frontier": int(report["cellar_report"]["frontier_size"]),
+            }
+        )
+
+    metrics["cellar"] = {
+        "regularity_claim": cellar["regularity_claim"],
+        "exposure_reports": cellar["exposure_reports"],
+        "control_family": control_family,
+        "panels": recorded_panels,
+    }
+
     return metrics
 
 
@@ -360,31 +425,34 @@ def figure_pipeline() -> None:
     ax.set_ylim(0, 1)
     ax.axis("off")
 
-    add_box(ax, (0.04, 0.70), 0.18, 0.18, "User prompt:\n\"cellar automata\"\nfor Hadamard 668", PALETTE["cloud"])
-    add_box(ax, (0.28, 0.70), 0.20, 0.18, "Interpretation split:\ncellular automata\nvs. literal reserve\n\"cellar\" reading", "#eef5f3")
-    add_box(ax, (0.55, 0.76), 0.17, 0.12, "H1:\n167-cycle support CA", "#e8eef5")
-    add_box(ax, (0.55, 0.56), 0.17, 0.12, "H2:\nmod-64 defect-transport CA", "#f7ece8")
-    add_box(ax, (0.79, 0.76), 0.16, 0.12, "Matched baseline:\n`direct_greedy`", "#f0f3f6")
-    add_box(ax, (0.79, 0.56), 0.16, 0.12, "Negative controls:\nrandom rule / walk", "#f0f3f6")
-    add_box(ax, (0.29, 0.28), 0.22, 0.16, "Reserve R1:\nautocorrelation\ndebt pushdown\n(literal `cellar`)", "#e8f3ef")
-    add_box(ax, (0.56, 0.28), 0.18, 0.16, "Reserve R2/R3:\nSAT-propagator / \nconvolution-slice", "#f2f5ea")
-    add_box(ax, (0.80, 0.28), 0.15, 0.16, "Final gate:\nallow only a\nnarrow no-go claim", "#f7f2e8")
-    add_box(ax, (0.56, 0.08), 0.18, 0.10, "H1 stop:\nloses on control\nand target", "#fbe8e6")
-    add_box(ax, (0.79, 0.08), 0.16, 0.10, "H2 stop:\nties on the only\nreal 668 start", "#fbe8e6")
+    add_box(ax, (0.04, 0.72), 0.18, 0.16, "User prompt:\n\"cellar automata\"\nfor Hadamard 668", PALETTE["cloud"])
+    add_box(ax, (0.28, 0.72), 0.20, 0.16, "Phase 1--5:\ninterpret as cellular\nautomata", "#eef5f3")
+    add_box(ax, (0.55, 0.78), 0.16, 0.10, "H1:\n167-cycle support CA", "#e8eef5")
+    add_box(ax, (0.55, 0.61), 0.16, 0.10, "H2:\nmod-64 repair CA", "#f7ece8")
+    add_box(ax, (0.78, 0.78), 0.17, 0.10, "Matched baseline:\n`direct_greedy`", "#f0f3f6")
+    add_box(ax, (0.78, 0.61), 0.17, 0.10, "Negative controls:\nrandom rule / walk", "#f0f3f6")
+    add_box(ax, (0.28, 0.38), 0.20, 0.16, "Phase 6:\nliteral cellar reopen\nas pushdown / tail-panel\nexperiment", "#e8f3ef")
+    add_box(ax, (0.55, 0.42), 0.16, 0.10, "Static comparator:\nboundary debt only", "#edf3f7")
+    add_box(ax, (0.78, 0.42), 0.17, 0.10, "Exact panel audit:\ncontrol family +\n167/668 anchors", "#f7f2e8")
+    add_box(ax, (0.55, 0.20), 0.16, 0.10, "H1 stop:\nloses on control\nand target", "#fbe8e6")
+    add_box(ax, (0.78, 0.20), 0.17, 0.10, "H2 stop + cellar stop:\ntie on real 668 start;\nno stack-only win", "#fbe8e6")
+    add_box(ax, (0.36, 0.05), 0.28, 0.10, "Final claim:\nthree executed automata branches, all negative under matched evidence gates", "#f7f2e8")
 
-    add_arrow(ax, (0.22, 0.79), (0.28, 0.79))
-    add_arrow(ax, (0.48, 0.82), (0.55, 0.82), color=PALETTE["navy"])
-    add_arrow(ax, (0.48, 0.62), (0.55, 0.62), color=PALETTE["rust"])
-    add_arrow(ax, (0.72, 0.82), (0.79, 0.82))
-    add_arrow(ax, (0.72, 0.62), (0.79, 0.62))
-    add_arrow(ax, (0.39, 0.70), (0.39, 0.44), color=PALETTE["teal"])
-    add_arrow(ax, (0.64, 0.28), (0.64, 0.18), color=PALETTE["rust"])
-    add_arrow(ax, (0.87, 0.28), (0.87, 0.18), color=PALETTE["navy"])
-    add_arrow(ax, (0.51, 0.36), (0.56, 0.36))
-    add_arrow(ax, (0.74, 0.36), (0.80, 0.36))
+    add_arrow(ax, (0.22, 0.80), (0.28, 0.80))
+    add_arrow(ax, (0.48, 0.83), (0.55, 0.83), color=PALETTE["navy"])
+    add_arrow(ax, (0.48, 0.66), (0.55, 0.66), color=PALETTE["rust"])
+    add_arrow(ax, (0.71, 0.83), (0.78, 0.83))
+    add_arrow(ax, (0.71, 0.66), (0.78, 0.66))
+    add_arrow(ax, (0.38, 0.72), (0.38, 0.54), color=PALETTE["teal"])
+    add_arrow(ax, (0.48, 0.46), (0.55, 0.46), color=PALETTE["teal"])
+    add_arrow(ax, (0.71, 0.46), (0.78, 0.46))
+    add_arrow(ax, (0.63, 0.42), (0.63, 0.30), color=PALETTE["navy"])
+    add_arrow(ax, (0.86, 0.42), (0.86, 0.30), color=PALETTE["teal"])
+    add_arrow(ax, (0.63, 0.20), (0.57, 0.15))
+    add_arrow(ax, (0.86, 0.20), (0.64, 0.10))
 
-    ax.text(0.55, 0.92, "Executed branches", color=PALETTE["ink"], fontsize=11, fontweight="bold")
-    ax.text(0.30, 0.50, "Reserve concepts remain unvalidated", color=PALETTE["teal"], fontsize=10.5, fontweight="bold")
+    ax.text(0.52, 0.92, "Prompt interpretation and review chronology", color=PALETTE["ink"], fontsize=11, fontweight="bold")
+    ax.text(0.28, 0.58, "Reviewer-driven deepening changes the literal cellar branch from reserve idea to executed experiment", color=PALETTE["teal"], fontsize=9.8, fontweight="bold")
 
     save_figure(fig, "fig_program_flow")
 
@@ -613,20 +681,103 @@ def figure_h2_mechanism_results(metrics: dict) -> None:
     save_figure(fig, "fig_h2_results")
 
 
+def figure_cellar_results(metrics: dict) -> None:
+    block = metrics["cellar"]
+    fig = plt.figure(figsize=(12.6, 8.0), constrained_layout=True)
+    gs = fig.add_gridspec(2, 2)
+    ax0 = fig.add_subplot(gs[0, 0])
+    ax1 = fig.add_subplot(gs[0, 1])
+    ax2 = fig.add_subplot(gs[1, 0])
+    ax3 = fig.add_subplot(gs[1, 1])
+
+    ax0.axis("off")
+    ax0.set_xlim(0, 1)
+    ax0.set_ylim(0, 1)
+    ax0.add_patch(Rectangle((0.08, 0.63), 0.34, 0.10, facecolor="#edf3f7", edgecolor=PALETTE["ink"], lw=1.0))
+    ax0.add_patch(Rectangle((0.42, 0.63), 0.18, 0.10, facecolor="#e8eef5", edgecolor=PALETTE["ink"], lw=1.0))
+    ax0.add_patch(Rectangle((0.60, 0.63), 0.22, 0.10, facecolor="#e8f3ef", edgecolor=PALETTE["ink"], lw=1.0))
+    ax0.text(0.25, 0.68, "Fixed base prefix", ha="center", va="center", fontsize=10.2)
+    ax0.text(0.51, 0.68, "Assigned free prefix", ha="center", va="center", fontsize=10.0)
+    ax0.text(0.71, 0.68, "Unread suffix", ha="center", va="center", fontsize=10.0)
+    add_box(ax0, (0.08, 0.36), 0.32, 0.16, "Boundary debt\nassigned pair vector\nleft/right windows\nweight counters", "#f6f1e7")
+    add_box(ax0, (0.50, 0.36), 0.32, 0.16, "Cellar stack\ndyadic block summaries\nprefix/suffix bits\ninternal pairs", "#eef8f5")
+    add_box(ax0, (0.27, 0.10), 0.36, 0.14, "Same tokenization, same exact completion oracle,\nsame budget; only memory discipline differs.", "#f7f2e8")
+    add_arrow(ax0, (0.51, 0.63), (0.24, 0.52))
+    add_arrow(ax0, (0.51, 0.63), (0.66, 0.52))
+    add_arrow(ax0, (0.40, 0.36), (0.45, 0.36))
+    ax0.text(0.08, 0.82, "Tail-panel encoding for the literal cellar branch", fontsize=12, fontweight="bold")
+    panel_label(ax0, "a")
+
+    controls = block["control_family"]
+    labels = [item["short_label"] for item in controls]
+    x = np.arange(len(controls))
+    feasible = [item["prefix_count"] for item in controls]
+    exact = [item["extendable_prefix_count"] for item in controls]
+    boundary = [item["boundary_frontier"] for item in controls]
+    cellar = [item["cellar_frontier"] for item in controls]
+    ax1.bar(x - 0.18, feasible, width=0.36, color=PALETTE["mist"], edgecolor=PALETTE["ink"], label="Feasible prefixes")
+    ax1.bar(x + 0.02, exact, width=0.24, color=PALETTE["gold"], edgecolor=PALETTE["ink"], label="Exact extendable frontier")
+    ax1.plot(x + 0.02, boundary, color=PALETTE["navy"], marker="o", lw=1.8, label="Static frontier")
+    ax1.plot(x + 0.02, cellar, color=PALETTE["teal"], marker="s", lw=1.8, label="Cellar frontier")
+    ax1.set_yscale("log")
+    ax1.set_xticks(x, labels)
+    ax1.set_ylabel("Prefix count (log scale)")
+    ax1.set_title("Solved control family leaves no slack for stack-only gain")
+    ax1.grid(True, axis="y")
+    ax1.legend(loc="upper left")
+    panel_label(ax1, "b")
+
+    panels = block["panels"]
+    x = np.arange(len(panels))
+    boundary_ratio = [item["boundary_group_count"] / item["prefix_count"] for item in panels]
+    cellar_ratio = [item["cellar_group_count"] / item["prefix_count"] for item in panels]
+    ax2.plot(x, boundary_ratio, color=PALETTE["navy"], marker="o", lw=1.6, label="Static groups / prefixes")
+    ax2.plot(x, cellar_ratio, color=PALETTE["teal"], marker="s", lw=1.6, label="Cellar groups / prefixes")
+    ax2.set_xticks(x, [item["short_label"] for item in panels], rotation=30, ha="right")
+    ax2.set_ylim(0.94, 1.02)
+    ax2.set_ylabel("Grouping ratio")
+    ax2.set_title("Recorded panels are prefix-identifying under both encodings")
+    ax2.grid(True, axis="y")
+    ax2.legend(loc="lower right")
+    panel_label(ax2, "c")
+
+    heatmap = np.array(
+        [
+            [
+                item["exact_completion_count"],
+                item["boundary_frontier"],
+                item["cellar_frontier"],
+            ]
+            for item in panels
+        ],
+        dtype=float,
+    )
+    ax3.imshow(heatmap, aspect="auto", cmap=mpl.cm.YlGn, vmin=0, vmax=max(1.0, float(np.max(heatmap))))
+    ax3.set_xticks(np.arange(3), ["Exact\ncompletions", "Static\nfrontier", "Cellar\nfrontier"])
+    ax3.set_yticks(np.arange(len(panels)), [item["short_label"] for item in panels])
+    ax3.set_title("Real-anchor tail panels produce no exact cellar win")
+    for row in range(heatmap.shape[0]):
+        for col in range(heatmap.shape[1]):
+            ax3.text(col, row, f"{int(heatmap[row, col])}", ha="center", va="center", color=PALETTE["ink"], fontsize=9)
+    panel_label(ax3, "d")
+
+    save_figure(fig, "fig_cellar_results")
+
+
 def figure_branch_matrix() -> None:
     rows = [
-        ("H1 executed", [1, 1, 1, 0, 0, 0]),
-        ("H2 executed", [1, 1, 1, 0, 0, 0]),
-        ("R1 cellar / pushdown", [1, 0, 0, 0, 0, 1]),
-        ("R2 SAT-propagator", [0, 0, 0, 0, 0, 1]),
-        ("R3 convolution-slice", [1, 0, 0, 0, 0, 1]),
+        ("H1 support CA", [1, 1, 1, 0, 1, 0]),
+        ("H2 structured CA", [1, 1, 1, 0, 1, 0]),
+        ("Phase 6 cellar", [1, 1, 1, 0, 1, 0]),
+        ("SAT-propagator reserve", [0, 0, 0, 0, 0, 1]),
+        ("Convolution-slice reserve", [1, 0, 0, 0, 0, 1]),
     ]
     columns = [
         "Exact anchor",
         "Executed",
         "Matched baseline",
         "Positive result",
-        "Validated contribution",
+        "Validated no-go",
         "Reserve only",
     ]
     data = np.array([row[1] for row in rows], dtype=float)
@@ -638,7 +789,7 @@ def figure_branch_matrix() -> None:
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
             ax.text(j, i, "yes" if data[i, j] else "no", ha="center", va="center", color=PALETTE["ink"], fontsize=9)
-    ax.set_title("Executed and reserve branches separate cleanly")
+    ax.set_title("Executed branches end as no-go packets; reserves stay unvalidated")
     ax.set_xticks(np.arange(-0.5, len(columns), 1), minor=True)
     ax.set_yticks(np.arange(-0.5, len(rows), 1), minor=True)
     ax.grid(which="minor", color="white", linestyle="-", linewidth=1.5)
@@ -656,6 +807,7 @@ def main() -> int:
     figure_h1_results(metrics)
     figure_h1_dynamics(metrics)
     figure_h2_mechanism_results(metrics)
+    figure_cellar_results(metrics)
     figure_branch_matrix()
     return 0
 

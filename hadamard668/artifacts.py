@@ -77,7 +77,7 @@ CONSTANTINE_SOURCE = {
 ELIAHOU_SOURCE = {
     "paper": "M. Eliahou, A 64-modular Hadamard matrix of order 668 (2025)",
     "source_kind": "journal PDF",
-    "source_ref": "Australasian Journal of Combinatorics 93(2), pp. 422-429",
+    "source_ref": "Australasian Journal of Combinatorics 93(2), pp. 422-427",
     "source_locator": {
         "construction_lines": "lines 155-160",
     },
