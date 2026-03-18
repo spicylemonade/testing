@@ -47,14 +47,14 @@
   - The reframe pass did two useful things at once: it forced the evidence standard tighter and it widened the bridge space away from raw single-packet CA scheduling.
   - H1 still does not have a frontier advantage, but it now clears the minimal control-validity gate needed before a fair order-668 kill test.
 
-## 2026-03-18: Iterate Checkpoint -> Post-H1 Bridge Refresh
+## 2026-03-18: Iterate Checkpoint -> Post-Verification Tree Refresh
 
 - Suggestion:
-  - After the verification pack exists, retire the dead single-packet branch, promote only bridges that address the validated locality failure directly, and keep generative CA ideas out of the immediate queue.
+  - After the verification pack exists, retire the dead single-packet branch, promote `H2_lag_space_ca_167` as the champion branch, use `ldpc_hadamard_decoder_graph` as the strongest bridge into honest locality, and keep generative CA ideas out of the immediate queue.
 - Implementation:
   - Launched the mandatory `python3 .archivara/concept_evolve.py iterate "solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it"` checkpoint.
-  - The helper run stalled before it could cleanly finish the full concept-tree rewrite, but it did emit `results/concept_evolve/bridge_candidates.json`, `results/concept_evolve/concept_delta.json`, and `results/concept_evolve/recurrent_state.json`.
-  - Reconciled those generated bridge rankings with the already committed verification decision in `results/verification/verification_summary.md`, then refreshed the surviving / retired concept READMEs in `results/concept_evolve/tree/`.
+  - The iterate helper stalled before item_022 could rely on emitted JSON artifacts, so the bridge refresh was reconstructed directly from the same saved verification inputs: `results/concept_evolve/probe_result.json`, `results/concept_evolve/reframings.json`, `results/swarm/falsifier.md`, `results/verification/verification_summary.md`, `results/verification/novelty_report.md`, `results/verification/benchmark_report.md`, `results/verification/citation_audit.md`, and the H2/H3 gate notes.
+  - Refreshed the targeted concept READMEs plus `bridge_candidates.json`, `concept_delta.json`, and `recurrent_state.json` to encode that verified branch state.
 - Result:
   - `001_defect-syndrome-ca-64m` is now archived as a negative control rather than an active frontier branch.
   - `002_lag-residue-ca-167` is now the champion branch for the next pass.

@@ -2,7 +2,7 @@
 
 - Topic Context: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it
 - Domains: coding_theory, ldpc, cellular_automata
-- Status: promoted bridge candidate feeding the H2 pivot.
+- Status: promoted as the strongest bridge feeding the H2 pivot.
 
 ## Implementation Backlog
 - [ ] Derive a sparse defect-packet or defect-check graph from retained low-splash composite packets.
@@ -14,8 +14,8 @@
 
 - Evidence path:
   - `results/concept_evolve/reframings.json`
-  - `results/concept_evolve/bridge_candidates.json`
+  - `results/concept_evolve/probe_result.json`
   - `results/verification/benchmark_report.md`
 - Promotion reason:
-  - the reframe and iterate passes both push the search toward a syndrome-graph / decoder interpretation
-  - this is the strongest representation-changing bridge that still preserves a local-update story
+  - the saved reframings push the search toward graph-CA defect networks and LDPC-style weighted bit-flip repair
+  - the probe says locality has to move onto a derived defect-packet or defect-check graph, making this the strongest representation-changing bridge that still preserves a local-update story

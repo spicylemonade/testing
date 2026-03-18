@@ -20,3 +20,4 @@
 - Promotion reason:
   - the verified H1 failure points to the lag field as the more honest local object
   - H2 is the governed next branch once H1 fails for principled locality reasons
+  - this branch stays active only if it survives the family-leakage audit against Williamson, Turyn, Goethals-Seidel, cocyclic, and block-circulant collapse

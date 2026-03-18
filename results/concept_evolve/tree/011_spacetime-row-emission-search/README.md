@@ -2,7 +2,7 @@
 
 - Topic Context: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it
 - Domains: symbolic_dynamics, cellular_automata, compressed_generation
-- Status: closed for this pass; retire from the immediate queue until the repair-style branches fail for principled reasons.
+- Status: explicitly closed and retired for this pass; keep it out of the immediate queue until the repair-style branches fail for principled representation reasons.
 
 ## Implementation Backlog
 - [ ] Keep archived; do not spend budget in the next pass.
@@ -19,3 +19,4 @@
 - Retirement reason:
   - high overlap risk with direct CA-construction literature
   - weak anchoring to the recovered order-668 frontier relative to repair-style branches
+  - the post-verification evidence supports a representation pivot first, not a jump to generative rule-table search
