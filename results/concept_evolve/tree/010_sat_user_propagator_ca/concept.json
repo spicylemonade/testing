@@ -1,0 +1,43 @@
+{
+  "symbolic_name": "sat_user_propagator_ca",
+  "description": "Couple a CA proposal engine with SAT+CAS user propagators that learn forbidden local motifs. Unsat cores from the exact layer are translated back into penalties on CA neighborhoods, closing the loop between symbolic proof and local dynamics.",
+  "domains": [
+    "SAT/SMT",
+    "computer algebra",
+    "cellular automata"
+  ],
+  "mathematical_formalization": "Let z_t be compressed block tokens and z_{t+1} = f(z_t) be a CA update. An exact verifier V(z) returns extendable or a conflict core C; learn local penalties lambda_C so later updates minimize E_local(z) + sum_C lambda_C * 1[C subset z].",
+  "analogical_connections": [
+    "Clause learning as rule shaping.",
+    "Nogoods as forbidden CA motifs.",
+    "Exact proof objects used as local training signals."
+  ],
+  "implementation_hypothesis": "Build a compressed tokenization of block states, integrate a user-propagator SAT solver, and feed extracted unsat motifs back into CA rule weights or rejection masks.",
+  "experiment_seed": "Recover known Williamson or good-matrix instances, then measure whether learned motifs improve throughput on the 167-length obstruction or on modular-seed refinement.",
+  "closest_prior_art": [
+    {
+      "title": "Applying Computer Algebra Systems with SAT Solvers to the Williamson Conjecture",
+      "paperId": "ac46aa30dbbe83df90f792216d8f31a278170267"
+    },
+    {
+      "title": "Enumeration of Complex Golay Pairs via Programmatic SAT",
+      "paperId": "909616c0a3c4d05d30f4090785f4d87d6248109b"
+    },
+    {
+      "title": "A SAT+CAS Approach to Finding Good Matrices: New Examples and Counterexamples",
+      "paperId": "f0da7cd59959010936975efce768a87cfa190c00"
+    }
+  ],
+  "novelty_claim": "The exact layer does more than certify or reject: it shapes the local CA dynamics by returning reusable forbidden motifs.",
+  "differentiation": "Standard SAT+CAS work uses fixed encodings and static pruning. This concept turns exact conflicts into online updates of a local proposal process.",
+  "folder_plan": {
+    "artifact_folder": "results/concept_evolve/tree/010_sat_user_propagator_ca",
+    "prototype_root": "experiments/sat_user_propagator_ca",
+    "prototype_files": [
+      "token_encoding.py",
+      "user_propagator.py",
+      "core_to_motif.py",
+      "online_rule_update.py"
+    ]
+  }
+}

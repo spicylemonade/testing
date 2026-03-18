@@ -1,0 +1,45 @@
+{
+  "symbolic_name": "convolution_slice_ca",
+  "description": "Represent the 167/80 search state as a field of local convolution contributions instead of raw support bits. Each site stores how much it over- or under-contributes to nearby cyclic shifts, and a conservative CA routes this debt around the cycle with local swaps.",
+  "domains": [
+    "signal processing",
+    "additive combinatorics",
+    "cellular automata"
+  ],
+  "mathematical_formalization": "For a support x subset Z_167, define contribution tensor A_i(k) = x_i x_{i+k} and slice debts delta(k) = sum_i A_i(k) - tau_k. Maintain local liabilities ell_i(K) = sum_{k in K} w_k (A_i(k) - tau_k/167), then choose local swaps minimizing nearby ell_i while conserving |x|.",
+  "analogical_connections": [
+    "Load balancing on a ring.",
+    "Residual-network flow for cyclic convolution deficits.",
+    "Signal-processing residuals made CA-local."
+  ],
+  "implementation_hypothesis": "Maintain incremental convolution tables so each local swap updates only a small liability neighborhood, then use either deterministic CA rules or a CA-guided beam search over liabilities.",
+  "experiment_seed": "Compare liability-driven swaps, plain random local moves, and direct recomputation on smaller cyclic test cases and then on the exact 167/80 target.",
+  "closest_prior_art": [
+    {
+      "title": "Convolution numbers: the cyclic case",
+      "paperId": "af20a0b3ccef66fad2a0a1e9f11011eb99194784"
+    },
+    {
+      "title": "Density classification performance and ergodicity of the Gacs-Kurdyumov-Levin cellular automaton model IV",
+      "paperId": "41ce7a3f00efd1be36d2d864667ce6b159168c91"
+    },
+    {
+      "title": "Quantum computing formulation of some classical Hadamard matrix searching methods and its implementation on a quantum computer",
+      "paperId": "1fd50d1147b7684686e533886b44a9e92ac2e807"
+    }
+  ],
+  "novelty_claim": "This defines a CA-native local state built directly from the exact cyclic equations, so the automaton sees meaningful local debt instead of blind bits.",
+  "differentiation": "The cyclic reduction in prior work is global. This concept localizes that obstruction into per-site liabilities suitable for conservative CA dynamics.",
+  "folder_plan": {
+    "artifact_folder": "results/concept_evolve/tree/011_convolution_slice_ca",
+    "prototype_root": "experiments/convolution_slice_ca",
+    "prototype_files": [
+      "convolution_tables.py",
+      "liability_field.py",
+      "local_swap_rule.py",
+      "beam_driver.py"
+    ]
+  },
+  "generated_at": "2026-03-18T08:34:57.499240+00:00",
+  "project_folder": "concept_evolve/tree/011_convolution-slice-ca"
+}

@@ -1,0 +1,43 @@
+{
+  "symbolic_name": "ising_ca_hybrid_annealer",
+  "description": "Keep the proven Hadamard energy functions from SA, SQA, and QAOA literature, but replace uninformed proposal moves with CA-generated balanced neighborhoods. The CA becomes a structured move generator inside a global energy search instead of pretending to be a full solver by itself.",
+  "domains": [
+    "statistical physics",
+    "quantum optimization",
+    "cellular automata"
+  ],
+  "mathematical_formalization": "Use E(H) = sum_{i<j} <H_i,H_j>^2 or a structured block analogue E(z). Let q_f(z'|z) be a proposal kernel induced by a local CA rule f over neighborhoods N(i); keep the same acceptance scheme as Metropolis, SQA, or QAOA-style mixers while q_f preserves balance and symmetry.",
+  "analogical_connections": [
+    "CA as a learned mixer for annealing.",
+    "Local rule bank as a custom quantum mixer family.",
+    "Hybrid Monte Carlo with lattice proposals."
+  ],
+  "implementation_hypothesis": "Implement a shared energy and verifier, then compare random proposals versus CA proposals under identical SA, SQA-style, and QAOA-inspired acceptance logic.",
+  "experiment_seed": "Use solved smaller orders first, then modular-seed lift tasks and 167-slice tasks to measure acceptance efficiency and eventual certificate rate.",
+  "closest_prior_art": [
+    {
+      "title": "Finding a Hadamard Matrix by Simulated Annealing of Spin-Vectors",
+      "paperId": "b01723f49ef6134f64d4675cc9a0d747eb29350b"
+    },
+    {
+      "title": "Finding a Hadamard Matrix by Simulated Quantum Annealing",
+      "paperId": "d98246df005a52ff9a5e99b6c5f548c1def1ba12"
+    },
+    {
+      "title": "A Quantum Approximate Optimization Method For Finding Hadamard Matrices",
+      "paperId": "8a06d7ef189e83b6ac474ddbcb623f02a635e286"
+    }
+  ],
+  "novelty_claim": "The contribution is isolated to proposal geometry: existing Hadamard energies stay fixed while CA determines which local moves are worth trying.",
+  "differentiation": "Prior annealing and QAOA papers change the optimizer. This concept asks whether CA proposals improve the same objective under matched acceptance dynamics.",
+  "folder_plan": {
+    "artifact_folder": "results/concept_evolve/tree/008_ising_ca_hybrid_annealer",
+    "prototype_root": "experiments/ising_ca_hybrid_annealer",
+    "prototype_files": [
+      "energy.py",
+      "proposal_ca.py",
+      "anneal_driver.py",
+      "acceptance_modes.py"
+    ]
+  }
+}

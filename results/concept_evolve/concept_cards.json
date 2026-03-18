@@ -1,0 +1,475 @@
+[
+  {
+    "symbolic_name": "defect_transport_mod64_lift",
+    "description": "Start from Eliahou's 64-modular order-668 matrix rather than from random +/-1 matrices. Encode each nonzero off-diagonal Gram entry as a defect particle on a row-pair graph and let a cellular automaton move, merge, and annihilate defects while an exact verifier stays outside the CA loop.",
+    "domains": [
+      "combinatorial design",
+      "cellular automata",
+      "statistical physics"
+    ],
+    "mathematical_formalization": "Given H in {+1,-1}^{668 x 668}, define D_ij = <H_i, H_j> for i != j. Initialize from a sparse-defect seed H^(0) and apply local balanced flips U_f so that H^(t+1) = U_f(H^(t)) while E(H) = sum_{i<j} |D_ij| or sum_{i<j} D_ij^2 decreases and block invariants are preserved.",
+    "analogical_connections": [
+      "Reaction-diffusion CA on a sparse defect gas.",
+      "Topological-code syndrome annihilation translated into Gram-space.",
+      "Metastable spin system lifted from a near-ground-state seed."
+    ],
+    "implementation_hypothesis": "Reconstruct the published 64-modular seed, build a defect graph over row pairs, and implement local row-block sign swaps that preserve balance. Use CA rules to route defect mass toward cancellation and compare against greedy and annealed updates on the same neighborhood.",
+    "experiment_seed": "Validate on smaller exact Hadamards with injected defects, then start from the 668 modular seed and measure defect count, defect energy, and exact-certificate frequency after fixed update budgets.",
+    "closest_prior_art": [
+      {
+        "title": "A 64-modular Hadamard matrix of order 668",
+        "paperId": "ajc_v93_p422"
+      },
+      {
+        "title": "Finding a Hadamard Matrix by Simulated Annealing of Spin-Vectors",
+        "paperId": "b01723f49ef6134f64d4675cc9a0d747eb29350b"
+      },
+      {
+        "title": "Cellular-automaton decoders for topological quantum memories",
+        "paperId": "e5378f63f33009c7d64c0940c6b819057ba2e295"
+      }
+    ],
+    "novelty_claim": "The new element is not 'CA for search' in general, but CA as a Hadamard-specific defect-repair layer initialized from the published 64-modular 668 seed.",
+    "differentiation": "Prior Hadamard heuristics optimize directly in matrix or sequence coordinates, while prior CA decoders repair stabilizer syndromes. This concept combines the two only at the sparse residual-defect stage exposed by the best current 668 construction.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/001_defect_transport_mod64_lift",
+      "prototype_root": "experiments/defect_transport_mod64_lift",
+      "prototype_files": [
+        "seed_loader.py",
+        "defect_graph.py",
+        "ca_rules.py",
+        "baseline_anneal.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "autocorrelation_debt_pushdown",
+    "description": "Treat 'cellar automata' literally as a stack-like automaton over run-length or convolution tokens for the length-167 obstruction. The automaton stores unresolved autocorrelation debt and only expands prefixes that still admit completion under global weight, parity, and symmetry constraints.",
+    "domains": [
+      "formal languages",
+      "additive combinatorics",
+      "Hadamard search"
+    ],
+    "mathematical_formalization": "Let x in {0,1}^{167} with sum_i x_i = 80 and target cyclic convolution c_x(k) = sum_i x_i x_{i+k} = tau_k. Parse x as a token word w; a visibly pushdown automaton state tracks (position, weight, local debt) and a stack of deferred multiscale deficits Delta_I(k). Accept exactly those prefixes that remain extendable to c_x = tau.",
+    "analogical_connections": [
+      "Parser stack as deferred correlation obligations.",
+      "Branch-and-bound recast as language acceptance.",
+      "Inventory balancing over cyclic convolution deficits."
+    ],
+    "implementation_hypothesis": "Tokenize candidate supports or 4-block prefixes, hand-design or learn stack transitions from solved smaller orders, and use the automaton as a prefix filter before any exact SAT or CAS step.",
+    "experiment_seed": "Benchmark rejection rate on random prefixes versus retention of known valid smaller witnesses, then use the accepted frontier as input to a focused search on the 167/80 target.",
+    "closest_prior_art": [
+      {
+        "title": "Convolution numbers: the cyclic case",
+        "paperId": "af20a0b3ccef66fad2a0a1e9f11011eb99194784"
+      },
+      {
+        "title": "Applying Computer Algebra Systems with SAT Solvers to the Williamson Conjecture",
+        "paperId": "ac46aa30dbbe83df90f792216d8f31a278170267"
+      },
+      {
+        "title": "Williamson type Hadamard matrices with circulant components",
+        "paperId": "e517b186e1edfb3a865cb4eabbdd4e0f8570d2a3"
+      }
+    ],
+    "novelty_claim": "This recasts the exact cyclic obstruction as an automata-theoretic prefix language instead of a flat SAT instance or a raw local-search landscape.",
+    "differentiation": "The contribution is not a rewrapped SAT solver: the pushdown model operates before clause expansion and uses explicit deferred debt, which classical exact encodings usually do not expose as a stateful search object.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/002_autocorrelation_debt_pushdown",
+      "prototype_root": "experiments/autocorrelation_debt_pushdown",
+      "prototype_files": [
+        "tokenizer.py",
+        "pushdown_states.py",
+        "transition_learner.py",
+        "prefix_filter.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "regional_controllability_seeded_ca",
+    "description": "Use CA controllability results as a pre-screen for any rule family before expensive 668 search. Only rule templates with SAT-certified ability to steer seeds toward low-defect regions survive into the actual search loop.",
+    "domains": [
+      "cellular automata",
+      "SAT",
+      "control theory"
+    ],
+    "mathematical_formalization": "For a CA rule family f_r and target region R_eps = {s : score(s) <= eps}, solve Reach_r(T, S0, R_eps) via SAT. Choose rules r maximizing a lower bound on reachability to exact or modularly admissible regions while preserving required invariants I(s).",
+    "analogical_connections": [
+      "Controller synthesis for a search representation.",
+      "Architecture search with formal reachability certificates.",
+      "Admissible action-space screening before optimization."
+    ],
+    "implementation_hypothesis": "Encode bounded-time controllability for small support or defect fields, learn which rule motifs remain controllable under the desired invariants, and restrict later search to those rule families.",
+    "experiment_seed": "Run reachability certification on smaller solved orders and on slices of the modular 668 seed; correlate reachability scores with downstream search success.",
+    "closest_prior_art": [
+      {
+        "title": "Regional controllability of cellular automata as a SAT problem",
+        "paperId": "d622c453cb5aa83cdcdd35eb077178d61c7bfcaf"
+      },
+      {
+        "title": "A 64-modular Hadamard matrix of order 668",
+        "paperId": "ajc_v93_p422"
+      },
+      {
+        "title": "Applying Computer Algebra Systems with SAT Solvers to the Williamson Conjecture",
+        "paperId": "ac46aa30dbbe83df90f792216d8f31a278170267"
+      }
+    ],
+    "novelty_claim": "The novelty is methodological discipline: a CA rule is admitted only if it has provable reachability into Hadamard-relevant regions, not because it looks expressive.",
+    "differentiation": "Prior controllability work is generic CA theory, while this concept uses it as a Hadamard-specific falsification gate tied to exact search regions and concrete seed states.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/003_regional_controllability_seeded_ca",
+      "prototype_root": "experiments/regional_controllability_seeded_ca",
+      "prototype_files": [
+        "sat_model.py",
+        "rule_templates.py",
+        "reachability_probe.py",
+        "gatekeeper.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "gram_syndrome_decoder",
+    "description": "Reinterpret row-pair inner products as syndromes and borrow decoder architectures from topological quantum memories. An auxiliary CA propagates defect messages across overlapping row neighborhoods, attempting local pairing and cancellation before an exact verifier decides whether the update helped.",
+    "domains": [
+      "quantum error correction",
+      "cellular automata",
+      "combinatorial optimization"
+    ],
+    "mathematical_formalization": "Let S = {(i,j) : D_ij != 0} for D_ij = <H_i, H_j>. Build a factor graph whose variables are row bits and whose checks are pairwise orthogonality constraints. A decoder CA maintains messages m_t and selects local flips F_t = psi(m_t, D_t) so that syndrome weight ||D_t||_0 or energy sum D_ij^2 falls.",
+    "analogical_connections": [
+      "Gram defects as parity-check syndromes.",
+      "Stabilizer neighborhoods turned into row-overlap neighborhoods.",
+      "Local decoding instead of global matrix search."
+    ],
+    "implementation_hypothesis": "Construct a sparse message graph from block interactions, adapt a local decoder rule to pass defect messages, and test whether message-guided flips outperform direct local repair.",
+    "experiment_seed": "Inject controlled defects into exact smaller Hadamards and measure syndrome collapse speed, then apply the same decoder to modular-seed residuals.",
+    "closest_prior_art": [
+      {
+        "title": "Cellular-automaton decoders for topological quantum memories",
+        "paperId": "e5378f63f33009c7d64c0940c6b819057ba2e295"
+      },
+      {
+        "title": "A 64-modular Hadamard matrix of order 668",
+        "paperId": "ajc_v93_p422"
+      },
+      {
+        "title": "A Quantum Approximate Optimization Method For Finding Hadamard Matrices",
+        "paperId": "8a06d7ef189e83b6ac474ddbcb623f02a635e286"
+      }
+    ],
+    "novelty_claim": "This is a decoder-style CA for Gram-defect fields, not a generic search heuristic and not a direct translation of a quantum-code decoder.",
+    "differentiation": "The target checks are dense orthogonality constraints compressed into a structured factor graph, which is a different object from the sparse stabilizer graphs used in prior decoder work.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/004_gram_syndrome_decoder",
+      "prototype_root": "experiments/gram_syndrome_decoder",
+      "prototype_files": [
+        "factor_graph.py",
+        "message_field.py",
+        "decoder_rules.py",
+        "recovery_benchmark.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "walsh_spectrum_shadow_ca",
+    "description": "Use CA-generated bent or semi-bent Boolean functions as spectral templates for length-167 block candidates. The CA does not try to output an order-668 Hadamard directly; it supplies Walsh-flat shadows that are decoded into candidates likely to survive modular or exact filters.",
+    "domains": [
+      "cryptography",
+      "spectral combinatorics",
+      "cellular automata"
+    ],
+    "mathematical_formalization": "For a CA rule r and seed s, derive a Boolean function f_{r,s}. Compute Walsh profile W_f(omega) = sum_x (-1)^(f(x) + omega.x). Project spectrally flat signatures through a map Pi into candidate block tuples (a,b,c,d) and score them by autocorrelation debt J(Pi(f)).",
+    "analogical_connections": [
+      "Bent spectra as orthogonality surrogates.",
+      "CA rule evolution as a Fourier-prior generator.",
+      "Shadow decoding from spectral space into sequence space."
+    ],
+    "implementation_hypothesis": "Search over CA rules already known to yield bent-like functions, define one or more projection maps into 167-length binary blocks, and keep only shadows enriched for modular admissibility.",
+    "experiment_seed": "Measure enrichment against random supports and direct local search on smaller targets before applying the same decoder to 167-length blocks.",
+    "closest_prior_art": [
+      {
+        "title": "Bent Functions from Cellular Automata",
+        "paperId": "iacr:2020/1272"
+      },
+      {
+        "title": "Heuristic Search of (Semi-)Bent Functions based on Cellular Automata",
+        "paperId": "d0ef2d96e201af37ae7bf3535d21a4ac29c6f6b3"
+      },
+      {
+        "title": "Convolution numbers: the cyclic case",
+        "paperId": "af20a0b3ccef66fad2a0a1e9f11011eb99194784"
+      }
+    ],
+    "novelty_claim": "The new step is a target-specific decoder from CA-generated spectral objects into the exact obstruction space for order 668.",
+    "differentiation": "Prior CA-bent papers optimize cryptographic quality in their own right. Here spectral flatness is only a proposal prior and success is judged by Hadamard-specific filters.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/005_walsh_spectrum_shadow_ca",
+      "prototype_root": "experiments/walsh_spectrum_shadow_ca",
+      "prototype_files": [
+        "rule_sampler.py",
+        "walsh_metrics.py",
+        "shadow_decoder.py",
+        "modular_filter.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "mols_to_sds_transducer",
+    "description": "Treat CA-generated orthogonal Latin squares and orthogonal arrays as high-regularity incidence patterns, then transduce them into candidate supplementary difference-set style block supports. The claim is not that Latin squares solve 668 directly, but that their incidence regularity might seed nontrivial candidate families outside obvious circulant traps.",
+    "domains": [
+      "combinatorial design",
+      "cellular automata",
+      "incidence geometry"
+    ],
+    "mathematical_formalization": "Given CA-generated Latin squares L1, L2, build incidence tensors T_{a,b}(i,j) = 1[(L1(i,j), L2(i,j)) = (a,b)]. Search transductions Phi(T) -> (S1,S2,S3,S4) subset Z_167 such that sum_t 1_{S_t} * 1_{-S_t} approximates target SDS counts or modular Golay filters.",
+    "analogical_connections": [
+      "Symbol co-occurrence tensors as proto-difference sets.",
+      "Latin-square superposition as a structured randomizer.",
+      "Design compiler from incidence objects into sequence objects."
+    ],
+    "implementation_hypothesis": "Generate small OLS or OA objects from linear CA, learn symbolic projections into subset tuples, and test whether those tuples land closer to known Hadamard filters than random subsets do.",
+    "experiment_seed": "Use small primes with known Goethals-Seidel or SDS witnesses as positive controls, then inspect whether the transducer still produces enriched seeds at p = 167.",
+    "closest_prior_art": [
+      {
+        "title": "Constructing Orthogonal Latin Squares from Linear Cellular Automata",
+        "paperId": "1abe43406189b39ff3064f2882467c2ae2a549c8"
+      },
+      {
+        "title": "Combinatorial Designs and Cellular Automata: A Survey",
+        "paperId": "44871e8b22b10f05e8ff1eaec72e3fe125c83c50"
+      },
+      {
+        "title": "Convolution numbers: the cyclic case",
+        "paperId": "af20a0b3ccef66fad2a0a1e9f11011eb99194784"
+      }
+    ],
+    "novelty_claim": "The bridge is an explicit compiler from CA-generated Latin-square style objects into Hadamard-relevant subset tuples, which the current design literature does not provide.",
+    "differentiation": "Prior design papers stop inside OLS or OA families. This concept only counts as success if the incidence structure translates into better 167-length witness candidates.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/006_mols_to_sds_transducer",
+      "prototype_root": "experiments/mols_to_sds_transducer",
+      "prototype_files": [
+        "ols_generator.py",
+        "incidence_tensor.py",
+        "subset_transducer.py",
+        "sds_scoring.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "density_classifier_support_repair",
+    "description": "Adapt Gacs-Kurdyumov-Levin style density classification to the weight-80 support vector underlying the 167/80 obstruction. A conservative CA moves occupied sites along the cycle based on neighborhood-majority and convolution-debt signals, maintaining total weight while smoothing harmful local patterns.",
+    "domains": [
+      "cellular automata",
+      "statistical mechanics",
+      "additive combinatorics"
+    ],
+    "mathematical_formalization": "Let x_t in {0,1}^{167} with sum_i x_i = 80. For each site i compute local density rho_i and debt gradients g_i(k) = c_{x_t}(k) - tau_k over nearby shifts. Update with a particle-conserving rule x_{t+1} = F(x_t, rho, g) that swaps 10/01 pairs instead of flipping occupancy.",
+    "analogical_connections": [
+      "Domain-wall motion in density classifiers.",
+      "Mass-conserving lattice-gas dynamics.",
+      "Redistributing particles to satisfy convolution quotas."
+    ],
+    "implementation_hypothesis": "Implement conservative GKL-like swaps with optional multi-radius debt sensors and compare them against plain hill-climbing on the same weight-preserving neighborhood.",
+    "experiment_seed": "Start from random weight-80 supports, transduced design seeds, and projections of modular blocks; track exact target distance and distinct orbit coverage.",
+    "closest_prior_art": [
+      {
+        "title": "Density classification performance and ergodicity of the Gacs-Kurdyumov-Levin cellular automaton model IV",
+        "paperId": "41ce7a3f00efd1be36d2d864667ce6b159168c91"
+      },
+      {
+        "title": "Convolution numbers: the cyclic case",
+        "paperId": "af20a0b3ccef66fad2a0a1e9f11011eb99194784"
+      },
+      {
+        "title": "Regional controllability of cellular automata as a SAT problem",
+        "paperId": "d622c453cb5aa83cdcdd35eb077178d61c7bfcaf"
+      }
+    ],
+    "novelty_claim": "This turns density classification into a conservative support-repair engine keyed to the exact convolution target rather than to majority voting.",
+    "differentiation": "Standard density-classification CA solve a one-bit aggregate task. This version is constrained by a full convolution signature and an exact weight budget.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/007_density_classifier_support_repair",
+      "prototype_root": "experiments/density_classifier_support_repair",
+      "prototype_files": [
+        "support_state.py",
+        "conservative_rule.py",
+        "debt_sensors.py",
+        "orbit_metrics.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "ising_ca_hybrid_annealer",
+    "description": "Keep the proven Hadamard energy functions from SA, SQA, and QAOA literature, but replace uninformed proposal moves with CA-generated balanced neighborhoods. The CA becomes a structured move generator inside a global energy search instead of pretending to be a full solver by itself.",
+    "domains": [
+      "statistical physics",
+      "quantum optimization",
+      "cellular automata"
+    ],
+    "mathematical_formalization": "Use E(H) = sum_{i<j} <H_i,H_j>^2 or a structured block analogue E(z). Let q_f(z'|z) be a proposal kernel induced by a local CA rule f over neighborhoods N(i); keep the same acceptance scheme as Metropolis, SQA, or QAOA-style mixers while q_f preserves balance and symmetry.",
+    "analogical_connections": [
+      "CA as a learned mixer for annealing.",
+      "Local rule bank as a custom quantum mixer family.",
+      "Hybrid Monte Carlo with lattice proposals."
+    ],
+    "implementation_hypothesis": "Implement a shared energy and verifier, then compare random proposals versus CA proposals under identical SA, SQA-style, and QAOA-inspired acceptance logic.",
+    "experiment_seed": "Use solved smaller orders first, then modular-seed lift tasks and 167-slice tasks to measure acceptance efficiency and eventual certificate rate.",
+    "closest_prior_art": [
+      {
+        "title": "Finding a Hadamard Matrix by Simulated Annealing of Spin-Vectors",
+        "paperId": "b01723f49ef6134f64d4675cc9a0d747eb29350b"
+      },
+      {
+        "title": "Finding a Hadamard Matrix by Simulated Quantum Annealing",
+        "paperId": "d98246df005a52ff9a5e99b6c5f548c1def1ba12"
+      },
+      {
+        "title": "A Quantum Approximate Optimization Method For Finding Hadamard Matrices",
+        "paperId": "8a06d7ef189e83b6ac474ddbcb623f02a635e286"
+      }
+    ],
+    "novelty_claim": "The contribution is isolated to proposal geometry: existing Hadamard energies stay fixed while CA determines which local moves are worth trying.",
+    "differentiation": "Prior annealing and QAOA papers change the optimizer. This concept asks whether CA proposals improve the same objective under matched acceptance dynamics.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/008_ising_ca_hybrid_annealer",
+      "prototype_root": "experiments/ising_ca_hybrid_annealer",
+      "prototype_files": [
+        "energy.py",
+        "proposal_ca.py",
+        "anneal_driver.py",
+        "acceptance_modes.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "quaternionic_shadow_decoder",
+    "description": "Search in a richer quaternionic perfect-sequence space and only later project to real binary shadows. If quaternionic phases cluster around low-defect real shadows more often than random binary starts do, they become a practical latent space for 668 search.",
+    "domains": [
+      "sequence design",
+      "quaternionic algebra",
+      "cellular automata"
+    ],
+    "mathematical_formalization": "Sample q in {+1,-1,+i,-i,+j,-j,+k,-k}^{167}. Define shadow maps Pi_alpha(q) in {+1,-1}^{4 x 167} by phase partitioning, score J(Pi_alpha(q)) by autocorrelation or modular defect, and run CA repair R_f on the best shadows.",
+    "analogical_connections": [
+      "Latent-variable decoding from noncommutative phase space.",
+      "Phase-to-bit demodulation for design search.",
+      "Proposal priors from a richer algebraic alphabet."
+    ],
+    "implementation_hypothesis": "Enumerate or sample small quaternionic perfect sequences, evaluate several shadow maps, keep the maps with the best enrichment, and then push their real shadows through a CA repair loop.",
+    "experiment_seed": "Compare quality distributions of projected quaternionic shadows and random real seeds on small exact targets and on 32- or 64-modular filters before scaling to length 167.",
+    "closest_prior_art": [
+      {
+        "title": "Quaternionic Perfect Sequences and Hadamard Matrices",
+        "paperId": "3a6ce978f1717d149e7e4d6d8fe0e6ff857d93b8"
+      },
+      {
+        "title": "Perfect Sequences and Arrays over the Unit Quaternions",
+        "paperId": "278d6d8081ada7cb58b965accd65196059cc2ecd"
+      },
+      {
+        "title": "A 64-modular Hadamard matrix of order 668",
+        "paperId": "ajc_v93_p422"
+      }
+    ],
+    "novelty_claim": "The novelty is a measured projection-and-repair pipeline from quaternionic latent space into real 668 candidate space, not a claim that quaternionic theory already solves the real case.",
+    "differentiation": "Prior quaternionic work stays inside quaternionic sequence families. Here those families only serve as proposal generators for a real-domain search with explicit downstream repair and filtering.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/009_quaternionic_shadow_decoder",
+      "prototype_root": "experiments/quaternionic_shadow_decoder",
+      "prototype_files": [
+        "quaternion_sampler.py",
+        "shadow_maps.py",
+        "repair_loop.py",
+        "enrichment_eval.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "sat_user_propagator_ca",
+    "description": "Couple a CA proposal engine with SAT+CAS user propagators that learn forbidden local motifs. Unsat cores from the exact layer are translated back into penalties on CA neighborhoods, closing the loop between symbolic proof and local dynamics.",
+    "domains": [
+      "SAT/SMT",
+      "computer algebra",
+      "cellular automata"
+    ],
+    "mathematical_formalization": "Let z_t be compressed block tokens and z_{t+1} = f(z_t) be a CA update. An exact verifier V(z) returns extendable or a conflict core C; learn local penalties lambda_C so later updates minimize E_local(z) + sum_C lambda_C * 1[C subset z].",
+    "analogical_connections": [
+      "Clause learning as rule shaping.",
+      "Nogoods as forbidden CA motifs.",
+      "Exact proof objects used as local training signals."
+    ],
+    "implementation_hypothesis": "Build a compressed tokenization of block states, integrate a user-propagator SAT solver, and feed extracted unsat motifs back into CA rule weights or rejection masks.",
+    "experiment_seed": "Recover known Williamson or good-matrix instances, then measure whether learned motifs improve throughput on the 167-length obstruction or on modular-seed refinement.",
+    "closest_prior_art": [
+      {
+        "title": "Applying Computer Algebra Systems with SAT Solvers to the Williamson Conjecture",
+        "paperId": "ac46aa30dbbe83df90f792216d8f31a278170267"
+      },
+      {
+        "title": "Enumeration of Complex Golay Pairs via Programmatic SAT",
+        "paperId": "909616c0a3c4d05d30f4090785f4d87d6248109b"
+      },
+      {
+        "title": "A SAT+CAS Approach to Finding Good Matrices: New Examples and Counterexamples",
+        "paperId": "f0da7cd59959010936975efce768a87cfa190c00"
+      }
+    ],
+    "novelty_claim": "The exact layer does more than certify or reject: it shapes the local CA dynamics by returning reusable forbidden motifs.",
+    "differentiation": "Standard SAT+CAS work uses fixed encodings and static pruning. This concept turns exact conflicts into online updates of a local proposal process.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/010_sat_user_propagator_ca",
+      "prototype_root": "experiments/sat_user_propagator_ca",
+      "prototype_files": [
+        "token_encoding.py",
+        "user_propagator.py",
+        "core_to_motif.py",
+        "online_rule_update.py"
+      ]
+    }
+  },
+  {
+    "symbolic_name": "convolution_slice_ca",
+    "description": "Represent the 167/80 search state as a field of local convolution contributions instead of raw support bits. Each site stores how much it over- or under-contributes to nearby cyclic shifts, and a conservative CA routes this debt around the cycle with local swaps.",
+    "domains": [
+      "signal processing",
+      "additive combinatorics",
+      "cellular automata"
+    ],
+    "mathematical_formalization": "For a support x subset Z_167, define contribution tensor A_i(k) = x_i x_{i+k} and slice debts delta(k) = sum_i A_i(k) - tau_k. Maintain local liabilities ell_i(K) = sum_{k in K} w_k (A_i(k) - tau_k/167), then choose local swaps minimizing nearby ell_i while conserving |x|.",
+    "analogical_connections": [
+      "Load balancing on a ring.",
+      "Residual-network flow for cyclic convolution deficits.",
+      "Signal-processing residuals made CA-local."
+    ],
+    "implementation_hypothesis": "Maintain incremental convolution tables so each local swap updates only a small liability neighborhood, then use either deterministic CA rules or a CA-guided beam search over liabilities.",
+    "experiment_seed": "Compare liability-driven swaps, plain random local moves, and direct recomputation on smaller cyclic test cases and then on the exact 167/80 target.",
+    "closest_prior_art": [
+      {
+        "title": "Convolution numbers: the cyclic case",
+        "paperId": "af20a0b3ccef66fad2a0a1e9f11011eb99194784"
+      },
+      {
+        "title": "Density classification performance and ergodicity of the Gacs-Kurdyumov-Levin cellular automaton model IV",
+        "paperId": "41ce7a3f00efd1be36d2d864667ce6b159168c91"
+      },
+      {
+        "title": "Quantum computing formulation of some classical Hadamard matrix searching methods and its implementation on a quantum computer",
+        "paperId": "1fd50d1147b7684686e533886b44a9e92ac2e807"
+      }
+    ],
+    "novelty_claim": "This defines a CA-native local state built directly from the exact cyclic equations, so the automaton sees meaningful local debt instead of blind bits.",
+    "differentiation": "The cyclic reduction in prior work is global. This concept localizes that obstruction into per-site liabilities suitable for conservative CA dynamics.",
+    "folder_plan": {
+      "artifact_folder": "results/concept_evolve/tree/011_convolution_slice_ca",
+      "prototype_root": "experiments/convolution_slice_ca",
+      "prototype_files": [
+        "convolution_tables.py",
+        "liability_field.py",
+        "local_swap_rule.py",
+        "beam_driver.py"
+      ]
+    }
+  }
+]
