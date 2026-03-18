@@ -1,41 +1,34 @@
 # Verification Summary
 
-Review phase: `review_round_1`
+Verification phase: `post_deepen`
 
 ## Decision
 
 Current work should: `REVISE`
 
-The surviving contribution is narrow but real: a seeded falsification attempt on the published `64`-modular order-`668` frontier seed, under matched same-representation controls, with no `exact_hit` and no improvement over the seed objective `13/2880/512`.
-
-The current package should not be accepted in its present framing as a new CA repair method, an order-`668` frontier advance, or a publication-grade benchmark. Choose `DEEPEN` only if the team wants to preserve stronger mechanism, robustness, or competitiveness claims after the rewrite below.
+The package is not ready for `ACCEPT` in its current framing. The defensible core is narrower: an exact checked-class depth-1 locality barrier on Eliahou's canonical order-`668` frontier seed, a first certified depth-2 retained-cone escape to `13/2744/480`, lag/orbit repackagings of that same escape, and a negative population result. Choose `DEEPEN` only if the team wants to keep stronger claims about CA competitiveness, transfer, or independent mechanism discovery.
 
 ## Must-Fix Issues
 
-- Reframe `H1` as a negative-result / falsification scaffold. Remove or narrow claims of material CA-method novelty, frontier advance, or broad competitiveness.
-- Keep exactness statements explicitly negative: no exact witness, no proof artifact, and no improvement over the published seed objective `13/2880/512`.
-- Repair the literature-positioning section at `research_paper.tex:115-127`. Add clause-level citations or label the comparison language as author synthesis instead of direct source support.
-- Rewrite or re-cite interpretation-heavy passages at `research_paper.tex:123`, `research_paper.tex:624`, `research_paper.tex:650-655`, `research_paper.tex:686-698`, and `research_paper.tex:702`. The current wording overstates support for novelty narrowing, runtime causality, structural diagnosis, representation advice, and AI-pipeline generalization.
-- Replace derivative and circular evidence chains. Use direct artifacts as first-line support instead of the verification memos wherever possible.
-- Promote direct artifacts near every load-bearing quantitative claim: `results/frontier/order_668_64m/seed_manifest.json`, `results/frontier/order_668_64m/source_excerpt.txt`, `results/experiments/order_668_64m/summary.json`, `results/experiments/controls/summary.json`, `results/analysis/frontier_locality_scan.json`, `results/branches/H1_frontier_sensitivity_probe.json`, `results/verification/benchmark_gate.md`, `hadamard_ca/harness.py`, and `hadamard_ca/h1_ca.py`.
-- Correct cited bibliography metadata before final assembly. At minimum fix `tsompanas2017`, `mariot2019_mols`, and `artacho2013`, and keep unvalidated watchlist entries out of the manuscript.
-- Limit benchmark language to what the saved pack actually proves: one canonical seed, one RNG seed, `evaluation_budget = 80`, requested `restart_count = 3` with unequal executed restart coverage, and a narrow same-representation roster. Do not claim restart robustness, seed robustness, mechanism diagnosis, full auditability, or literature-level competitiveness.
-- Keep `H2` blocked until a family-leakage audit artifact exists. If it collapses into Goethals-Seidel / Williamson / Turyn / cocyclic / block-circulant search, relabel it as optimizer-over-known-family or reject it.
-- Keep `H3` reserve-only until direct CA-design overlap has been explicitly cleared in the literature framing.
+- Rewrite the manuscript around the narrow surviving contribution above. Remove or sharply qualify claims that the post-H1 branches establish a new CA Hadamard-search family, three independent confirmations, broad locality failure, or out-of-sample orbit transfer.
+- State the scope explicitly everywhere it matters: the barrier is seed-specific and limited to the checked actuator class; the positive retained-branch results all reuse the same retained nine-action library and converge to the same certified depth-2 escape (`[3,7]`, state `53`, objective `13/2744/480`).
+- Fix the retained-graph benchmark defect. Either add an explicit exhaustive/oracle report for the saved `512`-state retained graph (optimum, optimal states, shortest paths, non-CA baseline) or remove any language implying benchmark-grade mechanism or competitiveness claims.
+- Remove leakage-sensitive benchmark language unless the experiments are rerun cleanly. The current ladder is method-selected, the retained library is target-tuned to the evaluation seed, orbit training includes `barrier_ladder_01` through `barrier_ladder_04`, and population tuning is done on the same frontier family it later evaluates.
+- Rephrase the `cellar automata` claim as a repository-interpretation statement instead of a literature fact.
+- Add clause-level citations in the comparison-heavy related-work paragraphs instead of relying on broad synthesis sentences.
+- Add `\citep{eliahou2025_64mod668}` at each point where seed provenance is reused, including the decoded seed, recovered exceptional coefficients, figure caption, and canonical frontier experiment setup.
+- Cite external method and family terms if they remain in the manuscript, especially `Gumbel-softmax`, `self-organizing` / `self-stabilizing`, and the Williamson / Turyn / Goethals-Seidel / block-circulant / cocyclic family names.
+- Fix or narrow unsupported comparison wording, especially the orbit figure claim that it "matches or exceeds the same outcomes with far fewer lookups."
+- Replace weak artifact references with the actual supporting outputs for quantitative claims. In particular, point orbit training claims at the saved training manifest, point population robustness claims at the saved summary and phase map, and export the `56`-cone count into a saved artifact if it remains in the paper.
+- Clean bibliography metadata before final assembly, especially `suksmono2024` if it is kept in the manuscript.
 
 ## Optional Improvements
 
-- Run matched CA-mechanism ablations on the same controls and frontier seed: full H1 vs zero-coupling, zero-refractory, scorer-only, and fallback-disabled variants.
-- Add a harder control ladder with multi-flip, higher-support, and longer-length q/s controls closer to the frontier defect geometry; add random-walk and recoverability/oracle anchors on the tiny solved controls.
-- Replicate the frontier batch across multiple RNG seeds, equal executed restart coverage or fixed per-restart budgets, budget sweeps, restart-perturbation sweeps, and nearby q/s perturbations of the canonical seed.
-- Add actuator-basis and multi-packet activation ablations before claiming locality failure or representation-level failure.
-- Repair artifact auditability with per-restart terminal summaries, explicit `output_semantics`, stronger trace semantics, and code/config/seed digests sufficient for third-party reconstruction.
-- Add profiling and failure-clustering analysis only if the paper needs a causal runtime or mechanism story; otherwise keep those points labeled as interpretation.
+- Add depth-matched non-CA baselines, budget sweeps, randomized tie-breaking checks, and a fresh held-out frontier perturbation suite that is independent of the retained-library construction pipeline.
+- Freeze the retained library off-target, train orbit on controls only or leave-one-ladder-state-out, and choose the population operating point on a separate validation split.
+- Expand H1 only if the team still wants mechanism claims: CA-off ablations, equal restart exposure, harder controls, nearby frontier perturbations, and one H1 variant that can schedule the certified depth-2 retained hyperedge.
+- Extend runtime and provenance auditing to the post-deepen branches and add richer per-seed or per-trace reporting, especially for population and H1 diffusion analysis.
 
-## Recommended Next Step
+## Recommended Path
 
-Revise the manuscript and verification framing now.
-
-If the goal is a narrow negative-result package, stop after the rewrite.
-
-If the goal is to preserve broader method or benchmark claims, deepen only the specific missing evidence tracks above, starting with `H1` CA-off ablations, restart-robust replication, and `H2` family-leakage clearance.
+Revise now rather than reopening a broad search pass. The shortest path to an acceptable package is to frame hypergraph, lattice-gas, and orbit as analyses or replays of one certified retained-cone counterexample, keep population as a negative result, and cut benchmark or transfer language that the current evidence does not carry. If stronger method claims still matter after that rewrite, switch to a targeted `DEEPEN` pass focused on the retained-graph oracle, leakage-free evaluation, and depth-matched baselines.

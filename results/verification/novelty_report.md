@@ -1,203 +1,225 @@
 # Novelty Report
 
+Verification phase: `post_deepen`
+
 ## Scope
 
-This review-round-1 novelty check reads the current claim surface from:
+This pass reads the required context files plus the live post-H1 paper and code artifacts:
 
-- `research_paper.tex`
-- `results/writeup/claims_table.md`
-- `results/writeup/methods_brief.md`
-- `results/branches/H1_defect_syndrome_ca_64m.md`
-- `results/branches/H1_precheck.md`
-- `results/branches/H2_gate.md`
-- `results/branches/H3_gate.md`
-- `results/experiments/order_668_64m/summary.md`
-- `results/experiments/order_668_64m/summary.json`
-- `results/experiments/controls/summary.md`
-- `results/analysis/frontier_locality_scan.md`
-- `results/analysis/prior_work_comparison.md`
+- `results/research_context.md`
 - `results/literature/prior_art_watchlist.md`
 - `results/literature/prior_art_gap.md`
 - `results/swarm/director_brief.md`
-- `results/verification/benchmark_report.md`
-- `results/verification/verification_summary.md`
+- `research_paper.tex`
+- `results/writeup/claims_table.md`
+- `results/writeup/methods_brief.md`
+- `results/branches/H_causal_cone_hypergraph_ca_668.md`
+- `results/branches/H_defect_charge_lattice_gas_167.md`
+- `results/branches/H_orbit_quotient_ca_668.md`
+- `results/branches/H_population_self_stabilizing_ca_668.md`
+- `results/experiments/order_668_hypergraph_ca/summary.md`
+- `results/experiments/order_668_lattice_gas/summary.md`
+- `results/experiments/order_668_orbit_ca/summary.md`
+- `results/experiments/order_668_population_ca/summary.md`
+- `results/verification/radius_limited_locality_barrier.md`
+- `results/verification/family_leakage_audit.md`
 - `hadamard_ca/h1_ca.py`
-- `hadamard_ca/harness.py`
+- `hadamard_ca/retained_state_graph.py`
+- `hadamard_ca/lag_lattice_gas.py`
+- `hadamard_ca/orbit_ca.py`
+- `hadamard_ca/population_ca.py`
+- `scripts/run_hypergraph_ca.py`
+- `scripts/run_orbit_ca.py`
 
-Primary named prior-art anchors available in-repo:
+Closest literature anchors used in this comparison:
 
 - Eliahou, *A 64-Modular Hadamard Matrix of Order 668* (2025)
-- Tsompanas et al., *Cellular Automata Applications in Shortest Path Problem* (2017)
+- Tsompanas et al., *Cellular Automata Applications in Shortest Path Problem* (2018 chapter / 2017 preprint line)
 - Suksmono, *Finding a Hadamard Matrix by Simulated Quantum Annealing* (2018)
 - Suksmono and Minato, *Finding Hadamard Matrices by a Quantum Annealing Machine* (2019)
 - Bright et al., *The SAT+CAS method for combinatorial search with applications to best matrices* (2019)
-- Artacho, Borwein, and Tam, *Douglas-Rachford feasibility methods for matrix completion problems* (2013)
-- Mariot et al., *Mutually orthogonal latin squares based on cellular automata* (2019)
+- Mariot et al., *Mutually Orthogonal Latin Squares Based on Cellular Automata* (2020)
 - Gadouleau, Mariot, and Picek, *Bent Functions from Cellular Automata* (2020)
+- self-organizing / neural CA line, represented here by Sudhakaran et al., *Goal-Guided Neural Cellular Automata* (2022)
 
 ## Overall Assessment
 
-The claimed contribution is only narrowly distinct from prior art.
+The claimed contribution is materially distinct from prior art only after narrowing.
 
-What survives as materially distinct is not a new CA repair method for order `668`, and not a Hadamard-frontier advance. What survives is a seeded falsification attempt on top of Eliahou's 2025 order-`668` frontier object, run under one shared same-representation benchmark pack, with a direct negative result.
+What survives as genuinely distinct is:
 
-The strongest novelty constraint is Eliahou (2025), because the entire order-`668` branch inherits its seed, compact q/s representation, and defect profile from that paper. The strongest method-shape constraint is Tsompanas et al. (2017), because it is real prior art for CA as a local search or propagation mechanism. The strongest exactness ceiling is Bright et al. (2019), because it represents certificate-rich exact combinatorial search, which the present branch does not approach.
+- a seed-specific exact barrier/counterexample result on top of Eliahou's published `64`-modular order-`668` frontier object, and
+- an honest negative robustness result for the population branch.
 
-## Claim-By-Claim Assessment
+What does **not** yet survive cleanly as a materially distinct method contribution is the stronger claim that the post-H1 hypergraph, lattice-gas, and orbit branches establish a new CA-style Hadamard search family. Those branches reuse one tiny retained nine-action library, one retained-state graph, one favorable perturbation ladder, and mostly compare pair-capable methods against single-action baselines. That is enough to support a narrow structural result. It is not yet enough to support a broad "distinct CA method" or "transfer/generalization" claim.
 
-### 1. Claim: operating on the order-668 frontier object is itself a materially novel contribution
+## Major Claim Checks
 
-- Closest paper or line of work:
-  - Eliahou, *A 64-Modular Hadamard Matrix of Order 668* (2025)
+### 1. Seeded order-668 frontier work
+
+- Closest paper or line:
+  - Eliahou (2025)
+  - Suksmono (2018, 2019) as the closest direct Hadamard-search heuristic line
 - Assessment:
-  - Weakly distinct at best.
-  - The repo does not contribute a new seed, a new modular construction, or a new exact order-`668` witness.
-  - The distinct part is downstream experimentation on a published frontier object, not the frontier object itself.
+  - Not novel by itself.
+  - The repo contributes no new order-`668` seed, no exact witness, and no exact improvement over the published seed.
 - Concrete overlap signals:
-  - `results/frontier/order_668_64m/seed_manifest.json` and `results/frontier/order_668_64m/source_excerpt.txt` show the canonical q/s seed and the `13` exceptional coefficients come directly from Eliahou's paper.
-  - `results/writeup/claims_table.md` already limits the provenance claim to "anchored to the published 64-modular near-solution."
-  - `results/experiments/order_668_64m/summary.json` shows no exact improvement over the published seed objective `13 / 2880 / 512`.
-- Novelty verdict for this claim:
-  - Distinct only as a seeded test harness on top of the 2025 frontier object.
+  - The canonical q/s seed and the `13` exceptional coefficients come directly from the Eliahou frontier object.
+  - All successful branches still end at a non-exact state `13/2744/480`, not at an exact Hadamard witness.
+- Surviving claim:
+  - Distinct only as downstream experimentation on top of the published near-solution.
 
-### 2. Claim: `H1_defect_syndrome_ca_64m` is a materially distinct CA repair method
+### 2. H1 as a CA repair method
 
-- Closest paper or line of work:
-  - Tsompanas et al. (2017) for CA-as-search methodology
-  - Suksmono (2018, 2019) for heuristic Hadamard search on the same broad objective class
+- Closest paper or line:
+  - Tsompanas et al. for CA-as-search methodology
+  - Suksmono (2018, 2019) for heuristic Hadamard search
 - Assessment:
-  - This is the weakest differentiation point.
-  - H1 is distinct only as a narrowly framed seeded hypothesis, not as an earned method contribution after execution.
-  - In the executed code path, the CA framing is weakened by exact global packet scoring over the whole packet basis before local coupling is applied.
+  - H1 survives as a valid negative control, not as a materially distinct CA method contribution.
 - Concrete overlap signals:
-  - `hadamard_ca/h1_ca.py` computes exact packet deltas in `_packet_delta_vector(...)` and scores all `334` packets in `_packet_pressures(...)` before `_coupled_pressure(...)` and `_select_packets(...)` add neighborhood and refractory behavior.
-  - `results/branches/H1_precheck.md` explicitly warns that H1 collapses into generic local search if it becomes "exact per-packet move scoring over all `334` packets" with CA terms acting mainly as tie-breakers.
-  - `results/analysis/frontier_locality_scan.md` reports `0` improving packets, `1` neutral packet, `333` worsening packets, and median changed-lag footprint `51 / 166`, which means the one-packet actuator basis is syntactically local but nonlocal in effect.
-  - `results/verification/benchmark_report.md` notes there is no CA-off or scorer-only ablation, so the current pack does not isolate whether CA-specific coupling matters.
-- Novelty verdict for this claim:
-  - Weakly differentiated and not yet material.
-  - The honest label is closer to "seeded local-search falsification scaffold with CA vocabulary" than to "new CA repair method."
+  - `hadamard_ca/h1_ca.py` still computes exact per-packet deltas over all `334` packets before coupling and refractory logic are applied.
+  - The benchmark pack still lacks matched CA-off ablations on the same frontier seed.
+  - The saved H1 batch remains one canonical seed, one RNG seed, and narrow restart coverage.
+- Surviving claim:
+  - "Seeded CA falsification scaffold" is defensible.
+  - "New CA repair method for order 668" is not.
 
-### 3. Claim: H1 advances the exact order-668 frontier
+### 3. Exact depth-1 locality barrier and first depth-2 counterexample
 
-- Closest paper or line of work:
-  - Eliahou (2025) for the actual frontier object
-  - Bright et al. (2019) for the exact-search / certification standard
+- Closest paper or line:
+  - Bright et al. (2019) and the broader exact combinatorial-search / certification line
 - Assessment:
-  - Not supported.
-  - The executed branch contributes no exact witness, no proof artifact, and no best-objective improvement over the published seed.
+  - This is the strongest real novelty in the package.
+  - It is materially distinct if phrased narrowly: an exact checked-class barrier plus the first certified escape on one published frontier seed.
 - Concrete overlap signals:
-  - `results/experiments/order_668_64m/summary.md` records `exact_hit = false` for every saved method.
-  - The same artifact reports H1 best objective `13 / 2880 / 512`, identical to the seed.
-  - H1's terminal restarts move to `33 / 2368 / 384`, `40 / 2356 / 408`, and `23 / 2216 / 384`, which means lower magnitude only after support diffusion beyond the seed support `13`.
-  - `results/verification/verification_summary.md` already requires exactness statements to remain explicitly negative.
-- Novelty verdict for this claim:
-  - No material distinctness as a frontier advance.
-  - The contribution is negative evidence about one failed repair branch, not progress on the existence question.
+  - The barrier checker explicitly certifies no improvement among all `334` one-packet moves, all `55,611` unordered two-packet moves, and all `9` retained composites.
+  - The first certified escape is a radius-`1`, depth-`2` retained cone ending at `13/2744/480`.
+- Weak differentiation:
+  - The theorem is seed-limited and actuator-class-limited.
+  - "Locality barrier" is safe only when immediately qualified as "in the checked class on the canonical seed."
+- Surviving claim:
+  - Acceptable as a narrow barrier/counterexample theorem.
 
-### 4. Claim: the saved benchmark supports a broader method or competitiveness claim
+### 4. Hypergraph CA as a new method win
 
-- Closest paper or line of work:
-  - Suksmono (2018, 2019)
-  - Bright et al. (2019)
-  - Artacho et al. (2013) as a non-CA matrix-feasibility comparator
+- Closest paper or line:
+  - Tsompanas et al. for CA-for-search shape
+  - graph / hypergraph local-neighborhood search over precomputed move libraries
 - Assessment:
-  - Not supported.
-  - The saved pack is fair enough for internal branch elimination, but too narrow for any broader literature-level method claim.
+  - Weakly differentiated as a CA-method claim.
+  - Stronger as evidence that the retained graph contains an improving depth-2 local cone.
 - Concrete overlap signals:
-  - `results/verification/benchmark_report.md` limits the current evidence to one canonical seed, one RNG seed, budget `80`, and a same-representation roster.
-  - Executed restart coverage is unequal: H1 and stochastic hillclimb complete `3 / 3`, while greedy, tabu, and simulated annealing complete `1 / 3`.
-  - The only solved controls are the tiny deterministic `n = 5` and `n = 7` q0-flip cases.
-  - `results/writeup/claims_table.md` already states the benchmark is not evidence of competitiveness with annealing or SAT+CAS literature.
-- Novelty verdict for this claim:
-  - The benchmark can kill H1 continuation.
-  - It cannot support a materially distinct broad method claim.
+  - `scripts/run_hypergraph_ca.py` sets `lookup_budget = max(256, graph.lookup_cost_for_full_hypergraph_scan())`, so the canonical run is budgeted to sweep the full retained cone set.
+  - `_run_hypergraph_method(...)` scores every admissible 2-step cone and takes the global best improving cone.
+  - The comparison baselines in the same script (`pairwise_graph_ca`, `zero_coupling`, `zero_refractory`, `scorer_only`) are all `single_action`.
+  - The ladder itself is selection-conditioned: states are kept only if they have no immediate retained-action improvement but do have at least one improving 2-step cone.
+- Consequence:
+  - The current evidence supports "exact retained-cone counterexample exists and can be replayed by the hypergraph rule."
+  - It does **not** yet isolate a distinct CA mechanism from a same-library exhaustive 2-step scorer.
 
-### 5. Claim: `H2_lag_space_ca_167` is the next materially distinct novelty-bearing branch
+### 5. Lattice-gas branch as independent novelty
 
-- Closest paper or line of work:
-  - Structured-family Hadamard search: Williamson, Turyn, Goethals-Seidel, cocyclic, and block-circulant lines
+- Closest paper or line:
+  - lattice-gas / conservative CA line
+  - nearest in-package comparator is the same retained-cone counterexample already found by the hypergraph branch
 - Assessment:
-  - Unproven.
-  - H2 is only potentially distinct if it stays a lag-space locality experiment and survives the family-leakage audit.
+  - Moderately distinct as a representation-level reinterpretation.
+  - Weak as an independent search novelty claim.
 - Concrete overlap signals:
-  - `results/branches/H2_gate.md` explicitly says H2 must be rejected or relabeled if it collapses into Williamson, Turyn, Goethals-Seidel, cocyclic, or block-circulant search.
-  - `results/literature/prior_art_gap.md` already frames H2 as a possible optimizer-over-known-family failure mode.
-  - `results/verification/verification_summary.md` keeps H2 blocked until a family-leakage audit artifact exists.
-- Novelty verdict for this claim:
-  - Hypothetical only.
-  - No material distinctness has been earned yet.
+  - `hadamard_ca/lag_lattice_gas.py` uses the same retained graph and the same 2-step carrier cones once single actions are blocked.
+  - The branch reaches the same end state `13/2744/480` as hypergraph CA.
+  - Its controls (`lag_greedy_control`, `warning_field_control`) remain single-action only.
+  - The family-leakage audit is useful and important, but it only rules out collapse into a short list of known structured families; it does not prove an independently novel search space.
+- Surviving claim:
+  - "Lag-space reinterpretation of the same local escape" is defensible.
+  - "Second independent discovery of a new CA search mechanism" is too strong.
 
-### 6. Claim: `H3_spacetime_row_emission_ca` would open a fresh CA direction for Hadamard search
+### 6. Orbit quotient transfer and generalization
 
-- Closest paper or line of work:
-  - CA-based combinatorial-design construction, as represented here by:
-    - Mariot et al. (2019), mutually orthogonal Latin squares from CA
-    - Gadouleau, Mariot, and Picek (2020), bent functions from CA
+- Closest paper or line:
+  - symmetry-reduced / orbit-representative search in combinatorial optimization
+  - structured-family exact-search line as a ceiling for what "transfer" would need to mean rigorously
 - Assessment:
-  - High overlap risk.
-  - H3 is not fresh by default; it is the branch most exposed to direct CA-construction prior art.
+  - This is the most novelty-fragile positive claim.
+  - The compression idea is real, but the present transfer story is partly trained-on and partly selection-conditioned.
 - Concrete overlap signals:
-  - `results/branches/H3_gate.md` warns against overlap with linear bipermutive CA, orthogonal-array / Latin-square pipelines, and bent-function / MUB-style constructive regimes.
-  - `research_paper.tex` already cites `mariot2019_mols` and `gadouleau2020` to rule out any broad claim that CA are new in combinatorial design.
-  - `results/swarm/director_brief.md` and `results/swarm/explorer_alignment_note.md` both keep H3 reserve-only because it is novelty-fragile.
-- Novelty verdict for this claim:
-  - Not materially distinct on the present evidence.
-  - Reserve-only is the correct status.
+  - `results/experiments/order_668_orbit_ca/training_manifest.json` shows the rule table was trained not only on controls but also on four frontier perturbation states from the same ladder.
+  - `scripts/run_orbit_ca.py` evaluates orbit representatives built from single actions **and** 2-step carriers, but compares them to `raw_coordinate_baseline` and carried-over `scorer_only` runs that are both single-action only.
+  - The perturbation suite is inherited from the hypergraph ladder, which was already filtered to contain improving 2-step cones.
+- Consequence:
+  - The current evidence supports "the same retained counterexample family can be compressed into orbit signatures and replayed on the curated ladder."
+  - It does **not** yet support a strong generalization or holdout-transfer claim.
+
+### 7. Population self-stabilization
+
+- Closest paper or line:
+  - self-organizing / neural CA line, represented here by Sudhakaran et al. (2022)
+- Assessment:
+  - Low novelty-inflation risk, because this branch fails honestly.
+  - It does not establish a self-organization advantage over zero-coupling.
+- Concrete overlap signals:
+  - Coupled and zero-coupling medians tie on the canonical seed and across the ladder.
+  - The coupled branch records zero strict ladder wins over zero-coupling.
+- Surviving claim:
+  - "Population self-stabilization does not separate from zero-coupling in the saved regime" is supported.
 
 ## Strongest Novelty Illusions
 
-- "Cellular automata are new for Hadamard matrices."
-  - Not defensible against Tsompanas-style CA-as-search work and CA-based design-generation work such as `mariot2019_mols` and `gadouleau2020`.
+- "Cellular automata are new for Hadamard search."
+  - Not defensible against Tsompanas-style CA-for-search work or CA-based combinatorial-design work such as Mariot et al. and Gadouleau et al.
 
-- "H1 is genuinely local because it uses lag masks and packet neighborhoods."
+- "The post-H1 branches are three independent confirmations."
   - Weak.
-  - The code still performs exact all-packets scoring first, and the locality scan shows large lag footprints per one-packet move.
+  - Hypergraph, lattice-gas, and orbit all reuse the same retained nine-action library and land on the same six-packet target state.
 
-- "Lower `l1` or `max_abs` means H1 is advancing the frontier."
-  - False in the current run.
-  - H1 lowers those values only by diffusing support above the seed support and never improves the seed's lexicographic objective.
+- "The hypergraph branch proves a distinct CA mechanism."
+  - Weak in the current implementation.
+  - The canonical run is effectively a full retained-cone sweep with global best-cone selection, while the baselines are single-action only.
 
-- "Using the 2025 frontier seed is itself a new method contribution."
+- "The orbit branch proves out-of-sample transfer."
   - Weak.
-  - The seed belongs to Eliahou (2025); the repo contributes only a seeded test and falsification scaffold on top of it.
+  - The rule table excludes the canonical seed, but it is trained on four frontier-neighbor ladder states from the same curated perturbation family.
 
-- "A representation change automatically creates novelty."
+- "The barrier proves locality is fake in general."
+  - Too broad.
+  - What is certified is a barrier for the explicit checked actuator class on the canonical seed.
+
+- "The family-leakage audit by itself establishes broad novelty."
   - False.
-  - H2 can collapse into optimizer-over-known-family, and H3 can collapse into known CA-construction lines.
+  - It rules out several important structured-family collapses, but it does not by itself prove a new search family.
 
-- "The matched pilot shows broader method competitiveness."
-  - False.
-  - The pack supports branch elimination, not literature-scale comparison.
+## Weak Differentiation and Missing Gap Evidence
 
-## Missing Gap Evidence
+- Missing same-library 2-step non-CA baseline.
+  - This is the biggest gap for the positive post-H1 branches.
+  - The current comparisons mostly test pair-capable methods against single-action baselines.
 
-- CA-mechanism ablation is missing.
-  - There is no direct comparison of full H1 against zero-coupling, zero-refractory, scorer-only, or fallback-disabled variants.
-  - Without that, the CA-specific mechanism claim is unearned.
+- Missing unbiased perturbation suite.
+  - The ladder is built from structural-barrier states that already contain improving 2-step cones.
+  - That is useful for mechanism diagnosis, but weak for generalization claims.
 
-- Actuator-basis evidence is missing.
-  - The one-packet basis looks frozen, but there is no matched alternative-basis experiment proving the failure is representation-level rather than rule-level.
+- Missing holdout evaluation for orbit transfer.
+  - Leave frontier perturbations out of training, then test on a fresh nearby-seed suite not selected by the improving-cone filter.
 
-- H2 family-leakage evidence is missing.
-  - The guardrail exists, but no executed audit artifact exists yet.
+- Missing alternative local actuator family.
+  - The retained library is deliberately tiny.
+  - Without at least one slightly larger or differently constructed local family, the barrier can be misread as more general than it is.
 
-- H3 overlap evidence is under-surfaced in the written watchlist.
-  - The strongest H3 prior-art pressure comes from CA-design construction, but `results/literature/prior_art_watchlist.md` is still dominated by lexical noise rather than those direct overlap lines.
+- Missing post-H1 claim inventory discipline.
+  - `results/writeup/claims_table.md` is still mostly H1-scoped while the manuscript now foregrounds barrier, hypergraph, lattice-gas, orbit, and population claims.
 
-- Robustness evidence is missing.
-  - The novelty case rests on one frontier seed, one RNG seed, and tiny solved controls.
-  - There is no seed-robustness or perturbation evidence strong enough to support a wider method claim.
+- Missing literature-positioning precision.
+  - The narrow novelty framing is mostly correct, but still lives too much in author synthesis rather than one explicit prior-art gap table.
 
-- Exactness / certification evidence is missing.
-  - There is no exact order-`668` witness and no proof artifact, so the work remains far from the exact-search standard represented by Bright et al. (2019).
+## Bottom Line
 
-## Surviving Contribution
+The materially distinct contribution is **not** "cellular automata solve or substantially advance Hadamard order 668." It is narrower:
 
-The only contribution that remains materially distinct after the closest-prior-art comparison is:
+- an exact checked-class barrier on the published order-`668` frontier seed,
+- the first certified retained-cone local counterexample crossing that barrier,
+- a lag-space reinterpretation and an orbit-signature compression of the same escape,
+- and an honest negative result for the population robustness story.
 
-- a seeded CA falsification attempt on the published `64`-modular order-`668` frontier object, under matched same-representation non-CA controls, with a direct negative result
-
-That is a real contribution because it closes off one concrete branch honestly. It is not a distinct CA repair method contribution, not a frontier advance, and not a broad CA-for-Hadamard novelty claim.
+If the paper is rewritten around that narrow barrier/counterexample contribution, the novelty case is defensible. If it insists on stronger claims about a new CA method family, independent branch confirmation, or orbit-level transfer/generalization, the present evidence is still too thin.
 
 VERDICT: REVISE
