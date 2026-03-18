@@ -9,6 +9,7 @@ from .seed import (
     published_frontier_sequences,
     published_frontier_validation,
 )
+from .h1_ca import defect_syndrome_ca_search
 from .harness import SearchConfig, SearchResult, evaluate_state, objective_summary, run_harness
 
 __all__ = [
@@ -17,6 +18,7 @@ __all__ = [
     "FRONTIER_PDF_URL",
     "SearchConfig",
     "SearchResult",
+    "defect_syndrome_ca_search",
     "evaluate_state",
     "gs_matrix",
     "objective_summary",
