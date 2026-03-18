@@ -2,7 +2,7 @@
 
 ## Audit Provenance
 
-This audit was intended to use the `benchmark_auditor`, `explorer`, and `integrator` roles. A partial child artifact landed as `results/verification/benchmark_inputs_note.md`, but the full role round did not return the complete audit pack and local `codex exec` child launches were blocked by policy, so the audit below is the direct integrated review over the required local files plus that partial note.
+This benchmark audit used one targeted child-agent round with the `explorer`, `benchmark_auditor`, and `integrator` roles. The explorer returned `results/verification/benchmark_inputs_note.md`, and draft verification files landed on disk before the remaining child sessions were interrupted. The spec below is the researcher-side synthesis over those child artifacts plus a direct read of the local implementation and smoke-run outputs.
 
 ## Approval Status
 
@@ -32,6 +32,7 @@ This audit was intended to use the `benchmark_auditor`, `explorer`, and `integra
 - The shared restart diversification knob is also matched: `restart_packet_flips = 2`.
 - Method-specific parameters (`tabu_tenure`, annealing temperature/cooling, stochastic sample size) change the move policy but do not change the accounting cap.
 - Actual objective evaluations consumed before early stop are reported per run through the harness field `objective_evaluations`. This is the correct comparison field for later experiments, together with `wall_seconds`.
+- Accounting caveat: `hadamard_ca.search._search_over_restarts(...)` evaluates the seed once before the restart loop and each runner evaluates its own start state again. This adds one uniform setup evaluation beyond the minimal count, but it applies equally across the present baselines and should be kept fixed for H1 rather than changed between methods.
 
 ## Restart Comparability
 
