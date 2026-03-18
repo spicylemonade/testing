@@ -1,52 +1,61 @@
 # Hypothesis Negative Space
 
-The local watchlist and gap file for this run are malformed, `results/swarm/director_brief.md` is absent, and there are no existing ConceptEvolve artifacts for this task. This memo therefore uses the actual arithmetic-Kakeya landscape rather than the auto-generated prior-art list.
+This refresh supersedes the stale earlier draft. It is grounded in the current repo state: `results/research_context.md`, `results/literature/prior_art_gap.md`, `results/literature/gap_frontier.md`, `results/swarm/director_brief.md`, `results/concept_evolve/*`, `results/swarm/falsifier.md`, and the benchmark / novelty audits.
 
-Explored families to avoid:
-- Classical sums-differences / arithmetic-projection reformulations as the main novelty claim.
-- Another small hand-built Katz-style gadget or a minor tweak of the known `11/6` and `7/4` constructive witnesses.
-- Large-dilate / many-slope constructions aimed directly at the current FrontierMath frontier near `1.67513...`.
-- Bounded-slope or rational-complexity programs on their own; recent work points that regime back toward exponent `2`, not toward the target.
-- Generic AlphaEvolve-style black-box search on related sums/differences constants without proof-aware state.
+Constraint that does not move:
+- Do not spend real search budget until a shared exact integer decoder / verifier for six-line witnesses is recovered or implemented. Every direction below is only admissible under exact decode, no repair, label-shuffle controls, and decoder-matched baselines.
 
-Explicit pivot:
-- I am not keeping a "moderate-`X` certificate curriculum" as a primary direction. It overlaps too strongly with bounded-slope / rational-complexity work unless it develops a clearly different invariant, so it is a branch to kill early rather than polish.
+Solution families to avoid repeating:
+- Re-proposing `H1` itself as the main negative-space story. It is already the champion lane and heavily analyzed.
+- Re-proposing `H2` sparse defects as the default next branch. It remains backup only, not fresh negative space.
+- Observer-guided macrocells, neural CA, reversible / glider libraries, flow-firing / odometer proxies, number-conserving current screens, and modular-shadow-first curricula. These are retired or explicitly deprioritized unless new exact evidence appears.
+- Any fixed-small-alphabet or bounded-slope story that cannot survive complexity sweeps and `X`-label shuffling.
 
-## 1. Symbolic Forcing-Front Graph CA
+## 1. Spatially Coupled Exact-Certificate Ladders
 
-- Gap attacked: prior work treats the witness mainly as a finished graph or a hand-designed recursive gadget. But the verifiable setup is already a product grid with local forcing rules, and that local-dynamics view has not been the main search object.
-- Hypothesis: encode each vertex as a CA cell whose state stores exact symbolic span data for the relations currently available there, together with a flag for whether `(1,-1)` is derivable. Search for a translation-invariant update rule that adds edge labels and glue decisions only when they improve forced-vertex density faster than edge count. The same local rule can then be reused across many grid sizes.
-- Why this is negative space: it is neither another explicit small graph nor full-program evolution over arbitrary witness code. It uses the verifier's product-grid structure as the inductive bias.
-- First test: fix a small valid alphabet `X` and search over CA rules on `d1 x d2` and `d1 x d2 x d3` grids, scoring by exact verifier output `S(X,G,R,T)` and by forced-vertex growth per nonzero edge. Compare against random local search and a naive whole-graph evolutionary baseline.
-- Derivative risk: medium.
-- Closest overlap: this becomes generic evolutionary search on adjacent sums/differences tasks if the CA state is only numeric or heuristic.
-- Pivot if needed: require each CA transition to preserve exact symbolic rank data, so the rule learns reusable forcing templates rather than merely mutating witnesses.
-- Angle to avoid: do not repackage this as a plain image-style neural CA or a generic AlphaEvolve loop over whole graph encodings.
+- Gap attacked:
+  Prior work can describe or search for local witness gadgets, but it has not actually tested whether exact singleton-certificate templates can be coupled into a stable forcing wave on larger product grids. This is the scaling gap, not the local-generation gap.
+- Hypothesis:
+  Start from tiny exact-valid micro-gadgets and treat them as CA macrocells on stage-indexed slabs. Add only narrow exact interface channels between adjacent slabs so a small boundary seed launches a monotone forcing wave across the ladder. If the coupling is real, the exact score density should beat uncoupled repetition at matched `m(G)+|R|`.
+- Why this is negative space:
+  It attacks what earlier branches could not scale, while avoiding the already-explored "search the whole witness directly" framing.
+- First test:
+  Build `6-10` coupled slabs from one micro-gadget family, sweep coupling width and boundary seeds, and compare exact score, exact-valid hit rate, and label-shuffle collapse against uncoupled repeats and the decoder-matched non-CA comparator.
+- Angle to avoid:
+  `Geometry-Only Wave Story`  
+  Kill this direction if the apparent gain survives `X`-label shuffling or depends on proxy wave metrics rather than exact forcing.
 
-## 2. Sparse-Defect Amplifier CA on a Low-Complexity Background
+## 2. SAT-Pruned Local Rule Synthesis with E-Graph Span Caching
 
-- Gap attacked: constructive work usually sits at one of two extremes, either clean recursive gadgets or large uniform slope families. The "almost regular background plus very sparse proof-relevant defects" regime looks mostly untested.
-- Hypothesis: generate most of the witness by a simple low-description-complexity CA background, then add a second CA channel that inserts a tiny density of defects, domain walls, or phase slips. These rare defects are optimized to create short isolated `(a,-a)` certificates and to recycle them across scales, so the bulk stays cheap while the defects do the forcing work.
-- Why this is negative space: it is not another perfectly self-similar witness, and it is not a dense many-slope asymptotic family. It explicitly targets the missing middle between rigid order and black-box randomness.
-- First test: choose a simple background rule and a finite defect grammar of radius `r`; hold total edge density roughly fixed; vary defect density and exact-verify the resulting score. Compare against the same background with no defects and against random perturbations of equal density.
-- Derivative risk: low-medium.
-- Closest overlap: this can collapse into ordinary local search if the defect grammar is unconstrained, or into another recursive gadget search if the defects are just fixed macros.
-- Pivot if needed: require every defect type to come with a local symbolic justification, such as a guaranteed increase in isolated `(1,-1)` certificate count within a bounded radius.
-- Angle to avoid: do not turn this into unconstrained random perturbation search or another hunt for a perfectly periodic pattern.
+- Gap attacked:
+  The repo never actually tested whether a CA family adds value once illegal local rules and span-equivalent certificate fragments are removed up front. That missing test is a real scalability bottleneck because exact search budget is otherwise wasted on malformed or redundant candidates.
+- Hypothesis:
+  Use SAT to enumerate only short-period local rules whose decoded spacetime blocks are witness-legal, then canonicalize local linear-span derivations in an e-graph before rollout. A CA built on this symbolic backbone should raise exact-valid yield enough to make larger exact sweeps feasible.
+- Why this is negative space:
+  It attacks what prior work failed to test, namely whether the hard part is better local rule design rather than more search volume or richer proxy dynamics.
+- First test:
+  Enumerate tiny radius / short-period rule families under legality constraints, then compare exact-valid hit rate, verifier time, and score distribution against random rule sampling and the decoder-matched witness-search comparator.
+- Angle to avoid:
+  `Compiler Does The Work`  
+  If the gain disappears when the same SAT / e-graph pruning is handed to a non-CA baseline, this is infrastructure only, not a real CA direction.
 
-## 3. Reversible / Bipermutive CA for Closed-Form Witness Families
+## 3. Interface-Typed Macrocell Grammar CA
 
-- Gap attacked: constructive arithmetic-Kakeya work uses recursion, but not local invertibility as an explicit design invariant. CA theory has a reversible / bipermutive line that produces strong local decoding constraints from tiny rules.
-- Hypothesis: choose `X` and local update rules so that the induced label field is generated by a reversible or bipermutive CA on the constructible grid. If local invertibility translates into many distinct cancellation paths, a small seed set `R` could unlock a large region of `T` with fewer ad hoc certificates, yielding a closed-form infinite witness family instead of a one-off example.
-- Why this is negative space: it imports a structural invariant that arithmetic-Kakeya searches do not normally optimize for, namely local bijectivity of the label-generation rule.
-- First test: enumerate small linear or bipermutive CA rules over a finite alphabet mapped to candidate nonzero labels in `X`; build the induced grids; then measure exact forcing performance and seed compression relative to nonreversible local rules of similar density.
-- Derivative risk: medium-high.
-- Closest overlap: this can collapse into another tidy self-similar construction if the only outcome is a periodic pattern with no forcing advantage.
-- Pivot if needed: demand a proof-relevant invariant, such as a rank-growth lemma or certificate-reuse lemma derived from reversibility, before investing in larger searches.
-- Angle to avoid: do not just transplant Latin-square or orthogonal-CA patterns and hope they help; if reversibility never translates into fewer seeds or stronger propagation, abandon the line quickly.
+- Gap attacked:
+  Flat-lattice CA ignore recursive constructibility. Most explored branches mutated local fields or whole witnesses, but they did not make the copy-and-glue interface grammar itself the automaton state.
+- Hypothesis:
+  Freeze a small library of exact-valid gadget macrocells whose boundary states encode legal gluing, active labels in `X`, and singleton-certificate exposure. Run a synchronous or asynchronous macrocell automaton that only composes compatible interfaces, so recursive legality is enforced by local state instead of repaired later.
+- Why this is negative space:
+  It targets the representation mismatch that prior work mostly ignored and could scale better than raw edge-level CA because recursion is built into the alphabet.
+- First test:
+  Fix `8-16` macrocell types from tiny exact seeds, search `3x3` macroboards, then test `4x4` and `5x5` holdouts for exact-valid yield, score density, and failure-mode stability under geometry and label shuffles.
+- Angle to avoid:
+  `Pretty Tiling Trap`  
+  Do not reopen the SFT / tiling analogy unless every macrocell carries verifier-legal proof fragments and exact score improves after full decode.
 
-## Suggested Order
+## Recommended Order
 
-1. Start with the symbolic forcing-front CA. It is the least derivative if the state is proof-aware, and it gives immediate falsification signals.
-2. If it shows real verifier-visible gain, test the sparse-defect amplifier branch next; it attacks the clearest neglected regime.
-3. Keep the reversible / bipermutive line as the most speculative branch, and retain it only if reversibility yields a measurable certificate advantage rather than just attractive self-similarity.
+1. Recover or implement the exact verifier first.
+2. Open `SAT-Pruned Local Rule Synthesis with E-Graph Span Caching` first, because it most directly tests whether exact-valid yield can scale without decoder leakage.
+3. Open `Spatially Coupled Exact-Certificate Ladders` only after at least one exact micro-gadget family exists.
+4. Keep `Interface-Typed Macrocell Grammar CA` as the reserve representation branch if flat edge-level search remains too brittle.

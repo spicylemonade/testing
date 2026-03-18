@@ -2,33 +2,30 @@
 
 ## Decision
 
-- Champion: `H1` - Proof-Carrying Symbolic Forcing-Front CA.
-- Backup: `H2` - Sparse-Defect Amplifier CA on a Recursive Background.
-- Reserve only: `H3` - Flow-Firing Exact Forcing Decoder.
+- Champion: `H1` - SAT-Pruned Quotient Proof-State CA.
+- Backup: `H2` - Spatially Coupled Exact-Certificate Ladder CA.
+- Reserve: `H3` - Interface-Typed Macrocell Grammar CA.
 
 ## Why H1 Wins
 
-`H1` is the least derivative direction in the current scout set. It matches the verifier's actual product-grid and recursive-constructibility structure, forces the CA state to carry exact symbolic proof data, and has the cleanest fast-kill tests: exact integer verification, X-label shuffling, and out-of-distribution size or aspect-ratio checks. It also directly addresses the main structural warning in the gap map, namely that flat-lattice or heuristic local dynamics forget legality and produce false positives.
+`H1` best fits the current selection criteria. It is the least cosmetic CA variant because the cell alphabet is canonicalized proof state rather than raw motifs, it confronts the decoder-leakage objection directly with a decoder-matched non-CA control, and it has the sharpest fast-kill tests: exact-valid yield, verified-score distribution, canonicalization ablation, `X`-label shuffle, held-out geometry, held-out `X`, and the planned complexity sweep. Relative to the falsifier memo, it is also the quickest lane to reject if the CA contributes nothing beyond symbolic pruning.
 
-## Why H2 Survives as Backup
+## Why H2 Is Backup
 
-`H2` keeps the same exact-verifier discipline but explores a different regime: mostly cheap recursive background plus a very small number of proof-relevant defects. That is more novel than number-conserving, modular-shadow, reversible, or generic neural-CA branches, and it can be disproved quickly with density-matched random-defect controls.
+`H2` remains viable because it targets a real scaling gap: whether exact singleton-certificate templates can be coupled into larger forcing waves without paying the seed cost everywhere. It ranks below `H1` because it depends on an exact micro-gadget bank first, inherits more overlap with the existing spatially coupled branch, and is harder to interpret if it fails: a miss could come from bad templates, bad coupling, or the absence of any real arithmetic effect.
 
-## Directions to Deprioritize
+## Why H3 Stays Reserve
 
-- Number-conserving or fixed-small-alphabet CA as the main story. The falsifier is explicit that this is the bounded-slope and rational-complexity trap.
-- Neural CA as a primary line. Without proof-aware symbolic state and exact decoding, it collapses into generic automated search.
-- Reversible or bipermutive CA. The likely failure mode is attractive periodic structure with no verifier-visible forcing gain.
-- Modular-shadow-first programs. Modular tasks are acceptable curriculum only; they are not evidence for the integer target.
+`H3` is the cleanest representation answer to the constructibility-native dynamics gap, but it has the largest implementation surface and the highest risk that interface design or decoder scaffolding does the hard work. Keep it reserve-only until the smaller, faster-to-kill lanes have been exhausted.
 
-## Unresolved Blocker
+## Claim Boundary And Blocker
 
-No scout output shows that any CA family actually survives exact integer verification while moving the verified score toward `<= 1.675`. There is also no visible exact verifier or helper-script entry point in the current repo snapshot. If the researcher cannot identify an existing exact evaluator immediately, the correct action is to record that blocker rather than improvising a frontier-search stack in this lane.
+The repo still supports only a blocker-aware design claim, not "solve this using cellular automata." The frozen audit files say there is no shared exact no-repair `(X,G,R,T)` verifier or decoder in use, no exact decodes, no matched benchmark block, and no executed control suite. Until that changes, any stronger mathematical or empirical claim is off-limits.
 
 ## Exact Next Experiment
 
-1. Use the existing exact verifier if one is available outside the current snapshot; if none exists, stop and log the blocker.
-2. Run only `H1` first on tiny legal product grids, decoding every candidate directly into `(X,G,R,T)` with no repair step.
-3. Apply the three mandatory controls immediately: X-label shuffle at fixed geometry, a matched-budget non-CA baseline, and held-out larger or different-aspect-ratio grids.
-4. Promote `H1` only if the exact verified score distribution improves and the signal collapses under label shuffling.
-5. Open `H2` only if `H1` is killed cleanly or stalls after the first exact-verification gate.
+1. Locate or recover the shared exact no-repair decoder or verifier for six-line witnesses over `Z`. If it cannot be identified immediately, stop and log that blocker rather than expanding the CA search stack.
+2. Open only `H1` at first: one SAT-constrained quotient-state rule schema, up to `3` rule families, and up to `10^3` exact decodes per family on tiny legal grids.
+3. In the same block, run the decoder-matched non-CA baseline plus canonicalization ablation, `X`-label shuffle, held-out geometry, held-out `X`, and the planned complexity split.
+4. Kill `H1` immediately if the gain disappears under the decoder-matched baseline or ablation, survives `X`-label shuffle, or appears only in the small-complexity regime.
+5. Open `H2` only if `H1` clears the first exact gate or if `H1` fails for a narrow reason that leaves the coupling question genuinely unresolved.

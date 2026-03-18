@@ -1,84 +1,94 @@
 # Gap Map: Negative Space Around Cellular-Automata Search for Arithmetic Kakeya
 
-## Signal Check
-- The stored watchlist for this run is low-signal for the actual topic. Its top hits are LaTeX-token collisions rather than arithmetic-Kakeya papers.
-- The usable primary-source anchors recovered in this session are much narrower: Katz-Tao (1999), Green-Ruzsa (2017), Cowen-Breen et al. (2020), Pohoata-Zakharov (2024), Tao (2025), Bond-Levine (2013, 2014), Dennunzio-Formenti-Margara (2023), Faldor-Cully (2024), and the 2025 automated-search papers around AlphaEvolve.
-- The targeted scan did not surface meaningful prior art that directly uses cellular automata to search for arithmetic-Kakeya constructible graphs or forcing pairs. That absence is only a search result from this pass, not a proof of nonexistence.
+Snapshot date: 2026-03-18 UTC
 
-## 1. Proof-carrying local-to-global elimination
+## Decision Frame
+
+- This refresh is repo-first. I used the required context files, the existing swarm memos, the concept-evolution tree, and local benchmark notes before considering any new external search.
+- The stored watchlist remains malformed and low-signal for this topic. The meaningful constraints in this run come from the arithmetic-Kakeya formulation itself, the falsifier memo, and the repo's own blocked experiment records.
+- "Under-served" here means directions that are neither another tiny hand-built witness, nor generic automated search, nor modular-only play, nor a fixed-small-alphabet CA story.
+
+## Ranked Gaps
+
+### 1. Exact verifier-coupled proof state over `\mathbb{Z}`
+
 - Priority: highest
-- Type: core under-explored gap
-- Why this looks under-served:
-  The verifier does not reward generic propagation. A candidate only works if the generated relations actually place `(a,-a)` on a single vertex after integer linear combinations and the `T` masking condition are taken into account. That is much closer to local processors cooperating on a global elimination problem than to ordinary CA diffusion.
-- Why a naive CA fails:
-  A local rule can create coherent space-time patterns while still never certifying that a legal singleton-supported relation lies in the `Z`-span of the produced generators. This creates attractive false positives.
+- Type: core scientific gap plus infrastructure blocker
+- Why this looks genuinely under-served:
+  The real object is not local propagation. It is exact `\mathbb{Z}`-linear elimination with singleton support and `T`-masking. The repo has multiple design documents for verifier-coupled search, but the current snapshot still does not expose an exact decoder or exact verifier for six-line `(X,G,R,T)` witnesses. That means there is still no executable loop in which a CA state can be judged on the true object it is supposed to discover.
+- Failure mode if ignored:
+  A CA can look successful on diffusion, entropy, current, or certificate-growth proxies while never producing a legal singleton `(a,-a)` certificate after exact closure. At that point the decoder or repair layer is doing the hard work, not the automaton.
 - Concrete next move:
-  Build a proof-carrying hybrid CA in which each block stores sparse generator identities, coefficient summaries, and provenance tags, and require every terminal state to compile directly into the six-line `(X,G,R,T)` witness format.
+  Recover or implement the exact six-line decoder/verifier first, then restrict search to proof-carrying encodings whose state can be audited directly against exact legality and exact score.
 - Evidence anchors:
-  `results/research_context.md`; Bond-Levine, *Abelian networks I. Foundations and examples* (2013); Bond-Levine, *Abelian networks II. Halting on all inputs* (2014).
+  `results/context_sync.md`, `results/core/lane_gates.md`, `results/swarm/falsifier.md`, `results/experiments/h1_controls.md`, `results/experiments/complexity_sweep.md`
 
-## 2. Escaping the bounded-slope / low-complexity trap
+### 2. Constructibility-native dynamics instead of flat realized-graph CA
+
 - Priority: high
-- Type: failure mode plus under-explored setting
-- Why this looks under-served:
-  Tao's 2025 note shows that when the slope set is bounded, the relevant sum-difference exponents are driven back toward `2`, with the rate controlled by rational complexity. A CA with a fixed small alphabet is naturally biased toward exactly that low-complexity regime.
-- Why a naive CA fails:
-  It will overfit to periodic, low-complexity label sets that are computationally convenient but structurally misaligned with the frontier near `1.67513...`.
+- Type: under-explored representation gap
+- Why this looks genuinely under-served:
+  Legal witnesses live in the recursive product-grid representation `(d_1,\dots,d_k,f_1,\dots,f_k)` with copy-and-glue ancestry. A flat CA on the final edge-labeled graph, or on an image-like lattice, forgets the stage structure that determines legality, edge cost, and the support pattern of valid forcing data. The repo keeps circling this issue, but there is still no mature search parameterization that makes recursive constructibility native rather than reconstructed after the fact.
+- Failure mode if ignored:
+  Search will find regular-looking local motifs that are either illegal as constructible graphs or only become legal after nonlocal repair, which immediately breaks score faithfulness.
 - Concrete next move:
-  Treat `|X|`, rational complexity, and score as a Pareto objective. Compare fixed-alphabet CA rules against rules that can grow or mutate the slope alphabet across scales, and reject any architecture that only succeeds in the bounded-slope regime.
+  Move the active search space onto stage-indexed fibers, construction trees, stage-indexed certificate tensors, or tile/macrocell grammars that emit `f_i`, `R`, and `T` directly.
 - Evidence anchors:
-  Tao, *Sum-difference exponents for boundedly many slopes, and rational complexity* (2025).
+  `results/swarm/director_brief.md`, `results/swarm/hypothesis_negative_space.md`, `results/core/h1_design.md`, `results/concept_evolve/tree/006_tile_assembly_constructible_grammar/README.md`, `results/concept_evolve/tree/phase_2_baselines/003_stage_indexed_certificate_tensor/README.md`
 
-## 3. Modular shadow search without a trustworthy integer lift
+### 3. Escape mechanisms from bounded-slope / low-rational-complexity trapping
+
 - Priority: high
-- Type: under-explored bridge
-- Why this looks under-served:
-  Green-Ruzsa show that a natural finite-field variant of arithmetic Kakeya does hold, and mod-`p` or `Z/NZ` state spaces are far more natural for finite automata than the full integer witness space. What is missing is a disciplined pipeline that uses modular search only as a shadow of the integer problem rather than as a misleading surrogate.
-- Why a naive CA fails:
-  Perfect-looking cancellations modulo `p` can disappear completely over `Z`. A bounded-state automaton can therefore report fake progress unless integer lift conditions are built into the evaluation loop.
+- Type: frontier failure mode
+- Why this looks genuinely under-served:
+  A CA with a fixed small alphabet is naturally biased toward tiny slope sets and low rational complexity. The repo already treats that regime as structurally dangerous, and the planned complexity sweep is still empty. What remains missing is any concrete mechanism by which a local-rule program can leave the low-complexity comfort zone while staying verifier-faithful.
+- Failure mode if ignored:
+  The search will repeatedly rediscover small, periodic, low-complexity families and misread them as progress toward the `<= 1.675` target, even though they sit in the exact regime the current notes warn against.
 - Concrete next move:
-  Use `F_p` and `Z/NZ` tasks as curriculum instances for motif discovery, then force every promising modular pattern through a deterministic integer-lift and witness-compilation test before it counts as progress.
+  Treat `|X|`, rational complexity, and verified score as joint objectives; require wins in medium and unrestricted regimes; and prefer architectures where the effective alphabet can grow, mutate, or be re-indexed across scales instead of staying frozen.
 - Evidence anchors:
-  Green-Ruzsa, *On the arithmetic Kakeya conjecture of Katz and Tao* (2017); Hickman-Wright, *The Fourier restriction and Kakeya problems over rings of integers modulo N* (2018); `results/research_context.md`.
+  `results/swarm/falsifier.md`, `results/core/lane_gates.md`, `results/experiments/complexity_sweep.md`, `results/literature/prior_art_gap.md`
 
-## 4. Flat-lattice automata ignore recursive constructibility
+### 4. Honest bridges from modular or proxy dynamics back to integer witnesses
+
 - Priority: medium-high
-- Type: structural mismatch
-- Why this looks under-served:
-  The legal search space is not the space of arbitrary edge-labeled grids. It is the space of recursively built copy-and-glue constructions encoded by `d_1,...,d_k` and the stagewise dictionaries `f_i`. A flat CA on the realized graph forgets the ancestry that determines legality and cost.
-- Why a naive CA fails:
-  It can discover visually regular or algebraically suggestive local motifs that are either not valid constructible graphs at all or only become valid after expensive repairs that destroy the score.
+- Type: bridge gap
+- Why this looks genuinely under-served:
+  Finite-state automata naturally want `\mathbb{F}_p` or `\mathbb{Z}/N\mathbb{Z}` alphabets, and several concrete repo branches already push toward proxy dynamics such as bootstrap-style activation, odometer concentration, or spatially coupled peeling. Those are plausible curricula or screening tools, but the missing piece is a deterministic lift or transfer test back to exact integer witnesses in the original forcing-pair problem.
+- Failure mode if ignored:
+  Modular cancellations, percolation thresholds, or odometer features become a modular or local-dynamics mirage: attractive, measurable, and completely irrelevant to verified score over `\mathbb{Z}`.
 - Concrete next move:
-  Run the automaton on the construction tree, or on stage-indexed fibers of the product representation, so legality is enforced by the state space itself. The automaton should natively mutate copy, glue, and edge-label choices rather than paint over a final graph.
+  Every modular or proxy branch should report an integer-lift success rate, exact-score transfer rate, and comparison against trivial graph baselines before it is treated as signal.
 - Evidence anchors:
-  `results/research_context.md`; Pohoata-Zakharov, *Generalized Arithmetic Kakeya* (2024), which shows how much leverage can come from iterative strengthening rather than a single flat inequality view.
+  `results/swarm/falsifier.md`, `results/experiments/complexity_sweep.md`, `results/concept_evolve/tree/008_odometer_sink_compilers/README.md`, `results/concept_evolve/tree/003_bootstrap_certificate_percolation/README.md`, `results/concept_evolve/tree/002_spatially_coupled_peeling_ladders/README.md`
 
-## 5. Search is trapped in one sparse objective and one uniform encoding
+### 5. Sparse, nonuniform witness families and family-level benchmarks
+
 - Priority: medium-high
-- Type: under-explored benchmarking gap
-- Why this looks under-served:
-  Arithmetic Kakeya already has nearby equivalent or adjacent formulations, including the pattern / homothet problems of Cowen-Breen et al., while Katz-Tao and later work point toward gains from richer projection or slice information. In contrast, most CA-style search setups would optimize a single final score on a single encoding and therefore inherit an extremely sparse reward.
-- Why a naive CA fails:
-  Pure score optimization encourages short-period, translation-invariant motifs because they are easy to rediscover. The genuinely useful witnesses may instead depend on rare defects, nonuniform stage schedules, or formulations with denser local rewards.
+- Type: under-explored setting plus benchmarking gap
+- Why this looks genuinely under-served:
+  The popular extremes are already obvious: another tiny self-similar gadget, or a broad many-slope asymptotic story. The local negative space is the middle regime: cheap recursive backgrounds plus sparse defects, nonuniform stage schedules, spatial coupling, or tile grammars that may only reveal their value at the family level rather than as one polished witness. The repo has concept sketches for this regime, but no decoder-matched benchmark suite and no out-of-distribution evidence.
+- Failure mode if ignored:
+  The program overfits one grid size, one encoding, or one geometry, then reports a single attractive construction that cannot survive held-out sizes, aspect ratios, or matched non-CA baselines.
 - Concrete next move:
-  Build a descriptor-rich benchmark suite that tracks forcing depth, slope entropy, defect density, modular lift rate, certificate compression, and pattern-problem proxies. Use novelty or quality-diversity style search to force exploration of sparse, nonuniform motifs before translating back into exact `(X,G,R,T)` witnesses.
+  Build a family-level benchmark around sparse-defect, spatially coupled, and tile-grammar witness generators, with decoder-matched baselines, held-out shapes, and distributional reporting instead of best-of-many anecdotes.
 - Evidence anchors:
-  Katz-Tao, *Bounds on arithmetic projections, and applications to the Kakeya conjecture* (1999); Cowen-Breen, Karangozishvili, Varadarajan, Wang, *Pattern Problems related to the Arithmetic Kakeya Conjecture* (2020); Faldor-Cully, *Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity* (2024).
+  `results/swarm/hypothesis_negative_space.md`, `results/swarm/falsifier.md`, `results/experiments/h1_controls.md`, `results/concept_evolve/tree/002_spatially_coupled_peeling_ladders/README.md`, `results/concept_evolve/tree/006_tile_assembly_constructible_grammar/README.md`
 
-## Prior-Art Anchors Used
-- Katz-Tao, *Bounds on arithmetic projections, and applications to the Kakeya conjecture* (1999).
-- Green-Ruzsa, *On the arithmetic Kakeya conjecture of Katz and Tao* (2017).
-- Cowen-Breen, Karangozishvili, Varadarajan, Wang, *Pattern Problems related to the Arithmetic Kakeya Conjecture* (2020).
-- Hickman-Wright, *The Fourier restriction and Kakeya problems over rings of integers modulo N* (2018).
-- Pohoata-Zakharov, *Generalized Arithmetic Kakeya* (2024).
-- Tao, *Sum-difference exponents for boundedly many slopes, and rational complexity* (2025).
-- Bond-Levine, *Abelian networks I. Foundations and examples* (2013).
-- Bond-Levine, *Abelian networks II. Halting on all inputs* (2014).
-- Dennunzio-Formenti-Margara, *An Easily Checkable Algebraic Characterization of Positive Expansivity for Additive Cellular Automata over a Finite Abelian Group* (2023).
-- Faldor-Cully, *Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity* (2024).
-- Novikov et al., *AlphaEvolve: A coding agent for scientific and algorithmic discovery* (2025).
-- Georgiev, Gomez-Serrano, Tao, Wagner, *Mathematical exploration and discovery at scale* (2025).
+## Directions To Deprioritize
+
+- Generic neural CA or generic agentic search without proof-carrying state and exact verifier coupling.
+- Fixed-small-alphabet or bounded-slope CA stories presented as if they address the frontier score target.
+- Modular-only wins, reversible-pattern wins, or odometer/percolation wins that do not transfer back to exact integer witnesses.
+- Another tidy one-off gadget that lacks family-level evidence across legal shapes and complexity regimes.
 
 ## Bottom Line
-- The most under-served directions are not generic "use CA" ideas.
-- They are the parts where local dynamics must become certificate-carrying, complexity-aware, modularly disciplined, recursive-constructibility-aware, and benchmarked against sparse nonuniform motifs rather than only against a single final score.
+
+- The strongest under-served gaps are not "use cellular automata" in the abstract.
+- They are:
+  - exact verifier-coupled proof state over `\mathbb{Z}`,
+  - constructibility-native dynamics,
+  - escape from bounded-slope trapping,
+  - honest lift from modular or proxy dynamics,
+  - and family-level search over sparse, nonuniform witness regimes.
+- Until those five gaps are addressed, the CA program remains easier to mistake for generic search or bounded-complexity toy behavior than for real progress on the arithmetic-Kakeya witness target.
