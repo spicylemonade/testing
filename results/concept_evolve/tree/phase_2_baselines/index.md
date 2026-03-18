@@ -1,11 +1,12 @@
-# Phase 2 Baseline Encoding Cards
+# Phase 2 Baseline-Encoding Cards
 
-- `001_raw_slope_species_grid`
-- `002_macrocell_fragment_library`
-- `003_stage_indexed_certificate_tensor`
+- `001_stage_indexed_macrocell_fragments`
+- `002_anisotropic_particle_current_encoding`
+- `003_sat_pruned_rule_table_encoding`
 
-Phase-2 outcome:
+These cards are derived from the generated ConceptEvolve artifacts, especially:
 
-- reject `raw_slope_species_grid` for bounded-slope / low-rational-complexity risk;
-- promote `macrocell_fragment_library` as the baseline-compatible encoding;
-- keep `stage_indexed_certificate_tensor` as a transparent fallback parameterization.
+- `results/concept_evolve/tree/007_macrocell_curriculum_nca/concept.json`
+- `results/concept_evolve/tree/001_anisotropic_current_screening/concept.json`
+- `results/concept_evolve/tree/009_sat_pruned_local_rule_synthesis/concept.json`
+- `results/concept_evolve/tree/010_egraph_linear_span_rewriting/concept.json`
