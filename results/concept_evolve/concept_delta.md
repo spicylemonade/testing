@@ -19,9 +19,11 @@
 - The mandatory `probe` run completed and sharpened the implementation audit:
   residue-carrying interfaces must be sufficient statistics, interface bandwidth has to be measured directly, and any diffuse nonlinear repair should be treated as a route failure.
 - The mandatory `reframe` run completed and narrowed the Phase 4 interpretation tools to zero-forcing, structural-observability, and circuit-elimination screens rather than broad new methodological branches.
+- Exact Phase 4 evidence then killed the frozen H1 route by a one-seed obstruction and killed the H2 backup because its invariant package added no value beyond raw support/rank features.
 
 ## Novelty Delta
 
 - Novelty narrowed from a generic “cellular automata for arithmetic Kakeya” story to a stricter claim:
   exact corridor-grammar candidate generation plus exact forcing verification under matched arithmetic controls.
 - That narrowing materially reduces overlap with bootstrap-percolation, abelian-network, and local-decoder folklore.
+- After the H1/H2 failures, the remaining contribution is even narrower: a documented negative result showing that the frozen CA routes collapse before they escape the bounded-slope corridor basin.
