@@ -1,0 +1,612 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[numbers]{natbib}
+
+\hypersetup{
+  colorlinks=true,
+  citecolor=blue!50!black,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black
+}
+
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{3em}
+\numberwithin{equation}{section}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\pmone}{\{-1,+1\}}
+\newcommand{\CA}{\texttt{parallel\_gain\_ca}}
+\newcommand{\DG}{\texttt{direct\_greedy}}
+\newcommand{\RR}{\texttt{random\_rule\_ca}}
+\newcommand{\RW}{\texttt{random\_walk}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{document}
+
+\pagenumbering{roman}
+\begin{titlepage}
+\centering
+\vspace*{2.5cm}
+{\LARGE \bfseries Archivara Agent: A Matched-Control No-Go for Cellular-Automata Search on Hadamard Order 668\par}
+\vspace{1.5cm}
+{\large Archivara research pipeline via Codex CLI\par}
+\vspace{0.6cm}
+{\large March 18, 2026\par}
+\vspace{1.8cm}
+
+\begin{minipage}{0.88\linewidth}
+\centering
+\textbf{Problem.} Evaluate whether a proposed ``cellar automata'' route can materially advance the search for a Hadamard matrix of order $668$.\par
+\vspace{0.8cm}
+\textbf{Validated scope.} The executed work consists of two Hadamard-specific cellular-automata branches tied to the exact length-$167$, weight-$80$ cyclic obstruction of \citet{constantine2025cyclic} and the published mod-$64$ order-$668$ seed of \citet{eliahou2025mod64}, both benchmarked against matched same-representation non-CA controls. The literal ``cellar'' reading survives only as an unexecuted reserve automaton-theoretic pivot.\par
+\vspace{0.8cm}
+\textbf{Manuscript type.} Reproducible negative-result packet with exact artifact provenance, fairness proofs for the benchmarked update rules, and publication-quality figures generated directly from checked-in JSON artifacts.
+\end{minipage}
+
+\vfill
+\end{titlepage}
+\clearpage
+\pagenumbering{arabic}
+
+\begin{abstract}
+We study a proposed automata-based route to the Hadamard order-$668$ problem under a strict evidence gate: every claim must be tied either to an exact mathematical argument or to a reproducible experiment on checked-in artifacts. The initial prompt suggested that a previously untried ``cellar automata'' method might find a Hadamard matrix of order $668$. In the executed repository state, that phrase was operationalized first as cellular automata and only later reinterpreted literally as a reserve pushdown-style automaton. The validated contribution of the repository is therefore narrower than the prompt: two cellular-automata search branches were implemented and tested under matched controls.
+
+The first branch, $\mathrm{H1}$, acts on fixed-weight binary supports on the cycle $\Z/167\Z$ and targets the exact unresolved length-$167$, weight-$80$ cyclic autocorrelation obstruction from \citet{constantine2025cyclic}. The second branch, $\mathrm{H2}$, acts on structured $(q,s)$ states derived from the published mod-$64$ order-$668$ seed of \citet{eliahou2025mod64}. In both branches the serious non-CA baseline \DG{} shares the same representation, neighborhood, move cap, step budget, and verifier, so the only algorithmic difference is the move-selection policy. We prove the relevant invariants, exact delta formulas, connectivity statements, and benchmark fairness properties for both implemented branches.
+
+The measured outcome is negative. On the solved $4\times79$ same-template control, $\DG$ attains a better best-distance mean than \CA{} ($41.5$ versus $48.375$) and wins on $11/16$ matched seeds on the primary metric. On the exact $167/80$ target, neither method finds a witness, and $\DG$ beats \CA{} on all $24/24$ matched seeds, with best-distance means $147.9$ versus $188.5$. The small $n=9$ structured ladder for $\mathrm{H2}$ is only a weak sanity check because random controls solve most starts, while the decisive real order-$668$ test consists of one degraded start in which \CA{} and \DG{} tie exactly on the best achieved modulus, $\ell_1$ defect, defect count, and maximum defect magnitude. The only surviving scientific claim is therefore a narrow no-go result: under the executed same-representation, same-budget evaluations, these cellular-automata rules do not outperform their matched non-CA controls for the exact artifacts tested here. We close by isolating the literal ``cellar'' automaton as a reserve hypothesis rather than a validated result.
+\end{abstract}
+
+\section{Introduction}
+The existence of a Hadamard matrix of order $668$ remains a difficult search target, and recent work has sharpened the relevant exact subproblems in two different directions. On the cyclic side, \citet{constantine2025cyclic} isolates an unresolved length-$167$, weight-$80$ support with a fully specified periodic autocorrelation target. On the modular side, \citet{eliahou2025mod64} constructs a $64$-modular Hadamard matrix of order $668$, supplying a concrete near-solution but not a genuine Hadamard certificate. Those exact objects are unusually useful for evaluating heuristics because they fix the representation and the verifier before search begins.
+
+The repository studied in this paper began from a user request that explicitly named ``cellar automata'' as a potentially untried method. The project did not validate a literal cellar automaton. Instead, the executed run first interpreted the phrase as cellular automata, built two concrete local-update programs around the exact cyclic and modular anchors above, and benchmarked them against matched same-representation non-CA controls. Only after those branches failed did the repository formalize a literal reserve reading: a pushdown-style prefix filter over autocorrelation debt. That reserve branch was not executed and therefore cannot carry the manuscript's main claim.
+
+The central difficulty in this setting is methodological rather than rhetorical. Cellular automata, combinatorial-design generation, exact Hadamard constructions, and heuristic Hadamard search all already have nontrivial literatures \citep{manzoni2025survey, bright2018satcas, fitzpatrick2023williamson, djokovic2018goethalsseidel, suksmono2016sa, suksmono2018sqa, suksmono2019, suksmono2022quantum, suksmono2024qaoa}. A broad statement such as ``cellular automata for Hadamard search is untried'' is therefore indefensible. The only fair question is whether a precisely specified local rule on a precisely specified exact object produces a measurable advantage over a matched non-CA comparator. This paper answers that question for the two implemented branches and for no broader family.
+
+Our contributions are:
+\begin{enumerate}
+  \item We reconstruct the exact artifacts that define the executed search problems: the $4\times79$ same-template control, the unresolved length-$167$, weight-$80$ cyclic obstruction, the published mod-$64$ order-$668$ seed, and the exhaustive structured $n=9$ control.
+  \item We formalize two cellular-automata branches and their matched non-CA controls on identical representations, neighborhoods, move caps, budgets, and verifiers.
+  \item We prove the invariants, exact local-delta formulas, search-space connectivity statements, and fairness properties needed to interpret the comparisons rigorously.
+  \item We report a reproducible negative result: the implemented $\mathrm{H1}$ branch loses to \DG{} on both its control and target, and the implemented $\mathrm{H2}$ branch fails to beat \DG{} on the only real degraded order-$668$ start.
+  \item We separate the validated contribution from the speculative one: the literal ``cellar'' interpretation survives only as an unexecuted reserve pushdown-style automaton, not as part of the verified claim.
+\end{enumerate}
+
+The paper is organized as follows. Section~\ref{sec:related} situates the work against exact Hadamard search, CA-based design generation, and automata-side query noise. Section~\ref{sec:background} defines the exact objects, metrics, and state spaces. Section~\ref{sec:method} gives the algorithms, fairness locks, and the reserve literal-cellar formalization. Section~\ref{sec:theory} proves the non-obvious mathematical properties of the executed search rules. Sections~\ref{sec:setup} and \ref{sec:results} describe the experiments and their outcomes. Section~\ref{sec:discussion} states the benchmark limits and the implications for future work.
+
+\section{Related Work}\label{sec:related}
+\subsection{Exact Hadamard anchors and structured search}
+The executed repository is built around two exact anchors rather than around a free-form search space. The first is the cyclic obstruction isolated by \citet{constantine2025cyclic}: three fixed binary vectors on $\Z/167\Z$ leave a fourth support of weight $80$ whose periodic autocorrelation half-vector must match a specific target. The second is the mod-$64$ order-$668$ seed of \citet{eliahou2025mod64}, which yields a concrete structured $(q,s)$ representation with a known two-adic quality certificate. We use neither source to claim a new reduction or a new construction; they only define the objects on which the implemented heuristics are evaluated.
+
+At the family and exact-search level, the closest technical comparators are structured Hadamard construction and enumeration methods such as SAT+CAS enumeration for Williamson matrices \citep{bright2018satcas}, Williamson-type circulant constructions \citep{fitzpatrick2023williamson}, and Goethals--Seidel difference-family search \citep{djokovic2018goethalsseidel}. These works are important here because they define the novelty boundary. Any alleged cellular-automata contribution that secretly reduces to family-parameter search, exact pruning, or symmetry-aware exact enumeration is not a new CA method; it is a relabeling of known exact machinery.
+
+Broader modular-Hadamard background is supplied by the survey of \citet{eliahoukervaire2005survey} and the monograph of \citet{horadam2007applications}. We cite these only for structural context. The present paper does not extend the theory of modular Hadamard matrices; it benchmarks concrete local rules against matched controls on one exact modular seed and one exact cyclic obstruction.
+
+\subsection{CA-side prior art and direct heuristic competitors}
+Cellular automata already appear in combinatorial design and adjacent areas. The survey of \citet{manzoni2025survey} shows that CA methods are not alien to design generation. Linear cellular automata have been used to construct orthogonal Latin squares \citep{mariot2016ols}; CA heuristics have been applied to bent and semi-bent function search \citep{gadouleau2020bent, mariot2021semibent}; and controllability or decoder viewpoints provide additional local-dynamics precedents \citep{bagnoli2025controllability, herold2014decoder}. These works do not solve the present problem, but they are enough to rule out any claim that ``CA meets design search'' is itself novel.
+
+Direct heuristic search for Hadamard objects is also already on the board. Simulated annealing, simulated quantum annealing, quantum annealing, and QAOA-style formulations have all been proposed for Hadamard search \citep{suksmono2016sa, suksmono2018sqa, suksmono2019, suksmono2022quantum, suksmono2024qaoa}. This makes matched same-representation baselines indispensable: if an executed CA rule does not improve reachability or best-state quality relative to an ordinary local search on the same neighborhood, then the CA label contributes little more than a scheduling choice.
+
+\subsection{Lexical watchlist noise and why it matters}
+Because the initial project prompt was semantically noisy, automated literature search also surfaced papers that are not genuine mathematical comparators, including a shortest-path CA application \citep{tsompanas2017shortestpath}, learning-automata elevator scheduling papers \citep{ghaleb2019singleelevator, ghaleb2019multielevator}, a biomedical CA simulation \citep{ghaemi2022ebola}, and an unrelated agents-world conference volume \citep{leeuwen2000agentsworld}. We retain these only as lexical-noise sentinels: they explain how the seed query drifted, but they do not constrain the technical novelty story. The validated comparison burden lies with exact Hadamard search, structured design construction, CA design generation, and direct Hadamard heuristics, not with papers that share only the word ``automata''.
+
+\subsection{How this work differs}
+The executed repository differs from the exact and heuristic literature in one narrow, testable sense only. It fixes the exact cyclic obstruction and the exact modular seed, implements cellular-automata-style local update rules on those objects, and compares them to a matched non-CA local search that uses the same state space and the same verifier. That design is sufficient to support a branch-specific negative result. It is not sufficient to claim a new Hadamard construction, a new cyclic reduction, a new exact solver, a new general CA paradigm for Hadamard search, or a validated literal ``cellar'' automaton.
+
+\section{Background and Preliminaries}\label{sec:background}
+\subsection{Hadamard and modular-Hadamard context}
+\begin{definition}[Hadamard matrix]
+A Hadamard matrix of order $N$ is a matrix $H \in \pmone^{N \times N}$ such that $H H^\top = N I_N$.
+\end{definition}
+
+\begin{definition}[Modular Hadamard surrogate]
+For a positive integer $m$, an $m$-modular Hadamard matrix of order $N$ is a sign matrix whose Gram matrix is congruent to $N I_N$ modulo $m$. The repository's modular branch uses the published $64$-modular order-$668$ seed of \citet{eliahou2025mod64} as a starting point, not as a final Hadamard certificate.
+\end{definition}
+
+The repository works at the natural block length $n=167$, since $668 = 4n$. The cyclic branch searches directly over binary supports on $\Z/n\Z$. The modular branch searches over structured sign sequences $(q,s) \in \pmone^n \times \pmone^n$ from which four length-$n$ sign sequences are derived.
+
+\subsection{The exact cyclic obstruction for H1}
+Let $n=167$ and let $x \in \bits^n$. For $1 \le k \le \lfloor n/2 \rfloor$, define the periodic binary autocorrelation half-vector
+\begin{equation}
+c_x(k) = \sum_{i=0}^{n-1} x_i x_{i+k \bmod n}. \label{eq:h1corr}
+\end{equation}
+The executed $\mathrm{H1}$ branch fixes three binary vectors from \citet{constantine2025cyclic} and searches for a fourth support $x$ of Hamming weight $80$ such that
+\begin{equation}
+c_x(k) = \tau_k \quad \text{for all } 1 \le k \le 83, \label{eq:h1target}
+\end{equation}
+where $\tau = (\tau_1,\dots,\tau_{83})$ is the exact target stored in the checked-in H1 target artifact. Figure~\ref{fig:problem-objects}a plots the target half-vector.
+
+\begin{definition}[H1 objective]
+For a candidate support $x$, define the debt vector
+\begin{equation}
+d_x(k) = c_x(k) - \tau_k,
+\end{equation}
+the primary objective
+\begin{equation}
+D_1(x) = \sum_{k=1}^{83} |d_x(k)|,
+\end{equation}
+and the secondary objective
+\begin{equation}
+D_\infty(x) = \max_{1 \le k \le 83} |d_x(k)|.
+\end{equation}
+The executed code treats exact hit first, then minimizes $(D_1,D_\infty)$ lexicographically.
+\end{definition}
+
+\subsection{The structured modular state for H2}
+Let $n=167$ and let $(q,s) \in \pmone^n \times \pmone^n$. Define the involution-zero transform
+\begin{equation}
+s_0(i) =
+\begin{cases}
+s_i, & 0 \le i < \lfloor n/2 \rfloor + 1, \\
+-s_i, & \lfloor n/2 \rfloor + 1 \le i < n,
+\end{cases}
+\end{equation}
+and let $(sq)_i = s_i q_i$. The repository derives
+\begin{equation}
+A = s,\qquad B=s_0,\qquad C=sq,\qquad D=(sq)_0.
+\end{equation}
+For a sign sequence $a \in \pmone^n$, define the aperiodic autocorrelation
+\begin{equation}
+r_a(k) = \sum_{i=0}^{n-1-k} a_i a_{i+k}, \qquad 1 \le k \le n-1.
+\end{equation}
+The combined defect vector optimized by the executed $\mathrm{H2}$ branch is
+\begin{equation}
+g_{q,s}(k) = r_A(k) + r_B(k) + r_C(k) + r_D(k), \qquad 1 \le k \le 166. \label{eq:h2combined}
+\end{equation}
+
+\begin{definition}[Two-adic quality metrics]
+For a nonzero integer $z$, let $\nu_2(z)$ denote the exponent of the largest power of $2$ dividing $z$. For a defect vector $g$, define the two-adic modulus
+\begin{equation}
+M(g) = \min_{k : g(k) \ne 0} 2^{\nu_2(g(k))},
+\end{equation}
+with the convention that an exact certificate has no nonzero defects. The repository then ranks states by:
+\begin{enumerate}
+  \item exact certificate first;
+  \item otherwise larger $M(g)$;
+  \item then smaller $\ell_1$ defect $\|g\|_1$;
+  \item then smaller defect count and smaller maximum defect magnitude.
+\end{enumerate}
+\end{definition}
+
+The published order-$668$ seed of \citet{eliahou2025mod64} has $M(g)=64$ and $13$ nonzero defect shifts; Figure~\ref{fig:problem-objects}b plots those signed defect values. The real $\mathrm{H2}$ test in this paper begins from a deterministic degradation obtained by flipping the single coordinate $s_{41}$, which reduces the best available modulus to $16$ before search.
+
+\subsection{Canonical orbits and fairness accounting}
+Both branches record orbit statistics under fixed symmetry reductions. The cyclic branch collapses supports under the dihedral action on binary words; the structured branch collapses $(q,s)$ states under signed reversal. These orbit counts do not alter the search rules, but they quantify how much of the state space each method actually visits. This is important because a local method can fail either by converging to poor states or by reaching too few distinct states.
+
+\section{Method}\label{sec:method}
+\subsection{Artifactization and the fairness lock}
+Table~\ref{tab:instances} summarizes the four exact artifact packets used by the executed code. The design principle is simple: the comparison must be same-space, same-budget, and same-verifier. For each branch, the serious CA method \CA{} and the serious non-CA comparator \DG{} share the following properties:
+\begin{enumerate}
+  \item the same state representation;
+  \item the same local neighborhood exposed at each step;
+  \item the same step budget;
+  \item the same per-phase accepted-move cap;
+  \item the same exact verifier and ranking objective;
+  \item the same orbit canonicalization for accounting.
+\end{enumerate}
+Negative controls \RR{} and \RW{} are included to separate genuine objective improvement from mere state-space diffusion.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Exact instances and registered success criteria. The manuscript's claim is restricted to these four packets.}
+\label{tab:instances}
+\begin{tabular}{L{0.12\linewidth}L{0.18\linewidth}L{0.18\linewidth}L{0.16\linewidth}L{0.22\linewidth}}
+\toprule
+Packet & Exact object & Representation & Seeds / starts & Success criterion \\
+\midrule
+H1 control & Solved $4\times79$ control \citep{constantine2025cyclic} & Weight-$43$ support on $\Z/79\Z$ & $8$ perturbed + $8$ random & Recover the known exact witness \\
+H1 target & Exact $167/80$ obstruction \citep{constantine2025cyclic} & Weight-$80$ support on $\Z/167\Z$ & $16$ random + $8$ projections & Satisfy Eq.~\eqref{eq:h1target} exactly \\
+H2 ladder & Exhaustive $n=9$ exact $(q,s)$ control & Structured $(q,s)$ state & $3$ deterministic one-flip starts & Return to an exact certificate \\
+H2 real seed & Degraded published mod-$64$ seed \citep{eliahou2025mod64} & Structured $(q,s)$ with fixed $q$ & $1$ deterministic degraded start & Improve the best modulus toward $64$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{H1: support-space cellular automaton on the 167-cycle}
+Let
+\begin{equation}
+\mathcal{S}_{n,w} = \left\{ x \in \bits^n : \sum_{i=0}^{n-1} x_i = w \right\}.
+\end{equation}
+In $\mathrm{H1}$, $n=167$ and $w=80$ on the target, while the control uses $n=79$ and $w=43$. The neighborhood is defined by adjacent transpositions along a fixed odd-cycle matching schedule:
+\begin{align}
+E^{(1)} &= \{(0,1),(2,3),\dots\},\\
+E^{(2)} &= \{(1,2),(3,4),\dots\},\\
+E^{(3)} &= \{(n-1,0)\}
+\end{align}
+for odd $n$. At each step only one phase is active.
+
+An edge $(a,b)$ is admissible only when $(x_a,x_b)\in\{(0,1),(1,0)\}$, which conserves Hamming weight. For each admissible edge the code computes the exact change in every autocorrelation component and converts it into an exact gain on $D_1$. The CA rule then selects locally dominant improving swaps inside a window of radius $2$, retaining only moves with gain at least $6$, and fires up to four non-conflicting swaps in parallel. The matched baseline \DG{} sees the same candidate set and simply takes the top improving swaps under the same cap.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_h1_mechanism.pdf}
+\caption{H1 update mechanics. (a) A stylized cycle view of the support state and the three-phase adjacent-swap schedule. Filled nodes indicate support bits equal to one; only \texttt{01}/\texttt{10} edges may swap, so weight is conserved exactly. (b) The fairness lock for the serious comparison: both \CA{} and \DG{} enumerate the same admissible swaps and score them with the same exact delta calculation. The only difference is the selection functional, which makes the later empirical comparison interpretable as a same-space test rather than a moving-target benchmark.}
+\label{fig:h1-mechanism}
+\end{figure}
+
+\subsection{H2: defect-transport CA on the structured (q,s) state}
+The $\mathrm{H2}$ branch uses even and odd index phases on the line $\{0,\dots,n-1\}$. A single candidate operation flips one coordinate either in $s$ or in $q$, depending on the declared variable family. On the real order-$668$ run, $q$ is held fixed and only $s$ flips are allowed. As in $\mathrm{H1}$, both serious methods see the same phase schedule, the same candidate family, and the same cap of four accepted moves per phase.
+
+For each candidate flip, the code computes the exact change in the combined defect vector $g_{q,s}$ from Eq.~\eqref{eq:h2combined}. The CA rule keeps locally dominant improving flips inside a radius-$1$ window and requires gain at least $100$ under the scalarized modular objective. The matched baseline \DG{} sorts the same improving flips by gain and applies the best ones under the same cap. Figure~\ref{fig:h2-results}a summarizes the corresponding structured state.
+
+\subsection{Literal ``cellar automata'' as a reserve, not a validated method}
+The executed repository eventually formalized a literal reading of ``cellar automata'' that is materially different from the two cellular-automata branches above. In that reserve concept, a candidate support is parsed as a token word, and a pushdown-style automaton tracks prefix weight, local debt, and a stack of deferred multiscale deficits. A prefix is accepted only if the remaining suffix can still satisfy the exact cyclic target. This reserve branch is mathematically interesting because it changes the state object from a local CA configuration to a constrained prefix language over the exact $167/80$ obstruction. It is not part of the validated contribution, because no transition system, matched non-CA comparator, or experiment packet exists for it. We therefore discuss it only as future work in Section~\ref{sec:discussion}.
+
+\subsection{Complexity}
+\begin{proposition}[Per-step complexity of $\mathrm{H1}$]\label{prop:h1complexity}
+Let $n$ be the support length. One step of either serious $\mathrm{H1}$ method runs in $O(n^2)$ time and $O(n)$ additional memory.
+\end{proposition}
+
+\begin{proof}
+The active matching contains $O(n)$ edges. For each admissible edge $(a,b)$, the exact delta computation loops over $k=1,\dots,\lfloor n/2\rfloor$, and for each $k$ it evaluates only a constant-size set of start positions. Thus each candidate edge is processed in $O(n)$ time and $O(n)$ temporary space for the stored half-vector delta. Summed over $O(n)$ edges, this gives $O(n^2)$ total time. The remaining operations in a step --- sorting or filtering candidates, applying at most four swaps, updating the state, and recording snapshots --- are lower-order compared with the candidate-generation pass. Memory beyond the stored state consists of the candidate list and temporary deltas, both bounded by $O(n)$. \qedhere
+\end{proof}
+
+\begin{proposition}[Per-step complexity of $\mathrm{H2}$]\label{prop:h2complexity}
+Let $n$ be the structured state length. One step of either serious $\mathrm{H2}$ method runs in $O(n^2)$ time and $O(n)$ additional memory.
+\end{proposition}
+
+\begin{proof}
+Each parity phase exposes $O(n)$ indices. For one candidate flip at index $j$, the exact delta routine loops over shifts $k=1,\dots,n-1$ and, for each shift, updates only a constant number of terms and a constant number of affected sequences. Hence one candidate costs $O(n)$ time and $O(n)$ temporary space. Over $O(n)$ candidate indices, the phase costs $O(n^2)$ time. As in $\mathrm{H1}$, later selection and state-update operations are lower-order. \qedhere
+\end{proof}
+
+\section{Theoretical Results and Proofs}\label{sec:theory}
+\subsection{The H1 state space}
+\begin{proposition}[Weight preservation and connectivity in $\mathrm{H1}$]\label{prop:h1connect}
+Fix integers $n \ge 2$ and $0 \le w \le n$. Every executed $\mathrm{H1}$ move preserves the state space $\mathcal{S}_{n,w}$. Moreover, the graph on $\mathcal{S}_{n,w}$ whose edges are adjacent transpositions of coordinates $(i,i+1)$ for $0 \le i \le n-2$ is connected, and therefore the larger cycle-neighborhood graph used by $\mathrm{H1}$ is also connected.
+\end{proposition}
+
+\begin{proof}
+For preservation, consider one executed swap on adjacent coordinates $(a,b)$. By construction, the move is executed only when $(x_a,x_b)\in\{(0,1),(1,0)\}$. After the swap, the ordered pair becomes $(1,0)$ or $(0,1)$, so the sum of the two entries remains $1$. All other coordinates are unchanged. Hence $\sum_i x_i$ is preserved, which proves that $x$ remains in $\mathcal{S}_{n,w}$.
+
+For connectivity, it suffices to work with the path-adjacent transpositions $(0,1),(1,2),\dots,(n-2,n-1)$ because these moves are available inside the larger cycle graph. Those adjacent transpositions generate the full symmetric group $S_n$. Let $x,y \in \mathcal{S}_{n,w}$. Because $x$ and $y$ have the same Hamming weight, there exists a permutation $\pi \in S_n$ that sends the support of $x$ to the support of $y$. Since $\pi$ can be written as a product of path-adjacent transpositions, applying that product to the coordinates of $x$ transforms $x$ into $y$. Some transpositions may swap equal bits and therefore leave the current state unchanged, but this does not invalidate the path: each adjacent transposition in the factorization is an allowed edge in the state graph, and the resulting sequence ends at $y$. Therefore the path-adjacent transposition graph is connected, and the cycle-neighborhood graph used by $\mathrm{H1}$ is connected as well. \qedhere
+\end{proof}
+
+\begin{lemma}[Exact local delta for a single $\mathrm{H1}$ swap]\label{lem:h1delta}
+Let $x \in \bits^n$, let $(a,b)$ be an adjacent edge with $a \ne b$, and let $x'$ be the vector obtained by swapping $x_a$ and $x_b$. For a fixed shift $k$, define
+\begin{equation}
+S_{a,b}(k)=\{a,b,a-k,b-k\}\subset \Z/n\Z.
+\end{equation}
+Then
+\begin{equation}
+c_{x'}(k)-c_x(k)=\sum_{i\in S_{a,b}(k)} \left(x'_i x'_{i+k} - x_i x_{i+k}\right). \label{eq:h1delta}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+By definition,
+\begin{equation}
+c_x(k)=\sum_{i\in \Z/n\Z} x_i x_{i+k}.
+\end{equation}
+The two vectors $x$ and $x'$ differ only at coordinates $a$ and $b$. Therefore the summand indexed by $i$ can change only if at least one of the two factors uses coordinate $a$ or coordinate $b$. The first factor uses $a$ or $b$ exactly when $i \in \{a,b\}$. The second factor uses $a$ or $b$ exactly when $i+k \in \{a,b\}$, or equivalently $i \in \{a-k,b-k\}$ in $\Z/n\Z$. Thus the only indices whose summands can change are those in $S_{a,b}(k)$.
+
+If $i \notin S_{a,b}(k)$, then neither $i$ nor $i+k$ equals $a$ or $b$, so both factors are unchanged and
+\begin{equation}
+x'_i x'_{i+k}=x_i x_{i+k}.
+\end{equation}
+Subtracting the two full sums, every unchanged summand cancels. The remaining summands are exactly those indexed by $S_{a,b}(k)$, which proves Eq.~\eqref{eq:h1delta}. If the set definition introduces duplicates modulo $n$, the duplicate indices still contribute only once because the original full sum also contains each residue class only once. \qedhere
+\end{proof}
+
+\begin{proposition}[Candidate-set identity in $\mathrm{H1}$]\label{prop:h1fair}
+At every step of the executed $\mathrm{H1}$ comparison, \CA{} and \DG{} evaluate the same candidate edge set, use the same exact gain values, and are constrained by the same accepted-move cap. Their only difference is the selection functional applied to the shared candidate list.
+\end{proposition}
+
+\begin{proof}
+The active phase determines a fixed matching $E_t$. Both methods inspect exactly the admissible edges in $E_t$, namely those edges whose endpoint bits differ. By Lemma~\ref{lem:h1delta}, each candidate edge has a well-defined exact delta in the autocorrelation half-vector and therefore a well-defined exact gain on the primary objective $D_1$. The repository code uses the same delta routine and the same objective function for both methods. The parameter \texttt{phase\_move\_cap}=4 is also shared.
+
+What differs is the final selection step. \CA{} keeps locally dominant improving candidates inside a fixed radius-$2$ window, while \DG{} sorts all improving candidates by gain and keeps the best ones. No other part of the comparison changes. Hence the two methods are same-space, same-budget, same-verifier comparators whose only algorithmic difference is move selection. \qedhere
+\end{proof}
+
+\subsection{The H2 state space}
+\begin{proposition}[Connectivity of fixed-family $\mathrm{H2}$ search]\label{prop:h2connect}
+Fix $n \ge 1$ and either a fixed $q \in \pmone^n$ with mutable $s \in \pmone^n$, or a fixed $s \in \pmone^n$ with mutable $q \in \pmone^n$. Under single-coordinate flips of the mutable family, the corresponding state graph is connected.
+\end{proposition}
+
+\begin{proof}
+Consider the case of fixed $q$ and mutable $s$; the fixed-$s$ case is identical. The state space is exactly $\pmone^n$, indexed by the mutable vector $s$. Two states are adjacent when they differ in exactly one coordinate. That graph is the $n$-dimensional hypercube, which is connected. Explicitly, for any two states $s$ and $s'$, flip every coordinate $i$ for which $s_i \ne s'_i$. After finitely many such single-coordinate flips the mutable vector equals $s'$, so the graph is connected. \qedhere
+\end{proof}
+
+\begin{lemma}[Exact local delta for a single $\mathrm{H2}$ flip]\label{lem:h2delta}
+Fix a variable family \texttt{s} or \texttt{q}, fix an index $j$, and let $(q',s')$ be obtained from $(q,s)$ by flipping the chosen coordinate in the chosen family. For a fixed shift $k$, the change in $g_{q,s}(k)$ is the sum of the changed correlation terms with one endpoint at $j$ over the affected derived sequences. More precisely, if $\mathcal{F}$ is the affected label set (\{$A,B,C,D$\} for an $s$-flip and \{$C,D$\} for a $q$-flip), then
+\begin{align}
+g_{q',s'}(k)-g_{q,s}(k)
+= \sum_{L \in \mathcal{F}}
+\Bigl(
+&\mathbf{1}_{j+k<n}\bigl(a^{(L)\prime}_{j}a^{(L)\prime}_{j+k}-a^{(L)}_{j}a^{(L)}_{j+k}\bigr) \nonumber\\
++&\mathbf{1}_{j-k\ge 0}\bigl(a^{(L)\prime}_{j-k}a^{(L)\prime}_{j}-a^{(L)}_{j-k}a^{(L)}_{j}\bigr)
+\Bigr), \label{eq:h2delta}
+\end{align}
+where $a^{(L)}$ denotes the sequence attached to label $L$ and the indicator functions suppress nonexistent aperiodic terms.
+\end{lemma}
+
+\begin{proof}
+For one label $L$, the shift-$k$ contribution to $g_{q,s}(k)$ is
+\begin{equation}
+r_{a^{(L)}}(k)=\sum_{i=0}^{n-1-k} a^{(L)}_i a^{(L)}_{i+k}.
+\end{equation}
+After flipping coordinate $j$ in the chosen variable family, every derived sequence outside the affected label set $\mathcal{F}$ is unchanged, so only $L \in \mathcal{F}$ matter.
+
+Fix such a label $L$. The summand indexed by $i$ changes only if one of the two factors uses coordinate $j$. In the forward case this means $i=j$, which is present only when $j+k<n$. In the backward case this means $i+k=j$, equivalently $i=j-k$, which is present only when $j-k\ge 0$. For any other index $i$, neither factor uses the flipped entry and the summand is unchanged. Therefore the total change in $r_{a^{(L)}}(k)$ is exactly the sum of the two displayed terms when they exist. Summing over all affected labels $L \in \mathcal{F}$ proves Eq.~\eqref{eq:h2delta}. \qedhere
+\end{proof}
+
+\begin{proposition}[Candidate-set identity in $\mathrm{H2}$]\label{prop:h2fair}
+At every step of the executed $\mathrm{H2}$ comparison, \CA{} and \DG{} evaluate the same candidate flip set, use the same exact modular objective, and are subject to the same accepted-move cap. Their only difference is the selection functional.
+\end{proposition}
+
+\begin{proof}
+The active parity phase determines the same mutable index set for both methods. The declared variable family is fixed for the run, so the candidate operations are identical. By Lemma~\ref{lem:h2delta}, each candidate operation has a well-defined exact change in the combined defect vector and hence a well-defined exact change in the modular objective used by both methods. The per-phase cap is shared: both serious methods apply at most four candidate flips in one phase.
+
+The only difference appears after candidate evaluation. \CA{} retains locally dominant improving flips inside a radius-$1$ window and requires gain at least $100$, while \DG{} sorts all improving flips and keeps the best ones. No representation, neighborhood, objective, or budget advantage is granted to either method. \qedhere
+\end{proof}
+
+\begin{remark}
+Propositions~\ref{prop:h1fair} and \ref{prop:h2fair} are the theoretical basis for the empirical interpretation in Sections~\ref{sec:results}. They show that the decisive comparisons are not confounded by hidden differences in search space, verifier strength, or budget accounting. When Figure~\ref{fig:h1-results} shows a loss and Figure~\ref{fig:h2-results} shows a tie, the result is attributable to the move-selection rule rather than to a benchmark mismatch.
+\end{remark}
+
+\section{Experimental Setup}\label{sec:setup}
+\subsection{Software, hardware, and reproduction commands}
+The checked-in code is organized as follows: artifact construction in \texttt{hadamard668/artifacts.py}, cyclic search in \texttt{hadamard668/h1.py}, structured modular search in \texttt{hadamard668/h2.py}, verifier logic in \texttt{hadamard668/verifiers.py}, and the experiment runner in \texttt{hadamard668/experiments.py}. The canonical reproduction commands are:
+\begin{verbatim}
+python3 -m hadamard668.artifacts export
+python3 -m hadamard668.experiments run-h1
+python3 -m hadamard668.experiments run-h2
+python3 -m hadamard668.experiments run-all
+\end{verbatim}
+
+For this writer pass we additionally reran
+\begin{verbatim}
+python3 -m hadamard668.artifacts export --output-dir /tmp/h668_artifacts_check
+python3 -m hadamard668.experiments run-all --output-dir /tmp/h668_repro_check
+\end{verbatim}
+and verified that the four artifact JSON files reproduced byte-for-byte, while the experiment summaries matched exactly after excluding serialized wall-clock fields. The current environment reports Python $3.10.17$, Linux $4.4.0$ on x86\_64, $20$ virtual CPUs, and $448$ GiB of RAM. The original packet did not serialize CPU model information for the earlier runs, so we report the current rerun environment explicitly and treat the missing original hardware metadata as a benchmark limitation rather than silently fabricating it.
+
+\subsection{Hyperparameters, budgets, and seeds}
+The hyperparameters are fully fixed in code. For $\mathrm{H1}$, \CA{} uses window $=2$, minimum gain $=6$, accepted-move cap $=4$, and snapshot interval $=12$; the control and target sweeps each use $96$ steps. For $\mathrm{H2}$, \CA{} uses window $=1$, minimum gain $=100$, accepted-move cap $=4$, and snapshot interval $=8$; the ladder uses $24$ steps and the real order-$668$ run uses $48$ steps. The negative controls keep the same move cap and use the same snapshot cadence. Table~\ref{tab:hyperparams} records the settings compactly.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Locked hyperparameters and budgets for the executed packet. No ablation matrix exists beyond these settings.}
+\label{tab:hyperparams}
+\begin{tabular}{lcccc}
+\toprule
+Branch / method & Window & Min gain & Phase move cap & Steps \\
+\midrule
+H1 \CA{} & $2$ & $6$ & $4$ & $96$ \\
+H1 \DG{} & --- & improving only & $4$ & $96$ \\
+H1 \RR{} & --- & stochastic fire prob.\ $0.2$ & $4$ & $96$ \\
+H1 \RW{} & --- & one random admissible move & $4$ & $96$ \\
+H2 \CA{} & $1$ & $100$ & $4$ & $24$ / $48$ \\
+H2 \DG{} & --- & improving only & $4$ & $24$ / $48$ \\
+H2 \RR{} & --- & stochastic fire prob.\ $0.25$ & $4$ & $24$ / $48$ \\
+H2 \RW{} & --- & one random admissible move & $4$ & $24$ / $48$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The seed schedule is also deterministic. The $\mathrm{H1}$ control packet uses eight perturbed-solution starts with perturbation counts $2,4,\dots,16$ and eight random-weight supports with seeds $20000$ through $20007$. The $\mathrm{H1}$ target packet uses sixteen random-weight supports with seeds $30000$ through $30015$ together with eight deterministic modular projections of the published mod-$64$ seed under shifts $0$ through $7$. The $\mathrm{H2}$ ladder uses three deterministic one-flip starts obtained from an exhaustive $n=9$ exact seed. The real $\mathrm{H2}$ packet uses one deterministic $s_{41}$ flip of the published order-$668$ seed.
+
+\subsection{Metrics and statistical treatment}
+For $\mathrm{H1}$ the decisive metric is the best achieved value of $D_1$, with exact-hit rate and $D_\infty$ as supporting metrics. For $\mathrm{H2}$ the decisive metrics are the best achieved modulus $M(g)$, the best $\ell_1$ defect, defect count, and maximum defect magnitude, together with exact-hit or goal-hit indicators depending on the control mode. Orbit counts, accepted moves, and best-step timing are recorded for all runs.
+
+Because the runs are deterministic conditional on the seed schedule, the H1 error bars in this paper are uncertainty summaries over the finite seed panel rather than stochastic optimization noise. We use nonparametric bootstrap $95\%$ confidence intervals for H1 mean best distance and for the displayed H1 orbit summaries. For the $n=9$ H2 ladder we report Wilson $95\%$ intervals on the binomial goal-hit rate. For the single real H2 start, no interval estimate is appropriate; we report the deterministic values directly and state the $N=1$ limitation explicitly.
+
+\section{Results}\label{sec:results}
+\subsection{Problem objects and overall program flow}
+Figure~\ref{fig:problem-objects} displays the exact target objects. The cyclic obstruction is not a vague scoring function; it is a fixed target vector $\tau$ of length $83$. Likewise, the mod-$64$ seed is not a generic near-solution; it has a concrete signed defect spectrum and a known best modulus. Figure~\ref{fig:program-flow} then shows the executed research flow. The important point is negative: the manuscript's validated claim comes entirely from the executed $\mathrm{H1}$ and $\mathrm{H2}$ branches. The reserve literal-cellar branch is visibly outside the empirical packet.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_problem_objects.pdf}
+\caption{Exact objects that define the search problem. (a) The H1 target half-autocorrelation vector $\tau$ from the unresolved length-$167$, weight-$80$ cyclic obstruction of \citet{constantine2025cyclic}. The branch objective is the exact $\ell_1$ distance to this vector, not an approximate proxy. (b) The signed nonzero combined aperiodic defects of the published mod-$64$ order-$668$ seed from \citet{eliahou2025mod64}. The best available modulus is $64$ before degradation; the real H2 test begins only after a deterministic $s_{41}$ flip reduces that modulus to $16$.}
+\label{fig:problem-objects}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_program_flow.pdf}
+\caption{Program flow from the original prompt to the validated claim. The executed packet first interprets ``cellar automata'' as cellular automata and instantiates two branches: H1 on the exact $167/80$ cyclic obstruction and H2 on the published mod-$64$ seed. Each branch is paired with a matched same-space non-CA baseline and with two negative controls. Both executed branches fail the registered gates, so the final evidence gate allows only a narrow no-go claim. The literal-cellar pushdown concept remains a reserve branch with no experimental credit.}
+\label{fig:program-flow}
+\end{figure}
+
+\subsection{H1 fails on both the control and the target}
+Table~\ref{tab:h1results} and Figure~\ref{fig:h1-results} summarize the decisive H1 packet. On the solved $4\times79$ control, neither serious method recovers an exact witness under the locked budget. Even so, the matched baseline \DG{} is better on the primary metric: its best-distance mean is $41.5$ (bootstrap $95\%$ CI $[37.9,45.0]$), versus $48.375$ (CI $[43.3,54.5]$) for \CA{}. On paired seeds, \DG{} wins $11/16$ comparisons on the primary metric. There is one primary tie, and on that tie the secondary metric $D_\infty$ still favors \DG{}, so the full objective tuple effectively favors \DG{} in $12/16$ cases. The control therefore ranks the two serious methods but does not validate solver competence, because exact-hit rate remains $0/16$ for both.
+
+On the exact $167/80$ target, the result is more decisive. Neither method finds a witness in $24$ starts, but \DG{} beats \CA{} on all $24/24$ matched seeds. The best-distance mean is $147.9$ (CI $[141.8,154.3]$) for \DG{} and $188.5$ (CI $[178.2,199.4]$) for \CA{}. Median unique dihedral orbits also favor the baseline: $23.5$ versus $7.5$. Figure~\ref{fig:h1-dynamics} shows that the CA branch typically reaches its best recorded state much earlier than the baseline, which is consistent with premature stagnation rather than with a delayed but stronger search dynamic.
+
+\begin{table}[t]
+\centering
+\small
+\caption{H1 results on the same-template control and the exact $167/80$ target. Confidence intervals are bootstrap $95\%$ intervals over the deterministic seed panel.}
+\label{tab:h1results}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llcccc}
+\toprule
+Packet & Method & Hit rate & Best-dist. mean & 95\% CI & Median orbits \\
+\midrule
+H1 control & \DG{} & $0/16$ & $41.5$ & $[37.9,45.0]$ & $13.0$ \\
+H1 control & \CA{} & $0/16$ & $48.375$ & $[43.3,54.5]$ & $4.0$ \\
+H1 control & \RR{} & $0/16$ & $57.125$ & --- & $66.5$ \\
+H1 control & \RW{} & $0/16$ & $58.25$ & --- & $78.5$ \\
+\midrule
+H1 target & \DG{} & $0/24$ & $147.9$ & $[141.8,154.3]$ & $23.5$ \\
+H1 target & \CA{} & $0/24$ & $188.5$ & $[178.2,199.4]$ & $7.5$ \\
+H1 target & \RR{} & $0/24$ & $225.4$ & --- & $67.5$ \\
+H1 target & \RW{} & $0/24$ & $253.6$ & --- & $78.0$ \\
+\bottomrule
+\end{tabular}
+\vspace{0.2em}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_h1_results.pdf}
+\caption{Main H1 quantitative comparisons. Top row: mean best distance to the exact target with bootstrap $95\%$ confidence intervals for the control and the target sweeps. Bottom row: paired seed-level comparisons between \CA{} and \DG{}. On the control, the baseline wins a clear majority of seeds even though neither method solves exactly. On the target, every paired comparison favors \DG{} on the primary metric. Because Propositions~\ref{prop:h1connect}--\ref{prop:h1fair} show that the state space, neighborhood, objective, and move cap are shared, these losses cannot be explained away as benchmark mismatch.}
+\label{fig:h1-results}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_h1_dynamics.pdf}
+\caption{H1 reachability and timing diagnostics. Panel (a) reports orbit summaries for both packets: the serious CA rule visits far fewer canonical orbits than the matched baseline, while the negative controls diffuse broadly but do not achieve good objective values. Panels (b)--(c) show empirical CDFs of the step at which the best recorded state is first achieved. The CA branch peaks much earlier than the baseline on both packets, especially on the exact target, which is consistent with the repository's interpretation of a reachability collapse rather than with a hidden long-horizon advantage.}
+\label{fig:h1-dynamics}
+\end{figure}
+
+\subsection{H2 supplies no advantage on the real order-668 task}
+The H2 ladder and real-seed results are reported in Table~\ref{tab:h2results} and Figure~\ref{fig:h2-results}. The $n=9$ ladder is not a convincing positive control. The CA solves $2/3$ starts and the matched baseline solves $1/3$, but \RR{} solves all three starts and \RW{} solves two. Random controls therefore perform too well for the ladder to discriminate a genuine CA mechanism from a generally easy toy problem.
+
+The decisive H2 test is the real degraded order-$668$ seed. Here the comparison is deterministic and exact: both \CA{} and \DG{} achieve best modulus $16$, best $\ell_1$ defect $2944$, defect count $25$, maximum defect magnitude $496$, accepted moves $48$, best step $2$, and only two unique orbits. Both methods finish back at $\ell_1$ defect $3200$. The random controls eventually attain lower final $\ell_1$ defect, but only by dropping the modulus from $16$ to $8$, which makes them inferior under the registered modular objective. Thus the real task produces no CA advantage at all: the serious methods tie on the only condition that matters for the executed branch.
+
+\begin{table}[t]
+\centering
+\small
+\caption{H2 results. The ladder goal-hit intervals are Wilson $95\%$ intervals. The real order-$668$ packet has $N=1$, so the deterministic values are reported directly.}
+\label{tab:h2results}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llcccc}
+\toprule
+Packet & Method & Hit rate & Best $\ell_1$ defect & Best mod. & Median orbits \\
+\midrule
+H2 ladder & \CA{} & $2/3$ & $2.67$ mean & $8$ & $3$ \\
+H2 ladder & \DG{} & $1/3$ & $10.67$ mean & $8$ & $3$ \\
+H2 ladder & \RR{} & $3/3$ & $0$ mean & variable & $18$ \\
+H2 ladder & \RW{} & $2/3$ & $5.33$ mean & variable & $23$ \\
+\midrule
+H2 real seed & \CA{} & $0/1$ & $2944$ best / $3200$ final & $16$ best & $2$ \\
+H2 real seed & \DG{} & $0/1$ & $2944$ best / $3200$ final & $16$ best & $2$ \\
+H2 real seed & \RR{} & $0/1$ & $3200$ best / $2056$ final & $16$ best / $8$ final & $49$ \\
+H2 real seed & \RW{} & $0/1$ & $3200$ best / $2256$ final & $16$ best / $8$ final & $49$ \\
+\bottomrule
+\end{tabular}
+\vspace{0.2em}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_h2_results.pdf}
+\caption{H2 mechanism and results. (a) The structured $(q,s)$ state induces four derived sequences whose combined aperiodic defect vector defines the modular objective. (b) The toy $n=9$ ladder is a weak discriminator because random controls solve most starts; the wide Wilson intervals reflect the tiny panel size. (c) On the only real degraded order-$668$ start, \CA{} and \DG{} tie exactly on the best attained $\ell_1$ defect and both regress to the same final state. (d) Weak controls visit many more orbits, but that coverage is not useful because it is achieved by sacrificing the registered modular objective.}
+\label{fig:h2-results}
+\end{figure}
+
+\subsection{Reproducibility and the exact meaning of the no-go claim}
+The validated claim is narrow and exact:
+\begin{quote}
+\textit{For the checked-in $\mathrm{H1}$ and $\mathrm{H2}$ rules, on the exact artifacts and budgets tested here, the implemented cellular automata do not outperform their matched non-CA baselines, and they produce no order-$668$ solution.}
+\end{quote}
+The phrase ``matched'' is load-bearing. Propositions~\ref{prop:h1fair} and \ref{prop:h2fair} show that the decisive comparisons are apples-to-apples in the precise sense of same candidate set, same verifier, and same cap. The manuscript therefore does not need to speculate about whether a hidden budget or representation advantage explains the losses: it does not.
+
+This same narrowness also determines what the paper does \emph{not} prove. It does not show that all possible CA-like search strategies for Hadamard order $668$ are doomed. It does not show that a literal pushdown-style cellar automaton cannot help. It does not even show that all local-repair views of the mod-$64$ seed are noncompetitive. It shows only that the specific same-space local-dominance rules implemented here are not competitive against the matched direct greedy baseline.
+
+\section{Discussion}\label{sec:discussion}
+\subsection{What failed and why that failure is informative}
+The executed program fails for two different but related reasons. In $\mathrm{H1}$, the CA rule explores fewer unique dihedral orbits and reaches its best recorded state earlier than the matched baseline. The most honest interpretation is that the local-dominance rule is too conservative: parallelism does not buy new reachability, and the gain threshold accelerates stagnation. In $\mathrm{H2}$, the local-dominance rule is not obviously worse than the matched baseline on the toy ladder, but the only real order-$668$ start collapses the distinction completely. The resulting tie shows that, once the representation, neighborhood, and objective are fixed, the CA label does not by itself create a repair mechanism.
+
+This is why the negative result is scientifically useful. The repository does not merely fail to solve order $668$; it identifies a concrete reason to stop spending more compute on the current rule family. A larger budget on the same H1 adjacent-swap rule or the same H2 $s$-flip rule would be hard to justify when the current packet already shows a control loss, a target loss, and a real-task tie under matched conditions.
+
+\subsection{Benchmark limits}
+The verification gate imposes several limitations that must be stated explicitly.
+\begin{enumerate}
+  \item \textbf{The H1 control is solved in principle but not solved by the locked stack.} Both serious methods have exact-hit rate $0/16$ on the same-template $4\times79$ control. The control ranks heuristics, but it does not certify that the evaluation stack is itself strong enough to recover a known witness under the published budget.
+  \item \textbf{The H2 real task is underpowered.} The validated packet contains only one degraded order-$668$ start, with $q$ fixed and only $s$ mutable. That is enough to reject the executed branch, not enough to generalize about all structured repair variants.
+  \item \textbf{No CA ablation matrix exists.} Each branch is evaluated at one CA setting only. The paper therefore rejects an implemented rule family, not an entire hyperparameter envelope.
+  \item \textbf{Only one serious non-CA baseline is present.} The comparison is fair but thin. A stronger publication-grade benchmark would add at least one more same-representation heuristic baseline.
+  \item \textbf{The original run packet under-serializes some fairness details.} The matching code and benchmark sheet carry part of the audit burden because the baseline JSON records fewer method parameters than the CA JSON. We preserved the narrow claim rather than overstating the auditability.
+\end{enumerate}
+
+\subsection{The status of the literal ``cellar'' branch}
+The literal reserve branch is summarized visually in Figure~\ref{fig:branch-matrix}. It is not another one-dimensional CA with a renamed neighborhood. Its intended state is a prefix language with deferred autocorrelation debt. That idea survives conceptually because it changes the search object from local support bits to extendable prefix states. Yet it remains scientifically unvalidated. No transition system has been implemented, no matched non-automaton comparator exists, and no exact positive control has been preserved in that representation. Any future paper about literal cellar automata would therefore need a new design brief, a new matched baseline, and a separate benchmark packet.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/fig_branch_matrix.pdf}
+\caption{Executed branches versus reserve branches. Both executed branches have exact anchors, were run under matched baselines, and produced no positive result. The literal cellar / pushdown reserve and the convolution-slice reserve remain interesting only because they change the state representation materially. They do not inherit any empirical credit from the failed H1/H2 packet.}
+\label{fig:branch-matrix}
+\end{figure}
+
+\subsection{Societal and scientific implications}
+The immediate societal stakes are low: this paper is about negative evidence in pure-math search. The scientific-process stakes are less trivial. AI-assisted search can make a weak program look stronger than it is by changing terminology faster than it changes mathematics. In that sense, the most useful outcome here is methodological restraint. By forcing the comparison to remain same-space and same-budget, the repository avoids a common failure mode in automated discovery systems: mistaking a repackaged local search for a new algorithmic principle. Negative results that are cleanly benchmarked can save substantial downstream compute and reduce the chance that speculative labels such as ``cellar automata'' acquire undeserved evidentiary force.
+
+\section{Conclusion}
+The executed repository does not solve the Hadamard order-$668$ problem, and it does not validate a cellular-automata route to that solution. What it does provide is a reproducible, branch-specific no-go result. The H1 support-space CA loses to its matched same-representation baseline on both a solved control and the exact $167/80$ target. The H2 defect-transport CA fails to beat the same matched baseline on the only real degraded order-$668$ seed that was tested. Because the benchmark fairness properties are explicit and because the exact target objects are fixed by primary sources, this negative result is stronger than a generic ``we did not find a solution'' report.
+
+The literal ``cellar automata'' interpretation survives only as a reserve pushdown-style idea, not as an executed contribution. Any future attempt to reopen the project should therefore start from a materially different state representation, preserve same-space positive controls, and benchmark against a matched non-automaton comparator from the beginning. Under the current evidence gate, more budget on the present CA rules would be a mistake.
+
+\appendix
+
+\section{Extended Proofs and Formal Clarifications}
+\subsection{Why the H1 primary tie still favors the baseline}
+On the H1 control packet, one paired seed produces a tie on the primary metric $D_1$: the random-weight seed with deterministic seed $20002$ yields best $D_1=48$ for both \CA{} and \DG{}. The secondary metric $D_\infty$ then breaks the tie in favor of \DG{}, which attains $D_\infty=4$ versus $D_\infty=5$ for \CA{}. This is why the control can be summarized as $11/16$ primary wins for the baseline but effectively $12/16$ wins on the full objective tuple.
+
+\subsection{Why the H2 random controls are not counterexamples}
+On the real H2 packet, the negative controls eventually end with smaller final $\ell_1$ defect than the serious methods. This is not a contradiction of the registered conclusion because the objective is not ``minimize final $\ell_1$ defect at all costs.'' The serious methods preserve best modulus $16$ and improve the best state only transiently; the random controls finish with modulus $8$, which is strictly worse under the lexicographic modular objective. The repository therefore treats those trajectories as evidence of metric leakage risk, not as serious wins.
+
+\section{Additional Experimental Detail}
+\subsection{Exact packet sizes and positive-control facts}
+The control and target artifacts have the following exact combinatorial signatures:
+\begin{itemize}
+  \item The $4\times79$ control uses three fixed vectors of weights $(34,34,42)$ and one known solution vector of weight $43$.
+  \item The exact H1 target uses three fixed vectors of weights $(76,76,77)$ and an unresolved fourth support of required weight $80$.
+  \item The published H2 seed has $13$ nonzero combined defect shifts and best modulus $64$ before degradation.
+  \item The structured $n=9$ H2 control was found by exhaustive search over all $512 \times 512 = 262144$ sign pairs.
+\end{itemize}
+
+\subsection{Real H2 trade-off diagnostics}
+The single real order-$668$ start records the following best-versus-final states:
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+Method & Best modulus & Best $\ell_1$ defect & Final modulus & Final $\ell_1$ defect \\
+\midrule
+\CA{} & $16$ & $2944$ & $16$ & $3200$ \\
+\DG{} & $16$ & $2944$ & $16$ & $3200$ \\
+\RR{} & $16$ & $3200$ & $8$ & $2056$ \\
+\RW{} & $16$ & $3200$ & $8$ & $2256$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+These values explain the interpretation used in the main text: the serious methods tie on the best state, while the random controls only improve one metric by losing the more important modulus objective.
+
+\section{Reproducibility Notes}
+All manuscript figures were generated programmatically by
+\begin{verbatim}
+python3 figures/generate_figures.py
+\end{verbatim}
+which writes both PDF and PNG files to \texttt{figures/} and writes the derived numerical summaries to \texttt{results/analysis/paper\_metrics.json}. During manuscript preparation we also reran the artifact export and full experiment stack into temporary directories. The artifact JSON files matched byte-for-byte. The experiment JSON files differed at the raw file level because they include wall-clock fields, but all method summaries matched exactly after removing the elapsed-time keys.
+
+\section{Hyperparameter Sensitivity Debt}
+This appendix exists because a real hyperparameter sensitivity analysis was \emph{not} run. The executed packet tests one CA setting per branch only. We therefore separate observed single-setting diagnostics from unmeasured sensitivity:
+\begin{enumerate}
+  \item \textbf{Observed under the fixed H1 setting.} The CA branch reaches its best recorded state with median step $4$ on the control and median step $10$ on the target, far earlier than the matched baseline. This is consistent with early plateauing.
+  \item \textbf{Observed under the fixed H2 setting.} On the real order-$668$ start, both serious methods reach their best state at step $2$ and then regress, which suggests that the current acceptance rule does not stabilize gains.
+  \item \textbf{Not measured.} No grid over window size, minimum gain, move cap, or budget was executed. Any broader performance claim would therefore be unjustified.
+\end{enumerate}
+The correct scientific interpretation is not that all nearby hyperparameters have been falsified, but that the currently implemented rule families have failed strongly enough that a follow-on study should change representation before it changes budget.
+
+\bibliographystyle{plainnat}
+\bibliography{sources}
+
+\end{document}
