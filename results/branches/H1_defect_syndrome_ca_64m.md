@@ -1,93 +1,107 @@
-# H1 Branch Brief: Defect-Syndrome CA on the 64-Modular Order-668 Seed
+# H1 Defect-Syndrome CA 64m
 
 ## Scope
 
-`H1_defect_syndrome_ca_64m` is the champion branch for the first seeded order-668 kill test. The implementation lives in `hadamard_ca/h1_ca.py` and is launched through `scripts/run_h1_ca.py`.
+This branch implements `H1_defect_syndrome_ca_64m` as a compressed defect-repair cellular automaton anchored to the recovered order-668 `64`-modular seed.
 
-The branch claim stays narrow:
+Implemented files:
 
-- state is the compact q/s representation plus a compressed defect field, not a raw `668 x 668` sign lattice
-- search starts from the canonical recovered 2025 `64`-modular seed
-- success means exact orthogonality under the shared harness, not a nicer defect trace
+- `hadamard_ca/h1_ca.py`
+- `scripts/run_h1_ca.py`
+- `results/branches/H1_defect_syndrome_ca_64m_config.json`
+- `results/branches/H1_smoke_control.json`
+- `results/branches/H1_smoke_cli.json`
+- `results/branches/H1_frontier_micro_smoke.json`
+- `results/branches/H1_frontier_sensitivity_probe.json`
 
-## Compressed State Representation
+## Compressed State
 
-The implemented CA uses two coupled compressed objects:
+The branch does not evolve the raw `668 x 668` sign lattice.
 
-1. A sparse lag-syndrome field over the combined aperiodic autocorrelation coefficients.
-   - `coefficients = correlation_coefficients(q, s)`
-   - active defect cells are the nonzero off-origin lags
-   - the working lag neighborhood is an expanded mask around active lags, controlled by `lag_neighborhood_radius`
+It operates on:
 
-2. A two-channel packet lattice of length `l`.
-   - channel 0: `q[i]` packet cells
-   - channel 1: `s[i]` packet cells
-   - each packet corresponds to one admissible sign flip in the shared q/s coordinates
+- a `334`-cell packet lattice made from the `167` q-packets and `167` s-packets
+- a `166`-lag defect field from the combined aperiodic autocorrelation coefficients
+- a sparse active-lag mask around the current nonzero lag support
+- a refractory memory over packet cells to suppress immediate flip-back oscillations
 
-This is smaller than the explicit order-668 matrix. For the frontier seed, the operative state is `166` off-origin lag cells plus `334` packet cells instead of `668 x 668` matrix entries.
+The derived lift stays fixed:
+
+- `A = s`
+- `B = s'`
+- `C = sq`
+- `D = (sq)'`
+
+where prime is the fixed second-half sign involution already used elsewhere in the repo.
 
 ## Local Update Rule
 
-One asynchronous CA step is:
+At each CA step:
 
-1. Compute the current lag-syndrome field.
-2. Build a lag mask around the active defect support.
-3. For every packet cell, compute an exact single-packet defect delta restricted to the active lag mask.
-   - `q[i]` packets only perturb the `sq` and `sq'` channels.
-   - `s[i]` packets perturb `s`, `s'`, `sq`, and `sq'`.
-4. Convert those deltas into a raw local pressure score by summing weighted absolute-defect improvement over the masked lag cells.
-5. Couple packet pressures through a local neighborhood:
-   - same-channel neighbors within `packet_neighborhood_radius`
-   - opposite-channel packet at the same index
-   - refractory penalty on recently fired packets
-6. Select local maxima above `activation_threshold`, with a cap `max_active_packets`.
-7. Apply the selected packet flips, recompute the exact shared objective, and continue until exactness, stagnation, or budget exhaustion.
-
-The implemented search is therefore not a raw matrix CA. It is a packet-lattice automaton driven by a sparse lag-syndrome field.
+1. Compute the current lag-defect field from the compact q/s state.
+2. Build the active lag neighborhood from the nonzero lag support.
+3. For each q/s packet, compute an exact lag-delta signature without materializing the full order-668 matrix.
+4. Score each packet by weighted local defect reduction on the active lag neighborhood, plus spill penalties for creating new support outside that neighborhood.
+5. Smooth packet pressure on a local packet graph:
+   - same-channel cyclic radius `packet_neighborhood_radius`
+   - opposite-channel packet at the same site
+6. Apply refractory penalties, then activate nonconflicting local maxima.
+7. Flip the selected packets and repeat until exactness, stagnation, or budget exhaustion.
 
 ## Neighborhood
 
 - Lag neighborhood:
-  - controlled by `lag_neighborhood_radius`
-  - only defect cells near the active support contribute to packet pressure
+  - active nonzero lags plus radius `lag_neighborhood_radius`
 - Packet neighborhood:
-  - same-channel coupling on a periodic 1D ring over q-packets or s-packets
+  - same-channel cyclic neighborhood on the q-ring or s-ring
   - cross-channel coupling between `q[i]` and `s[i]`
-- Refractory neighborhood:
-  - recently fired packets are temporarily penalized through `refractory_steps` and `refractory_penalty`
+- Conflict rule:
+  - no two simultaneously fired packets may occupy the same local packet neighborhood or the same q/s site
 
 ## Conserved Quantities
 
-The implementation keeps the following invariants fixed across the branch:
-
-- q/s length remains fixed
-- packet alphabet remains binary (`+1/-1`)
-- the prime-involution lift `q, s -> (s, s', sq, (sq)')` is fixed
-- packet-graph topology is fixed for the chosen q/s length
+- fixed compact length `167` and order `668`
+- binary packet alphabet `{-1, +1}`
+- fixed q/s coordinate system
+- fixed prime-involution lift into the derived quadruple
+- fixed packet-graph topology for a chosen config
 
 ## Seed Loading
 
-- Seed loader: `hadamard_ca.h1_ca.load_h1_seed(...)`
-- Canonical frontier seed: `results/frontier/order_668_64m/seed_sequences.json`
-- Shared smaller control seed used for smoke validation: `results/baselines/smoke_seed_n7_q3.json`
+The branch loads the same q/s JSON format as the baseline methods.
 
-## Instrumentation
+- small control seed: `results/baselines/smoke_seed_n7_q3.json`
+- canonical frontier seed: `results/frontier/order_668_64m/seed_sequences.json`
 
-The H1 search metadata records:
+Runner:
 
-- `branch_id`
-- `representation`
-- `pressure_update_mode`
-- `ca_field_evaluations`
-- `conserved_quantities`
+```bash
+python3 scripts/run_h1_ca.py \
+  --config results/branches/H1_defect_syndrome_ca_64m_config.json \
+  --seed-file results/frontier/order_668_64m/seed_sequences.json \
+  --output results/experiments/order_668_64m/H1_defect_syndrome_ca_64m.json
+```
 
-This keeps later runtime audits from confusing cheap CA field updates with the harness-level `objective_evaluations` counter.
+## Verification Notes
 
-## Initial Smoke Readout
+- `results/branches/H1_smoke_control.json`
+  - direct harness smoke reaches exactness on the shared non-exact length-7 q/s seed
+- `results/branches/H1_smoke_cli.json`
+  - the intended CLI runner also reaches exactness on the same seed
+- `results/branches/H1_frontier_micro_smoke.json`
+  - the branch runs on the canonical order-668 seed, but support can diffuse from `13` to much larger values even while `l1` and `max_abs` improve temporarily
+- `results/branches/H1_frontier_sensitivity_probe.json`
+  - with stronger spill control and conservative activation, 8 small parameter variants all stay pinned to the original frontier objective: support `13`, `l1 = 2880`, `max_abs = 512`
 
-Two direct smoke checks were run before freezing this brief:
+## Current Interpretation
 
-- On `results/baselines/smoke_seed_n7_q3.json`, H1 reaches exactness with `13` shared-harness objective evaluations.
-- On a very small frontier pilot (`40` evaluation budget, `1` restart), H1 runs cleanly but does not improve the canonical order-668 seed yet.
+This branch is implemented and executable, but not yet validated as a useful frontier method.
 
-That is enough to confirm the branch is executable. It is not enough to claim competitive behavior on order `668`; the matched control and frontier experiments remain Phase 4 work.
+The current frontier picture has two failure signatures:
+
+- weak spill control diffuses support
+- stronger spill control preserves the seed but does not improve it
+
+The updated `results/concept_evolve/probe_result.json` sharpens the likely cause: the present single-bit q/s packet basis appears frozen on the canonical seed, with no improving one-packet or two-packet moves reported there. That means rule tuning alone may not rescue H1 unless the actuator basis itself changes.
+
+The next question is whether there is a narrow parameter regime between those two failures where H1 can beat the matched non-CA baselines on exact-feasibility outcomes.

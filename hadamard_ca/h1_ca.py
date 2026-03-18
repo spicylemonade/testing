@@ -137,7 +137,7 @@ def _packet_pressures(
 
     active_bonus = float(config.metadata.get("active_lag_bonus", 1.0) or 1.0)
     spill_l1_penalty = float(config.metadata.get("spill_l1_penalty", 0.25) or 0.25)
-    spill_support_penalty = float(config.metadata.get("spill_support_penalty", 16.0) or 16.0)
+    spill_support_penalty = float(config.metadata.get("spill_support_penalty", 10.0) or 10.0)
     weights = np.ones(len(coefficients), dtype=np.float64)
     if active_lags.size:
         weights[active_lags] += active_bonus
