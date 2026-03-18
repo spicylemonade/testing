@@ -182,3 +182,63 @@ This checkpoint records how the current `H1` design in `results/core/h1_design.m
 ### Malformed watchlist trio
 - Overlap type: superficial only.
 - Phase-3 differentiation: unchanged. The `2x2` convexification paper, the Hopf-hypersurface paper, and the `A_2`-fractions paper remain false overlaps and place no real novelty constraint on the `H1` design.
+
+## Phase 5 Closeout Freeze
+
+Final branch decision: `pivot to verifier recovery`.
+
+Final evidence state: no exact verified witness, no exact score improvement, and no empirical CA advantage claim. The comparisons below freeze the strongest cited prior-work relations actually used in phase-4 analysis.
+
+### Katz-Tao (1999)
+- Overlap type: mathematical direct.
+- Final comparison: not surpassed. The run stayed within Katz-Tao's witness format but produced no new legal witness or theorem.
+
+### Green-Ruzsa (2017)
+- Overlap type: mathematical direct.
+- Final comparison: not surpassed. No integer result or finite-field-to-integer lift was obtained.
+
+### Cowen-Breen et al. (2020)
+- Overlap type: mathematical adjacent.
+- Final comparison: cleared only at the target-definition level. The run avoided pattern-proxy drift, but showed no exact transfer back to forcing-pair improvements.
+
+### Pohoata-Zakharov (2024)
+- Overlap type: mathematical adjacent.
+- Final comparison: not surpassed. No generalized or original arithmetic-Kakeya gain was produced.
+
+### Tao (2025)
+- Overlap type: mathematical direct warning.
+- Final comparison: warning unresolved. The phase-4 complexity sweep remained blocked, so bounded-slope and rational-complexity objections were not defeated.
+
+### Hickman-Wright (2018)
+- Overlap type: mathematical adjacent.
+- Final comparison: modular-only evidence remains inadmissible. No honest modular-to-integer lift was demonstrated.
+
+### Bond-Levine (2013)
+- Overlap type: methodological adjacent.
+- Final comparison: adjacent only. No abelian-network invariant was shown to predict or certify forcing progress.
+
+### Bond-Levine (2014)
+- Overlap type: methodological adjacent.
+- Final comparison: adjacent only. No halting or production-matrix result was connected to exact witness generation.
+
+### Dennunzio-Formenti-Margara (2023)
+- Overlap type: methodological adjacent.
+- Final comparison: background only. The run did not produce an additive-CA theorem or verified additive-rule advantage.
+
+### Faldor-Cully (2024)
+- Overlap type: methodological adjacent.
+- Final comparison: not exceeded. No diversity-driven CA search result was obtained; only the exact-evaluation discipline is sharper here.
+
+### Novikov et al. (2025) / AlphaEvolve
+- Overlap type: methodological direct.
+- Final comparison: differentiated only at the design level. Proof-carrying state and no-repair decoding narrow the search story, but no empirical capability beyond generic automated discovery was shown.
+
+### Georgiev et al. (2025)
+- Overlap type: methodological direct.
+- Final comparison: differentiated only at the design level. The run contributes an audited domain-specific evaluator discipline, not a demonstrated search advance.
+
+## Final Bottom Line
+
+- The strongest cited mathematical prior work remains completely unchallenged because no exact witness was produced.
+- The strongest cited methodological prior work is only partially cleared, and only at the level of representation and evaluation discipline.
+- The final honest story is therefore a blocker-aware design program plus a verifier-recovery pivot, not a solved cellular-automata witness construction.
