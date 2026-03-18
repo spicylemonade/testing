@@ -73,7 +73,7 @@ No exact verified witness behavior was observed in this run. The watchlist paper
 
 ## Citation Status
 
-`sources.bib` and `results/literature/prior_art_gap.md` support the current blocker and design-level novelty framing. They do not support any empirical-performance claim because no exact experiments were run. Reframing-only domains from `results/concept_evolve/reframings.json` remain hypothesis generators unless their underlying sources are added explicitly.
+`sources.bib` and `results/literature/prior_art_gap.md` support the current blocker and design-level novelty framing. They do not support any empirical-performance claim because no exact experiments were run. The `11` reframing domains in `results/concept_evolve/reframings.json` remain hypothesis generators unless their underlying sources are added explicitly.
 
 ## Key Artifacts
 

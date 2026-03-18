@@ -80,7 +80,13 @@ Conclusion: the method comparison clears generic-search overlap only at the leve
 
 ## Role Of Reframings
 
-`results/concept_evolve/reframings.json` broadened the analogy set into domains such as proof-labeling schemes, Petri nets, network coding, group testing, sheaf consistency, and synchronizing automata. Those reframings help generate hypotheses, but they do not count as prior-art clearance or experimental evidence.
+`results/concept_evolve/reframings.json` is now present and contributes `11` domain reframings, including proof-labeling schemes, Petri nets, network coding, group testing, chemical reaction networks, structural observability, factor graphs, Datalog saturation, abstract interpretation, sheaf consistency, and synchronizing automata.
+
+Those reframings broaden the hypothesis space and sharpen the design vocabulary around local certificates, peeling, and monotone closure. They do **not** count as:
+
+- prior-art clearance,
+- exact verified behavior,
+- or empirical differentiation from arithmetic-Kakeya or CA/search-method baselines.
 
 ## Bottom Line
 

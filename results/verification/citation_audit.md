@@ -52,6 +52,7 @@ These are appropriately supported by local artifacts rather than outside citatio
 
 - those reframings may be used as hypothesis-generation context;
 - they should not be cited as established prior art in the main report without adding the underlying sources first.
+- the new citation debt now specifically includes domains such as proof-labeling schemes, Petri nets, network coding, group testing, chemical reaction networks, structural observability, factor graphs, Datalog saturation, abstract interpretation, sheaf theory, and synchronizing automata.
 
 ### Neural-CA background
 
@@ -72,7 +73,7 @@ The following claims are **not** citation-safe yet:
 
 - any claim of exact verified witness improvement;
 - any claim of beating prior CA or automated-search systems empirically;
-- any claim that the reframed domains are already grounded as literature comparisons in this repo.
+- any claim that the reframed domains in `results/concept_evolve/reframings.json` are already grounded as literature comparisons in this repo.
 
 ## Bottom Line
 
