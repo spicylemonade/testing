@@ -31,6 +31,9 @@ This file freezes the matched baseline matrix for the first exact-verification p
   - identical legality filter
   - identical exact score accounting
   - no repair on any method
+- Same holdout policy:
+  - every promoted condition must be retested on at least one larger or different-aspect-ratio grid family
+  - no method may be evaluated only on the training/search grid shapes
 
 ## Required Non-CA Baselines
 
@@ -65,6 +68,10 @@ This file freezes the matched baseline matrix for the first exact-verification p
 
 - Label-shuffled geometry control:
   - keep graph geometry and nonzero-label multiset fixed, shuffle the label assignment in `X`.
+- Out-of-distribution grid control:
+  - retest any promoted method on held-out larger or different-aspect-ratio `d`-shapes.
+- Rational-complexity sweep:
+  - evaluate small-, medium-, and unrestricted-complexity `X` regimes under the same exact-decode budget.
 - Background-only control for sparse-defect stories:
   - reserved for `H2` only if opened later.
 
