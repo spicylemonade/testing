@@ -2,99 +2,51 @@
 
 Snapshot date: 2026-03-18 UTC
 
-## Exact Verifier Status
+Inputs synthesized:
 
-No exact decoder or verifier for six-line arithmetic-Kakeya witnesses `(X,G,R,T)` over `\mathbb{Z}` was identified in the current repo snapshot or in the targeted public checks run during phase 1.
-
-## Repo Paths Checked
-
-- `README.md`
-- `research_rubric.json`
-- `.archivara/concept_evolve.py`
-- `.archivara/semantic_scholar.py`
-- `results/literature/*`
-- `results/swarm/*`
-- `results/verification/*`
-- `results/concept_evolve/*`
-
-## Shell Discovery Commands
-
-- `rg --files`
-- `find . -maxdepth 3 -type d | sort`
-- `rg -n "verify|verifier|forcing pair|constructible graph|AK\\(|arithmetic Kakeya|Kakeya|witness" .`
-- `sed -n '1,260p' .archivara/concept_evolve.py`
-- `sed -n '1,260p' .archivara/semantic_scholar.py`
-
-Result:
-
-- Only two helper scripts were present: `concept_evolve.py` and `semantic_scholar.py`.
-- `concept_evolve.py` is a child-agent idea-generation tool, not a witness checker.
-- `semantic_scholar.py` is a literature helper, not a decoder or verifier.
-- No package modules, tests, notebooks, or CLIs implementing exact witness verification were found.
-
-## Public Checks Performed
-
-Targeted public searches were run for:
-
-- arithmetic Kakeya verifier / GitHub
-- constructible graph forcing pair verifier
-- FrontierMath arithmetic Kakeya problem page
-- exact-title searches for the key arithmetic-Kakeya papers
-
-Result:
-
-- The public problem page exposes the statement but no checker.
-- Targeted GitHub-style searches did not reveal a public exact `(X,G,R,T)` verifier or decoder entry point.
-
-## Operational Consequence
-
-The run must not invent a replacement frontier-search stack and then treat it as the target evaluator. The correct phase-2 decision is therefore:
-
-- proceed with witness-spec and benchmark-spec documentation;
-- keep CA design work verifier-coupled on paper only;
-- keep experiment phases closed unless a real exact evaluator is found;
-- convert experiment items into blocker-aware reports where the rubric allows.
-
-## Current Verdict
-
-Verifier blocker unresolved.
-
-## Phase-4 Status
-
-- Tiny-grid exact sweep: blocked
-- Controls: blocked
-- Complexity sweep: blocked
-- Benchmark audit: completed as a blocker-integrity pass; execution still blocked
-- Novelty / citation audit: completed for design-level and blocker-level claims only
-
-## Novelty Status
-
-No exact verified witness behavior was observed in this run. The watchlist papers remain false overlaps, while the real adjacent arithmetic-Kakeya papers and the CA / automated-search method papers still define the novelty boundary. The only defensible claim is a verifier-coupled search design with a no-repair decoder contract and strong anti-overclaim gates.
-
-## Citation Status
-
-`sources.bib` and `results/literature/prior_art_gap.md` support the current blocker and design-level novelty framing. They do not support any empirical-performance claim because no exact experiments were run. The `11` reframing domains in `results/concept_evolve/reframings.json` remain hypothesis generators unless their underlying sources are added explicitly.
-
-## Key Artifacts
-
-- `results/repo_map.md`
-- `results/context_sync.md`
-- `results/literature/prior_art_gap.md`
-- `results/baselines/witness_spec.md`
-- `results/baselines/benchmark_spec.md`
-- `results/core/h1_design.md`
-- `results/core/lane_gates.md`
-- `results/concept_evolve/tree/phase_3_core/index.md`
-- `results/experiments/h1_tiny_grid_report.md`
-- `results/experiments/h1_controls.md`
-- `results/experiments/complexity_sweep.md`
-- `results/concept_evolve/reframings.json`
-- `results/concept_evolve/concept_delta.md`
-- `results/concept_evolve/bridge_candidates.json`
-- `results/concept_evolve/tree/phase_5_retrospective/index.md`
-- `results/final_assessment.md`
-- `results/verification/benchmark_report.md`
 - `results/verification/novelty_report.md`
 - `results/verification/citation_audit.md`
-- `results/verification/final_audit.md`
-- `results/writeup_outline.md`
+- `results/verification/benchmark_report.md`
+
+## Decision
+
+`REVISE`
+
+The current work is not ready for `ACCEPT`. The artifact set does show strong blocker-handling discipline: no proxy score replaced the exact objective, no repaired witness was smuggled in, and negative results were preserved honestly. But the three audits agree that the surviving contribution is only a narrow design-level story. It does not yet support claims of mathematical progress on arithmetic Kakeya, a demonstrated CA-method advance, or empirical superiority over matched baselines.
+
+The right next step is revision, not deepening. Do not widen the search program or add more reframing domains until the missing verifier, benchmark evidence, and citation gaps are addressed.
+
+## Must-Fix Issues
+
+1. Recover or implement a shared exact decoder and verifier for six-line arithmetic-Kakeya witnesses `(X,G,R,T)` over `\mathbb{Z}`.
+Keep the fixed no-repair decoder contract. Record candidate-level rejection counts and failure reasons directly at decode and verification time.
+
+2. Run one matched benchmark block before making any empirical claim.
+Compare one CA family against Random Local Search, Whole-Witness Mutation, and Decoder-Matched Search on the same grid block with identical `X` or `|X|`, density band, decoder, and exact-decode budget. Report legality hit rate, forcing hit rate, full score distributions, and failure-reason counts for every family.
+
+3. Execute the mandatory controls already specified in the repo.
+Run `X`-label shuffle, decoder ablation or randomization, held-out geometry, held-out `X`, small/medium/unrestricted complexity sweeps, and any modular-to-integer lift check used by the lane. Apply the existing kill thresholds verbatim. If the effect survives label shuffle, disappears under decoder matching, vanishes on held-out settings, or only appears in the `small` regime, reject the CA-specific claim.
+
+4. Narrow the claim set to what the current evidence actually supports.
+Do not claim mathematical progress, CA-method novelty, benchmark wins, bounded-slope escape, or modular-to-integer transfer. The safe claim is narrower: a verifier-coupled search design with a fixed no-repair decoder contract and explicit anti-overclaim gates.
+
+5. Repair citation readiness before any manuscript-style writeup.
+Add the missing background sources for the repeated mathematical introduction, especially Bourgain and the exact Leng-Sah-Sawhney source being relied on. Treat the `11` reframing domains and current bridge ideas as hypotheses unless they are directly sourced. Build a claim-to-citation map instead of relying on title-level prose comparisons.
+
+6. Canonicalize the bibliography entries that are currently weak or inconsistent.
+Normalize publication state, metadata, and author encoding for the arithmetic-Kakeya adjacency papers and the AI-system references before those entries are used in any paper draft.
+
+## Optional Improvements
+
+- Split the control report into explicit rows for each baseline family and each stress test so later audits do not need to reconstruct the comparison matrix.
+- Add a task-provenance source if the FrontierMath wording or the `<= 1.675` target will appear in a writeup.
+- Keep uncited bridge concepts such as `proof_carrying_exact_decoder_bridge`, `spatially_coupled_peeling_ladders`, and `sat_egraph_symbolic_backbone` inside ideation artifacts only until they have direct evidence or direct sources.
+
+## Acceptance Condition
+
+Move from `REVISE` to `ACCEPT` only after all of the following are true:
+
+- the shared exact decoder and verifier exist and are used by every comparison run;
+- at least one fully matched benchmark block and the required controls have been executed and logged;
+- stronger novelty and benchmark claims are either supported by data or removed;
+- citation support is upgraded from blocker-level notes to manuscript-level traceability.
