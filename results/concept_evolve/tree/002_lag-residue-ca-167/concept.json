@@ -1,0 +1,57 @@
+{
+  "index": 2,
+  "title": "Lag-Residue CA on Four Relaxed 167-Channels",
+  "symbolic_name": "lag_residue_ca_167",
+  "description": "Represent the order-668 problem as four relaxed length-167 channels and let a one-dimensional CA live in lag space rather than matrix space. Each cell tracks periodic autocorrelation residue at one lag and proposes packet edits using only neighboring lag information, so the search acts directly on the local objects that certify failure.",
+  "domains": [
+    "sequence_design",
+    "cellular_automata",
+    "message_passing"
+  ],
+  "mathematical_formalization": "Let A,B,C,D in {+1,-1}^{167}. For each nonzero lag k in Z_167, define r_k = PACF_A(k) + PACF_B(k) + PACF_C(k) + PACF_D(k). The CA state is x_t(k) = (r_k, delta r_{k-1}, delta r_k, parity_tag, packet_vote), and the objective is to drive r_k -> 0 for all k != 0 via local rule updates plus a reversible map back to sequence-space packet flips.",
+  "analogical_connections": [
+    "Spectral-domain error correction where lag bins play the role of check nodes.",
+    "A conserved lattice gas whose charges are autocorrelation residues instead of particles.",
+    "Warning-propagation cavity fields, but converted into explicit local actuators."
+  ],
+  "implementation_hypothesis": "Precompute how each allowed packet flip changes nearby lag residues, then alternate CA sweeps over lag cells with exact sequence updates. Enforce an audit that rejects runs that only succeed by collapsing back into a standard Williamson or fully circulant family.",
+  "experiment_seed": "Benchmark on smaller known 4 * odd-prime orders and on relaxed versions of the 64-modular 668 seed. Compare residual entropy decay against warning propagation, greedy lag descent, and simulated annealing.",
+  "closest_prior_art": [
+    {
+      "title": "Quantum computing formulation of some classical Hadamard matrix searching methods and its implementation on a quantum computer",
+      "paperId": "custom:suksmono_2021_quantum_formulation_hadamard_search"
+    },
+    {
+      "title": "Low Auto-correlation Binary Sequences explored using Warning Propagation",
+      "paperId": "arXiv:1707.03183"
+    },
+    {
+      "title": "A 64-modular Hadamard matrix of order 668",
+      "paperId": "custom:eliahou_2025_ajc93_422"
+    }
+  ],
+  "novelty_claim": "The new move is to elevate lag residues themselves into the CA state space instead of using them only as a score or pruning certificate.",
+  "differentiation": "It is not a standard supplementary-sequence search or a message-passing solver alone. The CA performs the actuation in lag coordinates and can stay outside rigid classical families.",
+  "implementation_backlog": [
+    "Build a four-channel lag-residue simulator with exact delta tables for packet moves.",
+    "Define a family-leakage detector for Williamson, Turyn, and fully circulant collapse.",
+    "Test synchronous versus asynchronous lag updates and measure defect entropy rather than only final score.",
+    "Check whether lag-locality survives when projecting back to actual sequence edits."
+  ],
+  "folder": "002_lag_residue_ca_167",
+  "folder_plan": {
+    "root": "/home/archivara/work/repo/results/concept_evolve/tree/002_lag_residue_ca_167",
+    "initial_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_dirs": [
+      "experiments",
+      "benchmarks",
+      "notes"
+    ]
+  },
+  "generated_at": "2026-03-18T08:37:20.021774+00:00",
+  "project_folder": "concept_evolve/tree/002_lag-residue-ca-167"
+}

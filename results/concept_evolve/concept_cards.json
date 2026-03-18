@@ -1,0 +1,607 @@
+[
+  {
+    "index": 1,
+    "title": "Defect-Syndrome CA on the 64-Modular Frontier",
+    "symbolic_name": "defect_syndrome_ca_64m",
+    "description": "Start from the 2025 order-668 64-modular matrix instead of random noise. Treat each nonzero off-diagonal Gram entry as a mobile syndrome on a sparse defect graph, and use a local cellular automaton to move, merge, and annihilate those defects with balance-preserving flip packets.",
+    "domains": [
+      "combinatorial_design",
+      "cellular_automata",
+      "quantum_error_correction"
+    ],
+    "mathematical_formalization": "Let H_t in {+1,-1}^{668 x 668} and D_t = H_t H_t^T - 668 I. Define a defect graph G_t with edges E_t = {(i,j): D_t[i,j] != 0}. Each CA cell stores x_t(i,j) = (sign(D_t[i,j]), |D_t[i,j]|, packet_id, local_gradient), and asynchronous updates choose a small packet p from a neighborhood N(i,j) to decrease Phi_t = sum_{(i,j) in E_t} w_{ij} |D_t[i,j]| while preserving row and column normalization constraints.",
+    "analogical_connections": [
+      "Toric-code syndrome annihilation, but on Gram defects rather than anyonic defects.",
+      "Reaction-diffusion chemistry where defects behave like charged particles that can recombine.",
+      "LDPC weighted bit-flip decoding, except the parity checks are orthogonality defects."
+    ],
+    "implementation_hypothesis": "Canonicalize the 64-modular seed, precompute Gram deltas for a library of packet flips in a compressed coordinate system, and run an asynchronous CA where defect cells vote for nearby packets. Accept moves only when the exact Gram update predicts nonincreasing weighted defect mass or a short escape criterion is triggered.",
+    "experiment_seed": "Use the Eliahou 2025 order-668 matrix as the main seed and the order-428 Hadamard construction as a solved control. Compare CA repair against greedy packet search, tabu search, and simulated annealing under the same packet basis and evaluation budget.",
+    "closest_prior_art": [
+      {
+        "title": "A 64-modular Hadamard matrix of order 668",
+        "paperId": "custom:eliahou_2025_ajc93_422"
+      },
+      {
+        "title": "Cellular-automaton decoders for topological quantum memories",
+        "paperId": "doi:10.1038/npjqi.2015.10"
+      },
+      {
+        "title": "A quantum approximate optimization method for finding Hadamard matrices",
+        "paperId": "doi:10.1038/s41598-025-18778-1"
+      }
+    ],
+    "novelty_claim": "The new step is not another energy function, but a local syndrome-transport dynamic acting on the exact near-solution frontier for order 668.",
+    "differentiation": "This is not direct CA construction, not QAOA, and not generic Ising hill-climbing on all 446224 entries. The representation is sparse, defect-centric, and seed-matched to the best known order-668 object.",
+    "implementation_backlog": [
+      "Recover or reconstruct a canonical 64-modular order-668 seed and its symmetry orbit structure.",
+      "Define a packet basis that preserves row normalization and any chosen compressed ansatz.",
+      "Precompute exact Gram deltas for packets to make CA updates O(1) or O(log n) per defect cell.",
+      "Run the first kill test against greedy, tabu, and simulated annealing from identical seeds."
+    ],
+    "folder": "001_defect_syndrome_ca_64m",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/001_defect_syndrome_ca_64m",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 2,
+    "title": "Lag-Residue CA on Four Relaxed 167-Channels",
+    "symbolic_name": "lag_residue_ca_167",
+    "description": "Represent the order-668 problem as four relaxed length-167 channels and let a one-dimensional CA live in lag space rather than matrix space. Each cell tracks periodic autocorrelation residue at one lag and proposes packet edits using only neighboring lag information, so the search acts directly on the local objects that certify failure.",
+    "domains": [
+      "sequence_design",
+      "cellular_automata",
+      "message_passing"
+    ],
+    "mathematical_formalization": "Let A,B,C,D in {+1,-1}^{167}. For each nonzero lag k in Z_167, define r_k = PACF_A(k) + PACF_B(k) + PACF_C(k) + PACF_D(k). The CA state is x_t(k) = (r_k, delta r_{k-1}, delta r_k, parity_tag, packet_vote), and the objective is to drive r_k -> 0 for all k != 0 via local rule updates plus a reversible map back to sequence-space packet flips.",
+    "analogical_connections": [
+      "Spectral-domain error correction where lag bins play the role of check nodes.",
+      "A conserved lattice gas whose charges are autocorrelation residues instead of particles.",
+      "Warning-propagation cavity fields, but converted into explicit local actuators."
+    ],
+    "implementation_hypothesis": "Precompute how each allowed packet flip changes nearby lag residues, then alternate CA sweeps over lag cells with exact sequence updates. Enforce an audit that rejects runs that only succeed by collapsing back into a standard Williamson or fully circulant family.",
+    "experiment_seed": "Benchmark on smaller known 4 * odd-prime orders and on relaxed versions of the 64-modular 668 seed. Compare residual entropy decay against warning propagation, greedy lag descent, and simulated annealing.",
+    "closest_prior_art": [
+      {
+        "title": "Quantum computing formulation of some classical Hadamard matrix searching methods and its implementation on a quantum computer",
+        "paperId": "custom:suksmono_2021_quantum_formulation_hadamard_search"
+      },
+      {
+        "title": "Low Auto-correlation Binary Sequences explored using Warning Propagation",
+        "paperId": "arXiv:1707.03183"
+      },
+      {
+        "title": "A 64-modular Hadamard matrix of order 668",
+        "paperId": "custom:eliahou_2025_ajc93_422"
+      }
+    ],
+    "novelty_claim": "The new move is to elevate lag residues themselves into the CA state space instead of using them only as a score or pruning certificate.",
+    "differentiation": "It is not a standard supplementary-sequence search or a message-passing solver alone. The CA performs the actuation in lag coordinates and can stay outside rigid classical families.",
+    "implementation_backlog": [
+      "Build a four-channel lag-residue simulator with exact delta tables for packet moves.",
+      "Define a family-leakage detector for Williamson, Turyn, and fully circulant collapse.",
+      "Test synchronous versus asynchronous lag updates and measure defect entropy rather than only final score.",
+      "Check whether lag-locality survives when projecting back to actual sequence edits."
+    ],
+    "folder": "002_lag_residue_ca_167",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/002_lag_residue_ca_167",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 3,
+    "title": "Goal-Conditioned Neural CA Repair",
+    "symbolic_name": "goal_conditioned_nca_repair",
+    "description": "Train a neural cellular automaton to repair corrupted near-Hadamard states instead of hand-crafting every local rule. The model sees only local neighborhoods plus global goal channels such as target defect budget or symmetry class, and transfer is measured from small solved orders to unseen larger instances.",
+    "domains": [
+      "neural_cellular_automata",
+      "machine_learning",
+      "combinatorial_design"
+    ],
+    "mathematical_formalization": "Let x_t(i) denote the local state of cell i in a compressed Hadamard representation and g denote a goal vector. Learn x_{t+1}(i) = f_theta(x_t(N_r(i)), g) with loss L(theta) = lambda_1 ||D_T||_1 + lambda_2 * 1[exact_fail] + lambda_3 * regularize(balance, symmetry, sparsity), where D_T is the final Gram-defect tensor.",
+    "analogical_connections": [
+      "A denoising autoencoder with strictly local receptive fields.",
+      "A learned LDPC or toric-code decoder, except the target object is a Hadamard candidate.",
+      "A self-healing material that learns how to close fractures without global supervision."
+    ],
+    "implementation_hypothesis": "Generate training data from exact smaller Hadamard constructions and modular near-solutions, corrupt them with packet noise, and train a differentiable or straight-through NCA to minimize final defect mass after T steps. Use transfer to unseen orders as the pass or fail criterion rather than in-sample reconstruction.",
+    "experiment_seed": "Create training sets from solved orders such as 4 * n below 200 and from order-428 controls. Evaluate exact-repair rate, out-of-distribution transfer, and robustness to different corruption families before touching 668.",
+    "closest_prior_art": [
+      {
+        "title": "Growing Neural Cellular Automata",
+        "paperId": "doi:10.23915/distill.00023"
+      },
+      {
+        "title": "Goal-Guided Neural Cellular Automata: Learning to Control Self-Organising Systems",
+        "paperId": "arXiv:2205.06806"
+      },
+      {
+        "title": "Differentiable cellular automata",
+        "paperId": "arXiv:1708.09546"
+      }
+    ],
+    "novelty_claim": "This proposes learned local repair policies for rigid combinatorial designs, not growth or maintenance of image-like patterns.",
+    "differentiation": "Existing NCA papers do not target Hadamard orthogonality constraints, and Hadamard search papers do not learn local CA repair policies from solved constructions.",
+    "implementation_backlog": [
+      "Choose a compressed grid representation and define channels for signs, defect summaries, and symmetry tags.",
+      "Generate corruption operators that preserve the same packet basis used in the symbolic CA baselines.",
+      "Train discrete and continuous-state variants and compare transfer rather than training loss.",
+      "Audit for memorization by withholding entire order families during training."
+    ],
+    "folder": "003_goal_conditioned_nca_repair",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/003_goal_conditioned_nca_repair",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 4,
+    "title": "Adaptive-Criticality CA Schedule",
+    "symbolic_name": "adaptive_criticality_ca_schedule",
+    "description": "Instead of a single global temperature schedule, assign each CA cell its own exploration parameter based on local defect density and progress. The objective is to keep the search near a critical regime where defects move and coalesce without either freezing too early or diffusing into noise.",
+    "domains": [
+      "adaptive_cellular_automata",
+      "statistical_physics",
+      "combinatorial_search"
+    ],
+    "mathematical_formalization": "Each cell i carries both state x_t(i) and an inverse-temperature beta_t(i). Update beta_{t+1}(i) = beta_t(i) + eta * (rho_target - rho_t(N(i))) + zeta * stagnation_t(i), and choose actions with P(a | x_t(N(i)), beta_t(i)) proportional to exp(-beta_t(i) * Delta Phi_i(a)).",
+    "analogical_connections": [
+      "A local thermostat on a spin system rather than one global annealing temperature.",
+      "Self-organized criticality where avalanche size is controlled by nearby defect load.",
+      "Adaptive decoder damping in coding theory, but spatially heterogeneous."
+    ],
+    "implementation_hypothesis": "Layer a local temperature field onto the defect-syndrome CA or lag-residue CA and update it using only neighborhood statistics, stagnation counters, and recent acceptance rates. Compare this adaptive CA against fixed-rule CA and against classical simulated annealing with a matched action set.",
+    "experiment_seed": "Use smaller exact orders and the 64-modular 668 seed as separate regimes. Measure time spent in metastable plateaus, defect-cluster mobility, and exact-hit rate under equal action budgets.",
+    "closest_prior_art": [
+      {
+        "title": "Locally adaptive cellular automata for goal-oriented self-organization",
+        "paperId": "arXiv:2306.07067"
+      },
+      {
+        "title": "Finding a Hadamard Matrix by Simulated Quantum Annealing",
+        "paperId": "doi:10.3390/e20020141"
+      },
+      {
+        "title": "An optimization method based on combination of cellular automata and simulated annealing for VVER-1000 NPP loading pattern",
+        "paperId": "PII:S0029549309004282"
+      }
+    ],
+    "novelty_claim": "The novelty is a local, defect-driven exploration schedule on Hadamard repair coordinates rather than a fixed or global schedule.",
+    "differentiation": "The prior CA adaptation work targets self-organization tasks, and the prior Hadamard annealing work uses global energy schedules. This concept combines the two but keeps the control law local.",
+    "implementation_backlog": [
+      "Define neighborhood defect density, stagnation, and acceptance statistics as local observables.",
+      "Compare several local schedule laws, including hysteresis and target-density tracking.",
+      "Measure whether adaptive schedules preserve locality or simply mimic global annealing in disguise.",
+      "Stress-test sensitivity to seed quality and packet basis choice."
+    ],
+    "folder": "004_adaptive_criticality_ca_schedule",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/004_adaptive_criticality_ca_schedule",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 5,
+    "title": "Prime-Field LBCA Seed Projection",
+    "symbolic_name": "lbca_prime_seed_projection",
+    "description": "Use finite-field linear or bipermutive cellular automata over prime-length state spaces to generate highly structured spacetime traces, then project those traces into candidate sign quadruples for the 167-core search. CA does not claim to solve the problem alone; it provides algebraically biased seeds for the repair stages.",
+    "domains": [
+      "finite_field_cellular_automata",
+      "cryptography",
+      "combinatorial_design"
+    ],
+    "mathematical_formalization": "Choose a local rule x_{t+1}(i) = alpha x_t(i-1) + beta x_t(i) + gamma x_t(i+1) mod 167 on F_167. Define a projection pi from spacetime traces to binary or quaternary sequences and score S(pi(x)) = sum_{k != 0} |r_k| for the induced four-channel periodic autocorrelation residues.",
+    "analogical_connections": [
+      "A pseudorandom generator whose output is scored by orthogonality rather than by statistical tests.",
+      "Redirecting MUB and bent-function CA pipelines into seed generation for a real Hadamard search.",
+      "Using turbulence with controlled algebraic invariants to initialize a repair process."
+    ],
+    "implementation_hypothesis": "Enumerate or optimize prime-field CA rules for mixing, period, and decorrelation, then try several sign projection maps and keep only the tails of the residual distribution. Feed the best projected seeds into the defect CA, lag CA, or SAT-hybrid repair stages.",
+    "experiment_seed": "Benchmark seed-quality distributions on solved smaller orders and on relaxed 167-core surrogates. Compare against random seeds, m-sequences, and SAT warm starts.",
+    "closest_prior_art": [
+      {
+        "title": "Bent Functions from Cellular Automata",
+        "paperId": "ePrint:2020/1272"
+      },
+      {
+        "title": "Cellular Automata-Based Methods for the Construction of Mutually Unbiased Bases",
+        "paperId": "doi:10.3390/math13162600"
+      },
+      {
+        "title": "Constructing Orthogonal Latin Squares from Linear Cellular Automata",
+        "paperId": "arXiv:1610.00139"
+      }
+    ],
+    "novelty_claim": "The novelty is to use prime-field CA only as a structured seed prior for real order-668 search, not as a direct constructor of Hadamard-adjacent objects.",
+    "differentiation": "The prior art mainly targets power-of-two or complex settings. This concept explicitly avoids claiming direct construction and instead optimizes for downstream residual quality on the 167 core.",
+    "implementation_backlog": [
+      "Choose prime-field rule families with fast period and diffusion tests.",
+      "Design projection maps from F_167 traces to four sign channels and score them by residual statistics.",
+      "Run seed-quality comparisons against random, m-sequence, and SAT-derived baselines.",
+      "Audit whether good seeds merely encode a classical family under a different name."
+    ],
+    "folder": "005_lbca_prime_seed_projection",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/005_lbca_prime_seed_projection",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 6,
+    "title": "SAT Clause-Diffusion Automaton",
+    "symbolic_name": "sat_clause_diffusion_automaton",
+    "description": "Compile compressed orthogonality constraints into a SAT plus CAS factor graph and add a CA layer that transports clause stress toward repairable neighborhoods. The CA does not replace exact solvers; it decides where local exact reasoning should be spent and which packets are most worth flipping next.",
+    "domains": [
+      "sat",
+      "computer_algebra",
+      "cellular_automata"
+    ],
+    "mathematical_formalization": "Let z be the variable vector and let each clause c have slack s_c(z). The clause graph carries CA states x_t(c) = (s_c, conflict_cluster, local_history, recommendation), and local updates propagate conflict mass m_t across neighboring clauses while selecting a packet P_t subset z for exact SAT or CAS repair.",
+    "analogical_connections": [
+      "Heat diffusion in a CNF landscape where hotspots identify useful branch regions.",
+      "Distributed unit propagation with a spatial controller.",
+      "A repair crew scheduler that moves exact reasoning to the most stressed neighborhoods first."
+    ],
+    "implementation_hypothesis": "Build a compressed CNF for a structured Hadamard repair subproblem, compute clause slack and local dependency neighborhoods, and let a CA choose packet candidates before invoking SAT plus CAS on the stressed region. The main metric is not raw SAT speed but exact-hit rate per unit of exact reasoning on benchmark families.",
+    "experiment_seed": "Begin on Williamson and best-matrix instances with strong SAT+CAS baselines, then move to compressed repair subinstances derived from order-668 seeds. Measure solver calls saved and exact solutions found.",
+    "closest_prior_art": [
+      {
+        "title": "The SAT+CAS Method for Combinatorial Search with Applications to Best Matrices",
+        "paperId": "arXiv:1907.04987"
+      },
+      {
+        "title": "A SAT+CAS Method for Enumerating Williamson Matrices of Even Order",
+        "paperId": "custom:bright_ganesh_stevens_2018_williamson_even"
+      },
+      {
+        "title": "Applying Computer Algebra Systems with SAT Solvers to the Williamson Conjecture",
+        "paperId": "custom:bright_kotsireas_2020_williamson_conjecture"
+      }
+    ],
+    "novelty_claim": "This turns CA into a locality-sensitive orchestration layer for exact combinatorial search rather than a standalone heuristic or a new SAT encoding.",
+    "differentiation": "It is not just SAT+CAS, because the local update law is stateful and spatial. It is not generic CA either, because exact satisfiability and algebraic closure are still inside the loop.",
+    "implementation_backlog": [
+      "Choose one compressed Hadamard family whose constraints are local enough to expose a clause neighborhood graph.",
+      "Implement clause-slack tracking and conflict-cluster diffusion without calling SAT at every step.",
+      "Define when a stressed region is handed off to exact solving and when it is left to CA transport.",
+      "Audit whether the CA layer adds value beyond standard VSIDS-style branching heuristics."
+    ],
+    "folder": "006_sat_clause_diffusion_automaton",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/006_sat_clause_diffusion_automaton",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 7,
+    "title": "Warning-Propagation and CA Hybrid",
+    "symbolic_name": "warning_propagation_ca_hybrid",
+    "description": "Run warning propagation on the lag or defect factor graph to estimate cavity fields, then hand those fields to a CA that performs the actual local edits. Inference and actuation are separated: message passing identifies frustration, while the CA enforces spatially coherent repair.",
+    "domains": [
+      "message_passing",
+      "statistical_physics",
+      "cellular_automata"
+    ],
+    "mathematical_formalization": "For each variable v and factor c, compute cavity warnings u_{c->v} and local field h_v = sum_{c in N(v)} u_{c->v}. The CA state is x_t(v) = (z_v, h_v, cluster_label, local_acceptance), and the local rule z_{t+1}(v) = Phi(x_t(N(v))) converts soft field information into concrete packet-level edits.",
+    "analogical_connections": [
+      "Belief-propagation guidance coupled to a hardware controller with only local visibility.",
+      "Chemotaxis where field gradients attract repairs to frustrated regions.",
+      "A decoder that turns soft information into explicit bit-flip waves."
+    ],
+    "implementation_hypothesis": "Alternate a few iterations of warning propagation with a few sweeps of a defect or lag CA. WP refreshes the local fields; the CA turns them into coordinated packet moves that can escape the one-bit oscillations of pure message passing.",
+    "experiment_seed": "Use low-autocorrelation sequence benchmarks first, then small Hadamard-related sequence decompositions. Measure exact satisfaction rate, field coherence, and escape from WP fixed points.",
+    "closest_prior_art": [
+      {
+        "title": "Low Auto-correlation Binary Sequences explored using Warning Propagation",
+        "paperId": "arXiv:1707.03183"
+      },
+      {
+        "title": "Cellular-automaton decoders for topological quantum memories",
+        "paperId": "doi:10.1038/npjqi.2015.10"
+      },
+      {
+        "title": "Geometric search for Hadamard matrices",
+        "paperId": "doi:10.1016/j.tcs.2019.01.025"
+      }
+    ],
+    "novelty_claim": "The bridge is to use message passing only as a field estimator and CA only as the actuator, rather than conflating the two into one optimizer.",
+    "differentiation": "Pure WP is not enough because it usually returns fields, not coherent repair trajectories. Pure CA is not enough because it lacks good local frustration estimates.",
+    "implementation_backlog": [
+      "Choose a factor graph where warnings remain informative under the chosen packet basis.",
+      "Quantize cavity fields into a small CA channel vocabulary and compare coarse versus fine discretization.",
+      "Benchmark alternation schedules between WP updates and CA sweeps.",
+      "Check whether field-guided CA avoids the short cycles that plague plain local descent."
+    ],
+    "folder": "007_warning_propagation_ca_hybrid",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/007_warning_propagation_ca_hybrid",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 8,
+    "title": "LDPC-Style Decoder on an Orthogonality Graph",
+    "symbolic_name": "ldpc_hadamard_decoder_graph",
+    "description": "Construct a sparse surrogate orthogonality graph with packet variables and defect checks, then adapt LDPC bit-flipping or CA decoder logic to repair it. This reverses the normal direction of influence: instead of using Hadamard objects to define codes, code-decoding algorithms are imported back into Hadamard construction.",
+    "domains": [
+      "coding_theory",
+      "ldpc",
+      "cellular_automata"
+    ],
+    "mathematical_formalization": "Form a bipartite graph G = (V_var, V_chk, E) where each check c stores syndrome sigma_c = sign(sum_{v in N(c)} a_{cv} z_v). Variable scores are b_v = sum_{c in N(v)} w_c sigma_c, and local updates flip packet variables with high decoder score subject to symmetry and balance constraints.",
+    "analogical_connections": [
+      "Gallager bit-flip decoding, but the parity checks are compressed orthogonality constraints.",
+      "A topological-code decoder on a non-topological syndrome graph.",
+      "Defect percolation in a sparse code graph with packet variables instead of bits."
+    ],
+    "implementation_hypothesis": "Sparsify the defect structure into a decoder graph, test weighted bit-flip, probabilistic bit-flip, and fully local CA variants, and compare how much exact structure survives the sparsification. The best use case is likely as a coarse preconditioner before exact local repair.",
+    "experiment_seed": "Use solved small orders and compressed order-428 surrogates to calibrate sparsification quality. Track decoder convergence, false repairs, and symmetry preservation.",
+    "closest_prior_art": [
+      {
+        "title": "Protograph-Based Low-Density Parity-Check Hadamard Codes",
+        "paperId": "arXiv:2010.08285"
+      },
+      {
+        "title": "Cellular-automaton decoders for topological quantum memories",
+        "paperId": "doi:10.1038/npjqi.2015.10"
+      },
+      {
+        "title": "Quantum computing formulation of some classical Hadamard matrix searching methods and its implementation on a quantum computer",
+        "paperId": "custom:suksmono_2021_quantum_formulation_hadamard_search"
+      }
+    ],
+    "novelty_claim": "The new move is reversing the code-design pipeline: Hadamard-related decoding ideas become construction heuristics for Hadamard matrices themselves.",
+    "differentiation": "This is not standard Hadamard-code design and not just a syndrome decoder copy. The graph must be derived from compressed orthogonality structure and evaluated by exact matrix repair metrics.",
+    "implementation_backlog": [
+      "Derive a sparse check graph from one compressed Hadamard representation and quantify the approximation error.",
+      "Implement weighted bit-flip and CA variants under the same graph and packet basis.",
+      "Measure whether sparsification destroys the real defect geometry or preserves enough signal to be useful.",
+      "Use the decoder only as a preconditioner unless exact reconstruction quality remains high."
+    ],
+    "folder": "008_ldpc_hadamard_decoder_graph",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/008_ldpc_hadamard_decoder_graph",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 9,
+    "title": "Tensor-Network Residual Screen",
+    "symbolic_name": "tensor_network_residual_screen",
+    "description": "Use tensor-network contraction to estimate local feasibility, entropy, or completion count around a candidate repair neighborhood, then expose those statistics as channels to a CA. The tensor network is not the main solver; it is a short-horizon oracle that tells local rules which repairs preserve the most future options.",
+    "domains": [
+      "tensor_networks",
+      "sat",
+      "cellular_automata"
+    ],
+    "mathematical_formalization": "For a local region R and candidate action a, define Z_R(a) = sum_{z_{outside R}} prod_c psi_c(z | a), where psi_c are local constraint tensors. The CA receives channels such as log Z_R(a), local entropy H_R(a), or marginal signs, and chooses a* = argmax_a [log Z_R(a) - lambda * Delta defect(a)].",
+    "analogical_connections": [
+      "Model-predictive control where the lookahead model is a tensor contraction.",
+      "A holographic clause counter feeding a reaction-diffusion controller.",
+      "Local free-energy guidance for packet moves in a frustrated design space."
+    ],
+    "implementation_hypothesis": "Contract small neighborhoods or low-treewidth approximations around defect clusters and use those local partition functions to rank repair packets. The CA provides cheap global transport, while tensor contraction prevents obviously bad local decisions.",
+    "experiment_seed": "Start on CNF repair toys and exact small Hadamard subinstances where contraction is still affordable. Compare raw CA, tensor-only local search, and tensor-guided CA under matched neighborhood sizes.",
+    "closest_prior_art": [
+      {
+        "title": "An exact tensor network for the 3SAT problem",
+        "paperId": "arXiv:1105.3201"
+      },
+      {
+        "title": "Counting the number of solutions in satisfiability problems with tensor-network message passing",
+        "paperId": "doi:10.1103/PhysRevE.110.034126"
+      },
+      {
+        "title": "A Quantum-Inspired Tensor Network Algorithm for Constrained Combinatorial Optimization Problems",
+        "paperId": "doi:10.3389/fphy.2022.906590"
+      }
+    ],
+    "novelty_claim": "The novelty is embedding tensor networks as local residual screens inside a CA repair loop for Hadamard-adjacent search.",
+    "differentiation": "This is not a full tensor-network solver and not ordinary message passing. The tensor step is deliberately local and advisory, preserving the CA's spatial dynamics.",
+    "implementation_backlog": [
+      "Choose a neighborhood decomposition whose induced tensors remain small enough to contract repeatedly.",
+      "Decide which local oracle outputs are most actionable for CA rules: entropy, counts, or marginals.",
+      "Benchmark how much oracle quality is lost under low-treewidth approximations.",
+      "Measure whether tensor guidance pays for its cost in exact-hit rate or only smooths easy cases."
+    ],
+    "folder": "009_tensor_network_residual_screen",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/009_tensor_network_residual_screen",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 10,
+    "title": "Tropical Spin-Glass Packet Moves",
+    "symbolic_name": "tropical_spin_glass_packet_moves",
+    "description": "View each defect cluster as a small frustrated spin-glass subproblem and solve it with tropical or min-sum tensor-network methods, while a CA coordinates packet transport and conflict resolution globally. This hybrid preserves local CA structure but upgrades local choices from heuristic flips to micro-optimized packet moves.",
+    "domains": [
+      "spin_glass",
+      "tensor_networks",
+      "cellular_automata"
+    ],
+    "mathematical_formalization": "For a local neighborhood R, define E_R(p) = sum_{(i,j) in R} J_{ij} s_i s_j + sum_i h_i s_i under packet move p. Compute p* = argmin_p E_R(p) with tropical contraction or min-sum dynamic programming, then let the CA decide which neighborhoods fire and how competing packet moves are merged.",
+    "analogical_connections": [
+      "Exact patch repair embedded in a larger swarm controller.",
+      "A min-sum decoder whose variables are packet moves rather than single bits.",
+      "Local perfect play inside a globally approximate search process."
+    ],
+    "implementation_hypothesis": "Derive local Ising coefficients from exact Gram-delta formulas, solve only small neighborhoods with a tropical solver, and let the CA schedule those neighborhoods based on defect density and conflict. The micro-solver should improve move quality without sacrificing the CA's parallelism.",
+    "experiment_seed": "Begin with induced subproblems on order-428 or on controlled defect injections into exact matrices. Compare packet quality and exact repair rate against heuristic packet rules and against full-matrix Ising search.",
+    "closest_prior_art": [
+      {
+        "title": "Tropical Tensor Network for Ground States of Spin Glasses",
+        "paperId": "arXiv:2008.06888"
+      },
+      {
+        "title": "Ising-like models on arbitrary graphs: The Hadamard way",
+        "paperId": "doi:10.1103/PhysRevE.91.012142"
+      },
+      {
+        "title": "Finding a Hadamard Matrix by Simulated Quantum Annealing",
+        "paperId": "doi:10.3390/e20020141"
+      }
+    ],
+    "novelty_claim": "The new element is not a global Ising mapping, but exact or near-exact local micro-solves inside a CA defect-transport loop.",
+    "differentiation": "This is not another simulated annealing or quantum annealing scheme. Only local neighborhoods are solved as spin systems, while the global controller remains a CA.",
+    "implementation_backlog": [
+      "Map packet neighborhoods to local Ising coefficients with exact delta formulas.",
+      "Choose a tropical or min-sum micro-solver that stays cheap at the intended neighborhood size.",
+      "Integrate the micro-solver with a conflict-aware CA scheduler.",
+      "Check whether local exactness actually improves global exact-hit rate or just overfits easy patches."
+    ],
+    "folder": "010_tropical_spin_glass_packet_moves",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/010_tropical_spin_glass_packet_moves",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  },
+  {
+    "index": 11,
+    "title": "Spacetime Row-Emission Rule Search",
+    "symbolic_name": "spacetime_row_emission_search",
+    "description": "Search over compact local CA rule tables whose spacetime orbit emits row blocks, so the design variable is a rule plus seed rather than hundreds of thousands of signs. Orthogonality becomes a temporal correlation-cancellation property of the orbit instead of a static matrix constraint alone.",
+    "domains": [
+      "symbolic_dynamics",
+      "cellular_automata",
+      "compressed_generation"
+    ],
+    "mathematical_formalization": "Let F: S^{2r+1} -> S be a reversible or asynchronous local rule on a ring of length 167, with seed x_0 and row-emission map g. Define rows R_t = g(x_t) for t = 0,...,667 and assemble H(F, x_0, g). Search for (F, x_0, g) minimizing ||H H^T - 668 I||_0 under balance and nontrivial-mixing constraints.",
+    "analogical_connections": [
+      "Grammar induction for orthogonal waveform sets.",
+      "A procedural generator for combinatorial designs.",
+      "A space-time code where orthogonality is enforced over the emitted history."
+    ],
+    "implementation_hypothesis": "Restrict to reversible, number-conserving, or explicitly balanced rule families with small radius, search jointly over rule tables and seeds, and score candidates first by modular and low-rank defect proxies before exact orthogonality. Use small Hadamard orders to test whether compact emitters exist at all before scaling.",
+    "experiment_seed": "Attempt exact reconstruction of small known Hadamard orders from compact CA emitters. If that works, move to 167-ring architectures and compare rule-search efficiency against direct matrix search.",
+    "closest_prior_art": [
+      {
+        "title": "Cellular Automata-Based Methods for the Construction of Mutually Unbiased Bases",
+        "paperId": "doi:10.3390/math13162600"
+      },
+      {
+        "title": "Bent Functions from Cellular Automata",
+        "paperId": "ePrint:2020/1272"
+      },
+      {
+        "title": "Growing Neural Cellular Automata",
+        "paperId": "doi:10.23915/distill.00023"
+      }
+    ],
+    "novelty_claim": "The key novelty is treating order-668 search as a compact rule-table induction problem rather than as entrywise optimization or direct CA construction of a different object class.",
+    "differentiation": "This intentionally avoids the existing power-of-two bent-function route and demands real order-668 row emission with explicit orthogonality scoring.",
+    "implementation_backlog": [
+      "Define admissible local rule families with built-in balance or reversibility constraints.",
+      "Implement a row-emission interface and fast proxy scores before full Gram evaluation.",
+      "Search for compact emitters of small known Hadamard orders as a feasibility gate.",
+      "Escalate to 167-ring emitters only if exact small-order reconstruction succeeds."
+    ],
+    "folder": "011_spacetime_row_emission_search",
+    "folder_plan": {
+      "root": "/home/archivara/work/repo/results/concept_evolve/tree/011_spacetime_row_emission_search",
+      "initial_files": [
+        "concept.json",
+        "README.md",
+        "literature.json"
+      ],
+      "next_dirs": [
+        "experiments",
+        "benchmarks",
+        "notes"
+      ]
+    }
+  }
+]

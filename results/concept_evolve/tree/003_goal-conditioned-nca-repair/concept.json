@@ -1,0 +1,57 @@
+{
+  "index": 3,
+  "title": "Goal-Conditioned Neural CA Repair",
+  "symbolic_name": "goal_conditioned_nca_repair",
+  "description": "Train a neural cellular automaton to repair corrupted near-Hadamard states instead of hand-crafting every local rule. The model sees only local neighborhoods plus global goal channels such as target defect budget or symmetry class, and transfer is measured from small solved orders to unseen larger instances.",
+  "domains": [
+    "neural_cellular_automata",
+    "machine_learning",
+    "combinatorial_design"
+  ],
+  "mathematical_formalization": "Let x_t(i) denote the local state of cell i in a compressed Hadamard representation and g denote a goal vector. Learn x_{t+1}(i) = f_theta(x_t(N_r(i)), g) with loss L(theta) = lambda_1 ||D_T||_1 + lambda_2 * 1[exact_fail] + lambda_3 * regularize(balance, symmetry, sparsity), where D_T is the final Gram-defect tensor.",
+  "analogical_connections": [
+    "A denoising autoencoder with strictly local receptive fields.",
+    "A learned LDPC or toric-code decoder, except the target object is a Hadamard candidate.",
+    "A self-healing material that learns how to close fractures without global supervision."
+  ],
+  "implementation_hypothesis": "Generate training data from exact smaller Hadamard constructions and modular near-solutions, corrupt them with packet noise, and train a differentiable or straight-through NCA to minimize final defect mass after T steps. Use transfer to unseen orders as the pass or fail criterion rather than in-sample reconstruction.",
+  "experiment_seed": "Create training sets from solved orders such as 4 * n below 200 and from order-428 controls. Evaluate exact-repair rate, out-of-distribution transfer, and robustness to different corruption families before touching 668.",
+  "closest_prior_art": [
+    {
+      "title": "Growing Neural Cellular Automata",
+      "paperId": "doi:10.23915/distill.00023"
+    },
+    {
+      "title": "Goal-Guided Neural Cellular Automata: Learning to Control Self-Organising Systems",
+      "paperId": "arXiv:2205.06806"
+    },
+    {
+      "title": "Differentiable cellular automata",
+      "paperId": "arXiv:1708.09546"
+    }
+  ],
+  "novelty_claim": "This proposes learned local repair policies for rigid combinatorial designs, not growth or maintenance of image-like patterns.",
+  "differentiation": "Existing NCA papers do not target Hadamard orthogonality constraints, and Hadamard search papers do not learn local CA repair policies from solved constructions.",
+  "implementation_backlog": [
+    "Choose a compressed grid representation and define channels for signs, defect summaries, and symmetry tags.",
+    "Generate corruption operators that preserve the same packet basis used in the symbolic CA baselines.",
+    "Train discrete and continuous-state variants and compare transfer rather than training loss.",
+    "Audit for memorization by withholding entire order families during training."
+  ],
+  "folder": "003_goal_conditioned_nca_repair",
+  "folder_plan": {
+    "root": "/home/archivara/work/repo/results/concept_evolve/tree/003_goal_conditioned_nca_repair",
+    "initial_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_dirs": [
+      "experiments",
+      "benchmarks",
+      "notes"
+    ]
+  },
+  "generated_at": "2026-03-18T08:37:20.022756+00:00",
+  "project_folder": "concept_evolve/tree/003_goal-conditioned-nca-repair"
+}

@@ -1,0 +1,57 @@
+{
+  "index": 6,
+  "title": "SAT Clause-Diffusion Automaton",
+  "symbolic_name": "sat_clause_diffusion_automaton",
+  "description": "Compile compressed orthogonality constraints into a SAT plus CAS factor graph and add a CA layer that transports clause stress toward repairable neighborhoods. The CA does not replace exact solvers; it decides where local exact reasoning should be spent and which packets are most worth flipping next.",
+  "domains": [
+    "sat",
+    "computer_algebra",
+    "cellular_automata"
+  ],
+  "mathematical_formalization": "Let z be the variable vector and let each clause c have slack s_c(z). The clause graph carries CA states x_t(c) = (s_c, conflict_cluster, local_history, recommendation), and local updates propagate conflict mass m_t across neighboring clauses while selecting a packet P_t subset z for exact SAT or CAS repair.",
+  "analogical_connections": [
+    "Heat diffusion in a CNF landscape where hotspots identify useful branch regions.",
+    "Distributed unit propagation with a spatial controller.",
+    "A repair crew scheduler that moves exact reasoning to the most stressed neighborhoods first."
+  ],
+  "implementation_hypothesis": "Build a compressed CNF for a structured Hadamard repair subproblem, compute clause slack and local dependency neighborhoods, and let a CA choose packet candidates before invoking SAT plus CAS on the stressed region. The main metric is not raw SAT speed but exact-hit rate per unit of exact reasoning on benchmark families.",
+  "experiment_seed": "Begin on Williamson and best-matrix instances with strong SAT+CAS baselines, then move to compressed repair subinstances derived from order-668 seeds. Measure solver calls saved and exact solutions found.",
+  "closest_prior_art": [
+    {
+      "title": "The SAT+CAS Method for Combinatorial Search with Applications to Best Matrices",
+      "paperId": "arXiv:1907.04987"
+    },
+    {
+      "title": "A SAT+CAS Method for Enumerating Williamson Matrices of Even Order",
+      "paperId": "custom:bright_ganesh_stevens_2018_williamson_even"
+    },
+    {
+      "title": "Applying Computer Algebra Systems with SAT Solvers to the Williamson Conjecture",
+      "paperId": "custom:bright_kotsireas_2020_williamson_conjecture"
+    }
+  ],
+  "novelty_claim": "This turns CA into a locality-sensitive orchestration layer for exact combinatorial search rather than a standalone heuristic or a new SAT encoding.",
+  "differentiation": "It is not just SAT+CAS, because the local update law is stateful and spatial. It is not generic CA either, because exact satisfiability and algebraic closure are still inside the loop.",
+  "implementation_backlog": [
+    "Choose one compressed Hadamard family whose constraints are local enough to expose a clause neighborhood graph.",
+    "Implement clause-slack tracking and conflict-cluster diffusion without calling SAT at every step.",
+    "Define when a stressed region is handed off to exact solving and when it is left to CA transport.",
+    "Audit whether the CA layer adds value beyond standard VSIDS-style branching heuristics."
+  ],
+  "folder": "006_sat_clause_diffusion_automaton",
+  "folder_plan": {
+    "root": "/home/archivara/work/repo/results/concept_evolve/tree/006_sat_clause_diffusion_automaton",
+    "initial_files": [
+      "concept.json",
+      "README.md",
+      "literature.json"
+    ],
+    "next_dirs": [
+      "experiments",
+      "benchmarks",
+      "notes"
+    ]
+  },
+  "generated_at": "2026-03-18T08:37:20.025738+00:00",
+  "project_folder": "concept_evolve/tree/006_sat-clause-diffusion-automaton"
+}
