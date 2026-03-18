@@ -1,0 +1,71 @@
+[
+  {
+    "id": "H1",
+    "title": "Autocorrelation-Realization CA on the 167-Cycle",
+    "novelty_claim": "Use a 1D cyclic cellular automaton as a generator for the specific missing length-167, weight-80 support required by the current order-668 cyclic reduction, rather than using CA as a generic matrix-search heuristic.",
+    "closest_prior_art": [
+      "Constantine and Constantine (2025) on the exact 167/80 cyclic obstruction",
+      "Goethals-Seidel / supplementary-difference-set / circulant sequence searches",
+      "CA combinatorial-design and bent-function generation cited in the local scout outputs"
+    ],
+    "differentiation": [
+      "Targets the exact unresolved obstruction identified by the scout outputs instead of a full 668x668 search from scratch.",
+      "Uses CA rule/seed space only as a proposal family for weight-80 supports and holds it to matched direct-search baselines on the same symmetry-reduced space.",
+      "Rejects any CA family that collapses into classical circulant or Williamson-like orbits."
+    ],
+    "easiest_falsifier": "Reconstruct the exact periodic-autocorrelation target and compare a modest matched-budget CA sweep against direct search on the same weight-80 support space; if CA does not beat the baseline, kill the branch.",
+    "evidence_plan": [
+      "Recover the exact 167/80 target from the current cyclic reduction.",
+      "Run at least one solved same-template positive control before touching p = 167.",
+      "Measure exact-hit rate or closest-target rate against a same-space direct-search baseline and audit reachability plus equivalence collapse."
+    ],
+    "budget_envelope": "Small: one target-reconstruction pass, one positive control, one matched-budget CA-vs-direct baseline sweep, then go/no-go.",
+    "selected": "champion"
+  },
+  {
+    "id": "H2",
+    "title": "Defect-Transport CA Lift From the 64-Modular 668 Seed",
+    "novelty_claim": "Use cellular automata as a Hadamard-specific defect-repair layer on the published 64-modular order-668 seed, with exact certification kept outside the CA.",
+    "closest_prior_art": [
+      "Eliahou (2025) 64-modular Hadamard matrix of order 668",
+      "Simulated annealing, quantum annealing, and QAOA-style Hadamard search methods listed in the scout outputs",
+      "Cellular-automaton decoder and local-repair paradigms in adjacent fields"
+    ],
+    "differentiation": [
+      "Starts from the best known near-solution instead of a cold start and operates on a defect graph rather than raw matrix entries.",
+      "Claims novelty only if the CA encoding uses Hadamard-specific invariants and outperforms same-neighborhood non-CA local search.",
+      "Treats modulus lifting as the benchmark, not generic energy reduction."
+    ],
+    "easiest_falsifier": "If the same update budget cannot lift solved smaller instances by one modulus step, or cannot improve the 64-modular 668 seed beyond modulus 64, kill the branch.",
+    "evidence_plan": [
+      "Reconstruct the published 64-modular seed and its residual defect pattern.",
+      "Benchmark CA updates against same-seed greedy or annealed local search on solved smaller lift tasks.",
+      "Promote only if the CA shows a real modulus-lift or exact-certification advantage under matched controls."
+    ],
+    "budget_envelope": "Medium-small: one defect reconstruction pass, one smaller-order lift ladder, one same-seed 668 attempt, then stop unless modulus improves.",
+    "selected": "backup"
+  },
+  {
+    "id": "H3",
+    "title": "Orbit-Representative Path CA on Canonical 167-Supports",
+    "novelty_claim": "Run CA on canonical path or run-length encodings of weight-80 supports so the dynamics act on orbit representatives rather than raw 167-bit strings.",
+    "closest_prior_art": [
+      "Path/run-length structure around the cyclic 167 obstruction described in the scout outputs",
+      "SAT+CAS and equivalence-aware structured enumeration",
+      "Automaton-style pruning ideas discussed in the bridge memo"
+    ],
+    "differentiation": [
+      "Keeps the target tied to the 167/80 obstruction while changing the state representation to orbit-aware tokens.",
+      "Only remains novel if the CA dynamics do more than encode a branch-and-bound or SAT prefilter.",
+      "Must beat a baseline that uses the same compressed representation without CA dynamics."
+    ],
+    "easiest_falsifier": "If the compressed-state CA cannot outperform a non-CA search on the same canonical representation, or spends most of its time outside valid canonical states, kill it.",
+    "evidence_plan": [
+      "Define canonical path representatives for weight-80 subsets of Z_167.",
+      "Construct a matched non-CA baseline on the same compressed representation.",
+      "Check whether the CA gains any target-hit rate or pruning advantage beyond representation alone."
+    ],
+    "budget_envelope": "Small reserve budget only after H1 and H2 fail for representation-specific reasons.",
+    "selected": "reserve"
+  }
+]
