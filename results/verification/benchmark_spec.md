@@ -1,91 +1,74 @@
 # Benchmark Spec
 
-## Scope
+## Audit Provenance
 
-This benchmark contract covers the current non-CA baselines in `hadamard_ca/search.py`:
+This audit was intended to use the `benchmark_auditor`, `explorer`, and `integrator` roles. A partial child artifact landed as `results/verification/benchmark_inputs_note.md`, but the full role round did not return the complete audit pack and local `codex exec` child launches were blocked by policy, so the audit below is the direct integrated review over the required local files plus that partial note.
 
-- `greedy`
-- `tabu`
-- `simulated_annealing`
-- `stochastic_hillclimb`
+## Approval Status
 
-All four methods are launched through `scripts/run_baseline.py` and evaluated only through `hadamard_ca.harness.run_harness(...)`.
+- Status: `approve_with_caveats`
+- Scope of approval: the current non-CA baseline setup is fair enough to use as the matched control pack for the first frontier pilot.
+- Non-approved interpretation: the current smoke batch is not evidence that any method is competitive on order `668`; it only validates that the baselines share one representation, one harness, and one accounting scheme before H1 is introduced.
 
-## Shared Seed / Representation Rules
+## Seed Matching
 
-- Every matched batch must use the same q/s seed file format: a JSON object with compact length-`l` arrays `q` and `s`.
-- Every matched batch must reuse the same exact seed file path across all methods.
-- The current smoke batch uses `results/baselines/smoke_seed_n7_q3.json`.
-- The canonical frontier seed for later order-668 runs is `results/frontier/order_668_64m/seed_sequences.json`.
-- All baselines operate in the same compact q/s coordinate system and the same packet basis: one packet equals one sign flip in either `q[i]` or `s[i]`.
-- No baseline may switch to a different search representation, act directly on the explicit `668 x 668` sign matrix, or use family-specific parameterizations unavailable to the CA branch.
+- All four baselines read the same q/s seed-file format through `scripts/run_baseline.py`.
+- The smoke run uses the same seed file for every method: `results/baselines/smoke_seed_n7_q3.json`.
+- The frontier template in `results/baselines/README.md` points every baseline at the same canonical order-`668` seed file: `results/frontier/order_668_64m/seed_sequences.json`.
+- This satisfies the seed-matching requirement as long as H1 is launched from the same seed file or a byte-for-byte copied q/s payload.
 
-## Accounting Rules
+## Representation Control
 
-- A matched batch must share the same:
-  - `evaluation_budget`
-  - `restart_count`
-  - `seed`
-  - `metadata.restart_packet_flips`
-- The current pilot configs in `results/baselines/*.json` use:
-  - evaluation budget `80`
-  - restart count `3`
-  - RNG seed `17`
-  - restart perturbation `2`
-- Method-specific hyperparameters are allowed only inside method metadata and must be recorded with the result file:
-  - `tabu_tenure`
-  - `initial_temperature`
-  - `cooling`
-  - `sample_size`
-- Fairness is enforced by a shared evaluation cap, not by forcing every method to consume the same number of evaluations. Early exit on exact hit is allowed and must remain visible in `objective_evaluations`.
-- Non-blocking caveat: the current restart wrapper reevaluates the start state once per restart and counts that evaluation. This accounting is consistent across the four baselines, so it does not break within-batch fairness for the present study.
+- `hadamard_ca.search` uses one coordinate system for all four baselines: compact q/s sequences of common length `l`.
+- The move basis is also shared: one packet flips one q-bit or one s-bit, so the neighborhood is identical across `greedy`, `tabu`, `simulated_annealing`, and `stochastic_hillclimb`.
+- The shared objective comes from `hadamard_ca.harness.objective_summary(q, s)`, derived from the same `q, s -> (A, B, C, D)` map used for the recovered order-`668` frontier seed.
+- This is sufficient representation control for the first frontier kill test. Any H1 comparison must stay inside the same q/s state space; otherwise any gain could come from the representation rather than from CA dynamics.
 
-## Restart Rules
+## Equal-Budget Accounting
 
-- Restart `0` must use the unmodified input seed.
-- Restarts `1..R-1` must be derived only through the shared deterministic restart rule in `hadamard_ca.search._restart_state(...)`.
-- The restart RNG is tied to `config.seed + restart_index`.
-- `restart_packet_flips` must match across all methods in a compared batch.
-- `restart_statistics` must be saved for every run and include requested restarts, completed restarts, and best restart index.
+- The current pilot configs all use the same explicit budget cap: `evaluation_budget = 80`.
+- The current pilot configs all use the same restart count: `restart_count = 3`.
+- The current pilot configs all use the same RNG seed: `seed = 17`.
+- The shared restart diversification knob is also matched: `restart_packet_flips = 2`.
+- Method-specific parameters (`tabu_tenure`, annealing temperature/cooling, stochastic sample size) change the move policy but do not change the accounting cap.
+- Actual objective evaluations consumed before early stop are reported per run through the harness field `objective_evaluations`. This is the correct comparison field for later experiments, together with `wall_seconds`.
 
-## Symmetry / Output Rules
+## Restart Comparability
 
-- Reporting uses the harness `canonical_fingerprint`, which identifies q/s states up to independent global sign flips of `q` and `s`.
-- Fingerprint equality is a reporting aid only. It is not the success criterion.
-- All reported runs must save:
-  - `method_name`
-  - `objective_evaluations`
-  - `restart_statistics`
-  - `objective_summary`
-  - `defect_histogram`
-  - `canonical_fingerprint`
-  - `exact_hit`
-  - `config`
-  - `seed_file`
+- Every baseline uses the same restart index schedule and the same deterministic RNG seeding pattern `seed + restart_index`.
+- Every baseline reports `restart_statistics` with requested restarts, completed restarts, and the best restart index.
+- This is adequate for the first frontier pilot, but later result tables must report distributions across methods rather than only the best restart trace.
 
-## Exact-Hit Rule
+## Symmetry And Output Handling
 
-- `exact_hit` is `True` if and only if the nonzero-lag correlation-defect support is zero in the shared q/s harness.
-- Off-diagonal Gram-defect metrics remain required, but they are secondary diagnostics rather than the primary success definition.
-- Defect-count-only improvement does not count as success.
-- `results/verification/harness_validation.md` validates the harness on exact smaller controls.
-- `results/baselines/smoke_summary.md` verifies that the four baselines all use the same exactness interface on one shared non-exact control seed; simulated annealing reaches exactness through a different exact fingerprint, which is acceptable because exactness is not defined by fingerprint matching.
+- The harness reports a `canonical_fingerprint` for every terminal q/s state.
+- Current canonicalization controls the shared q/s sign symmetries by minimizing over `(q, s)`, `(-q, s)`, `(q, -s)`, and `(-q, -s)`.
+- This is enough to prevent trivial double-counting inside the present q/s representation.
+- This is not a full Hadamard-equivalence canonicalization over row/column permutations or broader structured-family symmetries, so later novelty and family-leakage checks still need to stay explicit.
 
-## Frontier Go / No-Go Status
+## Exact-Hit Reporting
 
-Audit status: **Approve** for Phase 3 implementation work and for planning the first matched order-668 kill test.
+- `exact_hit` is defined through the shared harness as zero nonzero correlation defects after the `q, s -> (A, B, C, D)` lift.
+- The harness also reports `off_diagonal_gram_defect_support_size` and `max_defect_magnitude`, so exactness is not inferred from a soft proxy metric.
+- `results/verification/harness_validation.md` confirms the harness on two solved controls (`l = 5`, `l = 7`) with exact-hit, zero correlation defects, and zero off-diagonal Gram defects.
+- This exact-hit definition must remain the primary gate for H1. Lower defect counts alone do not count as success.
 
-Reason:
+## Smoke-Run Readout
 
-- seed matching is explicit
-- representation parity is explicit
-- evaluation-budget accounting is shared
-- restart policy is shared
-- symmetry handling is documented
-- exact-hit reporting is independent of a single reference fingerprint
+- `results/baselines/smoke_summary.md` shows that the four baselines all start from the same non-exact seed and reach exactness under the same shared budget/restart cap.
+- The simulated-annealing run ends at a different canonical q/s fingerprint than the exhaustively recovered reference control, which is acceptable because the exact-hit test is representation-level exactness, not fingerprint matching to one exemplar.
 
-Boundary:
+## Blocking Caveats Before Frontier Runs
 
-- **Go** for implementing and prechecking `H1_defect_syndrome_ca_64m`.
-- **Go** for the first seed-matched order-668 kill test once the stop-rule gate in `results/verification/benchmark_gate.md` exists.
-- **No-go** for broad frontier sweeps or claims of advantage before `item_010` defines the gate metrics and `item_016` logs matched control experiments under the same accounting.
+- The approved part is the benchmark scaffold, not the specific pilot budget `80`; frontier experiments must still lock one shared experiment config before execution.
+- Only one smoke seed has been exercised so far. This is enough to validate the setup, not enough to support performance claims.
+- H1 has not yet been implemented, so no CA-versus-baseline fairness claim should be made yet.
+- The current fingerprint canonicalization is representation-local, not full Hadamard equivalence; if frontier runs generate multiple exact states, broader equivalence handling may be needed in later verification.
+
+## Decision
+
+Proceed to Phase 3 and the first H1 build, with these rules held fixed:
+
+1. H1 must use the same q/s seed payload and the same evaluation-budget accounting.
+2. Frontier experiments must compare methods under one locked shared budget and one locked restart policy.
+3. Exact-hit rate remains the primary gate; near-exact improvements do not count as solving order `668`.
