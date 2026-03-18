@@ -1,0 +1,41 @@
+{
+  "symbolic_name": "chip_firing_anti_diagonal_dual",
+  "description": "Treat edge labels as signed chip-transfer channels carrying slope mass between neighboring copies of a subgraph. A vertex is forced when local cancellations leave only anti-diagonal charge outside the already-infected region, so sandpile-style potentials can guide where sparse edges should concentrate or dissipate mass.",
+  "domains": [
+    "chip_firing",
+    "cellular_automata",
+    "additive_combinatorics"
+  ],
+  "mathematical_formalization": "A state is c: V -> Z^2 with legal moves c -> c + v(delta_u - delta_v) for each edge uv labelled v and c -> c + x delta_u for each initial seed x. Force e when c|_{V \\ (T union {e})} = 0 and c(e) = a(1,-1), a != 0; search for edge layouts minimizing score while steering c toward such sparse anti-diagonal residues.",
+  "analogical_connections": [
+    "Abelian sandpiles, except the conserved quantity is a 2-vector of slopes.",
+    "Electrical-network flow concentration with anti-diagonal current as the output signal.",
+    "Avalanche scheduling in self-organized critical systems."
+  ],
+  "implementation_hypothesis": "Use a dual potential over vertices to estimate whether a proposed gluing pattern can focus enough anti-diagonal residue. Couple local search over edge labels to a fast chip-firing simulator and reject motifs whose potentials disperse too quickly.",
+  "experiment_seed": "On fixed small constructible graphs, compare potential-guided edge mutations against uniform random mutations and track which search finds forceable instances faster.",
+  "closest_prior_art": [
+    {
+      "title": "Linear algebra and bootstrap percolation",
+      "paperId": "arXiv:1107.1410"
+    },
+    {
+      "title": "U-bootstrap percolation: Characterizations and metastability",
+      "paperId": "arXiv:1806.11405"
+    },
+    {
+      "title": "Generalized Arithmetic Kakeya",
+      "paperId": "arXiv:2411.13395"
+    }
+  ],
+  "novelty_claim": "The new ingredient is a conserved-charge dual picture for arithmetic Kakeya certificates, intended to produce search heuristics and potentials rather than a direct theorem.",
+  "differentiation": "Existing bootstrap-percolation papers optimize infection thresholds or times; this concept introduces vector-valued charge conservation and anti-diagonal concentration as the core search proxy.",
+  "folder_plan": [
+    "solver/chip_dual.py",
+    "solver/potential_functions.py",
+    "experiments/potential_guided_local_search.py",
+    "notes/chip_firing_dual.md"
+  ],
+  "generated_at": "2026-03-18T20:58:54.569777+00:00",
+  "project_folder": "concept_evolve/tree/002_chip-firing-anti-diagonal-dual"
+}

@@ -1,0 +1,44 @@
+{
+  "index": 5,
+  "symbolic_name": "regional_boundary_control_search",
+  "description": "Translate the micro-level CA design problem into a SAT-style regional controllability problem. Boundary conditions, local rule tables, and exact extraction constraints are solved together so that only microdynamics capable of targeting a prescribed solved region survive.",
+  "domains": [
+    "cellular_automata_control",
+    "sat_smt",
+    "additive_combinatorics"
+  ],
+  "mathematical_formalization": "Introduce Boolean variables for local cell states z_{v,t}, rule-table entries \\rho, and regional targets y_v. Constrain z_{v,t+1}=\\rho(N(v,t)), require y_v=1 on a target shell or subrectangle, and add compilation clauses guaranteeing that the induced activation history yields legal relations in \\mathbb{Z}^{2|V|}. Optimize lexicographically for feasibility, then low extracted score.",
+  "analogical_connections": [
+    "Regional controllability becomes targeted proof growth toward a shell of vertices.",
+    "Boundary forcing in CA mirrors choosing an initial seed set R on the perimeter of a constructible block.",
+    "SAT acts as a compiler from local rule hypotheses to exact certificate obligations."
+  ],
+  "implementation_hypothesis": "Use a SAT or SMT solver on unrolled space-time windows of size up to 6x6xT. Ask for any rule table and boundary seed pattern whose compiled history solves a designated core region, then post-process feasible instances into full-certificate candidates.",
+  "experiment_seed": "Fix X first and search over binary or ternary local state alphabets. Compare the hit rate of SAT-produced motifs against unguided brute force on the same window size and extraction backend.",
+  "closest_prior_art": [
+    {
+      "title": "Regional Controllability of Cellular Automata as a SAT Problem",
+      "paperId": "arXiv:2504.03691"
+    },
+    {
+      "title": "Differentiable Logic Cellular Automata: From Game of Life to Pattern Generation",
+      "paperId": "arXiv:2506.04912"
+    },
+    {
+      "title": "Graph grammar induction",
+      "paperId": "DOI:10.1016/bs.adcom.2019.07.003"
+    }
+  ],
+  "novelty_claim": "The novelty is the joint satisfiability layer: local CA reachability is not enough, so the search is constrained by exact arithmetic certificate compilation from the outset.",
+  "differentiation": "This is not ordinary CA controllability because the target is not a raw configuration. The target is a configuration whose history can be certified as a legal forcing proof under integer-support restrictions.",
+  "folder_plan": {
+    "folder": "005_regional_boundary_control_search",
+    "planned_files": [
+      "concept.json",
+      "README.md",
+      "literature.json",
+      "experiments/sat_unroll_search.py",
+      "notes/constraint_schema.md"
+    ]
+  }
+}

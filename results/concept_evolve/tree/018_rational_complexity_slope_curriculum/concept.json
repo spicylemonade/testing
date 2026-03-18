@@ -1,0 +1,39 @@
+{
+  "symbolic_name": "rational_complexity_slope_curriculum",
+  "description": "Use rational complexity as a curriculum variable for the slope set X and for when new labels are allowed to enter the local automaton. The search begins with low-complexity slopes that support many cheap local identities, and only expands X when the current CA dynamics provably stalls.",
+  "domains": [
+    "additive_combinatorics",
+    "curriculum_learning",
+    "cellular_automata"
+  ],
+  "mathematical_formalization": "Let kappa(x) be a rational-complexity penalty on nonzero x in X. Search over nested alphabets X_0 subset X_1 subset ... with objective score(G,R,T) + beta sum_{x in X} kappa(x); permit the transition X_j -> X_{j+1} only after the local closure operator on X_j reaches a fixed point without full forcing.",
+  "analogical_connections": [
+    "Curriculum learning where the model earns new symbols only after exhausting the current alphabet.",
+    "Renormalization: start with coarse low-complexity slopes and refine only when necessary.",
+    "Morphogen stages in developmental systems."
+  ],
+  "implementation_hypothesis": "Use Tao-style rational-complexity scoring to prioritize candidate slopes, couple that with the quotient-module CA, and prune any search branch that adds complexity before all simpler closure options are exhausted.",
+  "experiment_seed": "Compare unrestricted slope mutation against the curriculum on identical beam-search budgets, and track score, number of unique local lemmas, and verifier success rate.",
+  "closest_prior_art": [
+    {
+      "title": "Sum-difference exponents for boundedly many slopes, and rational complexity",
+      "paperId": "arXiv:2511.15135"
+    },
+    {
+      "title": "Generalized Arithmetic Kakeya",
+      "paperId": "arXiv:2411.13395"
+    },
+    {
+      "title": "Intrinsically Motivated Discovery of Diverse Patterns in Self-Organizing Systems",
+      "paperId": "arXiv:1901.10857"
+    }
+  ],
+  "novelty_claim": "The new idea is to convert rational complexity from an analytic descriptor into a concrete control knob for certificate search and CA alphabet growth.",
+  "differentiation": "The math papers study rational complexity analytically; the self-organization paper studies open-ended exploration. This concept merges them into an exact search prior for AK witnesses.",
+  "folder_plan": [
+    "solver/rational_complexity.py",
+    "solver/curriculum_scheduler.py",
+    "experiments/slope_curriculum_scan.py",
+    "notes/rational_complexity_curriculum.md"
+  ]
+}

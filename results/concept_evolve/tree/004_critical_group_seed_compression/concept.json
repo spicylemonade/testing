@@ -1,0 +1,44 @@
+{
+  "index": 4,
+  "symbolic_name": "critical_group_seed_compression",
+  "description": "Focus the abelian-network bridge on the seed term r rather than on dynamics alone. Compute Smith-normal-form style invariants of the extracted relation lattice to remove seed generators that are redundant modulo the critical subspace, directly targeting the score numerator.",
+  "domains": [
+    "algebraic_graph_theory",
+    "chip_firing",
+    "automated_search"
+  ],
+  "mathematical_formalization": "Given a compiled candidate with relation lattice L_G \\subseteq \\mathbb{Z}^{2|V|}, solve \\min |R_0| subject to \\forall v\\in V,\\ (1,-1)e_v \\in \\operatorname{span}_{\\mathbb{Z}}(L_G\\cup R_0) and each generator in R_0 has singleton support drawn from X. Use Smith normal form of \\mathbb{Z}^{2|V|}/L_G to expose residue classes that require explicit seeding.",
+  "analogical_connections": [
+    "Critical-group residues act like stubborn defects that must be seeded away.",
+    "Seed compression resembles syndrome-basis minimization in coding theory.",
+    "The numerator m+r is treated as a budget, so algebraic redundancy is cashable immediately."
+  ],
+  "implementation_hypothesis": "After any candidate motif is exactly extracted, compute a sparse integer basis for its relation lattice and run Smith-normal-form or modular reductions to identify indispensable singleton seeds. Then greedily or exactly minimize R while preserving full coverage of target singletons.",
+  "experiment_seed": "Take the best 500 motifs from the odometer-guided ranking stage and measure how much r can be reduced without changing m, n, or t. Retain the idea only if the median reduction in r is material relative to total score.",
+  "closest_prior_art": [
+    {
+      "title": "Abelian networks III. The critical group",
+      "paperId": "arXiv:1409.0170"
+    },
+    {
+      "title": "On the arithmetic Kakeya conjecture of Katz and Tao",
+      "paperId": "arXiv:1712.02108"
+    },
+    {
+      "title": "Bounds on arithmetic projections, and applications to the Kakeya conjecture",
+      "paperId": "Math. Res. Lett. 6 (1999) 625-630"
+    }
+  ],
+  "novelty_claim": "The new element is an explicit algebraic compression objective for seed sets in arithmetic Kakeya certificates, driven by quotient-lattice structure rather than by ad hoc pruning.",
+  "differentiation": "Critical groups are classical; what is not classical is optimizing the exact verifier score by using quotient-lattice information to compress singleton seeds under the user's legality rules.",
+  "folder_plan": {
+    "folder": "004_critical_group_seed_compression",
+    "planned_files": [
+      "concept.json",
+      "README.md",
+      "literature.json",
+      "experiments/minimize_seed_sets.py",
+      "notes/snf_pipeline.md"
+    ]
+  }
+}

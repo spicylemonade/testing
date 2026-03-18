@@ -1,45 +1,135 @@
 # Prior Art Gap Analysis
 
-Update this file throughout the run. If you discover a branch that is already well-covered by prior work, document it here and pivot rather than repeating it.
+This file now separates three things that were previously conflated:
 
-## 1. Cohomological splitting conditions of vector bundles on ${\mathbf P}^{n_1}\times\cdots\times{\mathbf P}^{n_s}$ (2024)
-- Paper ID: 7a1376e963ae987466df158d982bf6bd757c4912
-- Why it is close:
-- Differentiation hypothesis:
-- Evidence artifact(s):
-- Pivot decision (if any):
+1. the corrupted watchlist false positives,
+2. the actual arithmetic Kakeya / sum-difference line,
+3. the nearby cellular-automata, bootstrap-percolation, abelian-network, and local-decoder overlap lines.
 
-## 2. $\mathbf{{\mathbb Z}_2\ \times {\mathbb Z}_2}$-graded Lie (super)algebras and generalized quantum statistics (2025)
-- Paper ID: 9bc86a241ba1244cdc9579a5f18f931df1db06ae
-- Why it is close:
-- Differentiation hypothesis:
-- Evidence artifact(s):
-- Pivot decision (if any):
+The live novelty bar is narrow: Phase 1 supports only a certificate-first CA-guided search/compiler claim, not a new theorem, not a new arithmetic Kakeya formulation, and not a validated CA model of forcing.
 
-## 3. Exceptional theta correspondence $\mathbf{F}_{4}\times\mathbf{PGL}_{2}$ for level one automorphic representations (2025)
-- Paper ID: d67c6a62ce50742fac83e6b2308dd41e206351ab
-- Why it is close:
-- Differentiation hypothesis:
-- Evidence artifact(s):
-- Pivot decision (if any):
+## A. Corrupted Watchlist False Positives
 
-## 4. Functions on products $X \times Y$ with applications to Ascoli spaces, $k_{\mathbb{R}}$-spaces and $s_{\mathbb{R}}$-spaces (2025)
-- Paper ID: ef14939a17f693474f453fe788e8b27f15964e2d
-- Why it is close:
-- Differentiation hypothesis:
-- Evidence artifact(s):
-- Pivot decision (if any):
+These entries remain relevant only as a reminder that the original novelty guard was seeded by a broken query (`mathbf times mathbb then set leq list d_1`) rather than by the real problem.
 
-## 5. Generalized Curvatures of Curves in $\mathbb{R}^n$ (2025)
-- Paper ID: 47ca81e53c9c2e546894167cbce4291ebf6bd7e3
-- Why it is close:
-- Differentiation hypothesis:
-- Evidence artifact(s):
-- Pivot decision (if any):
+### 1. Cohomological splitting conditions of vector bundles on ${\mathbf P}^{n_1}\times\cdots\times{\mathbf P}^{n_s}$ (2024)
+- Paper ID: `7a1376e963ae987466df158d982bf6bd757c4912`
+- Why it is close: It is not actually close. The overlap came from TeX debris such as `\mathbf`, `\times`, and `\cdots`, not from arithmetic Kakeya, forcing pairs, constructible graphs, or CA search.
+- Differentiation hypothesis: Treat as a watchlist false positive, not as a mathematical competitor.
+- Evidence artifact(s): `results/literature/prior_art_watchlist.md`, `results/literature/phase1_query_log.json`, `results/phase1_repo_map.md`
+- Pivot decision (if any): No novelty burden beyond documenting that the original watchlist was corrupted.
 
-## 6. Generic forcing-as-cellular-automaton restatement (screened out)
-- Paper ID: internal-screen
-- Why it is close: A plain restatement of the forcing process as a monotone cellular automaton only renames the existing dynamics and adds no imported invariant, objective, or screening tool.
-- Differentiation hypothesis: Keep only bridges that introduce an external control parameter from another field, namely critical droplet difficulty, abelian critical-group structure, or local-decoder thresholds.
-- Evidence artifact(s): `results/swarm/hypothesis_bridge.md`
-- Pivot decision (if any): Dropped the generic CA mimicry angle and pivoted to three stronger cross-domain hypotheses.
+### 2. $\mathbf{{\mathbb Z}_2\ \times {\mathbb Z}_2}$-graded Lie (super)algebras and generalized quantum statistics (2025)
+- Paper ID: `9bc86a241ba1244cdc9579a5f18f931df1db06ae`
+- Why it is close: Only symbolic overlap from `\mathbb Z_2 \times \mathbb Z_2`; no overlap in additive combinatorics, Kakeya exponents, or verifier-compatible certificates.
+- Differentiation hypothesis: Topical disjointness; do not cite as meaningful nearby prior art for the research claim.
+- Evidence artifact(s): `results/literature/prior_art_watchlist.md`, `results/literature/phase1_query_log.json`
+- Pivot decision (if any): Keep only as evidence that keyword silence cannot be trusted.
+
+### 3. Exceptional theta correspondence $\mathbf{F}_{4}\times\mathbf{PGL}_{2}$ for level one automorphic representations (2025)
+- Paper ID: `d67c6a62ce50742fac83e6b2308dd41e206351ab`
+- Why it is close: Product notation only.
+- Differentiation hypothesis: Pure false positive; it does not pressure-test a CA-guided arithmetic Kakeya search.
+- Evidence artifact(s): `results/literature/prior_art_watchlist.md`, `results/phase1_repo_map.md`
+- Pivot decision (if any): None needed beyond explicit exclusion.
+
+### 4. Functions on products $X \times Y$ with applications to Ascoli spaces, $k_{\mathbb{R}}$-spaces and $s_{\mathbb{R}}$-spaces (2025)
+- Paper ID: `ef14939a17f693474f453fe788e8b27f15964e2d`
+- Why it is close: Product notation only.
+- Differentiation hypothesis: General topology, not arithmetic Kakeya or certificate search.
+- Evidence artifact(s): `results/literature/prior_art_watchlist.md`
+- Pivot decision (if any): Excluded from the actual prior-art frontier.
+
+### 5. Generalized Curvatures of Curves in $\mathbb{R}^n$ (2025)
+- Paper ID: `47ca81e53c9c2e546894167cbce4291ebf6bd7e3`
+- Why it is close: Shared `\mathbb{R}^n` token only.
+- Differentiation hypothesis: Differential geometry false positive.
+- Evidence artifact(s): `results/literature/prior_art_watchlist.md`
+- Pivot decision (if any): Excluded from the actual prior-art frontier.
+
+### 6. Nonequilibrium universality of the nonreciprocally coupled $\mathbf{O(n_1) \times O(n_2)}$ model (2024)
+- Paper ID: `f5aa9ad0ae1a76feb3edaf8c258a259d8ad7e866`
+- Why it is close: Statistical-physics false positive caused by symbolic overlap.
+- Differentiation hypothesis: Not a real comparator for the arithmetic Kakeya task.
+- Evidence artifact(s): `results/literature/prior_art_watchlist.md`
+- Pivot decision (if any): Excluded from novelty comparisons.
+
+## B. Actual Arithmetic Kakeya / Sum-Difference Line
+
+### 1. Katz-Tao (1999), `BOUNDS ON ARITHMETIC PROJECTIONS, AND APPLICATIONS TO THE KAKEYA CONJECTURE`
+- Why it is close: Foundational source of the arithmetic-projection formulation that the current verifier-friendly certificate language descends from.
+- Differentiation hypothesis: Any surviving contribution must be an exact certificate search or extracted witness family inside this line, not a new foundational reformulation.
+- Evidence artifact(s): `sources.bib`, `results/literature/literature_snapshot.json`, `results/swarm/gap_map.md`
+- Pivot decision (if any): Treat as the baseline ancestor; do not claim a new projection framework.
+
+### 2. Green-Ruzsa (2017), `On the arithmetic Kakeya conjecture of Katz and Tao`
+- Why it is close: Direct modern formulation/equivalence source for the arithmetic Kakeya conjecture.
+- Differentiation hypothesis: The only honest distinction is operational: certificate-first search and exact finite witness extraction.
+- Evidence artifact(s): `sources.bib`, `results/literature/literature_snapshot.json`, `results/swarm/falsifier.md`
+- Pivot decision (if any): No novelty claim should be framed as a new equivalent formulation.
+
+### 3. Cowen-Breen, Karangozishvili, Varadarajan, Wang (2020), `Pattern Problems related to the Arithmetic Kakeya Conjecture`
+- Why it is close: Occupies the pattern-reformulation and implication lane adjacent to the certificate problem.
+- Differentiation hypothesis: Avoid another equivalence or pattern-problem restatement; only exact certificate search methodology or verified constructions can differentiate.
+- Evidence artifact(s): `sources.bib`, `results/literature/literature_snapshot.json`
+- Pivot decision (if any): Treat as a reason not to market the work as “another reformulation.”
+
+### 4. Pohoata-Zakharov (2024), `Generalized Arithmetic Kakeya`
+- Why it is close: Closest theorem-level extension in the repaired snapshot.
+- Differentiation hypothesis: Unless the work proves new sum-difference inequalities or a generalized theorem, the honest claim stays “computational search protocol in the original verifier setting.”
+- Evidence artifact(s): `sources.bib`, `results/literature/literature_snapshot.json`, `results/swarm/gap_map.md`
+- Pivot decision (if any): Do not present CA search as a competing theorem.
+
+### 5. Tao (2025), `Sum-difference exponents for boundedly many slopes, and rational complexity`
+- Why it is close: Main barrier note for any bounded-slope or low-rational-complexity CA family.
+- Differentiation hypothesis: A candidate family is not differentiated if it remains trapped in bounded-slope or low rational-complexity behavior after exact extraction.
+- Evidence artifact(s): `sources.bib`, `results/literature/literature_snapshot.json`, `results/swarm/falsifier.md`
+- Pivot decision (if any): Keep as an active kill condition against tiny-rule or bounded-slope overclaiming.
+
+### 6. Lemm (2014), `New counterexamples for sums-differences`
+- Why it is close: Adjacent counterexample line warning against over-trusting symmetric or homogeneous search spaces.
+- Differentiation hypothesis: Use it as a design pressure toward asymmetric, non-uniform `X`, `R`, and `T`, not as direct prior art for the target theorem.
+- Evidence artifact(s): `sources.bib`, `results/literature/literature_snapshot.json`, `results/swarm/gap_map.md`
+- Pivot decision (if any): Keep live as a warning signal rather than as a theorem competitor.
+
+## C. Folklore Overlap Lines That Can Swallow Weak Claims
+
+### 1. Bootstrap / critical cellular automata
+- Why it is close: The easiest repackaging failure is “forcing behaves like bootstrap percolation.”
+- Differentiation hypothesis: The only defensible bridge is that droplet-like or criticality-style quantities predict verified score after legal extraction and matched arithmetic controls.
+- Evidence artifact(s): `sources.bib` (Bollobas-Duminil-Copin-Morris-Smith; Hartarsky-Mezei), `results/swarm/falsifier.md`
+- Pivot decision (if any): The generic forcing-as-CA restatement has already been screened out.
+
+### 2. Abelian networks / chip-firing / sandpiles
+- Why it is close: H2 is one sentence away from “arithmetic forcing is an abelian network.”
+- Differentiation hypothesis: The bridge survives only if target-direction abelian invariants improve screening after matching on raw arithmetic descriptors such as rank, Smith form, support size, edge density, and determinant pattern in `X`.
+- Evidence artifact(s): `sources.bib` (Bond-Levine I/II/III), `results/swarm/director_brief.md`, `results/swarm/falsifier.md`
+- Pivot decision (if any): H2 remains backup-only until H1 fails transfer.
+
+### 3. Local decoders / Tanner gadgets / expander-code folklore
+- Why it is close: H3 can collapse into “local decoder plus compiler.”
+- Differentiation hypothesis: The route matters only if local decoding is exactly equivalent to legal forcing and produces a matched-baseline gain in verified score.
+- Evidence artifact(s): `sources.bib` (Kubica-Preskill; Hemenway-Ostrovsky-Wootters), `results/swarm/hypothesis_bridge.md`
+- Pivot decision (if any): Keep as reserve-only and kill quickly if realized slope complexity stays `O(1)` or periodic.
+
+## D. Live Novelty Position After Phase 1
+
+- Defensible now:
+  - A certificate-first CA-guided search protocol with exact verifier extraction.
+  - A narrow claim that imported invariants or interfaces may be useful screening tools only if they beat matched arithmetic baselines.
+- Not defensible now:
+  - “We solved arithmetic Kakeya using cellular automata.”
+  - “The forcing process is a cellular automaton.”
+  - “The verifier-friendly certificate language is a new mathematical framework.”
+  - Any claim that score improvement has already been demonstrated.
+
+## E. Current Pivot Discipline
+
+- Champion: `H1_macrocell_substitution`
+- Backup: `H2_target_direction_abelian`
+- Reserve: `H3_slope_bloom`
+- Immediate failure modes that trigger pivot or kill:
+  - level-2 transfer is flat or worse than level-1,
+  - exact extraction needs bespoke global repair,
+  - bounded-slope / low rational-complexity behavior survives extraction,
+  - imported CA/abelian/decoder language adds no predictive power beyond direct arithmetic features.

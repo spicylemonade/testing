@@ -1,0 +1,44 @@
+{
+  "index": 6,
+  "symbolic_name": "differentiable_logic_certificate_synthesis",
+  "description": "Use differentiable logic cellular automata to learn discrete, asynchronous local rules that are already close to verifier-compatible behavior. The training objective is a surrogate for extracted arithmetic Kakeya score plus hard penalties for any pattern that cannot be compiled into exact singleton-supported relations.",
+  "domains": [
+    "neural_cellular_automata",
+    "differentiable_logic",
+    "program_synthesis"
+  ],
+  "mathematical_formalization": "Let \\phi_\\theta: \\{0,1\\}^m \\to \\{0,1\\}^m be a local recurrent circuit with shared parameters. Unroll it on a grid to obtain states h_{v,t}; map selected channels to edge labels and seed flags. Train \\theta to minimize \\mathcal{L}(\\theta)=\\widehat{S}(\\theta)+\\lambda_1\\,\\mathrm{illegal}(\\theta)+\\lambda_2\\,\\mathrm{noncompile}(\\theta), then keep only solutions whose extracted certificate is exact.",
+  "analogical_connections": [
+    "The logic gates are a learnable version of a hand-designed local proof compiler.",
+    "Binary hidden channels stand in for latent proof obligations that need to be discharged locally.",
+    "Asynchronous updates mimic the non-synchronous elimination order of integer linear combinations."
+  ],
+  "implementation_hypothesis": "Train DiffLogic CA on tiny instances where exhaustive search can certify the best available score. Distill the learned rule into a small truth table, then run exact extraction and reject any rule that relies on nonlocal hidden behavior.",
+  "experiment_seed": "Use 4x4 and 5x5 product grids with fixed X and train against a dataset of exact certificates plus hard negatives. Measure generalization to larger grids only after exact compileability is stable on the training scale.",
+  "closest_prior_art": [
+    {
+      "title": "Differentiable Logic Cellular Automata: From Game of Life to Pattern Generation",
+      "paperId": "arXiv:2506.04912"
+    },
+    {
+      "title": "Growing Neural Cellular Automata",
+      "paperId": "DOI:10.23915/distill.00023"
+    },
+    {
+      "title": "CAX: Cellular Automata Accelerated in JAX",
+      "paperId": "arXiv:2410.02651"
+    }
+  ],
+  "novelty_claim": "The concept is new only if discrete learned rules can be compiled into exact arithmetic certificates, not merely into attractive visual patterns or robust memories.",
+  "differentiation": "Unlike standard NCA work, success is not judged by reconstruction, regeneration, or aesthetic pattern quality. The only success criterion is exact extracted score under the arithmetic verifier.",
+  "folder_plan": {
+    "folder": "006_differentiable_logic_certificate_synthesis",
+    "planned_files": [
+      "concept.json",
+      "README.md",
+      "literature.json",
+      "experiments/train_difflogic_ca.py",
+      "notes/extraction_loss.md"
+    ]
+  }
+}
