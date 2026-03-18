@@ -2,60 +2,65 @@
 
 Snapshot date: 2026-03-18 UTC
 
-## Scope
+## Audit Scope
 
-This final audit integrates the role-backed verification artifacts already produced in this run:
+This final audit reviews:
 
+- `results/final_assessment.md`
+- `results/verification/verification_summary.md`
 - `results/verification/benchmark_report.md`
 - `results/verification/novelty_report.md`
 - `results/verification/citation_audit.md`
-- `results/verification/verification_summary.md`
-- `results/final_assessment.md`
-- `results/concept_evolve/bridge_candidates.json`
+- `results/literature/prior_art_gap.md`
 
-These artifacts carry the judgments from the required specialist roles for benchmark integrity, novelty scope, and citation support. This file freezes those judgments into one pass/fail matrix for closeout.
+The required final-review roles were launched:
 
-## Pass / Fail Matrix
+- `citation_auditor`
+- `benchmark_auditor`
+- `novelty_checker`
+- `integrator`
 
-### Claim scope
+Those child threads did not return usable memos before timing out and then failing on close, so the judgments below are synthesized directly from the audited artifacts.
+
+## Judgments
+
+### Claim Scope
 - Judgment: `pass`
-- Reason: the final assessment and verification summary restrict the claim to a verifier-coupled CA design, blocker-aware experiment plan, and verifier-recovery pivot.
-- Additional guardrail: the iterate-promoted bridge set is treated only as post-blocker planning, not as evidence of verified witness progress.
-- Failure condition that was avoided: no theorem claim, no verified witness-improvement claim, and no claim of empirical CA superiority appears in the final documents.
+- Reason: the final assessment and verification summary stay within blocker-level and design-level claims. They do not assert a new theorem, a verified witness, or empirical CA superiority.
 
-### Citation support
-- Judgment: `pass` for blocker-level and design-level claims; `fail` for any stronger claim
-- Reason: `sources.bib` and `results/literature/prior_art_gap.md` cover the arithmetic-Kakeya, modular-adjacent, abelian-network, additive-CA, and automated-search comparisons actually used in the run.
-- Remaining fail zone: reframing-only domains in `results/concept_evolve/reframings.json` are still citation debt and cannot be promoted to literature comparisons without new sources.
+### Citation Support
+- Judgment: `pass with boundary`
+- Reason: `sources.bib` and `results/literature/prior_art_gap.md` support the arithmetic-Kakeya, modular-adjacent, abelian-network, additive-CA, and automated-search comparisons used in the blocker narrative.
+- Boundary: reframing-only domains remain citation debt and are correctly marked as hypothesis generators rather than established prior-art comparisons.
 
-### Compute parity
-- Judgment: `pass` at the blocker layer; `fail` at the execution layer
-- Reason: budgets remained explicit and unspent, no baseline got hidden extra compute, and no method received a softer decoder.
-- Remaining fail zone: parity was documented rather than exercised because the exact verifier never opened the first gate.
+### Compute Parity
+- Judgment: `pass at integrity layer`, `fail at execution layer`
+- Reason: planned budgets stayed explicit and unspent, no method received hidden extra decoder access, and no proxy metric replaced the exact score.
+- Failure condition: parity was documented but never exercised, because no exact verifier existed.
 
-### Missing controls
+### Missing Controls
 - Judgment: `fail unresolved`
-- Reason: label-shuffle, decoder-matched, held-out-grid, and complexity controls were correctly specified and explicitly left empty, but they were not executed because no exact-valid family was promoted.
-- Why this is still acceptable for closeout: the reports preserve the missing controls honestly instead of implying they passed.
+- Reason: label-shuffle, matched non-CA, decoder-matched, held-out-grid, and complexity-sweep controls were planned but not executed.
+- Clarification: the omission is documented honestly and traced to the missing-verifier blocker, not hidden or misreported as a soft pass.
 
-### Unresolved blockers
-- Judgment: `fail`
-- Reason: no exact integer decoder/verifier for six-line arithmetic-Kakeya witnesses was found in the repo snapshot or targeted public checks.
-- Consequence: the run cannot support experimental or mathematical progress claims.
+### Unresolved Blockers
+- Judgment: `fail unresolved`
+- Reason: the exact integer decoder/verifier for six-line arithmetic-Kakeya witnesses is still absent from the repo snapshot and the targeted public checks.
 
-## Overall Judgment
+## Overall Verdict
 
-Overall closeout judgment: `fail for scientific completion`, `pass for reporting integrity`.
+- Evidence integrity: `pass`
+- Mathematical progress claim: `fail`
+- Experimental progress claim: `fail`
+- Final closeout honesty: `pass`
 
-The run failed to clear the exact-verifier blocker and therefore failed to produce exact verified witness progress. It passed the honesty test: claim scope, citation scope, compute-parity documentation, and missing-control disclosure stayed disciplined all the way to closeout.
+## Bottom Line
 
-## Omissions That Remain Real
+The repository now supports an honest blocker-aware handoff:
 
-1. No exact verifier implementation or recovered external checker.
-2. No exact-valid witness family.
-3. No executed control distributions beyond explicit empty reports.
-4. No empirical basis for choosing among the promoted bridges beyond design-level and blocker-level reasoning.
+- design and novelty claims are bounded tightly enough to be defensible;
+- bibliography support is adequate for those bounded claims;
+- compute parity was preserved by refusing proxy experimentation;
+- missing controls and the verifier blocker remain explicit unresolved failures.
 
-## Audit-Safe Final Sentence
-
-The repository supports a faithful report only if it says that the CA program ended at an audited verifier blocker, with a narrowed post-blocker bridge set and no verified arithmetic-Kakeya witness advance.
+Any stronger claim would outrun the evidence.

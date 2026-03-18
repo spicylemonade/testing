@@ -6,17 +6,22 @@ Unresolved blocker.
 
 ## Summary
 
-The dominant unanswered question is not which CA branch to try next. It is how to recover or implement the exact integer verifier and six-line decoder needed to evaluate any branch honestly.
+The central unresolved question is not which CA family to try next. It is whether a shared exact integer decoder/verifier for six-line arithmetic-Kakeya witnesses can be recovered or implemented at all inside this workflow.
 
-Until that dependency is met, every experiment remains blocked and every claimed score distribution stays empty by design.
+That dependency blocked:
+
+- the tiny-grid H1 sweep,
+- all control runs,
+- the full complexity sweep,
+- and any empirical claim of score improvement or novelty beyond design discipline.
 
 ## Traceback
 
 - `results/verification/verification_summary.md`
-- `results/core/lane_gates.md`
 - `results/experiments/h1_tiny_grid_report.md`
+- `results/core/lane_gates.md`
 - `results/final_assessment.md`
 
 ## Dependency
 
-All future work depends on an exact evaluator. Without it, the correct action is to stop experimental claims and preserve the run as a design-and-audit checkpoint only.
+All exact follow-up depends on recovering or implementing this verifier first. Without it, the run remains limited to audited design, literature differentiation, and bridge prioritization.
