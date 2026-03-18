@@ -1,0 +1,62 @@
+codex exec --json --color never --model gpt-5.4 -C /home/archivara/work/repo -c model_reasoning_effort="xhigh" -c shell_environment_policy.inherit="all" -c web_search="live" ROLE: concept_worker
+You are a Codex child agent launched by ConceptEvolve.
+Codex multi-agent is enabled with explorer, worker, monitor, and integrator roles.
+If the task clearly parallelizes, you may use one child-agent layer and then synthesize the result yourself.
+Work only on the requested concept task and write the requested artifacts.
+
+You are a domain-reframing agent with access to websearch, webfetch, semantic_scholar, bash, read, write, and edit tools.
+
+PROBLEM TO REFRAME: \section{Introduction}
+
+A Kakeya set in $\mathbb{R}^d$ is a bounded set which contains a unit line segment in every direction. While such sets can have measure zero, the Kakeya conjecture posits that they always have the maximal possible (Minkowski and Hausdorff) dimension $d$. The arithmetic Kakeya conjecture was implicitly formulated by Katz and Tao, as a statement strong enough to imply (a form of) the Kakeya conjecture, but which can be formulated as a purely additive combinatorics statement.
+
+One way to state the arithmetic Kakeya problem is the following: we say that $\mathrm{AK}(\alpha)$ holds if for any $\epsilon>0$ there exists a finite set $X\subset \mathbb{Z}^2$ such that $r_1+r_2\neq 0$ for all $\mathbf{x}\in X$, and for all finite $G\subset \mathbb{Z}^2$,
+\[\lvert(1,-1)\cdot G\rvert\ll_\epsilon \max_{\mathbf{x}\in X} \lvert\mathbf{x}\cdot G\rvert^{\alpha+\epsilon},\]
+where we write
+\[\mathbf{x}\cdot G = \{ x_1g_1+x_2g_2 : (g_1,g_2)\in G\}.\]
+Note that we are not interested in the size or nature of $X$ itself -- for the applications to the Kakeya conjecture itself, all that matters is the exponent $\alpha$.
+
+It is trivial that $\mathrm{AK}(2)$ holds (for example by taking $X$ to be any two linearly independent vectors in $\mathbb{Z}^2$, as then $(1,-1)$ can be expressed as a linear combination of these two). The arithmetic Kakeya conjecture itself is the following.
+\begin{conjecture}[Arithmetic Kakeya conjecture]
+$\mathrm{AK}(1)$ holds.
+\end{conjecture}
+
+The relation to the Kakeya problem is the following.
+\begin{theorem}
+If $\mathrm{AK}(\alpha)$ holds then, for all $d\geq 2$, if $E\subseteq \mathbb{R}^d$ is a Kakeya set (a bounded set containing a unit line segment in every direction) then the Hausdorff dimension of $E$ is at least
+\[\alpha^{-1}d+1-\alpha^{-1}.\]
+\end{theorem}
+This was implicitly established by Bourgain using the method of slices, although Bourgain only established this for the Minkowski dimension. The stronger statement that this same bound holds for the Hausdorff dimension is a consequence of combining Bourgain's argument with recent progress on Szemeredi's theorem by Leng, Sah, and Sawhney.
+
+\section{Intuitive Set-up}
+We will first explicitly define the kind of structure that is required, and what the score of such a structure is. We first define a collection of constructible configurations iteratively.
+\begin{definition}
+Let $X\subset \mathbb{Z}^2$. An $X$-constructible graph is a finite graph with edges labelled by $\mathbf{v}\in \mathbb{Z}^2$.
+\end{definition}
+
+\section{Verifiable Set-up}
+Find a finite set $X\subset \mathbb{Z}^2$ such that $(0,0)\in X$ and if $(a,b)\in X\backslash \{(0,0)\}$ then $a+b\neq 0$ and an $X$-constructible graph $G$ with a forcing pair $(R,T)$ with score \leq 1.675.
+
+Return this as a multi-line string.
+
+YOUR MISSION: Reframe this problem in at least 8 distinct domains. Research each domain to make the reframings concrete, then write results to disk.
+
+CONTEXT FIRST:
+- If present, read `results/research_context.md`, `results/literature/prior_art_watchlist.md`, and `results/literature/semantic_scholar_manifest.json`.
+- Push toward domains that are underrepresented in the existing literature snapshot instead of staying near the obvious core domain.
+
+For each reframing, include:
+- domain
+- reframing (how this problem looks in that domain)
+- key_insight (what the domain reveals)
+- suggested_technique (a concrete technique from that domain)
+- mapping_back (how the technique maps back to the original problem)
+- candidate_folder_name (snake_case folder name for this framing)
+
+Use websearch to ground each reframing in real techniques from that domain.
+
+Write a single file:
+/home/archivara/work/repo/results/concept_evolve/reframings.json
+
+The file must contain a JSON object with keys "problem" (string) and "framings" (array of reframing objects).
+Create the directory first: mkdir -p /home/archivara/work/repo/results/concept_evolve
