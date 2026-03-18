@@ -97,3 +97,19 @@
 - Novelty Delta:
   - This is the first branch in the repo that turns the retained composite library into a genuine frontier-improving local dynamic rather than another negative pilot.
   - The surviving novelty claim is now sharper and stronger: not “cellular automata might help in general,” but “a fixed short-horizon hypergraph CA over a retained low-splash action basis can beat every matched single-action retained-basis control on the real order-668 frontier seed.”
+
+## 2026-03-18: Verification Refresh -> Radius-Limited Counterexample
+
+- Suggestion:
+  - Convert the old H1 freeze into a stronger certified statement: either prove a broader local-rule barrier or identify the first explicit local counterexample class that really escapes it.
+- Implementation:
+  - Added `scripts/check_radius_limited_locality_barrier.py`.
+  - Verified the canonical seed against the explicit single-actuator class consisting of all one-packet moves, all unordered two-packet moves, and all retained composites.
+  - Saved the machine-checkable result under `results/verification/radius_limited_locality_barrier.json` and wrote the memo `results/verification/radius_limited_locality_barrier.md`.
+- Result:
+  - No single actuator in the checked class improves the canonical frontier objective `13/2880/512`.
+  - The first certified escape appears at radius `1`, depth `2`, in the retained causal-cone hypergraph class.
+  - The earliest counterexample is the local cone `[3, 7]`, which reaches state `53` and improves the objective to `13/2744/480`.
+- Novelty Delta:
+  - The repo now has more than another negative pilot: it has a clean barrier-plus-counterexample story.
+  - That is a stronger scientific contribution than the original H1 result because it identifies exactly where the single-actuator locality barrier holds and exactly where a broader local rule class first breaks it.
