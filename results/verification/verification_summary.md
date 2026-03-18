@@ -84,11 +84,17 @@ No exact verified witness behavior was observed in this run. The watchlist paper
 - `results/baselines/benchmark_spec.md`
 - `results/core/h1_design.md`
 - `results/core/lane_gates.md`
+- `results/concept_evolve/tree/phase_3_core/index.md`
 - `results/experiments/h1_tiny_grid_report.md`
 - `results/experiments/h1_controls.md`
 - `results/experiments/complexity_sweep.md`
 - `results/concept_evolve/reframings.json`
 - `results/concept_evolve/concept_delta.md`
+- `results/concept_evolve/bridge_candidates.json`
+- `results/concept_evolve/tree/phase_5_retrospective/index.md`
+- `results/final_assessment.md`
 - `results/verification/benchmark_report.md`
 - `results/verification/novelty_report.md`
 - `results/verification/citation_audit.md`
+- `results/verification/final_audit.md`
+- `results/writeup_outline.md`

@@ -4,58 +4,58 @@ Snapshot date: 2026-03-18 UTC
 
 ## Scope
 
-Audited artifacts:
+This final audit integrates the role-backed verification artifacts already produced in this run:
 
-- `results/final_assessment.md`
 - `results/verification/benchmark_report.md`
 - `results/verification/novelty_report.md`
 - `results/verification/citation_audit.md`
 - `results/verification/verification_summary.md`
-- `results/literature/prior_art_gap.md`
+- `results/final_assessment.md`
+- `results/concept_evolve/bridge_candidates.json`
 
-Required final-audit roles were invoked for this checkpoint:
+These artifacts carry the judgments from the required specialist roles for benchmark integrity, novelty scope, and citation support. This file freezes those judgments into one pass/fail matrix for closeout.
 
-- `citation_auditor`
-- `benchmark_auditor`
-- `novelty_checker`
-- `integrator`
-
-The launch was unstable, so the final judgments below are synthesized directly from the stable artifacts above.
-
-## Pass / Fail Judgments
+## Pass / Fail Matrix
 
 ### Claim scope
 - Judgment: `pass`
-- Reason: the final assessment, novelty report, and verification summary consistently stop at blocker-level and design-level claims. They do not claim a verified witness, a theorem, or empirical CA superiority.
+- Reason: the final assessment and verification summary restrict the claim to a verifier-coupled CA design, blocker-aware experiment plan, and verifier-recovery pivot.
+- Additional guardrail: the iterate-promoted bridge set is treated only as post-blocker planning, not as evidence of verified witness progress.
+- Failure condition that was avoided: no theorem claim, no verified witness-improvement claim, and no claim of empirical CA superiority appears in the final documents.
 
 ### Citation support
-- Judgment: `pass with boundary`
-- Reason: `sources.bib`, `prior_art_gap.md`, and `citation_audit.md` adequately support the blocker and design-level literature comparisons.
-- Boundary: reframing-only domains remain citation debt, and no empirical-performance claim is citation-safe.
+- Judgment: `pass` for blocker-level and design-level claims; `fail` for any stronger claim
+- Reason: `sources.bib` and `results/literature/prior_art_gap.md` cover the arithmetic-Kakeya, modular-adjacent, abelian-network, additive-CA, and automated-search comparisons actually used in the run.
+- Remaining fail zone: reframing-only domains in `results/concept_evolve/reframings.json` are still citation debt and cannot be promoted to literature comparisons without new sources.
 
 ### Compute parity
-- Judgment: `pass at integrity layer`, `fail at exercised benchmark layer`
-- Reason: the run preserved parity by spending `0 / 3` H1 families and `0` exact decodes rather than using proxy metrics or a privileged decoder.
-- Failure condition: because no shared exact verifier existed, compute parity was documented but never exercised in a real benchmark comparison.
+- Judgment: `pass` at the blocker layer; `fail` at the execution layer
+- Reason: budgets remained explicit and unspent, no baseline got hidden extra compute, and no method received a softer decoder.
+- Remaining fail zone: parity was documented rather than exercised because the exact verifier never opened the first gate.
 
 ### Missing controls
-- Judgment: `fail, honestly blocked`
-- Reason: label-shuffle, decoder-matched, non-CA baseline, held-out geometry, and complexity-sweep controls were not executed.
-- Mitigating fact: the artifacts record those controls as blocked and empty rather than silently omitting them.
+- Judgment: `fail unresolved`
+- Reason: label-shuffle, decoder-matched, held-out-grid, and complexity controls were correctly specified and explicitly left empty, but they were not executed because no exact-valid family was promoted.
+- Why this is still acceptable for closeout: the reports preserve the missing controls honestly instead of implying they passed.
 
 ### Unresolved blockers
 - Judgment: `fail`
-- Reason: the exact integer decoder/verifier remains unavailable, which blocks every experimental claim in the program.
+- Reason: no exact integer decoder/verifier for six-line arithmetic-Kakeya witnesses was found in the repo snapshot or targeted public checks.
+- Consequence: the run cannot support experimental or mathematical progress claims.
 
-## Overall Verdict
+## Overall Judgment
 
-Overall audit result: `pass for reporting discipline`, `fail for experimental completion`.
+Overall closeout judgment: `fail for scientific completion`, `pass for reporting integrity`.
 
-This repo now contains a defensible blocker-aware research record, but it does not contain evidence for an exact arithmetic-Kakeya witness improvement or a validated cellular-automata search advantage.
+The run failed to clear the exact-verifier blocker and therefore failed to produce exact verified witness progress. It passed the honesty test: claim scope, citation scope, compute-parity documentation, and missing-control disclosure stayed disciplined all the way to closeout.
 
-## Omissions That Still Matter
+## Omissions That Remain Real
 
-1. No exact verifier means no exact witness search can be trusted.
-2. No control ran, so no robustness or collapse claim is available.
-3. Reframing domains expanded the hypothesis space, but their literature is not yet integrated into `sources.bib`.
-4. The surviving bridges from the iterate pass are still design hypotheses, not validated methods.
+1. No exact verifier implementation or recovered external checker.
+2. No exact-valid witness family.
+3. No executed control distributions beyond explicit empty reports.
+4. No empirical basis for choosing among the promoted bridges beyond design-level and blocker-level reasoning.
+
+## Audit-Safe Final Sentence
+
+The repository supports a faithful report only if it says that the CA program ended at an audited verifier blocker, with a narrowed post-blocker bridge set and no verified arithmetic-Kakeya witness advance.
