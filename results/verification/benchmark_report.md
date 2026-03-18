@@ -1,85 +1,99 @@
 # Benchmark Report
 
-Prepared for verification phase `review_round_1`.
+## Review Round
 
-## Executive verdict
+- `post_deepen`
 
-- Matched-control fairness for the executed packet: `pass`.
-- Evidence that the implemented CA rules beat matched non-CA baselines: `fail`.
-- Evidence sufficiency for a publication-quality benchmark claim: `fail`.
-- Allowed claim: only the narrow no-go from `results/analysis/phase5_final_evidence_gate.md:7-15`:
-  - the repo tested the implemented `H1/H2` CA branches,
-  - those branches failed under matched controls,
-  - they produced no order-`668` solution and did not beat the matched `direct_greedy` baseline.
-- This bar matters because `results/research_context.md:3-12` shows the work is already at `post_writer` with the draft completed, so the benchmark packet now has to survive publication-quality scrutiny rather than only the internal stop/go gate.
+## Scope
 
-## What the current packet does establish
+- Audited inputs: `research_rubric.json`, `results/research_context.md`, `results/swarm/falsifier.md`, `results/analysis/baseline_benchmark_sheet.md`, `results/analysis/experiment_readout.md`, `results/analysis/phase2_baseline_review.md`, `results/analysis/phase4_oversight_stop_go.md`, `results/analysis/phase5_final_evidence_gate.md`, `results/analysis/cellar_design_brief.md`, `results/analysis/cellar_prefix_complexity.md`, `results/analysis/cellar_no_go.md`, `results/analysis/paper_metrics.json`, `results/analysis/cellar_paper_metrics.json`, and the current experiment artifacts under `results/experiments/`.
+- Budget focus: controls, baselines, ablations, error analysis, and stress-test sufficiency only.
 
-- `H1` is a decisive no-go for the current CA rule family. On the solved `4 x 79` control, both serious methods have exact-hit rate `0/16`, and `direct_greedy` beats `parallel_gain_ca` on `11/16` matched seeds, with `4/16` CA wins and `1/16` tie. On the exact `167/80` target, `direct_greedy` beats `parallel_gain_ca` on `24/24` matched seeds. See `results/analysis/experiment_readout.md:5-37` plus paired reads of `results/experiments/h1_control_sweep.json` and `results/experiments/h1_target_sweep.json`.
-- `H2` is a decisive no-go only for the tested `s`-local repair branch. The `n = 9` ladder has only three starts and is weak because `random_rule_ca` solves `3/3`, while the only real order-`668` start is one deterministic `s[41]` flip where `parallel_gain_ca` and `direct_greedy` tie exactly. See `results/analysis/experiment_readout.md:39-67`, `results/analysis/baseline_benchmark_sheet.md:30-57`, and `results/analysis/phase2_baseline_review.md:19-28`.
-- That is enough for the repo's internal no-go packet, but not enough for a stronger benchmark claim. The falsifier explicitly asked for solved same-template positive controls, matched non-CA baselines, reachability controls, and certificate-level reporting. See `results/swarm/falsifier.md:60-69`.
+## Executive Call
+
+- Branch-retirement no-go claim for the executed `H1`, `H2`, and literal `cellar` encodings: `pass`.
+- Publication-grade positive efficacy or mechanism claim: `fail`.
+- Publication-grade benchmark breadth / robustness claim: `fail`.
+- Main reason: the packet is strong enough to kill the tested rule families, but too narrow, too single-baseline, and too degenerate in key places to support anything broader.
+
+## Supporting Evidence
+
+- `H1` is dead under matched same-representation controls. In `results/analysis/paper_metrics.json`, `direct_greedy` beats `parallel_gain_ca` on `11/16` solved-control seeds with `4` CA wins and `1` tie, and on `24/24` exact-`167/80` target seeds with no ties. Exact-hit rate stays `0/16` on the solved `4 x 79` control and `0/24` on the exact target for both serious methods.
+- `H2` is dead only for the tested `s`-local repair branch. `results/experiments/h2_ladder.json` contains only three toy starts and `random_rule_ca` solves `3/3`. On the only real order-`668` start in `results/experiments/h2_seed_attempt.json`, `parallel_gain_ca` and `direct_greedy` tie exactly at best `two_adic_modulus = 16`, `l1_defect = 2944`, `defect_count = 25`, and `max_defect_magnitude = 496`.
+- The literal `cellar` reopen is dead under the implemented tail-panel encoding. `results/analysis/cellar_paper_metrics.json` shows identical boundary-debt and stack frontiers on control tails `10`, `12`, and `14` (`11/11`, `13/13`, `15/15`), while the four `167` target panels and four degraded `668` seed projections in `results/experiments/cellar_phase6.json` all have zero exact completions and zero surviving frontier for both boundary-debt and stack states.
 
 ## Findings
 
-### 1. The solved `H1` positive control still fails the publication bar
+### 1. Positive controls are still too weak or too degenerate for publication-grade benchmarking
 
-- The strongest positive control in the packet is `control_4x79`, but it does not validate solver competence under the published budget: exact-hit rate is `0/16` for both `direct_greedy` and `parallel_gain_ca`. See `results/analysis/experiment_readout.md:7-21`.
-- The control therefore ranks heuristics by distance, not by exact recovery. That is good enough to reject the CA rule, but it is not good enough to claim that the benchmark stack has demonstrated competence on a solved same-template problem.
-- This is precisely the kind of missing control the falsifier warned about. See `results/swarm/falsifier.md:62-68`.
-- Falsifiable recommendation: preregister an exact-recovery gate on the solved same-template panel. If the current budget gives `0` exact recoveries on the perturbed-solution seeds, either raise the budget until at least one serious method succeeds or mark the positive-control packet as failed.
+- `H1` does not recover the solved `4 x 79` control under the published budget: exact-hit rate is `0/16` for both `direct_greedy` and `parallel_gain_ca`.
+- `H2` uses an easy toy ladder as its only solved control, and that ladder is not discriminative: `random_rule_ca` solves `3/3`, `parallel_gain_ca` solves `2/3`, `random_walk` solves `2/3`, and `direct_greedy` solves `1/3`.
+- The cellar control family proves soundness, not advantage. On tails `10`, `12`, and `14`, the static boundary-debt comparator is already exact, so the stack never faces a nontrivial same-template solved control where it can separate.
+- Publication blocker: the packet can rank failures, but it does not demonstrate that the benchmark stack can solve a nontrivial same-template control in a discriminative way.
+- Falsifiable upgrade: keep the current evaluation stack and add at least one solved same-template control per branch where at least one serious method succeeds exactly or achieves verified frontier savings, and at least one weak/random control fails on a nontrivial fraction of starts. If no such control exists, keep the claim limited to branch retirement.
 
-### 2. `H2` is under-stressed on the real order-`668` task
+### 2. Baseline coverage is too narrow
 
-- The real order-`668` packet contains one degraded start only: deterministic `s[41]` flip of the published seed, with `q` fixed and search restricted to `s`. See `results/analysis/baseline_benchmark_sheet.md:33-55` and `results/analysis/experiment_readout.md:56-67`.
-- The toy ladder adds only three deterministic starts, with one run per method/start cell. The repo already records this residual risk explicitly: "three toy ladder starts and one degraded 668 start." See `results/analysis/phase2_baseline_review.md:38-41`.
-- `H1` has broader seed-family coverage than `H2`, but even there the packet is not a true robustness panel: control and target use different start distributions and different seed counts, so cross-condition generalization claims remain weak.
-- A tie on one real start is enough to stop the implemented `s`-repair branch. It is not enough to support a broader claim that defect-transport CA is generically noncompetitive on modular-seed repair.
-- Falsifiable recommendation: lock a real-start panel that includes at least one single-flip, one multi-flip, one clustered-defect, and one lower-modulus degradation, then rerun matched `s`-only baselines. If any broader claim is kept, add matched `q`-only or mixed `(q,s)` variants as separate benchmark cells.
+- `H1` and `H2` each use one serious same-representation non-CA comparator: `direct_greedy`.
+- The `n = 9` ladder search space in `results/artifacts/h2_control_structured_n9.json` is only `262144` `(q, s)` pairs, yet the packet has no exhaustive or exact reference baseline there.
+- The cellar branch compares the stack only to one very strong static summary, and `results/analysis/cellar_design_brief.md` explicitly allows that summary to be effectively prefix-identifying on the recorded panels.
+- Publication blocker: one comparator is enough to kill the current rule instance, not enough to support claims about CA versus the relevant baseline class.
+- Falsifiable upgrade: add one stronger same-representation comparator per branch, and add an exact enumerator for the `n = 9` ladder. For cellar, add a comparator ladder that removes parts of the boundary-debt state; if the stack only matches the strongest static summary, the result is an encoding no-go, not a memory-advantage study.
 
-### 3. The baseline set is fair but too narrow
+### 3. The packet lacks ablations, so it falsifies settings rather than rule families
 
-- The serious comparator set is only `direct_greedy`; `random_rule_ca` and `random_walk` are negative controls, not strong competitors. See `results/analysis/baseline_benchmark_sheet.md:16-20` and `results/analysis/baseline_benchmark_sheet.md:45-49`.
-- That is adequate for the internal fairness gate, but it is thinner than the falsifier's bar for publication-facing evaluation. See `results/swarm/falsifier.md:64-69` and `results/swarm/falsifier.md:73-77`.
-- There is no same-representation annealed, tabu, restart, or beam-style non-CA baseline for either branch.
-- There is also no exact or exhaustive reference baseline for the `n = 9` ladder, even though `results/artifacts/h2_control_structured_n9.json` records a total search space of only `262144` `(q, s)` pairs.
-- Falsifiable recommendation: add at least one stronger same-representation non-CA heuristic per branch, and add an exhaustive or proved-optimal reference for the `n = 9` ladder starts. If CA still loses or ties after that, the negative result becomes materially harder to attack.
+- `H1` CA runs use one setting: `window = 2`, `min_gain = 6`, `phase_move_cap = 4`.
+- `H2` CA runs use one setting: `window = 1`, `min_gain = 100`, `phase_move_cap = 4`.
+- There is no budget ladder for `H1` or `H2`.
+- The formal move cap is shared, but the effective accepted-move budget is not. Median accepted moves differ sharply even on matched runs: `38` versus `6.5` on the `H1` solved control, `75` versus `17.5` on the `H1` target, and `91` versus `3` on the `H2` ladder for `direct_greedy` versus `parallel_gain_ca`.
+- Phase 6 never gets the required feedback-channel ablation from rubric item `029`; the branch fails before any gain appears, so no ablation demonstrates that a claimed gain disappears when the feedback channel is removed.
+- Real Phase 6 anchor panels all use free suffix length `12`.
+- Publication blocker: the repo can honestly say these specific encodings failed. It cannot claim the broader CA or cellar mechanism was stress-tested across reasonable settings.
+- Falsifiable upgrade: run a preregistered grid over `window`, `min_gain`, `phase_move_cap`, and budget on locked seeds, plus an accepted-move-matched ablation where the CA and comparator medians are kept within `+/-10%`. For cellar, add `stack off`, `feedback off`, weaker-static-summary, and tail-length `10/12/14` ablations on the same panel family.
 
-### 4. There is no CA ablation matrix and no budget-scaling stress test
+### 4. Real-anchor stress testing is too thin outside `H1`
 
-- The raw artifacts show exactly one CA parameterization per branch. In `H1`, every `parallel_gain_ca` run uses `window=2`, `min_gain=6`, and `phase_move_cap=4`. In `H2`, every `parallel_gain_ca` run uses `window=1`, `min_gain=100`, and `phase_move_cap=4`.
-- There is also only one locked budget and one schedule per branch: `budget_steps=96` with `odd-cycle-3-matching` for `H1`, and `budget_steps=48` with `line-2-phase` for `H2`.
-- No additional experiment outputs beyond `h1_control_sweep.json`, `h1_target_sweep.json`, `h2_ladder.json`, and `h2_seed_attempt.json` appear under `results/experiments/`, so there is no recorded parameter ablation, schedule stress test, or budget ladder.
-- The early-plateau pattern is real but under-tested. In the raw runs, `H1` CA reaches its best score at median `best_step=4` on the control and `best_step=10` on the target, with `16/24` target runs peaking by the first snapshot at step `12`. The real `H2` tie peaks at `best_step=2`.
-- Those data strongly suggest stagnation of the current CA rules, but without a preregistered ablation grid an external reviewer can still argue that only one CA setting was falsified.
-- Falsifiable recommendation: run a fixed-grid ablation over `window`, `min_gain`, `phase_move_cap`, and budget on a locked seed panel while keeping the comparator fixed. Any publication claim should survive that matrix, not a single CA setting.
+- `H1` has the healthiest real target panel: `24` exact `167/80` seeds across `modular_projection` and `random_weight`.
+- `H2` has only one real degraded `668` start: `seed_sflip41_mod16`.
+- Phase 6 uses four `167` target panels and four degraded `668` seed projections, but every one of those real-anchor panels has zero exact completions and zero frontier for both boundary-debt and stack states.
+- Publication blocker: `H2` cannot support a robustness claim from one real start, and Phase 6 cannot support a mechanism claim from only zero-frontier real panels.
+- Falsifiable upgrade: expand `H2` to a preregistered real-start panel of at least `20` degraded starts spanning single-flip, clustered, and lower-modulus corruptions. For cellar, require at least one real or surrogate panel with nonzero exact frontier before making any memory-mechanism claim; if every real panel remains zero-frontier, state only that no signal was found on the sampled panels.
 
-### 5. Error analysis is logged, but not deep enough
+### 5. Error analysis exists, but not at publication strength
 
-- The packet already records `best_state`, `final_state`, `unique_orbits`, `orbit_collapse_ratio`, and trajectory snapshots, so this is not a missing-logging problem.
-- The problem is missing diagnosis. On `H1`, the summaries give means and medians, but not uncertainty intervals, paired win tables in the artifact packet itself, or a failure-mode aggregation beyond seed-family splits.
-- On the real `H2` run, the serious methods record transient best states of `l1_defect=2944` at `best_step=2` before finishing back at `3200`, while the negative controls reach lower final `l1_defect` only after dropping from modulus `16` to modulus `8`. With `snapshot_every=8`, the recorded snapshots do not show the serious methods' best step at all.
-- The same `H2` run also shows an unexplained reachability split: the serious methods visit `2` unique orbits each, while the negative controls visit `49` unique orbits each. Without orbit-growth or defect-persistence analysis, it is unclear whether the branch fails because of poor coverage, deliberate modulus preservation, or both.
-- This is exactly where the falsifier warned about metric leakage and reachability traps. See `results/swarm/falsifier.md:66-77`.
-- Falsifiable recommendation: report paired seed-level wins/losses, bootstrap intervals for the `H1` seed panels, orbit-growth curves on tractable controls, shift-level defect persistence for `H2`, and best-versus-final / Pareto views over `(two_adic_modulus, l1_defect, defect_count, max_defect_magnitude)`.
+- `results/analysis/paper_metrics.json` contains confidence intervals and paired `H1` seed tables, but the canonical experiment artifacts and current benchmark packet do not surface them as primary evidence.
+- `H1` target trajectories already hint at a specific failure mode that is not analyzed: `parallel_gain_ca` reaches its best state by step `24` in all `24` target runs, while `direct_greedy` does so in only `7/24`, which looks like early CA stagnation rather than late-budget failure.
+- On the decisive `H2` real run, both serious methods hit their best state at step `2`, but `snapshot_every = 8`, so the saved snapshots skip the decisive event.
+- In that same run, weak controls lower final `l1_defect` only by collapsing from modulus `16` to modulus `8`, which exposes a real multi-objective tradeoff but leaves it under-analyzed.
+- Phase 6 zero-frontier panels make purity automatic; they do not show how the stack behaves on ambiguous real prefixes.
+- The Phase 6 schema does not serialize `oracle_calls`, cache hits, or wall-clock cost, so the rubric path based on a "smaller exact-oracle budget" is not independently auditable from `results/experiments/cellar_phase6.json`.
+- Publication blocker: reviewers cannot distinguish poor search, metric leakage, and insufficient budget from the current diagnostic packet alone.
+- Falsifiable upgrade: publish paired seed-level win/loss tables and uncertainty intervals in the canonical benchmark artifact, add a best-step / trajectory taxonomy for `H1`, save event-level snapshots at every best-step update, and report best-versus-final Pareto views over `(two_adic_modulus, l1_defect, defect_count, max_defect_magnitude)`. For cellar, add witness-retention, frontier-savings, `oracle_calls`, cache-hit, and wall-time views on nondegenerate panels.
 
-### 6. The raw benchmark artifacts are not fully self-describing
+### 6. Artifact auditability is still not clean enough
 
-- The repo already notes that the `H1` fairness lock remains partly load-bearing in the benchmark sheet and code because the raw JSON does not serialize every fairness parameter symmetrically. See `results/analysis/phase5_final_evidence_gate.md:31-36`.
-- In the run artifacts, CA methods serialize `window`, `min_gain`, and `phase_move_cap`, while `direct_greedy` records only `snapshot_every`.
-- That is acceptable for internal governance because `results/analysis/baseline_benchmark_sheet.md` and the code fill the gap, but it is below publication-grade auditability for benchmark artifacts.
-- Falsifiable recommendation: normalize every run record to emit neighborhood id, move cap, acceptance rule, verifier id, equivalence reducer, and variable family for every method, then rerun the canonical packet.
+- `results/analysis/phase5_final_evidence_gate.md` already notes that the `H1` fairness lock is partly load-bearing in the benchmark sheet and code because the raw JSON does not serialize every fairness parameter symmetrically.
+- In the run artifacts, `parallel_gain_ca` exposes `window`, `min_gain`, and `phase_move_cap`, while `direct_greedy` mostly exposes only `snapshot_every`.
+- Phase 6 held-out control metrics for `control_4x79_tail10` and `control_4x79_tail14` live in `results/analysis/cellar_paper_metrics.json`, not in the canonical `results/experiments/cellar_phase6.json` artifact.
+- `results/analysis/cellar_prefix_complexity.md` uses shorthand panel labels (`shift_0`, `shift_1`, `single_flip_41`, `cluster_40_42`) that do not match the canonical labels in `results/experiments/cellar_phase6.json` (`single_flip_0_mod8`, `single_flip_41_mod16`, `cluster3_0_2_mod8`, `cluster5_0_4_mod8`).
+- Publication blocker: a reader cannot audit fairness and Phase 6 panel identity from the canonical experiment outputs alone.
+- Falsifiable upgrade: normalize every run record to emit neighborhood id, acceptance rule, move cap, verifier id, equivalence reducer, and variable family for every method. Fold the held-out cellar controls into the canonical experiment artifact and use one label scheme everywhere.
 
-## Branch-by-branch sufficiency
+## Branch-By-Branch Sufficiency
 
-- `H1`: sufficient to reject the currently implemented CA rule against the matched baseline on the exact `167/80` target. Not sufficient to claim that the benchmark suite validated same-template solver competence, because the solved positive control never hits exactly.
-- `H2`: sufficient to stop the currently implemented CA rule family on the tested degraded `s`-only start. Not sufficient to generalize beyond that single real-start condition.
-- Overall: the benchmark evidence supports only the narrow no-go statement already enforced by `results/analysis/phase5_final_evidence_gate.md:7-29`.
+- `H1`: sufficient to reject the currently implemented CA rule against the matched baseline on the exact `167/80` target. Not sufficient to claim solver competence or benchmark breadth, because the solved positive control never hits exactly.
+- `H2`: sufficient to reject the tested `s`-local repair branch on the tested real degraded seed. Not sufficient to generalize beyond that single real-start condition.
+- `cellar`: sufficient to retire the exact tail-panel encoding implemented here. Not sufficient to claim anything broader about weaker static summaries or pushdown utility outside this encoding.
 
-## Minimum upgrade set before any publication-facing benchmark claim
+## Unresolved Risks
 
-1. Make at least one solved same-template control recover exactly under the published evaluation stack.
-2. Expand `H2` from one real degraded seed to a prespecified real-start panel.
-3. Add at least one stronger same-representation non-CA baseline per branch and an exact reference baseline for the `n = 9` ladder.
-4. Run a preregistered CA ablation matrix and a budget ladder.
-5. Add paired win/loss reporting, uncertainty estimates, and explicit best-versus-final error analysis.
-6. Emit fully self-describing run records so fairness can be audited from artifacts alone.
+- A broader manuscript could accidentally overgeneralize from one serious baseline and one CA setting per branch.
+- The only real `H2` start could be unrepresentative, and the easy `n = 9` ladder could mislead if treated as mechanism evidence.
+- The Phase 6 no-go depends on a strong boundary-debt summary; the current evidence does not show whether weaker non-stack summaries would separate from the stack.
+- Several benchmark facts remain analysis-only rather than canonical-artifact facts.
+
+## Recommendation
+
+- `PASS` only for the narrow benchmark claim: the executed `H1`, `H2`, and Phase 6 cellar encodings fail under their matched controls.
+- `FAIL` for any publication-grade efficacy, mechanism, or broad benchmark claim until the specific upgrades above are executed.
+- Overall verdict: `REVISE`.

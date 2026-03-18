@@ -1,184 +1,193 @@
 # Novelty Report
 
+Verification phase: `post_deepen`
+
 ## Scope
 
-This audit evaluates the claims actually made in `research_paper.tex` against the closest named prior art and the repo's own gap notes. It follows the narrowed framing already present in:
+This audit evaluates the claims actually made in `research_paper.tex` after the deepen pass, using:
 
+- `results/research_context.md`
+- `results/literature/prior_art_watchlist.md`
 - `results/literature/prior_art_gap.md`
+- `results/swarm/director_brief.md`
 - `results/swarm/falsifier.md`
 - `results/analysis/novelty_collapse_audit.md`
+- `results/analysis/cellar_design_brief.md`
+- `results/analysis/cellar_prefix_complexity.md`
+- `results/analysis/cellar_no_go.md`
+- `results/analysis/phase2_baseline_review.md`
+- `results/analysis/experiment_readout.md`
+- `results/experiments/cellar_phase6.json`
+- `results/analysis/cellar_paper_metrics.json`
+- `hadamard668/h1.py`
+- `hadamard668/h2.py`
+- `hadamard668/cellar.py`
+- `research_paper.tex`
 
-The lexical watchlist remains useful as query-noise control, but it is not the main novelty burden. The real comparison set is:
-
-- exact Hadamard anchors and structured search,
-- heuristic Hadamard search,
-- CA-based combinatorial-design and Hadamard-adjacent search,
-- reserve branches that risk collapsing into exact pruning with CA branding.
+The novelty question has narrowed since the earlier review. The manuscript is no longer strongest when read as a positive CA-method paper. It is strongest when read as a narrow formal-and-empirical no-go for one exact literal-cellar encoding.
 
 ## Executive Call
 
-- Positive method novelty: fail.
-- Narrow negative-result contribution: pass.
-- Main reason: the repo is materially distinct only as a matched-control no-go on exact `668`-relevant artifacts. It is not materially distinct as a new general search paradigm, a new Hadamard construction, or a validated literal `cellar automata` method.
+- Positive solver novelty: fail.
+- Broad `CA for Hadamard search` novelty: fail.
+- Narrow encoding-specific no-go novelty: pass.
+
+The current manuscript is materially distinct from prior art only in the following narrow sense:
+
+- it formalizes one exact tail-panel / pushdown-style encoding tied to the actual order-`668` anchors;
+- it proves that the matched static boundary-debt state is already sufficient for exact completion on that encoding;
+- it shows empirically that the stack gives no surviving advantage on the solved same-template controls or on the recorded real-anchor panels;
+- it retires that encoding cleanly.
+
+That is a real contribution. It is not a new Hadamard construction, not a new general CA search paradigm, and not a validated new positive solver.
 
 ## Major-Claim Audit
 
-### 1. Exact artifact reconstruction and benchmark framing
+### 1. Exact order-`668` anchors and precursor benchmark framing
 
-- Claimed contribution:
-  - the paper reconstructs the `4 x 79` same-template control, the exact `167/80` cyclic obstruction, the published mod-`64` order-`668` seed, and the structured `n = 9` control.
 - Closest paper or line of work:
-  - Constantine and Constantine, *Convolution numbers: the cyclic case* (2025);
-  - Eliahou, *A 64-modular Hadamard matrix of order 668* (2025).
+  - Constantine and Constantine, *Convolution Numbers: The Cyclic Case* (2025).
+  - Eliahou, *A 64-Modular Hadamard Matrix of Order 668* (2025).
+  - The heuristic Hadamard-search line around Suksmono's simulated annealing / simulated quantum annealing / quantum-search papers.
 - Distinctness call:
-  - weak but acceptable as packaging.
-- Overlap signal:
-  - the mathematical objects are imported from the primary sources rather than discovered here; the paper's contribution is artifactization and matched benchmarking, not a new reduction or construction.
-- Weak differentiation:
-  - this is not stand-alone mathematical novelty. It is only useful insofar as it enables the later matched-control no-go claim.
-- Missing gap evidence:
-  - none required beyond honest wording, but the manuscript should not market artifact reconstruction itself as a new scientific result.
-
-### 2. `H1`: support-space CA on the exact `167/80` cyclic obstruction
-
-- Claimed contribution:
-  - a CA-style local rule on raw weight-`80` supports over `Z/167Z`, tested against the exact cyclic obstruction.
-- Closest paper or line of work:
-  - Constantine and Constantine (2025) for the exact target object;
-  - heuristic Hadamard search and same-space direct local search for the method comparison class;
-  - structured Hadamard-family work only as a collapse guardrail.
+  - weak but acceptable as context.
 - Concrete overlap signal:
-  - in `hadamard668/h1.py`, `parallel_gain_ca` and `direct_greedy` inspect the same admissible adjacent swaps, score them with the same exact objective, and share the same phase schedule and `phase_move_cap`; the real difference is move-selection policy.
-- Distinctness call:
-  - distinct enough to benchmark fairly, not distinct enough to sustain a positive method claim.
+  - `research_paper.tex` now states explicitly that the exact `167/80` obstruction and the mod-`64` seed are imported anchors rather than new mathematical objects.
+  - In `hadamard668/h1.py`, both `parallel_gain_ca` and `direct_greedy` are built from the same `candidate_swaps(...)` pool and the same distance objective; the method difference is move selection, not search space or verifier.
+  - In `hadamard668/h2.py`, both methods are built from the same `candidate_operations(...)` pool, same modular objective, same phase schedule, and same move cap; again the main delta is move selection.
 - Weak differentiation:
-  - the branch does not supply a new cyclic reduction, a new exact solver, or a new search space.
-  - once the code is inspected, the method delta is narrow: local-dominance selection versus best-improving selection on the same neighborhood.
+  - the paper does not discover a new reduction of order `668`;
+  - the paper does not discover a new modular construction;
+  - the precursor `H1/H2` packet is not a new heuristic family once the code is inspected.
 - Missing gap evidence:
-  - no reachability advantage over ordinary same-space local search;
-  - `results/analysis/experiment_readout.md` and the manuscript's H1 results both show `direct_greedy` visiting more unique orbits and winning on both the `4 x 79` control and the exact `167/80` target.
-- Closest-paper verdict:
-  - relative to Constantine and Constantine, the work is only a benchmark on their exact obstruction.
-  - relative to same-space local search, the work is not a surviving new method because the matched baseline wins.
+  - none if this section remains context only;
+  - fatal if the manuscript starts selling `H1` or `H2` as surviving positive algorithmic contributions.
 
-### 3. `H2`: defect-transport CA on the published mod-`64` order-`668` seed
+### 2. Literal cellar formalization as a canonical tail-panel automaton
 
-- Claimed contribution:
-  - a CA-style local repair rule on structured `(q, s)` states derived from Eliahou's published seed.
 - Closest paper or line of work:
-  - Eliahou (2025) for the seed and defect structure;
-  - heuristic Hadamard-search papers by Suksmono and coauthors as the nearest heuristic competitor family;
-  - CA decoder / local-repair work as the nearest non-Hadamard guardrail.
+  - Alur and Madhusudan, *Visibly Pushdown Languages* (2004), for the formal-language vocabulary.
+  - Bright, Kotsireas, and Ganesh, *A SAT+CAS Method for Enumerating Williamson Matrices of Even Order* (2018), plus Williamson / Goethals--Seidel exact-search lines, for the collapse risk into symbolic pruning.
+- Distinctness call:
+  - pass, but only at the representation level.
 - Concrete overlap signal:
-  - in `hadamard668/h2.py`, `parallel_gain_ca` and `direct_greedy` inspect the same parity-phased candidate flips, score them with the same modular objective, and share the same declared variable family and `phase_move_cap`; again, the main difference is move selection.
-- Distinctness call:
-  - weaker than `H1`.
+  - `hadamard668/cellar.py` defines the cellar state as `boundary_debt_state(...)` plus a dyadic stack; the stack is not an independent oracle.
+  - `panel_report(...)` evaluates both the static and stack signatures on the same exact completion records, same canonical prefixes, and same panel family. The only intended method difference is memory discipline.
 - Weak differentiation:
-  - the branch is not a new modular-Hadamard construction and should not be framed as progress on modular-Hadamard theory.
-  - without a certificate-rate, reachability, or quality advantage over matched local search, `H2` reads as a local-search wrapper with CA branding.
+  - the phrase `cellar automata` carries no novelty by itself;
+  - the novelty lives in the exact executed encoding, not in the label or in general pushdown rhetoric.
 - Missing gap evidence:
-  - the `n = 9` ladder is not discriminative because random controls solve most starts;
-  - on the only real degraded order-`668` start, the CA ties the matched baseline exactly on every decisive metric.
-- Closest-paper verdict:
-  - relative to Eliahou, this is a repair benchmark on a published seed, not a new construction.
-  - relative to prior heuristic Hadamard search, the branch does not establish a materially new algorithmic capability.
+  - none for the narrow claim;
+  - large if the paper tried to market this as a general new automata-theoretic method for Hadamard search.
 
-### 4. Fairness, invariants, and local-delta proofs
+### 3. Boundary-debt sufficiency and finite-state collapse on the implemented encoding
 
-- Claimed contribution:
-  - the paper proves invariants, exact local-delta formulas, connectivity statements, and fairness properties for the executed rules.
 - Closest paper or line of work:
-  - implementation-specific audit lemmas for local search and benchmark interpretation, not a distinct Hadamard or CA research line.
+  - the visibly pushdown / finite-state automata line as formal backdrop;
+  - structured exact-search lines as the nearest methodological neighbor once the stack is shown unnecessary.
 - Distinctness call:
-  - useful for auditability, weak as novelty.
+  - strongest surviving claim.
 - Concrete overlap signal:
-  - the propositions mostly certify what the code already enforces: conserved weight or variable family, exact candidate scoring, connectivity of the chosen local graph, and candidate-set identity between CA and baseline.
+  - the code-level state in `hadamard668/cellar.py` matches the theorem objects directly: assigned pair vector, left and right boundary windows, remaining weight, and the augmented dyadic stack.
+  - `results/literature/prior_art_gap.md` already anticipated that the cellar branch would survive only if stack state carried information unavailable to the matched static residual state. The deepen-pass paper now proves the opposite for the executed encoding.
 - Weak differentiation:
-  - these results justify interpretation of the benchmark, but they are not an independent mathematical advance once the methods themselves lose or tie.
+  - this is not a new theorem about Hadamard matrices in general;
+  - this is not a new theorem about visibly pushdown languages in general;
+  - it is an encoding-specific sufficiency / collapse result.
 - Missing gap evidence:
-  - none if the paper presents them as audit support;
-  - serious overclaim risk if they are framed as stand-alone theory contributions rather than as fairness locks.
+  - still no evidence about weaker static summaries;
+  - still no evidence about other tokenizations;
+  - still no evidence about cross-panel transfer or proof reuse.
 
-### 5. Broad claim: `CA for Hadamard-like search is new`
+This is acceptable because the paper now states those limits explicitly instead of implying a universal theorem.
 
-- Claimed contribution at risk:
-  - any wording that implies CA had not already reached combinatorial-design or Hadamard-adjacent search.
+### 4. Exact no-go on solved controls and real-anchor panels
+
 - Closest paper or line of work:
-  - Manzoni, Mariot, and Menara, *Combinatorial Designs and Cellular Automata: A Survey* (2025);
-  - Mariot, Formenti, and Leporati (2016) on orthogonal Latin squares from linear CA;
-  - Gadouleau, Mariot, and Picek (2020) and Mariot et al. (2021/2022) on CA-based bent and semi-bent search.
+  - Constantine and Constantine (2025) for the exact cyclic anchor.
+  - Eliahou (2025) for the seed-derived anchor family.
+  - Structured exact-search literature only as a collapse guardrail, not as direct duplicate prior art.
 - Distinctness call:
-  - fail.
-- Overlap signal:
-  - CA already appears in design generation and Hadamard-adjacent Boolean-function search;
-  - the repo's own prior-art notes already treat this as settled.
+  - pass as a narrow negative benchmark on the executed encoding.
+- Concrete overlap signal:
+  - `results/analysis/cellar_paper_metrics.json` shows the solved control family already saturates under the static summary:
+    - tail `10`: exact frontier `11`, boundary frontier `11`, boundary groups `494 / 494`;
+    - tail `12`: exact frontier `13`, boundary frontier `13`, boundary groups `2001 / 2001`;
+    - tail `14`: exact frontier `15`, boundary frontier `15`, boundary groups `4367 / 4367`.
+  - `results/experiments/cellar_phase6.json` shows the recorded real-anchor panels all collapse the same way:
+    - four `H1`-best target panels and four seed projections;
+    - exact completions `0`;
+    - boundary frontier `0`;
+    - cellar frontier `0`.
 - Weak differentiation:
-  - the paper can only claim novelty at the level of the exact `167/80` obstruction and the published mod-`64` seed under matched controls.
-  - it cannot claim that `CA meets Hadamard-like objects` is itself new.
+  - the empirical packet does not show a new solver endpoint;
+  - it shows that one candidate representation has no surviving reason to continue.
 - Missing gap evidence:
-  - none available, because the literature already blocks the broad claim.
+  - the real-anchor family is enough to retire the executed encoding, not enough to rule out all alternate representations;
+  - the seed-projection family is diagnostic, not a proof that every future order-`668` reopen is dead.
 
-### 6. Structured exact-search and family-parameter collapse risk
+### 5. What remains open
 
-- Claimed contribution at risk:
-  - any wording that lets the work drift into circulant / Williamson / Goethals-Seidel / SAT+CAS territory.
 - Closest paper or line of work:
-  - Bright, Kotsireas, and Ganesh, *A SAT+CAS Method for Enumerating Williamson Matrices of Even Order* (2018);
-  - Fitzpatrick and O'Keeffe, *Williamson type Hadamard matrices with circulant components* (2023);
-  - Djokovic and Kotsireas, *Goethals-Seidel Difference Families with Symmetric or Skew Base Blocks* (2018).
+  - reserve symbolic / exact-search ideas closest to SAT+CAS and family-parameter search;
+  - CA-design literature as the main blocker on broad novelty rhetoric.
 - Distinctness call:
-  - pass as a defensive differentiation, not as affirmative novelty.
-- Overlap signal:
-  - the current executed branches operate on raw support or defect states rather than family parameters, and the manuscript is careful about that.
+  - discussion only, not contribution-grade novelty.
+- Concrete overlap signal:
+  - `results/analysis/reserve_concept_audit.md` and `results/analysis/phase3_hypothesis_selection.md` still treat weaker summaries, proof reuse, and alternate tokenizations as reserve hypotheses only.
 - Weak differentiation:
-  - this distinction prevents novelty collapse into exact-search literature, but it does not by itself create a strong new contribution.
+  - none of those branches has earned novelty credit yet;
+  - they cannot inherit credit from the executed cellar no-go.
 - Missing gap evidence:
-  - for reserve symbolic branches, a future paper would need to prove the automaton is doing more than exact pruning or equivalence-aware filtering.
+  - no matched non-automaton comparator;
+  - no solved same-template positive control in those alternate representations;
+  - no demonstrated stateful gain beyond compression or pruning.
 
-### 7. Literal `cellar` / pushdown and other reserve branches
+## Closest-Prior-Art Summary By Claim
 
-- Claimed contribution:
-  - the manuscript treats literal `cellar automata` as a reserve pushdown-style idea with deferred autocorrelation debt.
-- Closest paper or line of work:
-  - SAT+CAS and other structured exact-pruning methods;
-  - compressed / symbolic search representations more broadly.
-- Distinctness call:
-  - unresolved and unvalidated.
-- Overlap signal:
-  - this branch changes the state representation materially, which is the main reason it survives as a reserve concept;
-  - but without an executed transition system and matched comparator, it is still easier to read as a pruning presentation than as a validated new automaton family.
-- Weak differentiation:
-  - the representation change is promising enough to keep as a hypothesis;
-  - it is not evidence-backed novelty and should receive no credit from the failed `H1/H2` packet.
-- Missing gap evidence:
-  - no transition system,
-  - no matched non-automaton comparator,
-  - no solved positive control in that representation,
-  - no end-to-end win over static prefix filtering or exact pruning.
+- Imported exact objects:
+  - closest papers are Constantine and Constantine (2025) and Eliahou (2025);
+  - the manuscript is distinct only as a benchmark / retirement layer on their objects.
+- Precursor local-search methods:
+  - closest line is heuristic Hadamard search plus same-space direct local search;
+  - the manuscript is not distinct as a new surviving optimizer because the matched baseline wins or ties.
+- Literal cellar formalization:
+  - closest lines are visibly pushdown automata and symbolic exact-search / pruning methods;
+  - the manuscript is distinct because it defines and audits one concrete exact encoding instead of claiming a general stack-based solver.
+- Main theorem:
+  - closest line is finite-state / exact-pruning collapse rather than any existing Hadamard theorem;
+  - the manuscript is distinct because the collapse proof is specific to the executed boundary-debt encoding.
+- Empirical packet:
+  - closest line is anchor-specific benchmark work on the exact `167/80` and mod-`64` order-`668` objects;
+  - the manuscript is distinct as a negative result showing that the stack adds nothing on the executed panels.
 
-## Novelty Illusions To Remove
+## Novelty Illusions That Still Need To Stay Dead
 
-- The lexical watchlist items are not meaningful technical comparators for the active claim. They are evidence of query drift, not evidence that the novelty burden has been met.
-- The executed branch names overstate method distance. In both `H1` and `H2`, the CA and non-CA baselines share state, neighborhood, objective, verifier, budget, and accepted-move cap; the decisive method delta is move selection.
-- `Defect transport` is not a novelty claim by itself. Without a measurable advantage over matched local repair, it collapses into an ordinary heuristic wrapper.
-- The paper did not discover a validated CA route to order `668`. It discovered that two carefully specified CA rule families fail under matched controls.
-- The phrase `cellar automata` is not a contribution. Until a formal model, matched comparator, and positive control exist, it is only a reserve label.
+- `Cellar automata` is not a novelty claim. It is only a branch label unless tied to the exact tail-panel encoding and the exact no-go result.
+- The exact `167/80` obstruction and the mod-`64` seed are not new mathematical objects discovered here. They are imported anchors.
+- `H1` and `H2` are not surviving new algorithm families. The repo code shows same-state, same-neighborhood, same-objective comparisons whose main delta is move selection.
+- The paper does not show that pushdown memory is broadly useless for Hadamard search. It shows that one implemented encoding collapses to a finite residual state.
+- The paper does not establish broad novelty for `CA meets combinatorial design`. That claim is already blocked by the CA-design survey and CA-based bent / semi-bent / Latin-square work.
+- The paper does not become a new exact-search framework merely by using automata-theoretic vocabulary. Any future symbolic reopen still has to beat the SAT+CAS / Williamson / Goethals--Seidel collapse test.
 
-## Missing Gap Evidence That Blocks Any Stronger Claim
+The deepen pass mostly fixes these illusions. The remaining requirement is to keep the prose narrow.
 
-- Evidence that the CA rules reach certificate-relevant states that same-space non-CA local search does not.
-- A discriminative positive control for `H2`; the current `n = 9` ladder is too easy to support a mechanism claim.
-- More than one real degraded `668` start for `H2` if the project ever wants to generalize beyond rejection of the executed branch.
-- Proof that any reserve symbolic / pushdown branch beats a matched non-automaton search rather than merely rephrasing exact pruning.
+## Missing Gap Evidence That Still Blocks Broader Claims
 
-## Surviving Contribution
+- No evidence that a weaker static summary would fail where the current boundary-debt state succeeds.
+- No evidence that another tokenization would preserve the same collapse result.
+- No evidence that proof reuse, transfer, or feedback survives once the current exact static frontier is already saturated.
+- No evidence that any reserve symbolic branch beats a matched non-automaton comparator.
+- No evidence that the precursor `H1/H2` packet supports a broader benchmark paper:
+  - `H1` exact-hit rate remains `0`;
+  - `H2` decisive real-seed evidence remains one degraded start.
 
-The only materially distinct, evidence-backed claim is narrow:
+These are not fatal for the current paper because the current paper no longer needs them. They become fatal immediately if the claim expands beyond the literal-cellar no-go.
 
-- the repo implemented two Hadamard-specific CA-style search branches tied to the exact `167/80` cyclic obstruction and the published mod-`64` order-`668` seed;
-- it benchmarked them against matched same-representation non-CA controls;
-- the implemented CA rules did not beat those controls.
+## Final Assessment
 
-That is a legitimate negative-result contribution. Anything broader collapses into known prior art, weak differentiation, or missing gap evidence already flagged in `results/literature/prior_art_gap.md` and `results/analysis/novelty_collapse_audit.md`.
+`results/literature/prior_art_gap.md` already had the right structure: the literal cellar branch was differentiated enough to test, but it did not survive as a positive method claim under the executed encoding. The deepen-pass manuscript now aligns with that reality. It no longer tries to sell the branch as an untried solver family. It sells the stronger and more defensible result: the exact encoding collapses, the stack adds no surviving information channel, and the branch should be retired.
 
-VERDICT: REVISE
+That is materially distinct from the named prior art because none of the cited Hadamard, CA-design, heuristic Hadamard-search, or automata papers already makes this exact encoding-specific retirement call. It remains narrow, but it is no longer a novelty illusion.
+
+VERDICT: ACCEPT

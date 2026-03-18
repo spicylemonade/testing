@@ -1,132 +1,122 @@
 # Citation Audit
 
-## Review Round
+## Phase
 
-- `review_round_1`
+- `post_deepen`
 
-## Scope
+## Inputs Audited
 
-- Audited inputs: `research_paper.tex`, `sources.bib`, `results/research_context.md`, and `results/literature/semantic_scholar_manifest.json`.
-- Supporting traceability checks: `results/research_context.json`, `results/literature/seed_search.json`, `results/literature/literature_snapshot.json`, `results/artifacts/seed_668_mod64.json`, `results/experiments/h2_seed_attempt.json`, `results/analysis/paper_metrics.json`, `hadamard668/experiments.py`, `results/concept_evolve/recurrent_state.json`, and `results/concept_evolve/bridge_candidates.json`.
-- Budget focus: evidence traceability and citation support only. No style pass except where wording changes are needed to explain unsupported claims.
+- `research_paper.tex`
+- `sources.bib`
+- `results/research_context.md`
+- `results/literature/semantic_scholar_manifest.json`
+
+Spot checks used for support validation:
+
+- `results/analysis/paper_metrics.json`
+- `results/analysis/cellar_paper_metrics.json`
+- `results/experiments/cellar_phase6.json`
+- `results/analysis/cellar_no_go.md`
 
 ## Overall Assessment
 
-- The narrow manuscript claim is supportable. The load-bearing external anchors are appropriate and real: `constantine2025cyclic` for the exact `H1` obstruction and `eliahou2025mod64` for the exact `H2` seed.
-- The main citation risk is not a fabricated core source. It is that several sentences use bibliography entries to support claims that are actually about repository search logs, repository provenance, or repository-derived computations.
-- Mechanical key integrity is good: every in-text citation key resolves in `sources.bib`. One bibliography entry is unused noise residue: `khatoon2019tutoring`.
+- The narrow, load-bearing manuscript claim is supported. The cellar no-go claim in `research_paper.tex:610-646` is backed by the internal proofs in `research_paper.tex:281-443` and by exact counts in `results/experiments/cellar_phase6.json` and `results/analysis/cellar_paper_metrics.json`.
+- The precursor `H1/H2` comparison packet is also supported. The summary numbers in `research_paper.tex:498-513` match `results/analysis/paper_metrics.json`.
+- All `\repoevidence{...}` paths currently resolve to real files.
+- The main citation risk is not a fabricated core source. The main risk is weaker framing and provenance support around literature-positioning claims, plus stale or incorrect bibliography metadata.
 
-## Claim Support Snapshot
+## Claim Coverage Snapshot
 
-| Claim cluster | Status | Evidence |
+| Claim cluster | Status | Notes |
 | --- | --- | --- |
-| Exact `H1` anchor (`research_paper.tex:84`, `103`, `137`, `425`) | Supported | `constantine2025cyclic` is the right external anchor. The instantiated object is mirrored in `results/artifacts/target_167_weight_80.json` and summarized in `results/analysis/paper_metrics.json:12-105`. |
-| Exact `H2` anchor (`research_paper.tex:84`, `103`, `127`) | Supported | `eliahou2025mod64` is the right external anchor. The instantiated seed is mirrored in `results/artifacts/seed_668_mod64.json:1007-1012` and `results/analysis/paper_metrics.json:106-164`. |
-| Derived `H2` seed facts (`research_paper.tex:195`, `425`) | Partially supported / over-attributed | The external paper supports the existence of the published `64`-modular seed. The manuscript's derived facts about `13` nonzero defects and the deterministic `s_41` degradation to modulus `16` are repository computations, traceable to `results/analysis/paper_metrics.json:106-164`, `hadamard668/experiments.py:254-285`, and `results/experiments/h2_seed_attempt.json:68-110`. |
-| Core negative result (`research_paper.tex:80`, `436-522`, `554`) | Supported internally | The decisive numbers are traceable to `results/analysis/paper_metrics.json:179-240`, `results/analysis/paper_metrics.json:648-730`, and `results/analysis/paper_metrics.json:1377-1448`. This is an internal-evidence issue, not a bibliography gap. |
-| Search-drift / lexical-noise paragraph (`research_paper.tex:114-115`) | Weak / miscited | The cited papers identify the noisy hits, but the claim that the automated search surfaced them is supported by `results/literature/seed_search.json:1-120`, `results/literature/literature_snapshot.json:245-332`, and `results/literature/semantic_scholar_manifest.json:3-24`, not by those papers themselves. |
-| Prompt-history / literal-cellar provenance (`research_paper.tex:76`, `86`, `258`, `432`, `541`, `556`) | Traceability gap | These are not literature claims. They need explicit repository-artifact support such as `results/research_context.json:5`, `results/concept_evolve/recurrent_state.json:2-16`, and `results/concept_evolve/bridge_candidates.json:3-7`. |
-| Broad novelty boundary (`research_paper.tex:88`, `105`, `110-112`) | Partially supported | The current citations show prior CA/design work and prior Hadamard heuristics. They do not by themselves prove the stronger comparisons and novelty-boundary language now attached to them. |
+| Core cellar no-go (`research_paper.tex:610-646`) | Supported | Formal support comes from `research_paper.tex:281-443`. Quantitative support comes from `results/experiments/cellar_phase6.json` and `results/analysis/cellar_paper_metrics.json`. |
+| Precursor `H1/H2` packet (`research_paper.tex:498-513`) | Supported | Means, wins, ties, and packet sizes match `results/analysis/paper_metrics.json`. |
+| Opening anchor framing (`research_paper.tex:92`) | Partially supported | The sentence refers to two anchors but cites only `eliahou2025mod64`. `constantine2025cyclic` should also appear there. |
+| Prior-art ranking and novelty framing (`research_paper.tex:113`, `121-124`) | Weak / overclaimed | Current sources support representative examples, not the stronger ranking and publication-threshold language. |
+| Writer-pass recomputation and setup provenance (`research_paper.tex:459-464`) | Support exists but is weakly cited | The relevant repo artifacts exist, but the paragraph should cite them directly. |
+| Bibliography integrity (`sources.bib`) | Needs repair | No clear fake paper found, but several entries have wrong or stale metadata. |
 
 ## Findings
 
-1. **High: the lexical-noise paragraph is supported by the wrong kind of citation.**
-   - `research_paper.tex:114-115` says the automated search surfaced the shortest-path, elevator, Ebola, and agents-world papers.
-   - The current citations only prove those papers exist.
-   - The actual support is internal: `results/literature/seed_search.json:1-120`, `results/literature/literature_snapshot.json:245-332`, and `results/literature/semantic_scholar_manifest.json:3-24` show the noisy query and the watchlist promotion.
-   - Recommended fix: add an explicit repository-source pointer in the prose or appendix for the search-drift claim, and keep the paper citations only as identifiers of the noisy hits.
+### High
 
-2. **Medium: the opening order-668 status sentence needs a direct citation on the status clause itself.**
-   - `research_paper.tex:84` opens with "The existence of a Hadamard matrix of order `668` remains a difficult search target" and only then cites the cyclic and modular anchors.
-   - The supporting source already exists in the bibliography: `eliahou2025mod64` is the cleanest in-scope citation for the order-`668` status/context sentence.
-   - Recommended fix: attach `eliahou2025mod64` directly to the first clause, or add an independent modern Hadamard-status table if the paper wants a separate status citation.
+1. `sources.bib:100-130` has incorrect metadata for three `Scientific Reports` entries.
+   - `suksmono2019` (`sources.bib:100-108`) uses `pages = {17387}`, but DOI resolution for `10.1038/s41598-019-50473-w` gives article number `14380`.
+   - `suksmono2022quantum` (`sources.bib:111-119`) uses `pages = {749}`, but DOI resolution for `10.1038/s41598-021-03586-0` gives article number `197`.
+   - `suksmono2024qaoa` (`sources.bib:122-130`) uses `pages = {18778}`, but DOI resolution for `10.1038/s41598-025-18778-1` gives article number `33254`.
+   - This is a traceability problem, not a content problem, but these are load-bearing prior-art citations and their exported metadata should be correct.
 
-3. **Medium: provenance claims about the prompt history and later literal-cellar reinterpretation are factual history, but they are not citation-bound yet.**
-   - `research_paper.tex:76`, `86`, `258`, `432`, `541`, and `556` describe the original user prompt, the initial cellular-automata interpretation, and the later promotion of a pushdown-style reserve branch.
-   - Those claims are supportable in the repo, but not by literature citations. The current best evidence is internal: `results/research_context.json:5`, `results/research_context.json:33-40`, `results/concept_evolve/recurrent_state.json:2-16`, and `results/concept_evolve/bridge_candidates.json:3-7`.
-   - Recommended fix: add repository-artifact references or an appendix note for these provenance claims instead of leaving them as unsupported narrative reconstruction.
+### Medium
 
-4. **Medium: the manuscript partially over-attributes repository-derived `H2` seed facts to the external seed paper.**
-   - `research_paper.tex:195` and `research_paper.tex:425` attribute the `13` nonzero defects and the `s_41` degradation to the same citation chain as the published seed itself.
-   - The external paper is the right anchor for the seed. The derived defect count and degraded-start modulus are repository computations.
-   - Recommended fix: keep `eliahou2025mod64` for the seed provenance, but add explicit artifact support from `results/artifacts/seed_668_mod64.json:1007-1012`, `results/analysis/paper_metrics.json:106-164`, `hadamard668/experiments.py:254-285`, and `results/experiments/h2_seed_attempt.json:68-110`.
+2. `research_paper.tex:92` under-cites and slightly overstates the opening anchor sentence.
+   - The sentence says there are "two unusually sharp exact anchors" but cites only `eliahou2025mod64`.
+   - The cyclic `167/80` anchor is from `constantine2025cyclic`, already present in `sources.bib:1-7`.
+   - The sentence should either add `constantine2025cyclic` directly or split the claim into two separately cited clauses.
+   - The wording "exact anchors" is slightly loose because the Eliahou paper is a modular near-solution, not an exact Hadamard certificate.
 
-5. **Medium: the novelty-framing sentence is broader than the cited sources strictly support.**
-   - `research_paper.tex:88` concludes that a broad statement such as "cellular automata for Hadamard search is untried" is indefensible.
-   - The cited bundle does support two narrower propositions: CA already appears in adjacent design/search settings, and heuristic Hadamard search already has a literature.
-   - It does not directly supply a prior source showing an executed CA-based search for a real Hadamard matrix of order `668`, or even a generic paper saying CA had already been tried for Hadamard search in the exact sense the sentence suggests.
-   - Recommended fix: narrow the sentence to what the citations really prove, or label it explicitly as a scoped literature-search conclusion.
+3. `research_paper.tex:113` and `research_paper.tex:121-124` contain weakly supported comparison language.
+   - "The closest structured-search comparators are ..." (`research_paper.tex:113`) reads like an evidenced ranking, but the cited papers are better treated as representative examples.
+   - "The order-668 search problem already has a heuristic literature outside cellular automata" (`research_paper.tex:121`) overstates what the cited Suksmono papers establish. Those papers support heuristic Hadamard search more generally; they do not, from the current bibliography alone, establish an order-668-specific heuristic literature.
+   - "Not a publishable advance" and "survives only because" (`research_paper.tex:121-124`) are editorial or venue-threshold judgments, not statements directly supported by the cited technical papers.
+   - Recommendation: soften these sentences into authorial positioning, or add broader review/status sources if stronger framing is required.
 
-6. **Medium: some uncited comparisons are defensible author inferences, but they are not source-bound as written.**
-   - `research_paper.tex:105` says the cited exact-search papers "define the novelty boundary."
-   - `research_paper.tex:112` says matched same-representation baselines are "indispensable" and that otherwise the CA label contributes little more than a scheduling choice.
-   - These are reasonable methodological conclusions, but they are not facts established by the cited technical papers alone.
-   - Recommended fix: either mark them as authorial inferences or add benchmarking/methodology support if the venue expects those claims to read as sourced statements.
+4. `research_paper.tex:459-464` needs direct repository support citations.
+   - The writer-pass rerun claim at `research_paper.tex:459` is likely supported by `results/analysis/cellar_paper_metrics.json`, but that artifact is not cited in the paragraph.
+   - The precursor packet budget and interval-description sentence at `research_paper.tex:463-464` is supported by `results/analysis/paper_metrics.json`, but that artifact is not cited there either.
+   - This is not a contradiction, but it weakens the paper's own stated evidence discipline.
 
-7. **Low-to-medium: two cited CA-side precedents are much weaker comparators than the rest of the paragraph.**
-   - `research_paper.tex:110` cites `bagnoli2025controllability` and `herold2014decoder` alongside direct CA/design papers.
-   - Those sources are legitimate local-dynamics precedents, but they are not close Hadamard or combinatorial-design comparators in the same way as `mariot2016ols`, `gadouleau2020bent`, and `mariot2021semibent`.
-   - Recommended fix: keep them only if the text explicitly labels them as analogical precedents, or replace one of them with a more direct CA/design citation.
+5. Literature provenance is stale or incomplete even where the cited paper is real.
+   - `results/research_context.md:10` says `sources.bib` has `26` entries; the current file has `17`.
+   - `results/literature/semantic_scholar_manifest.json` records search history and `seen_paper_ids`, but it is not a full result-to-entry ledger. Some cited items are therefore hard to reconstruct from the manifest alone.
+   - Examples:
+     - `2503.10320` was searched with `0` Semantic Scholar results at `results/literature/semantic_scholar_manifest.json:15-22`, even though the survey exists.
+     - `64-modular Hadamard matrix 668` was searched with `0` results at `results/literature/semantic_scholar_manifest.json:35-42`, even though `eliahou2025mod64` is real and load-bearing.
+   - This is a provenance weakness, not evidence that the citations are fake.
 
-8. **Low: the modular-Hadamard definition could cite the standard background already present in the bibliography.**
-   - `research_paper.tex:126-128` defines the modular Hadamard surrogate without citing `eliahoukervaire2005survey` or `horadam2007applications`.
-   - This is not a claim failure, but a direct citation there would improve traceability for a nonstandard term.
+6. `sources.bib:42-48` and `sources.bib:80-86` cite preprint versions where published versions now exist.
+   - `manzoni2025survey` points to the arXiv preprint, but a journal version now exists.
+   - `suksmono2016sa` points to the arXiv preprint, but a published conference-series version exists.
+   - These are not false citations, but they are stale choices for a paper emphasizing evidence traceability.
 
-9. **Low: the scientific-process paragraph reads as empirical generalization without support.**
-   - `research_paper.tex:551` makes a broad claim about AI-assisted search changing terminology faster than mathematics.
-   - That is acceptable as explicit authorial perspective. It is weak if presented as a sourced empirical claim.
-   - Recommended fix: either soften it as perspective or add literature on evaluation/benchmarking in AI-assisted discovery.
+### Low
 
-## Bibliography Integrity Issues
+7. No clear citation hallucination was found among the cited, load-bearing sources.
+   - `constantine2025cyclic`, `eliahou2025mod64`, `bright2018satcas`, `fitzpatrick2023williamson`, `djokovic2018goethalsseidel`, `manzoni2025survey`, `mariot2016ols`, `mariot2021semibent`, and the Suksmono line all appear to refer to real works.
+   - The stronger problem is metadata drift and over-attribution, not fabricated papers.
 
-- `sources.bib:9-18` (`eliahou2025mod64`):
-  - Real and load-bearing, but the page range is wrong. The journal article runs `422--427`, not `422--429`.
-- `sources.bib:41-48` (`manzoni2025survey`):
-  - The entry mixes an arXiv DOI with a journal URL. Choose one version of record and normalize the year/venue/DOI consistently.
-- `sources.bib:66-73` (`mariot2021semibent`):
-  - The key/year says `2021`, but the DOI corresponds to the later `Natural Computing` journal publication. Normalize the year if the journal version is intended.
-- `sources.bib:75-82` (`bagnoli2025controllability`):
-  - The entry currently mixes preprint-era keying with journal metadata. Pick either the preprint or the journal version and normalize the metadata consistently.
-- `sources.bib:159-165` (`djokovic2018goethalsseidel`):
-  - The journal title is inaccurate, the DOI is missing, and the URL is noncanonical. This is the clearest metadata-quality problem among the exact-search comparators.
-- `sources.bib:212-217` (`khatoon2019tutoring`):
-  - Unused watchlist residue. Remove it unless it will be cited for a specific reason.
-- `sources.bib` overall:
-  - `16` of `24` entries use Semantic Scholar landing pages instead of DOI, publisher, journal, or arXiv URLs. This does not invalidate the narrow claim, but it weakens traceability and downstream citation export.
+## Uncited Or Weakly Cited Comparisons
 
-## Likely Citation Hallucinations
-
-- I did **not** find a likely fabricated load-bearing citation among the papers actually cited in `research_paper.tex`.
-- The stronger risk is miscitation and metadata drift:
-  - using literature citations where the real support comes from repository artifacts,
-  - over-attributing repository-derived computations to external papers,
-  - and keeping weak or stale bibliography metadata for otherwise real sources.
+- `research_paper.tex:113`: "closest structured-search comparators" is too strong for the present citation base.
+- `research_paper.tex:121`: "order-668 search problem already has a heuristic literature" is stronger than the cited evidence supports.
+- `research_paper.tex:123-124`: the literature-wide novelty and "publishable advance" judgments are authorial inference and should be marked that way if retained.
 
 ## Most Important Concrete Sources To Add Or Replace
 
-1. **No new external source is strictly required for `research_paper.tex:84`; move or repeat `eliahou2025mod64` there.**
-   - This is the cleanest fix for the opening order-`668` status clause.
+1. Use the existing `constantine2025cyclic` entry directly in `research_paper.tex:92`.
+   - This is the most important missing citation placement issue.
 
-2. **Add repository-artifact support for the search-drift and provenance claims.**
-   - Search drift: `results/literature/seed_search.json`, `results/literature/literature_snapshot.json`, and `results/literature/semantic_scholar_manifest.json`.
-   - Prompt / reserve-branch provenance: `results/research_context.json`, `results/concept_evolve/recurrent_state.json`, and `results/concept_evolve/bridge_candidates.json`.
+2. Replace or supplement `manzoni2025survey` with the published journal version.
+   - `Combinatorial Designs and Cellular Automata: A Survey`
+   - `Discrete Applied Mathematics` 379 (2026), `656-674`
+   - DOI: `10.1016/j.dam.2025.10.014`
 
-3. **If line 110 is intended to emphasize close CA/design prior art, add a more direct source.**
-   - Best candidate: `Mutually Orthogonal Latin Squares based on Cellular Automata`, `Designs, Codes and Cryptography` 88 (2020), `391--411`, DOI `10.1007/s10623-019-00689-8`.
+3. Replace or supplement `suksmono2016sa` with the published version.
+   - `Finding a Hadamard Matrix by Simulated Annealing of Spin Vectors`
+   - `Journal of Physics: Conference Series` 856 (2017), `012012`
+   - DOI: `10.1088/1742-6596/856/1/012012`
 
-4. **If an independent modern Hadamard-status table is desired, add one explicitly rather than forcing that load onto adjacent citations.**
-   - Best candidate: `A database of constructions of Hadamard matrices`.
-   - This is optional; the immediate paper can already repair line `84` with `eliahou2025mod64`.
+4. Add direct repo-artifact support for setup and recomputation claims.
+   - `results/analysis/cellar_paper_metrics.json` for `research_paper.tex:459`
+   - `results/analysis/paper_metrics.json` for `research_paper.tex:463-464`
 
-5. **Replace Semantic Scholar URLs with canonical source URLs for the load-bearing entries.**
-   - Prioritize `bright2018satcas`, `mariot2016ols`, `mariot2021semibent`, `suksmono2016sa`, `suksmono2018sqa`, `suksmono2019`, `suksmono2022quantum`, `eliahoukervaire2005survey`, and `djokovic2018goethalsseidel`.
+5. If the paper keeps the stronger prior-art positioning language, add broader review/status support or rephrase.
+   - With the current bibliography, rephrasing is safer than trying to force order-668-specific support from general Hadamard-search papers.
 
 ## Bottom Line
 
-- The manuscript's branch-specific no-go claim is citation-supportable.
-- The highest-priority fixes are:
-  - correct the miscited search-process paragraph at `research_paper.tex:114-115`,
-  - attach a direct citation to the opening order-`668` status clause at `research_paper.tex:84`,
-  - add repository-artifact support for the prompt-history / literal-cellar provenance claims,
-  - separate external seed provenance from repository-derived `H2` seed facts,
-  - and repair the highest-value metadata problems in `sources.bib`.
+- The manuscript's branch-specific no-go claim is citation-supportable as written in substance.
+- The highest-priority repairs are:
+  - fix the wrong `Scientific Reports` metadata in `sources.bib`,
+  - add `constantine2025cyclic` directly to the opening anchor sentence,
+  - soften or better support the strongest literature-positioning claims,
+  - and add explicit repo-artifact citations for writer-pass recomputation and setup details.
