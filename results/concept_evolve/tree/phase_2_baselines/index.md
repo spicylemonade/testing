@@ -1,5 +1,11 @@
-# Phase 2 Baseline Encodings
+# Phase 2 Baseline Encoding Cards
 
-- `001_stage_indexed_proof_tensor`
-- `002_small_fixed_slope_particle_ca`
-- `003_factorized_witness_with_seed_channels`
+- `001_raw_slope_species_grid`
+- `002_macrocell_fragment_library`
+- `003_stage_indexed_certificate_tensor`
+
+Phase-2 outcome:
+
+- reject `raw_slope_species_grid` for bounded-slope / low-rational-complexity risk;
+- promote `macrocell_fragment_library` as the baseline-compatible encoding;
+- keep `stage_indexed_certificate_tensor` as a transparent fallback parameterization.
