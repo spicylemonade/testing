@@ -108,9 +108,9 @@ The literature and experiment packets now support final pass or fail calls on th
 
 ### Literal `cellar` / pushdown reserve branch
 - Differentiation call: pass relative to the executed CA branches.
-- Contribution call: unresolved and unvalidated.
-- Evidence artifact(s): `results/concept_evolve/probe_result.json`; `results/concept_evolve/walk_session.json`; `results/analysis/phase3_hypothesis_selection.md`
-- Final decision: keep only as a reserve pivot. Promote only if it proves better-than-static prefix filtering on the same tokenization and does not collapse into SAT+CAS packaging.
+- Contribution call: fail as a surviving method claim under the exact tail-panel encoding that was actually executed.
+- Evidence artifact(s): `results/analysis/cellar_design_brief.md`; `results/analysis/cellar_prefix_complexity.md`; `results/analysis/cellar_no_go.md`; `results/experiments/cellar_phase6.json`
+- Final decision: retire under the implemented exact encoding. The matched static boundary-debt residual state already closes the solved `4 x 79` control exactly, and the real `167/80` plus degraded `668` anchor panels do not expose any stack-only advantage. Reopen only if a future branch changes the value proposition from raw stack memory to compression, transfer, or proof-carrying feedback under a different comparator.
 
 ### `convolution_slice_ca` reserve branch
 - Differentiation call: pass if and only if the liability-field state is treated as the primary object, not as a relabeling of raw support search.

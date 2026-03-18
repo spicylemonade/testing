@@ -2,88 +2,88 @@
   "problem": "solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it",
   "framings": [
     {
-      "domain": "reservoir computing / physical computing",
-      "reframing": "Treat the order-668 search as a nonlinear state-estimation problem rather than a bare combinatorial walk. A local automaton evolves the defect pattern of the best known 64-modular seed, and a trained readout chooses the next repair action from the automaton's transient state.",
-      "key_insight": "The exact phrase \"cellar automata\" already appears in a 2024 reservoir-computing paper, so one literal interpretation is not \"another hand-written CA rule\" but a fixed dynamical reservoir whose internal transients summarize long-horizon defect interactions better than greedy local scores do.",
-      "suggested_technique": "Echo-state / reservoir computing with a fixed random reservoir and a trained linear readout over defect-state histories.",
-      "mapping_back": "Feed the residual Gram-defect pattern of the 64-modular 668 seed, plus short local neighborhoods around candidate row or block edits, into the reservoir. Train the readout on smaller exact Hadamards and perturbed near-misses so it predicts which sign flips, row-pair swaps, or 167-block edits most reduce exact orthogonality debt.",
-      "candidate_folder_name": "reservoir_defect_readout"
+      "domain": "Symbolic dynamics and de Bruijn graphs",
+      "reframing": "Treat a normalized 668x668 candidate as a trajectory of overlapping column windows. The search becomes finding a closed walk in a de Bruijn-style compatibility graph whose accumulated row-balance and row-pair correlations end in the Hadamard constraints.",
+      "key_insight": "Preimage methods for cellular automata replace global trajectory search with path search on local overlap states. That suggests storing only a short column history plus compressed defect counters instead of the full matrix.",
+      "suggested_technique": "Build a de Bruijn or preimage graph over width-w column windows augmented with partial balance and correlation counters, then use transfer-matrix search, beam search, or cycle finding to assemble all 668 columns.",
+      "mapping_back": "Each CA step appends one new column consistent with the previous window. Accepting states are exactly the states whose final counters show balanced rows and zero inner product for every row pair.",
+      "candidate_folder_name": "symbolic_dynamics_de_bruijn"
     },
     {
-      "domain": "formal language theory / visibly pushdown automata",
-      "reframing": "View the four length-167 blocks behind the 4 x 167 structure as words in a constrained language. The search is not over raw bit strings but over prefixes whose deferred correlation obligations are stored in stack state.",
-      "key_insight": "A literal computer-science reading of \"cellar automata\" points to stack memory. That matches the main obstruction in sequence search: many prefixes look locally legal but secretly accumulate unresolved autocorrelation debt that only appears later.",
-      "suggested_technique": "Weighted visibly pushdown automata with shortest-path or beam search over tokenized run-length or sign-pattern words.",
-      "mapping_back": "Tokenize candidate 167-blocks by local motifs or run lengths. Let control state track position, weight, parity, and symmetry, while the stack stores deferred multiscale autocorrelation deficits. Reject any prefix that cannot still complete to the modular or exact target values needed for order 668.",
-      "candidate_folder_name": "pushdown_autocorrelation_filter"
+      "domain": "Control theory and SAT",
+      "reframing": "View matrix construction as steering a finite cellular automaton from a noisy quasi-Hadamard state into a defect-free terminal region using only local boundary actions or frontier edits.",
+      "key_insight": "Regional controllability work shows that CA steering questions can be compiled into SAT. Here, the controllable region can be the active band of unfixed columns or the current frontier of row-pair defects.",
+      "suggested_technique": "Encode a sliding-horizon local-update system and its target defect conditions as incremental SAT or MaxSAT, with decision variables for frontier flips, swaps, or rule choices at each step.",
+      "mapping_back": "Boundary-control variables become edits on the next columns or on a moving repair frontier. The SAT solver answers whether local actions can drive all correlation defects to zero without violating normalization.",
+      "candidate_folder_name": "control_sat_controllability"
     },
     {
-      "domain": "iterative decoding / coding theory",
-      "reframing": "Interpret the order-668 constraints as a noisy syndrome-decoding problem. The current candidate matrix or block tuple is a corrupted codeword candidate, and the objective is to clear its syndrome by coordinated local edits.",
-      "key_insight": "LDPC-style decoders do not search by blind hill-climbing; they use structured messages from violated checks to decide which variables are worth flipping. That is attractive here because the Hadamard search already has a natural defect signal in its nonzero inner products or autocorrelations.",
-      "suggested_technique": "Weighted bit-flipping, min-sum, or belief-propagation decoding on a factor graph built from orthogonality constraints.",
-      "mapping_back": "Choose variables such as row signs, block tokens, or support bits, and treat pairwise inner-product or autocorrelation equations as checks. Run message passing from the violated checks of the 64-modular seed or a 167-block candidate so updates are chosen by syndrome pressure rather than by a generic CA sweep.",
-      "candidate_folder_name": "syndrome_message_passing"
+      "domain": "Statistical physics and spin glasses",
+      "reframing": "Interpret the unknown plus/minus entries as spins and every nonzero row-row inner product as frustration. Hadamard-668 becomes a zero-energy search in a frustrated spin system.",
+      "key_insight": "Hadamard search has already been related to spin-vector annealing, and cellular neural systems have been used for spin-glass optimization. That makes CA-style local updates a natural low-level dynamics rather than an arbitrary metaphor.",
+      "suggested_technique": "Define an energy such as sum over row pairs of squared inner products plus row-balance penalties, then run block-local Metropolis, Glauber, or deterministic annealing updates on a lattice of row blocks or defect cells.",
+      "mapping_back": "A cell stores a sign entry or a compact local defect summary. Local flips or swaps are accepted when they reduce nearby energy while preserving row-balance invariants, and the temperature schedule handles long-range frustration.",
+      "candidate_folder_name": "spin_glass_annealing"
     },
     {
-      "domain": "property testing / locally testable codes",
-      "reframing": "Treat the search as repeated local testing and local correction of a near-structured object instead of full global verification at every step. The goal is to build very cheap probes that distinguish promising near-Hadamard regions from hopeless ones.",
-      "key_insight": "Hadamard-code literature shows that highly structured Boolean objects can often be tested or corrected from a tiny number of queries. For order 668, the pay-off would be a front-end that rejects bad local geometry long before exact certification.",
-      "suggested_technique": "BLR-style local tests and local correction oracles adapted to Walsh-spectrum or row-parity probes.",
-      "mapping_back": "Design constant-query probes on row triples, short column windows, or 167-block Fourier slices that estimate whether a local region behaves like a low-defect Hadamard fragment. Use failed probes to suggest repairs and reserve full Gram checks for candidates that pass the tester cascade.",
-      "candidate_folder_name": "local_testability_filters"
+      "domain": "Quantum error correction",
+      "reframing": "Treat nonzero row-pair correlations as syndrome defects that must be moved, paired, and annihilated by a decoder that is allowed only local state and local communication.",
+      "key_insight": "Cellular-automaton decoders for topological quantum memories use an auxiliary field to communicate long-range pressure through purely local rules. That is a concrete template for overcoming the long-range coupling in Hadamard search.",
+      "suggested_technique": "Create an auxiliary scalar field over correlation-defect sites, alternate field-relaxation sweeps with local column edits chosen along the steepest defect gradient, and let clusters of defects collapse under field-mediated attraction.",
+      "mapping_back": "Each defect node represents a row pair with excess correlation. Local edits are applied where that pair disagrees, and the field decides which defects should be resolved first so the CA does not chase defects blindly.",
+      "candidate_folder_name": "quantum_decoder_field_ca"
     },
     {
-      "domain": "chip-firing / abelian sandpiles",
-      "reframing": "Model every nonzero correlation defect as excess mass on a graph and the search as stabilization. Instead of arbitrary local moves, the solver topples unstable sites until all defect mass has either canceled or reached a provable obstruction.",
-      "key_insight": "Chip-firing systems come with an abelian stabilization property and a least-action viewpoint, which is valuable when plain cellular updates risk cycling or merely redistributing the same error forever.",
-      "suggested_technique": "Abelian sandpile stabilization with odometer tracking on a row graph or row-pair defect graph.",
-      "mapping_back": "Place chips proportional to the magnitude of off-diagonal Gram defects on vertices representing rows or row pairs. Define allowed balanced flips as topplings that redistribute defect mass while preserving selected invariants. Use the odometer to rank move schedules that dissipate the most debt with the least extra work.",
-      "candidate_folder_name": "chip_firing_defects"
+      "domain": "Cryptographic Boolean-function design",
+      "reframing": "Recast the problem as generating sign patterns with flat Walsh spectra and high nonlinearity, then assembling those patterns into Hadamard-quality rows or row blocks.",
+      "key_insight": "Cellular automata have been used to generate bent functions, and those constructions already pass through Hadamard-matrix structure. Even when they do not directly yield order 668, they define a structured rule space with strong spectral behavior.",
+      "suggested_technique": "Search linear or nonlinear bipermutive CA rules, score the resulting sequences by Walsh flatness, nonlinearity, and pairwise correlation, and use the best outputs as seed rows, seed blocks, or restart distributions for the full order-668 search.",
+      "mapping_back": "Instead of starting from random rows, the CA search starts from spectrally flat sequences that are already close to orthogonality. Local repair dynamics then only need to close the remaining exact constraints.",
+      "candidate_folder_name": "boolean_spectral_ca"
     },
     {
-      "domain": "reaction-diffusion / excitable-media computing",
-      "reframing": "Recast the residual defect landscape as a medium with interacting species. Positive and negative correlation errors diffuse, trigger waves, and annihilate at collision fronts rather than being updated by static rewrite rules.",
-      "key_insight": "Reaction-diffusion systems solve hard spatial problems through wave propagation and collision logic. That is a closer analogy to defect cancellation than the usual \"flip one sign and rescore everything\" search loop.",
-      "suggested_technique": "Discrete Greenberg-Hastings or related excitable-media rules with collision-based annihilation events.",
-      "mapping_back": "Seed an excitable lattice with the violated correlations of the 64-modular seed or with defects in the 167-shift autocorrelation table. When wavefronts collide, trigger deterministic sign flips or token rewrites that eliminate paired defects while keeping block weight or symmetry constraints fixed.",
-      "candidate_folder_name": "reaction_diffusion_defects"
+      "domain": "Combinatorial design and orthogonal Latin squares",
+      "reframing": "Treat Hadamard-668 as a design-synthesis problem where the CA first generates algebraically certified orthogonal structures and only later converts them into plus/minus matrix blocks.",
+      "key_insight": "Linear bipermutive cellular automata generate Latin squares, and relative primality of their local-rule polynomials gives a clean orthogonality test. That provides algebraic filters before expensive search ever starts.",
+      "suggested_technique": "Enumerate CA-rule polynomials with pairwise coprimality, generate the induced orthogonal Latin squares or orthogonal arrays, and test block-inflation or composition schemes that could feed a 668-order construction.",
+      "mapping_back": "The CA searches over rule families that already guarantee strong orthogonality in induced substructures. Those substructures can serve as scaffolding blocks, reducing how much free sign placement remains for the final matrix.",
+      "candidate_folder_name": "combinatorial_design_mols"
     },
     {
-      "domain": "differentiable morphogenesis / neural cellular automata",
-      "reframing": "Replace hand-crafted update rules with a learned regenerative rule. The model is trained to grow or repair Hadamard structure from damaged exemplars, so the automaton becomes a learned repair prior instead of a manually designed search heuristic.",
-      "key_insight": "Neural cellular automata are strongest when the target is regeneration under local information. That matches the current gap in the Hadamard-668 line: the issue is not that local updates exist, but that hand-written rules have not produced a useful basin of attraction.",
-      "suggested_technique": "Growing neural cellular automata trained with damage-recovery objectives and transfer from smaller exact instances.",
-      "mapping_back": "Train on smaller exact Hadamards, inject controlled corruptions, and supervise the automaton to recover the exact matrix or a lower-defect state. Then transfer the learned rule to the 64-modular 668 seed so each cell outputs local edit logits over signs, block types, or support tokens.",
-      "candidate_folder_name": "neural_ca_regeneration"
+      "domain": "Probabilistic inference and factor graphs",
+      "reframing": "Model the unknown signs as variables in a loopy factor graph with hard factors for row balance and row-pair orthogonality, and let the cellular automaton act as the local actuator rather than the global reasoner.",
+      "key_insight": "Belief propagation and survey propagation are designed for large combinatorial landscapes with clustered solutions. They can expose which cells are nearly forced, which pairs are inconsistent, and where local repair should focus.",
+      "suggested_technique": "Build factors for per-row balance and selected row-pair dot products, run belief propagation or survey-propagation-guided decimation, and translate the resulting local biases into CA update priorities or local fields.",
+      "mapping_back": "Messages become local pressures at CA cells. The CA still performs only local flips or swaps, but now those updates are informed by sparse global hints about where contradictions are concentrated.",
+      "candidate_folder_name": "factor_graph_message_passing"
     },
     {
-      "domain": "symbolic dynamics / subshifts of finite type",
-      "reframing": "Treat admissible local motifs of the 167-length blocks as a shift space. The problem becomes finding a path through a sofic or finite-type presentation whose language still supports a full order-668 witness.",
-      "key_insight": "Subshift and de Bruijn-graph methods collapse huge sequence spaces by forbidding local words and studying the surviving graph structure. That exposes entropy bottlenecks and dead components much earlier than full exact search.",
-      "suggested_technique": "Build a de Bruijn or Rauzy graph for allowed local windows and prune by strongly connected components, entropy, and extension tests.",
-      "mapping_back": "Encode run-length or local sign windows as symbols. Forbid windows that already violate partial autocorrelation, balance, or symmetry conditions, then search only inside graph components whose paths can still extend to four compatible length-167 blocks for a 4 x 167 construction.",
-      "candidate_folder_name": "sofic_shift_pruning"
+      "domain": "Machine learning and graph neural cellular automata",
+      "reframing": "Treat the update rule itself as unknown and learn a local policy that transforms quasi-Hadamard states into exact or near-exact ones on the row-interaction graph.",
+      "key_insight": "Graph cellular automata can learn local transition rules that converge to a desired target state on arbitrary graphs. That means the row or row-pair graph for Hadamard constraints can host a learned repair dynamic instead of a hand-written one.",
+      "suggested_technique": "Represent rows or row pairs as graph nodes with defect summaries and local sign statistics, then train a GNCA or neural CA with curriculum on smaller known Hadamard orders before transfer to 668.",
+      "mapping_back": "At inference time every node updates from neighbor messages only, preserving the decentralized CA character. The learned rule becomes a proposal engine for exact checking and restart-based search at order 668.",
+      "candidate_folder_name": "graph_neural_ca"
     },
     {
-      "domain": "algorithmic self-assembly / tile assembly",
-      "reframing": "Turn the construction into a growth process. Small certified motifs attach only when boundary summaries agree, so a full witness emerges by local compatibility rather than by global backtracking alone.",
-      "key_insight": "Tile assembly shows how local glue rules can enforce nonlocal computation. That is attractive here because the 668 search has natural boundary data such as partial sums, parity, and autocorrelation debt that can be carried on interfaces.",
-      "suggested_technique": "Abstract tile assembly or Wang-tile systems with cooperative binding and boundary-state glues.",
-      "mapping_back": "Define tiles for short row fragments or block motifs whose north, south, east, and west glues encode partial correlation sums, parity, and deferred debt. A completed 2D assembly represents either a candidate 4 x 167 witness or a structured 668 seed that can be passed to the exact verifier.",
-      "candidate_folder_name": "tile_assembly_blocks"
+      "domain": "Molecular self-assembly and tile systems",
+      "reframing": "Think of the matrix as something that should grow patch by patch from a seed, with only locally matching interfaces allowed and incompatible global completions ruled out early.",
+      "key_insight": "Local determinism in the abstract tile-assembly model is about designing tiles so that each attachment is forced by immediate context. That is closely analogous to designing row-column patch types that cannot extend into non-Hadamard completions.",
+      "suggested_technique": "Define tile types for small row-column patches labeled by partial dot-product signatures and remaining balance budgets, enforce glue matching and directed growth, and reject tile sets that allow ambiguous or defect-creating extensions.",
+      "mapping_back": "A completed directed assembly corresponds to a full matrix candidate. If the tile system is locally deterministic, many impossible continuations disappear before any global backtracking or exact verification is needed.",
+      "candidate_folder_name": "tile_self_assembly"
     },
     {
-      "domain": "active automata learning / grammar inference",
-      "reframing": "Do not hand-design the acceptor for promising prefixes; learn it from solved instances and counterexamples. The search is guided by an inferred language model that captures which local patterns usually survive to completion.",
-      "key_insight": "Angluin-style learning turns automata design into an iterative teacher-student loop with explicit counterexamples. That is useful when the right prefix filter is plausible but hard to write down cleanly by hand.",
-      "suggested_technique": "Angluin L* or RPNI-style inference of finite automata from membership, equivalence, and counterexample data.",
-      "mapping_back": "Use smaller exact Hadamards, modular near-misses, and SAT- or verifier-generated dead prefixes as the teaching set. Infer an automaton over run-length or support-pattern tokens, then place that automaton in front of the expensive order-668 verifier as a learned pruning layer.",
-      "candidate_folder_name": "learned_prefix_automaton"
+      "domain": "Parallel analog hardware and cellular neural networks",
+      "reframing": "Treat Hadamard-668 as a lattice optimization workload meant for thousands of locally connected processors rather than as a purely serial symbolic search.",
+      "key_insight": "Cellular neural and nonlinear network hardware has been used for Ising- and spin-glass-like optimization with locally varying templates. That matches the need for massively parallel local repair and fast exploration of noisy energy landscapes.",
+      "suggested_technique": "Map row-pair defect energies to locally varying CNN templates or FPGA-style CA arrays, use analog relaxation with injected noise for exploration, and periodically re-normalize rows in an outer digital control loop.",
+      "mapping_back": "Each processor cell maintains a compact local defect state and updates from neighbors only. The hardware array becomes a fast proposal engine whose outputs are filtered by an exact Hadamard checker.",
+      "candidate_folder_name": "analog_cnn_hardware"
     }
   ],
-  "timestamp": "2026-03-18T10:10:52.898115+00:00",
-  "input_fingerprint": "128b92d6219d0e1a12035ad74807a58ef3ef54eac5ff19c66a238f44a8739aa9",
+  "timestamp": "2026-03-18T12:28:12.390371+00:00",
+  "input_fingerprint": "021635b85055d0caa6e8fe8b21a19b828d39ff32f0f5a8e669dd5c826367c548",
   "input_context": {
     "command": "reframe",
     "topic": "solve hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it",
@@ -91,7 +91,7 @@
       {
         "path": "results/research_context.md",
         "exists": true,
-        "sha256": "7822091fb2671290edab2b6852c1bcec63f5c047634ca185b3bbf1ed3bb5a746"
+        "sha256": "7c0292ee03107193a41d0b5ddd5683ac814fccb03b63beaa2c698998088e6746"
       },
       {
         "path": "results/literature/prior_art_watchlist.md",
@@ -101,47 +101,47 @@
       {
         "path": "results/literature/prior_art_gap.md",
         "exists": true,
-        "sha256": "4200104663ca29099a1a5083b15f0cfad902725c87adcda0504212f7aba5d6db"
+        "sha256": "15d59c30fb0fe1a872d114ba2776b2bfb516268fc48cb58b6091a519f225ef67"
       },
       {
         "path": "results/literature/semantic_scholar_manifest.json",
         "exists": true,
-        "sha256": "39329c257a284945bd408dea75a5f27675b032193e33c7ed63e4940f051a5bab"
+        "sha256": "53ba458cf49c9ac4c3596b3abcc54e9dadb0f07acaff254c85109827a102bf8a"
       },
       {
         "path": "results/swarm/director_brief.md",
         "exists": true,
-        "sha256": "caf8b0df1ead9d396013104426d892506bf4b3e3222dfebc868201045cce98d4"
+        "sha256": "ff0b8086898046fbfc1024a1c0dac3526852a44d981ffedb14428bd831dcf31c"
       },
       {
         "path": "results/swarm/hypotheses.json",
         "exists": true,
-        "sha256": "dd23705b3563a3487967312c3753aaa95bb74085b92898cf22ecac287e169138"
+        "sha256": "0a4b6df26f1ef66dad119ff512d314855e49d1a2f706ae77a870fbc5972b2e4a"
       },
       {
         "path": "results/swarm/tool_plan.md",
         "exists": true,
-        "sha256": "9603c7961ae8f51cc51b45bbac57d9ac97eafdd5e0d9cf2ce2201c3f11381e2c"
+        "sha256": "4229c52f982709eebbace0cc8065cba8d1b5d90ee537b83b37d7279090cb74f0"
       },
       {
         "path": "results/swarm/falsifier.md",
         "exists": true,
-        "sha256": "2ea59aae126b8241301213497b4f4d72fb778d9745a9565ce1b6f400e9714ccb"
+        "sha256": "4cc5049f1449e44641794fff2ca05c5ee5da33ffb0a8600be78174c12dc4c50d"
       },
       {
         "path": "results/concept_evolve/probe_result.json",
         "exists": true,
-        "sha256": "de62baf93004c9dee61927b58edc284c025dd626c244a147209ef87621cb0295"
+        "sha256": "1821c4a8fd9916e1413d6001db86040cb4055350ad3d75a36cfec88080007320"
       },
       {
         "path": "results/concept_evolve/concept_delta.md",
-        "exists": false,
-        "sha256": ""
+        "exists": true,
+        "sha256": "4d08b4ee0e968814db82ae02453af401e1477f04c6726882b07f3d4c6cd70aac"
       },
       {
         "path": "results/verification/verification_summary.md",
         "exists": true,
-        "sha256": "a760493a405815812485a8786d58d5b25cb3ebf396d418102f302ecba1404937"
+        "sha256": "fb0899dce936d46015ddf8de9fd595c2d5df34eac470bcd1ea3ceb03a056dd9d"
       }
     ]
   }

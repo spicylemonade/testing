@@ -2,30 +2,34 @@
 
 ## Suggestion
 
-Treat the user’s `cellar automata` idea literally, not just as another spelling of `cellular automata`.
+Treat the literal `cellar automata` branch as an exact tail-panel pushdown experiment rather than as another flat CA rule.
 
-- Promoted bridge: `autocorrelation_debt_pushdown`
-- Held reserve bridges: `sat_user_propagator_ca`, `convolution_slice_ca`, `learned_prefix_automaton`
-- Retired bridges: `density_classifier_support_repair`, `defect_transport_mod64_lift`, `reservoir_defect_readout`
+- Promoted experiment frame: canonical tail-panel cellar automaton with boundary-debt control state
+- Competing matched baseline: static boundary-debt residual-state search on the same tokenization and exact oracle
+- Guardrail: retire the branch immediately if the stack carries no extra information beyond the static residual state
 
 ## Implementation
 
-- Ran the structured concept tree earlier through `evolve`.
-- Recovered a fresh reserve-branch `probe` after the verification context existed.
-- Reran `reframe` against the finished verification packet and obtained ten alternate framings, including a literal reservoir-computing reading and a visibly-pushdown reading.
-- Ran `walk --seed pushdown --depth 4` to isolate the literal `cellar` branch family.
-- Ran `iterate` after the verification packet existed, producing `results/concept_evolve/concept_delta.json` and `results/concept_evolve/bridge_candidates.json`.
-- Integrated the reserve ranking into `results/analysis/phase3_hypothesis_selection.md` and `results/analysis/reserve_concept_audit.md`.
+- Ran `probe` on the exact question of whether any `4x79` or `167/80` tail panel really needs stack memory beyond a static boundary-debt summary.
+- Ran `reframe` after the exact panel experiments had started so the branch could be evaluated as a formal-language/no-go question instead of generic CA optimism.
+- Implemented `hadamard668/cellar.py` with:
+  - canonical tail-panel tokenization
+  - dyadic cellar stack summaries
+  - matched static boundary-debt control state
+  - exact tail-completion oracle panels for the `4x79` control, `167/80` target panels, and degraded `668`-anchored projections
+- Wrote the supporting analysis in:
+  - `results/analysis/cellar_design_brief.md`
+  - `results/analysis/cellar_prefix_complexity.md`
+  - `results/analysis/cellar_no_go.md`
 
 ## Result
 
-- The only materially different literal `cellar` reading is a pushdown or prefix-debt automaton over canonical `167/80` support paths.
-- `iterate` promoted that bridge and retired the flat support-space CA continuation, the flat seed-side defect transport continuation, and the reservoir-readout reading.
-- The remaining held reserve bridges are symbolic exact-feedback filtering and liability-field search, both still unvalidated.
-- The executed CA rules for `H1` and `H2` remain a no-go and do not inherit support from this reserve concept.
+- The solved `4x79` control tail panels close exactly under the static boundary-debt frontier, so the cellar stack has no surviving witness-retention advantage on the same-template control family.
+- The recorded `167/80` exact tail panels and the degraded `668`-anchored projections produce no exact completion and no stack-only frontier win.
+- The branch therefore ends as a constrained no-go under the implemented encoding, not as a promoted method for solving order `668`.
 
 ## Novelty Delta
 
-- Relative to `H1/H2`, the novelty gain is real because the state representation changes from flat local updates to explicit deferred-debt memory.
-- Relative to exact-search prior art, the novelty remains conditional and survives only if the stack memory or adaptive feedback adds value beyond canonicalization or static pruning.
-- If the branch reduces to ordinary prefix pruning, branch-and-bound, or SAT+CAS packaging, its novelty collapses and it should be retired.
+- Relative to the retired `H1/H2` CA branches, the Phase 6 work did add a materially different information channel: canonical exact tail panels with stack-style residual bookkeeping.
+- Relative to the stronger prior-art burden, that novelty does not survive because the matched static residual-state baseline already closes the solved control exactly under the same encoding.
+- The only surviving novelty claim is methodological and negative: the literal `cellar` / pushdown interpretation was executed fairly and retired under an exact matched comparator instead of being left as vague future work.
