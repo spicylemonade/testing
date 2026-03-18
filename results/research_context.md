@@ -1,10 +1,10 @@
 # Research Context
 
-- Stage: post_writer
+- Stage: post_director_swarm
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
-- Note: paper draft and compilation stage completed
+- Note: gap_queries=4, swarm_agents=4
 - Rubric progress: 25/25 completed
 - Known papers tracked: 106
 - `sources.bib` entries: 19
@@ -18,8 +18,8 @@
 - Engineering Societies in the Agents World (2000)
 
 ## Recent Semantic Scholar Activity
-- search :: Combinatorial designs and cellular automata survey (results=5, cache_hits=0, network_calls=1)
-- search :: Bent Functions from Cellular Automata (results=5, cache_hits=0, network_calls=1)
-- bibtex :: 792b2568f1335f14e5282dd837943d109fbb4b85 (results=1, cache_hits=0, network_calls=1)
-- bibtex :: 2610be30aa699bdc403fe1e417a472e47a2800a7 (results=1, cache_hits=0, network_calls=0)
 - bibtex :: 54144b46fc288f076aef133192069a2289460b13 (results=1, cache_hits=0, network_calls=0)
+- search :: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it (results=0, cache_hits=1, network_calls=0)
+- search :: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it future work (results=0, cache_hits=1, network_calls=0)
+- search :: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it limitation (results=0, cache_hits=0, network_calls=1)
+- search :: solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it open problem (results=0, cache_hits=1, network_calls=0)

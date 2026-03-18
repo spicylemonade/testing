@@ -1,41 +1,45 @@
-# Cross-Domain Bridge Hypotheses for Hadamard 668 via Cellular Automata
+# Cross-Domain Bridge Hypotheses for Hadamard 668
 
-Assumption: the task term `cellar automata` means `cellular automata`.
+Assumption: in this repo, the prompt term `cellar automata` is treated as `cellular automata`.
 
-Overlap warning before proposing anything new: a direct claim that "cellular automata construct Hadamard objects" is already too close to existing LBCA/OCA work on orthogonal Latin squares, self-orthogonal Latin squares, mutually unbiased bases, and CA-derived bent functions/Hadamard matrices. The novelty pivot below is to use cellular automata as a search dynamic, repair operator, or structured prior for the hard order-668 search, rather than as a generic standalone construction.
+Pivot note before proposing anything new:
 
-## 1. Syndrome-Decoder Cellular Automaton for Compressed Hadamard Search
+- Do not recycle `H1_defect_syndrome_ca_64m` as a live bridge. The first frontier kill test and the exact one-packet scan already show that the current single-packet q/s lattice is frozen or fake-local on the canonical seed.
+- Do not spend the main budget on direct row-emission CA. That path remains too exposed to existing CA-construction overlap.
+- Do not count `H2_lag_space_ca_167` itself as a fresh bridge here. It is the existing backup branch, not a new cross-domain pivot.
 
-**Title:** Treat Williamson/Turyn residuals as a syndrome field and decode them with a local cellular automaton
+## 1. Hybrid-Cellular-Automata Stress Redistribution on a Composite Packet Graph
 
-**Closest prior art:** `Cellular-automaton decoders for topological quantum memories` and the Hadamard search formulations in `Quantum computing formulation of some classical Hadamard matrix searching methods and its implementation on a quantum computer` and `A quantum approximate optimization method for finding Hadamard matrices`.
+**Title:** Import topology-optimization HCA laws to allocate repair pressure over a low-splash composite packet library
 
-**Why it is different:** The prior Hadamard work converts Williamson, Baumert-Hall, or Turyn constraints into an energy for annealing or QAOA. The prior CA decoder work uses local syndrome propagation to eliminate defects in topological codes. The bridge hypothesis is to reinterpret off-zero autocorrelation terms or compressed orthogonality violations as decoder syndromes on a finite lattice, then use a nearest-neighbor CA to move and annihilate defects instead of minimizing a generic Ising energy. That is a different algorithmic role for CA than both direct CA constructions and quantum optimization.
+**Closest prior art:** Hybrid cellular automata for topology optimization; the repo's promoted `anti-splash composite packet library` idea; the held `adaptive_criticality_ca_schedule` branch.
 
-**Falsifiable prediction:** On compressed Hadamard benchmarks with known solutions, a decoder-style CA should lower residual autocorrelation faster than matched simulated annealing and should produce a strictly higher exact-feasibility rate from the same seed distribution. If defect density and exact-hit rate are not improved over annealing under equal update budgets, reject the hypothesis.
+**Why it is different:** The topology-optimization HCA literature uses local stress or compliance redistribution to decide where material should grow or shrink under a hard volume budget. The bridge here is to reinterpret the retained composite packet library as the design space and the exact Gram-defect load as the local stress field. That is narrower and more testable than another generic temperature schedule: the CA update law would live on a seed-matched composite packet graph, enforce a hard cap on simultaneously active packet mass, and try to keep defect reduction spatially bounded. This directly targets the current failure mode, namely that single-packet q/s moves have large changed-lag footprints and no improving one-packet moves on the canonical seed.
 
-**Required experiments:** Build a factor-graph or lattice representation of Williamson/Turyn constraints; define syndrome cells from each violated autocorrelation term; implement synchronous and asynchronous CA update rules with local field diffusion and defect attraction; benchmark against simulated annealing, tabu search, and plain greedy flips on known orders before attempting order 668; measure residual decay, escape from metastable states, and exact-feasibility rate.
+**Falsifiable prediction:** On the same retained composite packet library and the same order-668 frontier seed, an HCA-style local stress redistribution law should beat fixed-rule CA, greedy, tabu, and simulated annealing on lexicographic seed improvement or exact-hit rate while also reducing median changed-lag footprint. Reject the hypothesis if the advantage disappears once the packet basis is shared across baselines, or if the method still requires dense all-packet rescoring every step.
 
-## 2. Goal-Guided Neural Cellular Automaton as a Learned Repair Operator
+**Required experiments:** Enumerate symmetry-safe 2-packet and 4-packet composites; compute exact delta fingerprints and keep only low-splash candidates; build the composite-packet influence graph; define a local stress or compliance density from exact defect mass; implement an HCA update law with a hard local activity budget; benchmark against fixed-schedule CA and matched non-CA baselines on the small exact controls first and then on the canonical order-668 seed.
 
-**Title:** Train a neural cellular automaton to repair near-Hadamard states instead of hand-designing local moves
+## 2. Decoder-Relay CA with SAT+CAS Handoffs
 
-**Closest prior art:** `Growing Neural Cellular Automata`, `Goal-Guided Neural Cellular Automata: Learning to Control Self-Organising Systems`, and `Differentiable cellular automata`.
+**Title:** Use a decoder-style defect graph to route exact SAT+CAS effort only into locally stressed regions
 
-**Why it is different:** Existing NCA work learns local rules that grow or maintain target patterns. Existing Hadamard search work uses fixed symbolic energies and generic optimization. The bridge is to train an NCA on smaller known Hadamard constructions and corrupted near-solutions so that each cell sees only local defect channels and learns a repair policy for compressed sequence or block variables. This is not a direct CA construction of a Hadamard matrix, and it is not standard annealing: it is a learned local error-correction policy for a rigid combinatorial object.
+**Closest prior art:** `Cellular-automaton decoders for topological quantum memories`; `The SAT+CAS Method for Combinatorial Search with Applications to Best Matrices`; the repo's `ldpc_hadamard_decoder_graph` and `sat_clause_diffusion_automaton` concepts.
 
-**Falsifiable prediction:** An NCA trained only on smaller known orders and noisy perturbations should improve held-out exact-repair rate on larger compressed instances relative to non-learned local search. If the learned rule only memorizes training sizes and fails to transfer to larger held-out instances, reject the hypothesis.
+**Why it is different:** Decoder work repairs code syndromes, while SAT+CAS work proves exact results inside structured combinatorial families. This bridge uses CA for neither direct construction nor generic scoring. Instead, it builds a sparse defect-packet or clause-packet graph from exact delta tables around a structured Hadamard repair subproblem, lets a CA transport conflict mass on that graph, and hands only the most stressed neighborhood to exact SAT+CAS repair. The novelty survives only if the CA relay improves exact progress per unit of exact reasoning rather than acting as a thin wrapper around ordinary branching heuristics.
 
-**Required experiments:** Encode compressed Hadamard candidates as a CA lattice with channels for signs, symmetry class, and local defect summaries; generate training data from known constructions plus controlled corruption; train differentiable or straight-through NCA updates to minimize final defect count and maximize exact repair; compare transfer to unseen orders and to order-668 subinstances; ablate neighborhood radius, asynchronous updates, and discrete-vs-continuous state representations.
+**Falsifiable prediction:** On Williamson or best-matrix controls and then on compressed subinstances derived from the order-668 seed, the relay should deliver more exact hits per SAT+CAS call, or smaller proof-search trees at the same exact-hit rate, than plain SAT+CAS branching, decoder-only weighted bit-flip, and clause-score greedy handoff. Reject the hypothesis if graph construction cost erases the gain, if the useful neighborhoods become dense, or if the CA layer adds nothing beyond standard branching scores.
 
-## 3. Finite-Field LBCA Seeds for Prime-Length Turyn Search
+**Required experiments:** Choose one compressed Hadamard family with a clean exact baseline; compile the SAT+CAS subproblem and exact packet deltas; derive a sparse clause-packet graph; implement CA stress transport and a handoff rule for invoking exact repair on one neighborhood at a time; compare solver calls, wall-clock time, exact-hit rate, neighborhood density, and family-leakage behavior against SAT+CAS and decoder-only controls.
 
-**Title:** Use finite-field linear bipermutive cellular automata as a structured seed generator for the length-167 core of order 668
+## 3. Prime-Field CA Seed Prior for the 167-Core with Leakage Audit
 
-**Closest prior art:** `Bent Functions from Cellular Automata` and `Cellular Automata-Based Methods for the Construction of Mutually Unbiased Bases`.
+**Title:** Use finite-field CA over `F_167` only as a structured seed generator, not as a direct constructor
 
-**Why it is different:** Those papers show that CA can directly generate power-of-two Hadamard-adjacent objects such as bent functions and complex Hadamard or MUB structures. Reusing that claim for order 668 would be derivative and also mismatched to the prime core `167`. The pivot is to use finite-field LBCA over `F_167` or related prime-length state spaces only as a structured prior for the real four-sequence Williamson/Turyn search behind `668 = 4 * 167`. CA is supplying algebraically biased seeds and block dictionaries, not claiming a direct construction.
+**Closest prior art:** `Bent Functions from Cellular Automata`; `Cellular Automata-Based Methods for the Construction of Mutually Unbiased Bases`; `Constructing Orthogonal Latin Squares from Linear Cellular Automata`; the repo's `lbca_prime_seed_projection` concept.
 
-**Falsifiable prediction:** LBCA-derived seed families, after binary or quaternary projection into candidate sequence tuples, should produce lower initial autocorrelation residuals and a heavier tail of near-feasible states than random seeds, m-sequences, or SAT warm starts. If their residual distribution is statistically indistinguishable from those baselines, reject the hypothesis.
+**Why it is different:** Direct CA-construction claims are already too close to the overlap zone around H3. The pivot is narrower: exploit prime-field CA only to sample algebraically biased traces on the prime core behind `668 = 4 x 167`, then project those traces into q/s or four-channel seeds for a separate repair stage. CA is a seed prior over structured starts, not the solver and not the proof method. That makes the bridge distant from current Hadamard-search heuristics while still easy to falsify statistically.
 
-**Required experiments:** Enumerate or optimize LBCA rules over prime-length alphabets for diffusion, period, and pairwise decorrelation; project their spacetime traces into binary sequence tuples compatible with Williamson/Turyn compression; measure autocorrelation residuals and exact-feasibility rate before and after a common local-repair postprocessor; compare seed-quality distributions on smaller known orders, then run the best families on order-668 instances.
+**Falsifiable prediction:** After binary or quaternary projection, the best prime-field CA seed families should produce a heavier tail of low-support, low-`l1`, or post-repair-improving starts than random balanced seeds, m-sequences, and simple perturbations of the published `64`-modular seed. Reject the hypothesis if the residual distribution is statistically indistinguishable from those baselines or if the best seeds canonically collapse into an already known family such as Williamson, Turyn, Goethals-Seidel, or cocyclic search.
+
+**Required experiments:** Enumerate or optimize linear and bipermutive rules over `F_167`; design several projection maps into q/s or four-channel sequence tuples; compare initial support, `l1`, and `max_abs` distributions under a shared downstream repair method; run the same family-leakage audit used for H2; keep the branch only if the seed prior improves the tail before any special-case postprocessing.

@@ -1,123 +1,107 @@
 # Hypothesis Negative Space
 
-## Repo Notes
+## Working Position
 
-- `results/literature/gap_frontier.md` had no populated frontier content.
-- `results/swarm/director_brief.md` was not present in this repo snapshot.
-- No obvious ConceptEvolve artifact names were present under `results/` or in a repo-wide filename search.
-- I treat the request for "cellar automata" as "cellular automata"; I found no distinct method family under the "cellar automata" name.
+- Treat `cellar automata` as `cellular automata`. Neither the repo nor targeted literature checks surfaced a Hadamard-search method family under the former name.
+- Do not spend more search budget on `H1_defect_syndrome_ca_64m` as an active direction. It is now the negative control: on the canonical `64`-modular order-`668` seed it never beat the seed objective `13/2880/512`, and exhaustive one-packet and two-packet checks found no improving moves in the current basis.
+- Do not spend immediate budget on `H3_spacetime_row_emission_ca`. The repo already marks it reserve-only because direct CA-construction overlap is high and it is weakly tied to the actual order-`668` bottleneck.
 
-## Negative-Space Thesis
+## What To Avoid Repeating
 
-The crowded search space around Hadamard order 668 is not "all possible search." It is mostly:
+The crowded space is already:
 
-- classical structured constructions and their descendants (`Williamson`, `Goethals-Seidel`, `Turyn`, cocyclic / `D4t`, block-circulant, Kronecker/product lifts),
-- exact search inside those families (`SAT` + `CAS`, compression, partitioning, autocorrelation pruning),
-- energy-based heuristics on the raw matrix (`simulated annealing`, `simulated quantum annealing`, `QAOA`, geometric/local search, genetic/metaheuristic variants),
-- modular / near-Hadamard approximations treated as endpoints rather than as sparse defect scaffolds.
+- exact or family-restricted search (`SAT+CAS`, `Williamson`, `Turyn`, `Goethals-Seidel`, cocyclic, block-circulant),
+- global energy minimization (`greedy`, `tabu`, `simulated_annealing`, quantum/Ising-style search),
+- and direct CA-based construction of adjacent design objects rather than frontier-seeded exact repair.
 
-Cellular automata are not completely absent from Hadamard-adjacent literature, but the visible overlap is construction-oriented (for example bent-function or mutually-unbiased-basis pipelines) rather than a direct search heuristic for an open real order such as `668`.
+The remaining negative space is narrower: representation-changing local dynamics around the published `64`-modular seed, especially where prior work either ignored the actuator basis, used lag defects only as scores, or could not scale exact reasoning to the real `668` frontier.
 
-The under-explored space is not "another optimizer on the same ansatz." It is a local-rule dynamical system that acts on a representation smaller than the full `668 x 668` sign matrix, and that uses the current best approximate structure as a starting point instead of starting from random noise.
+## Direction 1: Anti-Splash Composite Packet Library
 
-## Direction 1: Defect-Gas Cellular Automata on the 64-Modular Seed
+### Gap Attacked
 
-### Why this is negative-space
-
-The 2025 `64`-modular order-`668` construction already gets extremely close to exact orthogonality: the Gram matrix has only `26` nonzero off-diagonal entries. Prior work appears to stop at the approximation and the pattern-guessing argument, rather than treating those remaining defects as a sparse dynamical system to be repaired.
+Prior work in the repo tested CA rules on the wrong actuator basis. The verified H1 failure says the current single-packet q/s moves are fake-local: a typical one-packet move perturbs about `51` lag slots, and no improving one-packet or two-packet move exists at the canonical seed. The untested question is whether any honest local dynamic appears only after changing the move library itself.
 
 ### Hypothesis
 
-Represent `D = H H^T - 668 I` as a defect field and run an asynchronous cellular automaton on the defect support, not on the full sign matrix. Each local CA update selects a small, balance-preserving flip packet in a compressed representation of the candidate matrix and tries to move, merge, or annihilate nearby defect charges. If the defect support is truly sparse and structured, a defect-transport CA may reach an exact Hadamard matrix faster than global entrywise search.
+Discover symmetry-safe composite packets whose far-field lag effects cancel. The target is a retained library of `2`-packet, `4`-packet, and run-boundary moves with sharply lower lag-splash than the current one-packet basis but with enough frontier leverage to make local search nontrivial again.
 
-### First Experiment
+### Why This Is Negative-Space
 
-- Start from the known `64`-modular order-`668` matrix or its generating quadruple.
-- Compress updates into orbit packets or short row/column blocks instead of individual entries.
-- Use local rules that preserve normalization and row balance while reducing nearby Gram defects.
-- Measure whether defect count and defect magnitude collapse faster than a matched random local search baseline on the same seed.
+This attacks what prior work ignored: actuator-basis quality. It does not assume raw q/s adjacency is the right geometry, and it does not restart another full-matrix optimizer from scratch.
 
-### Fast Falsifier
+### First Kill Test
 
-If the defect support diffuses or plateaus after a modest number of asynchronous sweeps, the "sparse defect logistics" assumption was wrong and this branch should be downgraded quickly.
-
-### Why this might work now
-
-Most search methods spend compute rediscovering global structure from scratch. This one assumes the hard part is already present and treats the remaining gap as sparse defect logistics.
+- Enumerate `2`-packet, `4`-packet, and run-boundary composites on the canonical seed and one harder control.
+- Keep only packets with sharply lower lag-splash than the one-packet basis and with improving or strategically neutral behavior at the frontier.
+- Compare the retained library against the current one-packet basis under identical accounting before adding any new CA rule.
 
 ### Angle To Avoid
 
-Do not turn this into plain `Ising` hill-climbing, `SA`, `SQA`, or `QAOA` on raw matrix entries. The novelty is the CA evolving the defect graph around a near-solution, not another generic energy minimizer.
+Do not let this collapse into plain basis engineering or hidden family injection. If the gain comes only from the new packet library and every non-CA baseline benefits equally, the result is a useful preconditioner, not a CA contribution.
 
-## Direction 2: Lag-Space Cellular Automata on Four Relaxed 167-Channels
+## Direction 2: Derived Defect-Packet Influence Graph / LDPC-Style Graph CA
 
-### Why this is negative-space
+### Gap Attacked
 
-The literature around order `4n` search heavily uses supplementary sequences, periodic autocorrelation, and compression, but usually inside rigid symmetry classes. For `668 = 4 x 167`, prime `167` is the awkward part: it makes product constructions weak and strongly structured sequence families easy to overfit.
+The probe and bridge notes say raw q/s index adjacency is the wrong notion of locality. Prior work in the repo has not yet tested whether locality becomes honest only after moving onto a derived influence graph whose edges reflect exact defect-packet interaction rather than sequence position.
 
 ### Hypothesis
 
-Search in lag space rather than matrix space. Represent a candidate by four length-`167` channels with only weak shared constraints, then define a `1D` cellular automaton over lag residues `k in Z_167`. Each CA cell stores the current local contribution to periodic autocorrelation and updates using neighboring lag defects, conserved parity, and short-range balance rules. The goal is to drive the entire lag-defect spectrum to zero without forcing full circulancy or a standard Williamson/Turyn template.
+Build a sparse bipartite graph with defect checks on one side and retained low-splash packet moves on the other. Defect nodes emit signed messages, packet nodes aggregate only local neighborhood state plus short memory, and an asynchronous graph CA chooses locally winning repairs without falling back to full global rescoring.
 
-### First Experiment
+### Why This Is Negative-Space
 
-- Initialize from random balanced four-channel states and from the `64`-modular seed.
-- Let CA states encode local lag residuals plus a small repair action alphabet.
-- Permit quasi-circulant or orbit-mixed updates, but forbid the search from collapsing back into a fully classical sequence family.
-- Track whether defect entropy falls in lag space before exact reconstruction in matrix space.
+This attacks what prior work failed to test: locality defined by algebraic influence instead of geometry or all-packets scoring. It keeps the method CA-shaped, but in a representation that matches the actual defect topology.
 
-### Fast Falsifier
+### First Kill Test
 
-If the only successful trajectories are the ones that recover a standard circulant or Williamson-style template, then this direction is not new enough to justify continued work.
-
-### Why this might work now
-
-The local object in Hadamard search is often the autocorrelation defect, but most solvers only use it as a pruning certificate. A lag-space CA would use it as the state variable itself.
+- Construct the sparse influence graph from exact delta tables of the retained packet library.
+- Compare graph CA, weighted bit-flip, scorer-only, `greedy`, `tabu`, and `simulated_annealing` on the same graph, seed, and budget.
+- Instrument neighborhood size, message count, active-node count, and dependence on global rescoring.
 
 ### Angle To Avoid
 
-Do not rebrand a standard `Williamson`, `Turyn`, or fully circulant supplementary-sequence search as "cellular automata." If the representation restores the old family, the hypothesis has collapsed back into explored territory.
+Do not let this become a sparse wrapper around global ranking, a plain syndrome-decoder copy, or a graph that quietly bakes in a classical structured family. If it only works as a preconditioner, label it that way.
 
-## Direction 3: Generative Spacetime Cellular Automata for Row Emission
+## Direction 3: Lag-Residue CA on Four Relaxed 167-Channels
 
-### Why this is negative-space
+### Gap Attacked
 
-Most exact and heuristic methods search over a static matrix. A much less explored question is whether the `668` rows can be generated as a short-rule spacetime orbit, so the search variable is a CA rule table plus seed rather than `446,224` free signs.
+Hadamard and sequence-search work uses autocorrelation defects as certificates, pruning terms, or side scores. It rarely elevates lag residues themselves into the primary CA state that gets repaired. For `668 = 4 x 167`, that omission matters because the repo evidence says the lag field is the more honest local object than the raw packet ring.
 
 ### Hypothesis
 
-Use a reversible or asynchronous `1D` cellular automaton on a ring of size `167` with four interleaved channels. Let time steps emit row blocks; after `668` steps, the emitted spacetime slices define the candidate Hadamard matrix. Orthogonality is then a temporal correlation cancellation property of the orbit. The search problem becomes: find a local rule whose orbit has the correct global pairwise correlation structure.
+Represent the search state as four relaxed length-`167` channels and let each lag cell carry residue, short memory, and a proposed repair action. The CA evolves in lag space and decodes back to packet edits only through an exact map. The branch stays alive only if it survives an explicit family-leakage audit.
 
-### First Experiment
+### Why This Is Negative-Space
 
-- Restrict to radius-`1` or radius-`2` rules with explicit balance-preserving constraints.
-- Search rule tables and seeds, not matrix entries.
-- Score candidates first by low-rank defect spectrum and near-`64`-modular behavior, then by exact orthogonality.
-- Prefer rules with nontrivial mixing and long transients over short periodic or Sylvester-like orbits.
+This attacks what prior work failed to test: using lag defects as the operative state variable instead of using them only to score moves in a known structured family.
 
-### Fast Falsifier
+### First Kill Test
 
-If the rule search only finds short periodic or power-of-two-like behavior and never approaches the observed `64`-modular defect profile, then the generative CA compression is probably too rigid for order `668`.
-
-### Why this might work now
-
-This attacks the scale bottleneck directly. If the matrix is generated by a compact local law, the true search space may be much smaller than the explicit matrix representation suggests.
+- Build one lag-residue representation only.
+- Run one matched lag-space non-CA control in the same coordinates.
+- Execute a saved leakage audit against `Williamson`, `Turyn`, `Goethals-Seidel`, cocyclic, and block-circulant collapse before any serious frontier sweep.
+- Promote only if the branch improves the seed objective or reaches exactness without family collapse.
 
 ### Angle To Avoid
 
-Do not brute-force elementary/Wolfram-style rules and do not follow the existing linear-CA-to-bent-function route. That line is structurally tied to special power-of-two Hadamard constructions and is not a plausible direct path to order `668`.
+Do not relabel supplementary-sequence or circulant-family search as CA. If successful states canonically map into a known family, relabel the branch as optimizer-over-known-family and stop treating it as negative-space novelty.
 
-## Preferred Ordering
+## Spend Order
 
-1. Direction 1 first: highest leverage because it starts from the strongest known near-solution instead of inventing structure from scratch.
-2. Direction 2 second: strongest hedge if Direction 1 cannot localize defect transport cleanly.
-3. Direction 3 third: most radical and compressive, but also the highest risk.
+1. Start with Direction 1. It tests the missing actuator-basis hypothesis before reopening any broader CA claim.
+2. Open Direction 2 as the first real CA rebuild, but only on the retained low-splash library from Direction 1.
+3. Open Direction 3 only after the family-leakage artifact exists.
 
-## Explicit Pivot Guard
+## Reserve, Not Lead
 
-If any direction drifts into one of these families, log the overlap and stop polishing it:
+- `Clause-stress diffusion automaton` is still worth keeping as a reserve hybrid for isolated defect clusters, but it is more derivative than the three directions above because it can collapse quickly into ordinary `SAT+CAS` scheduling or warning-propagation language.
 
-- another optimizer over a fixed structured family,
-- another full-matrix energy minimizer,
-- another modular approximation paper without an exact repair mechanism,
-- another power-of-two CA / bent-function construction that cannot even represent order `668`.
+## Explicit Pivot Rules
+
+- Pivot immediately if a branch requires full-spectrum rescoring, whole-graph neighborhoods, or increasingly global packet libraries.
+- Pivot immediately if a branch only works after re-entering a classical structured family.
+- Pivot immediately if progress is only approximate and exact orthogonality remains out of reach.
+- Keep `H1` only as the negative control and keep `H3` out of the immediate queue unless the repair-style representation pivots all fail for principled reasons.

@@ -1,65 +1,59 @@
 # Tool Plan
 
-## Global Routing Rules
+## Routing Order
 
-- Stay repo-first. Use the mandated local artifacts before any new search or benchmark work.
-- Route effort to the champion direction first, then the backup only if the champion fails its first falsifier for principled reasons.
-- Treat `cellar automata` as `cellular automata` unless the researcher supplies a different technical meaning.
-- Keep the claim narrow: CA as a candidate exact-search repair dynamic for the open real order-`668` case, not "CA is new for Hadamard matrices."
-- Keep the success gate exact: no wording that suggests Hadamard `668` is solved unless exact orthogonality is reached up to standard equivalence.
+- Champion first: `H_comp_packet_graph_ca_668`.
+- Backup only if the champion dies for principled locality reasons: `H_lag_residue_ca_167`.
+- Reserve only if the project accepts a hybrid claim: `H_decoder_relay_ca_frontier`.
+- Treat `cellar automata` as `cellular automata`.
+- Keep the solve gate exact: no claim on Hadamard `668` without exact orthogonality up to standard equivalence.
+- During the director pass, do not run new experiments, solver construction, theorem search, or broad literature refresh.
 
-## Role Routing And Budget Envelopes
+## Orchestrator
 
-### Orchestrator
+- Tool routing: repo artifacts, shell inspection, narrow child-agent synthesis, and one blocker-verification pass if a local contradiction appears.
+- Budget envelope: one ranking pass now and one go or no-go refresh after the first kill test.
+- Routing rule: refuse broad H1 retuning, H3 sweeps, or wide web search unless a concrete blocker cannot be resolved from the local artifact pack.
 
-- Tool routing: local repo artifacts, shell inspection, and narrow child-agent synthesis only.
-- Budget envelope: one synthesis pass and at most one blocker-verification pass; no broad literature sweep.
-- Deliverable: champion, backup, blocker, and the single next experiment.
+## Researcher
 
-### Researcher
+- Tool routing: existing repo harnesses, exact delta tables, and existing analysis artifacts only.
+- Budget envelope for the champion: one retained low-splash composite library, one defect-packet influence graph, the canonical frontier seed, one harder control, and matched baselines `CA-off`, scorer-only or weighted bit-flip, `greedy`, `tabu`, and `simulated_annealing`.
+- Budget envelope for the backup: one lag-residue representation, one matched non-CA lag-space control, and one mandatory family-leakage audit before any wider frontier sweep.
+- Stop rules: halt when whole-basis rescoring remains necessary, basis sharing removes the gain, exact-hit rate stays flat, or promising states collapse into a known family.
 
-- Tool routing: existing repo data, existing scripts, and shell-based harness execution when the execution phase begins.
-- Budget envelope: one frontier seed family, one compressed representation, four seed-matched baselines (`greedy`, `tabu`, `simulated annealing`, same-coordinate non-CA local search), and two solved smaller controls before any broader expansion.
-- Routing rule: execute `H1_defect_syndrome_ca_64m` first; only open `H2_lag_space_ca_167` if `H1` fails for locality reasons.
-- Stop rule: halt the branch if exact-hit advantage disappears under seed-matched controls or if the method only improves approximate metrics.
+## Falsifier
 
-### Falsifier
+- Tool routing: local branch notes, benchmark logs, harness diffs, and draft claims; only targeted source spot-checks if a local claim is ambiguous.
+- Budget envelope: one pre-run kill memo and one post-run kill memo for the champion; repeat once for the backup only if it opens.
+- Mandatory checks: fake locality, basis-engineering disguised as CA, approximate-only progress, unfair work accounting, single-seed dependence, and family leakage.
 
-- Tool routing: local artifacts, benchmark plans, and draft claims; targeted source checks only if a claim cannot be resolved from the local pack.
-- Budget envelope: one pre-run kill memo and one post-first-results kill memo for each selected branch.
-- Primary checks: false locality, optimizer-rebranding, family leakage, approximate-progress overclaim, and seed unfairness.
+## Writer
 
-### Writer
+- Tool routing: only auditor-cleared local evidence.
+- Budget envelope: one short methods brief and one claims table for each active branch.
+- Routing rule: write `H1` only as the negative control and keep the live claim narrow: locality rebuild on the published order-668 frontier seed unless an exact witness appears.
 
-- Tool routing: only verified local notes, benchmark summaries, and auditor-approved claims.
-- Budget envelope: one short methods brief and one claims table; no speculative related-work sprawl.
-- Routing rule: write the narrow claim, the kill test, and the blocker handoff before any narrative expansion.
+## Reviewer
 
-### Reviewer
+- Tool routing: brief, claims table, benchmark summaries, and diffs.
+- Budget envelope: one focused review pass per active branch.
+- Mandatory checks: exactness language, champion versus backup ordering, blocker clarity, and fidelity to the scout evidence.
 
-- Tool routing: diff review, brief review, and benchmark-summary review.
-- Budget envelope: one focused pass.
-- Primary checks: exactness language, novelty scope, blocker clarity, and whether champion/backup ordering still matches the evidence.
+## Citation Auditor
 
-### Citation Auditor
+- Tool routing: `results/literature/*`, `results/verification/citation_audit.md`, `sources.bib`, and only targeted external identity checks if a citation mismatch survives local review.
+- Budget envelope: audit only the sources used in the champion and backup framing.
+- Mandatory checks: the Eliahou 2025 frontier anchor, generic CA overlap warnings, structured-family overlap warnings for `H_lag_residue_ca_167`, and hybrid-overlap warnings if reserve language is reused.
 
-- Tool routing: primary papers and the exact artifacts actually cited by the brief or later draft.
-- Budget envelope: audit only the claims used in the selected champion and backup framing; no broad bibliography build.
-- Primary checks: confirm the order-`668` frontier anchor, CA-adjacent prior-art overlap, and structured-family overlap warnings.
+## Benchmark Auditor
 
-### Benchmark Auditor
+- Tool routing: benchmark configs, result logs, symmetry or canonicalization checks, and local experiment summaries.
+- Budget envelope: one audit template before the first new run, one audit after the first kill test, and one backup audit only if `H_lag_residue_ca_167` opens.
+- Mandatory checks: equal work accounting beyond accepted-state objective counts, seed-matched baselines, identical retained basis across methods, restart coverage, changed-lag footprint, exact-hit reporting, and symmetry handling.
 
-- Tool routing: benchmark configs, logs, result tables, and symmetry-canonicalization checks.
-- Budget envelope: one audit before the first run and one audit after the first run; reject evidence that does not survive the control checklist.
-- Primary checks: seed-matched baselines, representation control, equal-budget accounting, exact-hit reporting, restart statistics, and symmetry handling.
+## Director Pass Note
 
-## Explicitly Forbidden
-
-- No new experiments, solver construction, theorem search, ILP/LP work, or wide constructive exploration during the director pass.
-- No broad web or Semantic Scholar sweeps unless a blocker cannot be resolved from the local artifact set.
-- No random-start full-matrix `668 x 668` CA as the lead experiment.
-- No rebranding of annealing, QAOA, tabu, or structured-sequence search as CA unless the state and updates are genuinely local in the claimed representation.
-- No claims that CA have not been used for Hadamard matrices in general.
-- No presenting defect-count or modular improvements as a solution to Hadamard `668`.
-- No silent drift back into `Williamson`, `Turyn`, `Goethals-Seidel`, cocyclic, block-circulant, or related known families without relabeling the contribution as optimizer-over-known-family.
-- No single-seed, best-restart, or toy-order-only evidence as the main support for the method claim.
+- Current blocker: no retained low-splash actuator library plus no CA-off isolation artifact yet.
+- Exact next experiment: retained composite library, then influence graph, then one matched kill test.
+- Budget discipline: no broad web sweep, no H1 retuning, no H3 emission search, and no exact-search program launch during synthesis.
