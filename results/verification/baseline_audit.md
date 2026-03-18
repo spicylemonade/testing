@@ -9,54 +9,25 @@ Snapshot date: 2026-03-18 UTC
 - `results/verification/verification_summary.md`
 - `results/swarm/tool_plan.md`
 - `results/swarm/falsifier.md`
-
-Role usage:
-
-- `benchmark_auditor` was launched for this pre-run review.
-- `falsifier` guidance was incorporated from the standing falsifier memo plus the current baseline matrix.
-- Integration below is a planning-stage synthesis only; no executed audit exists because the exact verifier is still missing.
+- specialist review passes from `benchmark_auditor`, `falsifier`, and `integrator`
 
 ## Checklist
 
-### Label shuffling
-
-- Judgment: PASS
-- Reason:
-  - the benchmark spec explicitly requires label-shuffle control at fixed geometry and fixed nonzero-label multiset.
-
-### Decoder leakage
-
-- Judgment: PASS WITH CAVEAT
-- Reason:
-  - the benchmark spec explicitly requires a decoder-matched baseline using the same compiler, extractor, legality checks, and exact scorer.
-  - caveat: this is a design-time pass only; actual leakage cannot be ruled out until an exact evaluator runs.
-
-### Compute parity
-
-- Judgment: PASS
-- Reason:
-  - the spec fixes equal exact-decode budgets and forbids best-of-many reporting.
-  - matched `|X|` and matched edge-density bands are also written explicitly.
-
-### Out-of-distribution grids
-
-- Judgment: PASS
-- Reason:
-  - the matrix requires held-out larger or different-aspect-ratio grids for comparison blocks once runs begin.
-
-### Rational-complexity sweeps
-
-- Judgment: PASS
-- Reason:
-  - the matrix includes small-, medium-, and unrestricted-complexity `X` regimes as mandatory controls.
+| Control | Status | Notes |
+| --- | --- | --- |
+| Label shuffling | Pass | The benchmark plan requires fixed-geometry, fixed-label-multiset `X` shuffles and the tool plan makes shuffle collapse a hard gate. |
+| Decoder leakage | Fail | The benchmark plan now includes decoder-matched and decoder-ablation controls, but leakage cannot be audited cleanly because no exact verifier/decoder entry point exists in the current snapshot. |
+| Compute parity | Pass | The plan fixes matched exact-decode counts, matched `X` or `|X|`, matched edge-density bands, and forbids best-of-many-only reporting. |
+| Out-of-distribution grids | Pass | Larger or different-aspect-ratio held-out grids are required, including for decoder-matched baselines. |
+| Rational-complexity sweeps | Pass after patch | The falsifier correctly flagged the original spec as underspecified. The benchmark spec was updated to use a primitive-label surrogate complexity `c(a,b) = max(|a'|,|b'|)` with explicit small / medium / unrestricted regimes. |
 
 ## Sharpest Remaining Weakness
 
-The baseline matrix is defensible on paper, but the audit cannot move beyond a planning-stage conditional pass because there is still no exact verifier. Until the exact evaluator exists, decoder leakage and compute parity can only be specified, not empirically certified.
+The verifier gap still dominates. Without an independent exact decode-and-verify path, decoder leakage remains a live failure mode and the rest of the matrix is a policy document rather than an enforceable audit.
 
-## Overall Readiness
+## Overall Verdict
 
-Conditional pass for pre-run planning.
+- Planning readiness: pass
+- Execution readiness: conditional fail
 
-- The checklist covers the required controls.
-- Execution remains blocked by the unresolved verifier.
+The baseline matrix is acceptable as a pre-run specification, but no baseline or CA comparison should actually run until the exact verifier blocker is resolved.

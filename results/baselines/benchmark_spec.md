@@ -32,6 +32,22 @@ For the first gate, the budget envelope is:
 - If the CA family fixes `X`, each baseline must use that same `X`.
 - If the CA family searches over `X`, the baseline must use the same allowed `|X|` range and the same legality rule `a+b != 0` for nonzero labels.
 
+### Rational-complexity regime
+
+- For each nonzero label `(a,b)`, reduce to the primitive integer pair `(a', b')` with `gcd(|a'|, |b'|) = 1`.
+- Use the simple surrogate complexity
+  - `c(a,b) = max(|a'|, |b'|)`.
+- Report three regimes:
+  - small complexity:
+    - every nonzero label satisfies `c(a,b) <= 3`
+    - `|X \\ {(0,0)}| <= 6`
+  - medium complexity:
+    - every nonzero label satisfies `c(a,b) <= 12`
+    - `|X \\ {(0,0)}| <= 12`
+  - unrestricted:
+    - only the task legality constraint `a+b != 0`
+- If a more faithful rational-complexity metric becomes available from the literature, future runs should report both metrics side by side rather than silently replacing this surrogate.
+
 ### Edge-density budget
 
 - Let `rho = m(G) / n(G)` for a decoded witness.
@@ -101,6 +117,8 @@ If held-out larger or different-aspect-ratio grids are used for `H1`, the decode
   - keep geometry and nonzero-label multiset fixed, shuffle labels in `X`, and rerun;
 - decoder-matched control:
   - same decoder, different non-CA proposal mechanism;
+- decoder ablation / randomization control:
+  - once an exact decoder exists, ablate any nonessential decoder heuristics or randomize nonsemantic decoder choices to test whether the apparent signal is really coming from the generator;
 - out-of-distribution control:
   - larger or different-aspect-ratio grids under the same decode budget;
 - complexity sweep:
