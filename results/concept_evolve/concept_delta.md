@@ -63,3 +63,20 @@
 - Novelty Delta:
   - The surviving novelty claim has shifted again: away from “single-packet CA repair on q/s coordinates” and toward “representation-changing locality repair on lag fields or sparse defect graphs.”
   - That is narrower, more defensible, and much closer to the real blocker exposed by the matched frontier batch.
+
+## 2026-03-18: Probe Refresh -> Composite Packet Atlas
+
+- Suggestion:
+  - Answer the current open actuator question directly: if packet-space CA is still alive after H1, it must live on a retained low-splash composite basis rather than on the frozen one-packet library.
+- Implementation:
+  - Launched a fresh mandatory `concept_evolve.py probe` on the composite-library question. The helper refreshed `results/concept_evolve/probe_result.json` with composite-library guidance but never exited cleanly, so the run used that refreshed probe artifact together with a direct exhaustive scan instead of waiting on the stalled helper.
+  - Added `hadamard_ca/composite.py` and `scripts/generate_composite_locality_atlas.py`.
+  - Generated `results/analysis/composite_packet_locality_atlas.md`, `results/analysis/composite_packet_locality_atlas.json`, `results/analysis/composite_packet_retained_library.json`, and `results/experiments/controls/seeds/control_n9_hardest_pair.json`.
+- Result:
+  - The exhaustive frontier scan over symmetry-safe unordered `2`-packet composites, channel-complete `4`-packet composites, and width-1 run-boundary composites found a nonempty retained basis.
+  - The retained frontier library is a 9-action Pareto set with changed-lag median `9`, well below the half-median cutoff `25.5`.
+  - On the canonical order-668 seed the retained basis is still negative: `0` improving composites, `1` exactly neutral composite, and `8` Pareto-worse composites.
+  - On the deterministic harder length-`9` control, low-splash pair and balanced-four composites do improve the seed, so the frontier result is not an artifact of a vacuous scan.
+- Novelty Delta:
+  - This changes the live CA claim again: the packet-space direction is now only defensible as a retained composite actuator library, not as single-packet local CA.
+  - That is a materially sharper negative-positive split than the repo had before. The new evidence says "composite locality exists in principle, but the actual order-668 frontier still blocks improvement inside that local basis."
