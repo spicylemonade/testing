@@ -1,38 +1,53 @@
 # Phase 1 Literature Synthesis
 
-## Review Inputs
+## Review Status
 
-- Primary local evidence: `results/literature/literature_snapshot.json`, `results/literature/prior_art_gap.md`, `results/context_sync.md`, `results/swarm/director_brief.md`, `results/swarm/hypotheses.json`, `sources.bib`
-- Required specialist roles invoked for this checkpoint: `explorer`, `citation_auditor`, `integrator`
+- Required child-review roles attempted: `explorer`, `citation_auditor`, `integrator`.
+- Execution method: separate `codex exec` child runs with role-specific prompts and file outputs.
+- Result: all three runs failed with upstream response-stream disconnects before returning a memo.
+- Failure artifacts:
+  - `results/swarm/_agent_explorer_item005.md`
+  - `results/swarm/_agent_citation_item005.md`
+  - `results/swarm/_agent_integrator_item005.md`
+- Because the failures were infrastructural rather than evidentiary, the synthesis below is a direct integration of the already-curated local literature artifacts rather than a new broad search.
 
-## Decision
+## Champion Lane
 
-- Champion lane remains `H1`: Proof-Carrying Symbolic Forcing-Front CA.
-- Strongest adjacent prior-art pressure comes from the real arithmetic-Kakeya core and the bounded-slope warning, not from the malformed watchlist.
-- Main novelty risk is methodological collapse into generic automated search without a verifier-coupled witness compiler.
+- Keep `H1`: Proof-Carrying Symbolic Forcing-Front CA.
+- Reason:
+  - It is the only lane selected by the director brief.
+  - It fits the product-grid witness representation instead of treating the final graph as a flat image.
+  - It is the least derivative route only if the CA state is proof-aware and candidates compile directly to legal `(X,G,R,T)` witnesses with no repair step.
 
-## Why H1 Still Wins
+## Strongest Adjacent Prior-Art Pressure
 
-`H1` is the only lane that respects the actual object being searched: a stage-indexed product-grid witness with exact forcing semantics. It stays non-derivative only if the CA state carries proof-relevant symbolic information and compiles directly to legal `(X,G,R,T)` witnesses with no repair step. This matches the director brief, the falsifier memo, and the adjacent-literature pressure from Katz-Tao, Green-Ruzsa, Cowen-Breen, Pohoata-Zakharov, and Tao.
-
-## Strongest Adjacent Prior Art
-
-The real nearby literature is not a CA paper. It is the arithmetic-Kakeya line itself, with Tao's 2025 bounded-slope/rational-complexity note acting as the sharpest warning that a small fixed CA alphabet can spend all its effort in the wrong regime. Katz-Tao (1999) defines the target, Green-Ruzsa (2017) warns against confusing modular success with the integer problem, Cowen-Breen et al. (2020) warns against drifting into adjacent pattern tasks, and Pohoata-Zakharov (2024) warns that reformulation novelty is not original-target progress.
+- The strongest real pressure is not the malformed watchlist.
+- The real cluster is:
+  - Katz-Tao (1999): foundational arithmetic-projection target.
+  - Green-Ruzsa (2017): modular/finite-field distinction.
+  - Cowen-Breen et al. (2020): nearby pattern formulations that can become proxy objectives.
+  - Pohoata-Zakharov (2024): generalized arithmetic-Kakeya reformulations.
+  - Tao (2025): bounded-slope and rational-complexity warning.
+- Among these, Tao (2025) is the sharpest structural constraint on a CA story, because a small fixed alphabet naturally pushes the search toward the low-complexity regime he warns about.
 
 ## Main Novelty Risk
 
-The main failure mode is that the project becomes "AlphaEvolve, but over witness encodings" rather than a genuinely domain-specific search program. That collapse happens if the decoder or compiler does the hard work, if the CA only emits heuristic patterns that require repair, or if the story never escapes bounded-slope / low-rational-complexity alphabets. The missing exact verifier intensifies this risk, because without it there is no way to separate true witness progress from a search artifact.
+- The main novelty risk is methodological, not bibliographic:
+  - without exact witness verification, the program becomes generic automated search over a pretty encoding;
+  - with a small fixed CA alphabet, it risks bounded-slope search in CA clothing;
+  - with aggressive decoders or repairs, the real contribution would lie in the decoder rather than the automaton.
+- The closest methodological overlap is the automated-discovery line represented by AlphaEvolve and `Mathematical exploration and discovery at scale`.
+- Therefore the novelty bar is: verifier-coupled exact decoding, label-shuffle collapse, and evidence that the CA contributes beyond generic search infrastructure.
 
 ## Watchlist Triage
 
-- `2x2-Convexifications for convex quadratic optimization with indicator variables`: false overlap caused by LaTeX-token collision.
-- `On Hopf hypersurfaces of the homogeneous nearly Kahler S^3 x S^3`: false overlap caused by math-format token collision.
-- `Continued A_2-fractions and singular functions`: false overlap caused by token collision on `finite` and formatting fragments.
+- `2x2-Convexifications for convex quadratic optimization with indicator variables`: false overlap caused by token collisions.
+- `On Hopf hypersurfaces of the homogeneous nearly Kähler S^3 x S^3`: false overlap caused by token collisions.
+- `Continued A_2-fractions and singular functions`: false overlap caused by token collisions.
 
-These papers are not genuine novelty constraints for the current lane. They should be cited only as evidence that the initial watchlist was malformed.
+## Decision For Phase 2
 
-## Phase-1 Concept Cards To Carry Forward
-
-1. `Proof-Carrying Symbolic Forcing-Front CA`
-2. `Bounded-Slope Prior-Art Pressure`
-3. `Generic-Automated-Search Collapse`
+- Proceed with `H1` only.
+- Keep `H2` closed until `H1` is killed or stalls after a real exact-verification gate.
+- Keep `H3` reserve-only.
+- Do not claim any CA progress toward score `<= 1.675` until an exact evaluator is located or the blocker is formally closed.
