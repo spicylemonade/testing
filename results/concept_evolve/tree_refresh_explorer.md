@@ -1,0 +1,12 @@
+# Tree Refresh Evidence Memo
+
+Context: post-H1 frontier failure review for item_022 using `results/concept_evolve/reframings.json`, `results/concept_evolve/probe_result.json`, `results/swarm/falsifier.md`, `results/verification/novelty_report.md`, `results/verification/benchmark_report.md`, `results/verification/citation_audit.md`, and the current branch `README.md` files. The four current READMEs are still generic backlog stubs, so the status call has to come from the evidence pack rather than from the folder text.
+
+| Branch | Recommendation | Evidence |
+| --- | --- | --- |
+| `001_defect-syndrome-ca-64m` | Retire | Matched controls show H1 executes, but the first frontier kill test failed: no improvement on the canonical seed, support diffuses above the seed support on every restart, and the current single-packet q/s basis is validated as fake-local and frozen through radius 2. Keep this as an archived falsification step, not an active frontier branch. |
+| `002_lag-residue-ca-167` | Promote | This is the only current branch that cleanly matches the post-H1 evidence. The probe says the lag field is the more honest local object, and the novelty report says H2 is now eligible because the failure signature points to locality / actuator-basis mismatch rather than missing controls. Open it narrowly: one lag representation, one matched non-CA control, and an explicit Williamson/Turyn/Goethals-Seidel/cocyclic/block-circulant leakage audit. |
+| `008_ldpc-hadamard-decoder-graph` | Hold | Decoder-graph and weighted-bit-flip analogies remain useful, but the probe explicitly treats them as incomplete on the current packet basis. Keep this branch as a support branch for influence-graph voting, collective flips, and warning-propagation side information after a low-splash packet library or lag-space representation exists; do not promote it as the main frontier branch yet. |
+| `011_spacetime-row-emission-search` | Retire | H1 failure does not justify widening into H3. The falsifier and novelty report both say the generative spacetime route is weakly anchored to the actual 668 frontier and highly exposed to overlap with existing CA-construction literature. Keep it closed unless it can first reproduce the qualitative 64-modular frontier profile under explicit anti-overlap controls. |
+
+Net refresh call: promote `002_lag-residue-ca-167`, hold `008_ldpc-hadamard-decoder-graph` as a support/bridge branch, and retire `001_defect-syndrome-ca-64m` plus `011_spacetime-row-emission-search` in their current forms.

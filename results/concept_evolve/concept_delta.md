@@ -38,11 +38,28 @@
   - Reframe the next experiment around the narrowest verification debt: do the CA and non-CA methods behave differently at all when they start from the same small, solved q/s controls under the same restart and budget contract?
 - Implementation:
   - Ran the mandatory `python3 .archivara/concept_evolve.py reframe "solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it"` checkpoint.
-  - Read `results/concept_evolve/reframings.json`, which returned no alternate framings, so the experiment frame stayed exact-hit-first and representation-matched.
+  - Read the persisted `results/concept_evolve/reframings.json`, which widened into ten cross-domain framings; the strongest ones pointed toward graph CA defect networks, LDPC-style weighted bit-flip repair, and excitable defect-wave scheduling.
   - Executed the locked two-seed control batch under `results/experiments/controls/` with identical evaluation budget, restart count, and RNG seed for `H1_defect_syndrome_ca_64m`, `greedy`, `tabu`, `simulated_annealing`, and `stochastic_hillclimb`.
 - Result:
   - The control batch now has reproducible configs, seeds, raw run logs, and aggregate summaries under `results/experiments/controls/`.
   - H1 matches `greedy` and `tabu` on exact-hit rate across the two controls and outperforms `simulated_annealing` and `stochastic_hillclimb` on the harder length-7 control under the shared budget.
 - Novelty Delta:
-  - The reframe pass did not open a new direction; it instead forced the evidence standard tighter.
+  - The reframe pass did two useful things at once: it forced the evidence standard tighter and it widened the bridge space away from raw single-packet CA scheduling.
   - H1 still does not have a frontier advantage, but it now clears the minimal control-validity gate needed before a fair order-668 kill test.
+
+## 2026-03-18: Iterate Checkpoint -> Post-H1 Bridge Refresh
+
+- Suggestion:
+  - After the verification pack exists, retire the dead single-packet branch, promote only bridges that address the validated locality failure directly, and keep generative CA ideas out of the immediate queue.
+- Implementation:
+  - Launched the mandatory `python3 .archivara/concept_evolve.py iterate "solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it"` checkpoint.
+  - The helper run stalled before it could cleanly finish the full concept-tree rewrite, but it did emit `results/concept_evolve/bridge_candidates.json`, `results/concept_evolve/concept_delta.json`, and `results/concept_evolve/recurrent_state.json`.
+  - Reconciled those generated bridge rankings with the already committed verification decision in `results/verification/verification_summary.md`, then refreshed the surviving / retired concept READMEs in `results/concept_evolve/tree/`.
+- Result:
+  - `001_defect-syndrome-ca-64m` is now archived as a negative control rather than an active frontier branch.
+  - `002_lag-residue-ca-167` is now the champion branch for the next pass.
+  - `008_ldpc-hadamard-decoder-graph` is promoted as the strongest bridge candidate feeding the H2 pivot.
+  - `011_spacetime-row-emission-search` remains closed for this pass.
+- Novelty Delta:
+  - The surviving novelty claim has shifted again: away from “single-packet CA repair on q/s coordinates” and toward “representation-changing locality repair on lag fields or sparse defect graphs.”
+  - That is narrower, more defensible, and much closer to the real blocker exposed by the matched frontier batch.

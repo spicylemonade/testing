@@ -1,7 +1,88 @@
 {
   "problem": "solve Hadamard 668. method which hasn't been tried is cellar automata. try that as a method to find it",
-  "framings": [],
-  "timestamp": "2026-03-18T09:29:57.479394+00:00",
+  "framings": [
+    {
+      "domain": "graph_dynamical_systems",
+      "reframing": "Treat the order-668 search as a graph cellular automaton on the defect-interaction graph, not on a raw 668 x 668 sign grid. The natural cells are the 167 cyclic lag classes, sequence blocks, or row-conflict nodes induced by the 64-modular seed's 13 exceptional correlation lags.",
+      "key_insight": "For Hadamard 668, geometric locality is the wrong notion. Graph cellular automata let locality follow the actual algebraic dependency graph, so a local rule can still respect dense orthogonality constraints by working on the right graph.",
+      "suggested_technique": "Outer-totalistic or topology-aware graph cellular automata with asynchronous updates.",
+      "mapping_back": "Build a graph whose nodes are lag residues or seed-bit blocks and whose edges connect variables that jointly affect a nonzero Gram defect. Update each node from weighted counts of unsatisfied neighboring checks, then decode the graph state into coordinated sign flips on the q/s seed representation.",
+      "candidate_folder_name": "graph_ca_defect_network"
+    },
+    {
+      "domain": "error_correcting_codes",
+      "reframing": "View the published 64-modular order-668 object as a near-codeword with a sparse syndrome. Variables are sign or block flips, while each nonzero off-diagonal Gram constraint behaves like a parity check that must be driven to zero.",
+      "key_insight": "The seed is interesting because the residual defect is sparse, not because the matrix is small. That is the same structural advantage exploited by hard-decision decoders: a nearly valid object can often be repaired by local messages if the syndrome graph is organized well.",
+      "suggested_technique": "Weighted bit-flipping or multiple-bit-flipping decoding on a Tanner-like defect graph.",
+      "mapping_back": "Construct a defect Tanner graph from sequence variables to correlation checks, compute reliability scores from predicted defect reduction, and flip one or several variables per round until the syndrome vanishes or the process certifiably stalls.",
+      "candidate_folder_name": "ldpc_weighted_bitflip_repair"
+    },
+    {
+      "domain": "excitable_media_and_reaction_diffusion",
+      "reframing": "Treat each residual lag defect as an excitation in an excitable medium living on the lag graph. Good repairs are moves that launch cancellation waves and then enforce a refractory period so the same region does not immediately re-infect itself.",
+      "key_insight": "Excitable-media models are useful when the hard part is not only where to act but when to act. Refractory states give a native way to suppress oscillatory undo-redo behavior that naive parallel CA updates often create.",
+      "suggested_technique": "Greenberg-Hastings style resting-excited-refractory cellular automata on the defect graph.",
+      "mapping_back": "Assign each lag or block node a three-state label. A beneficial flip excites nearby linked defects, recently edited regions become refractory, and the resulting wavefront schedule determines which parts of the seed are allowed to move next.",
+      "candidate_folder_name": "excitable_defect_wave_ca"
+    },
+    {
+      "domain": "materials_science_phase_ordering",
+      "reframing": "Interpret the sign pattern as a two-phase microstructure and the Gram residual as interfacial free energy. The search is then a phase-ordering problem in which exact orthogonality corresponds to a fully relaxed microstructure with no surviving frustrated interfaces.",
+      "key_insight": "Materials models emphasize coarsening packets and interfaces rather than isolated spin flips. That matters here because single-entry edits in a Hadamard search usually create noisy long-range side effects, while block-level interface motion can produce cleaner energy descent.",
+      "suggested_technique": "Discrete Allen-Cahn or related nonconserved phase-field dynamics with local energy descent.",
+      "mapping_back": "Define an energy from squared correlation defects plus a regularizer on unnecessary sequence boundaries, evolve contiguous sign blocks by local gradient-like moves, and project back to binary sequences after each short relaxation burst.",
+      "candidate_folder_name": "allen_cahn_block_coarsening"
+    },
+    {
+      "domain": "developmental_biology_and_morphogenesis",
+      "reframing": "Frame Hadamard 668 as regenerative morphogenesis. The seed is a damaged organism whose healthy phenotype is the all-zero defect signature, and local cells must learn how to regrow that phenotype after perturbations.",
+      "key_insight": "Morphogenetic models are valuable because they optimize for repair, not just one-shot construction. That matches the actual frontier object: a fixed near-solution that should be repeatedly nudged back toward exact feasibility after local damage.",
+      "suggested_technique": "Damage-trained Growing Neural Cellular Automata or goal-conditioned neural CA.",
+      "mapping_back": "Train an NCA on compressed seed states and synthetic perturbations so each local rule sees only nearby defect features but is rewarded solely for restoring exact Gram orthogonality and preserving the structured seed family.",
+      "candidate_folder_name": "regenerative_nca_hadamard"
+    },
+    {
+      "domain": "epidemiology_on_complex_networks",
+      "reframing": "Treat nonzero correlation classes as infection clusters spreading through the variable-interaction graph whenever a bad flip creates secondary defects. The task becomes epidemic extinction rather than blind search.",
+      "key_insight": "Epidemic-control literature focuses on lowering effective reproduction rates by acting on hubs first. In the Hadamard setting, the analogous hubs are sequence positions or blocks whose perturbation propagates to many lag defects at once.",
+      "suggested_technique": "Targeted immunization and epidemic-threshold control on heterogeneous networks.",
+      "mapping_back": "Estimate each variable's defect-spread degree, prioritize edits or temporary freezes on high-spread nodes, and accept only moves that push the expected number of secondary defects per repair step below a chosen subcritical threshold.",
+      "candidate_folder_name": "targeted_immunization_defects"
+    },
+    {
+      "domain": "traffic_flow_and_congestion_dynamics",
+      "reframing": "Model defect packets as stop-and-go jams circulating on the length-167 cycle underlying the seed representation. The question is not only which local moves reduce congestion, but which update schedule prevents synchronized jams from persisting forever.",
+      "key_insight": "Traffic CA models show that parallel deterministic updates can lock a system into metastable jams, while controlled randomness can dissolve them. That is directly relevant to CA repair loops that otherwise oscillate between the same few defect patterns.",
+      "suggested_technique": "Nagel-Schreckenberg style stochastic traffic cellular automata with random sequential updates.",
+      "mapping_back": "Treat lag conflicts as congestion states on the cycle, use randomized asynchronous flips or block shifts instead of perfectly synchronous updates, and tune slowdown probabilities to break recurring repair waves that self-trap under deterministic schedules.",
+      "candidate_folder_name": "traffic_jam_update_scheduler"
+    },
+    {
+      "domain": "self_organized_criticality_and_chip_firing",
+      "reframing": "View the defect vector as a sandpile in which some lag classes hold excess violation mass. Local topplings redistribute that mass through the interaction graph until the system stabilizes or reveals an invariant obstruction.",
+      "key_insight": "Chip-firing separates local redistribution from global stabilization and often exposes conserved quantities. That is useful here because a CA branch that only moves defect mass around without changing the right invariant can be rejected quickly.",
+      "suggested_technique": "Abelian sandpile or chip-firing stabilization on the lag-interaction graph.",
+      "mapping_back": "Assign each lag node a chip count proportional to residual defect magnitude, define legal topplings induced by candidate bit or block flips, and track whether repeated stabilizations decrease a monotone potential or merely permute mass inside a doomed basin.",
+      "candidate_folder_name": "sandpile_defect_stabilization"
+    },
+    {
+      "domain": "analog_vlsi_and_cellular_neural_networks",
+      "reframing": "Recast the search as analog relaxation on a locally coupled circuit whose energy penalizes nonzero Gram defects and rewards staying inside the structured 64-modular seed neighborhood.",
+      "key_insight": "Cellular neural networks provide continuous-time local dynamics with explicit Lyapunov-style energies. That offers a principled escape from purely discrete CA rules that may oscillate instead of relaxing.",
+      "suggested_technique": "Chua-Yang cellular neural network templates with energy-shaped local couplings.",
+      "mapping_back": "Give each sequence bit or block a continuous state, couple cells according to the defect graph, let the analog network relax for a short burst, and periodically quantize back to plus-minus signs for exact Hadamard feasibility checks.",
+      "candidate_folder_name": "cnn_analog_relaxation"
+    },
+    {
+      "domain": "swarm_robotics_and_stigmergy",
+      "reframing": "Imagine a distributed swarm of repair agents walking the defect landscape and leaving transient pheromone where local edits helped. Coordination is stored in the field rather than in a centralized search controller.",
+      "key_insight": "Stigmergic systems are useful when good local moves are sparse, path-dependent, and hard to score globally. The pheromone field becomes a lightweight external memory for which defect regions have recently paid off.",
+      "suggested_technique": "Digital-pheromone stigmergic coordination with evaporation and reinforcement.",
+      "mapping_back": "Maintain auxiliary pheromone values over lag classes or seed positions, reinforce the field after edits that reduce exact defects, let the field decay when progress stalls, and route local CA updates toward sites where current defect pressure and pheromone agree.",
+      "candidate_folder_name": "stigmergic_flip_swarm"
+    }
+  ],
+  "timestamp": "2026-03-18T09:36:46.843302+00:00",
   "input_fingerprint": "a9e1514b35251ed52462a55775c14f2f91a07ed4c7a92d3428f7efa31a9c3868",
   "input_context": {
     "command": "reframe",
