@@ -139,3 +139,46 @@ Update this file throughout the run. If a branch is already covered by existing 
   - exact arithmetic-Kakeya papers that constrain what counts as genuine mathematical progress, and
   - CA / automated-search papers that constrain what counts as genuine methodological novelty.
 - The present lane remains viable only as a verifier-coupled search-and-design program. Without an exact verifier, it cannot graduate from design novelty to mathematical evidence.
+
+## Phase 3 Design Checkpoint: H1-Specific Differentiation
+
+This checkpoint records how the current `H1` design in `results/core/h1_design.md` clears, or fails to clear, the strongest real adjacent work.
+
+### Katz-Tao (1999): `Bounds on arithmetic projections, and applications to the Kakeya conjecture`
+- Overlap type: mathematical direct.
+- Phase-3 differentiation: `H1` does not claim a new reformulation or theorem. Its only admissible distinction is methodological: every CA state must decode directly into the original six-line witness over the Katz-Tao arithmetic-projection object, with no repair and no proxy objective.
+- Failure mode if ignored: a flat CA over images or adjacency patterns would stop being progress on Katz-Tao's witness problem and become an unrelated heuristic search.
+
+### Green-Ruzsa (2017): `On the arithmetic Kakeya conjecture of Katz and Tao`
+- Overlap type: mathematical direct.
+- Phase-3 differentiation: `H1` explicitly treats modular or finite-field behavior as non-evidence. The stage-indexed fiber layout and decoder contract require an integer witness over `\mathbb{Z}`, not just a finite-field shadow.
+- Failure mode if ignored: the lane collapses into a modular curriculum story that does not meet the arithmetic-Kakeya target.
+
+### Cowen-Breen, Karangozishvili, Varadarajan, Wang (2020): `Pattern Problems related to the Arithmetic Kakeya Conjecture`
+- Overlap type: mathematical adjacent.
+- Phase-3 differentiation: `H1` is constrained to decode into forcing pairs `(X,G,R,T)` rather than any denser pattern-count, homothety, or proxy configuration. The fixed decoder and no-repair rule are what keep the lane from drifting into nearby pattern problems.
+- Failure mode if ignored: a CA could optimize a friendlier adjacent pattern objective and be misreported as arithmetic-Kakeya progress.
+
+### Pohoata-Zakharov (2024): `Generalized Arithmetic Kakeya`
+- Overlap type: mathematical adjacent.
+- Phase-3 differentiation: `H1` uses generalized formulations only as stress tests for false transfer, never as substitute targets. The current design is novel only if any future gain lands back in the original witness format.
+- Failure mode if ignored: the project could overclaim on a generalized formulation without improving the stated forcing-pair problem.
+
+### Tao (2025): `Sum-difference exponents for boundedly many slopes, and rational complexity`
+- Overlap type: mathematical direct warning.
+- Phase-3 differentiation: `H1` keeps `X` in an explicit registry fiber instead of hard-wiring a tiny local alphabet, and the evaluation plan requires small-, medium-, and unrestricted-complexity sweeps. This is the main guard against bounded-slope trapping.
+- Failure mode if ignored: a proof-carrying CA with a tiny frozen alphabet would still just be a bounded-slope search in different clothing.
+
+### AlphaEvolve / Mathematical-discovery systems (2025)
+- Overlap type: methodological direct.
+- Phase-3 differentiation: `H1` is only different from generic automated discovery if the cell state is proof-carrying, the decoder is fixed and exact, and malformed candidates are rejected rather than repaired. Otherwise the lane reduces to ordinary automated search over witness serializations.
+- Failure mode if ignored: any claim of novelty collapses into "a coding agent searched a math object."
+
+### Bond-Levine abelian-network papers (2013, 2014)
+- Overlap type: methodological adjacent.
+- Phase-3 differentiation: `H1` does not claim an abelian-network theorem or a halting invariant. Abelian-network language is permitted only as a structural analogy or future cache design; the active design remains a direct witness compiler with exact score accounting.
+- Failure mode if ignored: the project turns into a transferless sandpile or abelian-network analogy without verified forcing benefit.
+
+### Malformed watchlist trio
+- Overlap type: superficial only.
+- Phase-3 differentiation: unchanged. The `2x2` convexification paper, the Hopf-hypersurface paper, and the `A_2`-fractions paper remain false overlaps and place no real novelty constraint on the `H1` design.
