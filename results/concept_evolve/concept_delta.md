@@ -113,3 +113,20 @@
 - Novelty Delta:
   - The repo now has more than another negative pilot: it has a clean barrier-plus-counterexample story.
   - That is a stronger scientific contribution than the original H1 result because it identifies exactly where the single-actuator locality barrier holds and exactly where a broader local rule class first breaks it.
+
+## 2026-03-18: Lattice-Gas Refresh -> Defect-Charge Core Branch
+
+- Suggestion:
+  - Reinterpret the retained frontier escape as a defect-charge transport process on the exact `167`-lag core, with an explicit continuity law and a hard family-leakage audit instead of another graph-only pilot.
+- Implementation:
+  - Added `hadamard_ca/lag_lattice_gas.py` plus `scripts/run_lattice_gas_ca.py`.
+  - Lifted each retained action and carrier cone into an exact lag-charge transport signature with support flux, reservoir exchange, and nearest-neighbor current span.
+  - Ran the new branch on the canonical frontier seed and the deterministic harder length-`9` control, then saved `results/branches/H_defect_charge_lattice_gas_167.md`, `results/experiments/order_668_lattice_gas/summary.{json,md}`, and `results/verification/family_leakage_audit.{json,md}`.
+- Result:
+  - The fixed lattice-gas rule reaches `13/2744/480` on the canonical frontier seed by accepting the conservative carrier `[(q[53], q[136]), (q[29], s[29], q[114], s[114])]`.
+  - Both matched lag-space single-action controls stay frozen at `13/2880/512` on that same frontier seed.
+  - On `control_n9_hardest_pair`, the same rule reaches exactness in two accepted updates, so the carrier layer is not compensating for a globally dead single-action basis.
+  - The saved family-leakage audit passes the `Williamson`, `Turyn`, `Goethals-Seidel`, `cocyclic`, and `block-circulant` checks for the winning frontier trajectory.
+- Novelty Delta:
+  - This branch keeps the surviving CA claim alive without falling back to a known structured family: the improvement is now explainable as exact conserved transport on the lag core, not as raw-coordinate packet scheduling alone.
+  - The novelty claim remains narrow, but it is materially different from the earlier hypergraph memo because the governing object is now an explicit continuity law on signed defect charge.

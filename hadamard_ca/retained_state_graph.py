@@ -54,6 +54,7 @@ class RetainedStateGraph:
         context: CompositeContext,
         actions: list[RetainedAction],
         states: list[RetainedState],
+        coefficients_by_state: np.ndarray,
         state_index_by_mask: dict[frozenset[int], int],
         transitions: list[list[int]],
         neighbors: list[list[int]],
@@ -62,22 +63,20 @@ class RetainedStateGraph:
         self.context = context
         self.actions = actions
         self.states = states
+        self.coefficients_by_state = np.asarray(coefficients_by_state, dtype=np.int32)
         self.state_index_by_mask = state_index_by_mask
         self.transitions = transitions
         self.neighbors = neighbors
         self.causal_cones = causal_cones
 
     @classmethod
-    def from_paths(
+    def _from_context_and_records(
         cls,
         *,
-        seed_file: Path | str,
-        retained_library_path: Path | str,
+        context: CompositeContext,
+        records: Sequence[dict[str, object]],
         cone_union_limit: int = 25,
     ) -> "RetainedStateGraph":
-        q, s = load_sequence_pair(seed_file)
-        context = CompositeContext.from_seed(q, s)
-        payload = json.loads(Path(retained_library_path).read_text())
         actions = [
             RetainedAction(
                 index=index,
@@ -87,7 +86,7 @@ class RetainedStateGraph:
                 changed_lags=tuple(int(lag) for lag in record["changed_lags"]),
                 changed_lag_count=int(record["changed_lag_count"]),
             )
-            for index, record in enumerate(payload["records"])
+            for index, record in enumerate(records)
         ]
 
         unique_masks: dict[frozenset[int], list[int]] = {}
@@ -102,10 +101,11 @@ class RetainedStateGraph:
 
         state_index_by_mask: dict[frozenset[int], int] = {}
         states: list[RetainedState] = []
+        coefficient_rows: list[np.ndarray] = []
         for frozen_mask in sorted(unique_masks, key=_state_sort_key):
             state_index = len(states)
             delta = context.delta_for_packets(tuple(sorted(frozen_mask)))
-            coefficients = context.seed_coefficients + delta
+            coefficients = (context.seed_coefficients + delta).astype(np.int32)
             active_lags = tuple((np.flatnonzero(coefficients[1:]) + 1).astype(int).tolist())
             states.append(
                 RetainedState(
@@ -117,6 +117,7 @@ class RetainedStateGraph:
                     active_lags=active_lags,
                 )
             )
+            coefficient_rows.append(coefficients)
             state_index_by_mask[frozen_mask] = state_index
 
         action_masks = [_packet_mask_from_packets(action.packets) for action in actions]
@@ -154,10 +155,43 @@ class RetainedStateGraph:
             context=context,
             actions=actions,
             states=states,
+            coefficients_by_state=np.stack(coefficient_rows, axis=0),
             state_index_by_mask=state_index_by_mask,
             transitions=transitions,
             neighbors=neighbors,
             causal_cones=causal_cones,
+        )
+
+    @classmethod
+    def from_paths(
+        cls,
+        *,
+        seed_file: Path | str,
+        retained_library_path: Path | str,
+        cone_union_limit: int = 25,
+    ) -> "RetainedStateGraph":
+        q, s = load_sequence_pair(seed_file)
+        context = CompositeContext.from_seed(q, s)
+        payload = json.loads(Path(retained_library_path).read_text())
+        return cls._from_context_and_records(
+            context=context,
+            records=payload["records"],
+            cone_union_limit=cone_union_limit,
+        )
+
+    @classmethod
+    def from_records(
+        cls,
+        *,
+        q: np.ndarray,
+        s: np.ndarray,
+        records: Sequence[dict[str, object]],
+        cone_union_limit: int = 25,
+    ) -> "RetainedStateGraph":
+        return cls._from_context_and_records(
+            context=CompositeContext.from_seed(q, s),
+            records=records,
+            cone_union_limit=cone_union_limit,
         )
 
     def state_payload(self, state_id: int) -> dict[str, object]:
@@ -170,6 +204,14 @@ class RetainedStateGraph:
             "objective": dict(state.objective),
             "active_lags": list(state.active_lags),
         }
+
+    def coefficients(self, state_id: int) -> np.ndarray:
+        return self.coefficients_by_state[int(state_id)].copy()
+
+    def transition_delta(self, state_id: int, action_index: int) -> np.ndarray:
+        state_index = int(state_id)
+        next_state = int(self.transitions[state_index][int(action_index)])
+        return self.coefficients_by_state[next_state] - self.coefficients_by_state[state_index]
 
     def best_immediate_score(self, state_id: int) -> int:
         return min(

@@ -130,6 +130,7 @@ class CompositeContext:
             "descriptor": action.descriptor,
             "packets": [int(packet) for packet in action.packets],
             "packet_count": int(len(action.packets)),
+            "packet_labels": packet_labels(action.packets, self.length),
             "q_indices": list(q_indices),
             "s_indices": list(s_indices),
             "sq_toggle_indices": list(sq_indices),
