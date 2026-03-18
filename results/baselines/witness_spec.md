@@ -1,134 +1,153 @@
-# Witness Specification
+# Witness Spec
 
-This document defines the canonical six-line witness format implied by the problem statement. It is a specification document only; no exact verifier exists in the current repo snapshot.
+## Purpose
+
+This file specifies the canonical six-line witness format described in the problem statement, together with legality checks and exact score accounting. It is written so that a future exact evaluator can be implemented without guessing any silent conventions.
 
 ## Six-Line Format
 
-1. Human summary line:
-   - score as a fraction,
-   - plus `m(G)`, `|R|`, `n(G)`, `|T|`.
-   - This line is informational and should not be trusted by the verifier without recomputation.
-2. `X`:
-   - a list of integer pairs.
-3. `d_1, ..., d_k`:
-   - the product-grid shape.
-4. `f_1, ..., f_k`:
-   - each `f_i` is a partial dictionary from `d_1 x ... x (d_i - 1)` to `X`;
-   - omitted entries mean `(0,0)`.
-5. `T`:
-   - a list of product-grid vertices.
-6. `R`:
-   - a list of dictionaries from vertices to elements of `X`;
-   - each element of `R` must have exactly one nonzero support vertex.
+1. Human-readable score line
+   - Format: a fraction plus the tuple `(m(G), |R|, n(G), |T|)`.
+   - This line is advisory only and is not the source of truth.
+2. `X`
+   - A finite list of integer pairs.
+   - Must contain `(0,0)`.
+3. `d_1, ..., d_k`
+   - A list of positive integers describing the product grid.
+4. `f_1, ..., f_k`
+   - A list of `k` partial dictionaries.
+   - `f_i` maps tuples in `d_1 x ... x d_{i-1} x (d_i - 1)` to labels in `X`.
+   - Omitted keys mean `(0,0)`.
+5. `T`
+   - A list of vertices of the grid `d_1 x ... x d_k`.
+6. `R`
+   - A list of partial dictionaries from vertices to labels in `X`.
+   - Each element of `R` must have exactly one nonzero supported vertex in the initial witness.
 
-## Product-Grid Encoding
+## Product-Grid Semantics
 
-- Vertex set:
-  - `V = d_1 x ... x d_k`
-  - each vertex is a list `[e_1, ..., e_k]` with `1 <= e_i <= d_i`.
-- Edge generation:
-  - for each stage `i` and each key `(a_1, ..., a_i)` in `f_i`,
-  - all vertices whose first `i` coordinates are `(a_1, ..., a_i)` are connected to the corresponding vertices with first `i` coordinates `(a_1, ..., a_i + 1)`,
-  - each such edge carries label `f_i(a_1, ..., a_i)`.
-- Edge count:
-  - `m(G) = sum_i sum_e 1_{f_i(e) != (0,0)} d_{i+1} ... d_k`.
-- Vertex count:
-  - `n(G) = d_1 ... d_k`.
+Given `d = [d_1, ..., d_k]`, the vertex set is
+
+`V = { [e_1, ..., e_k] : 1 <= e_i <= d_i for all i }`.
+
+For each `i`, the dictionary `f_i` defines edges between the vertices with prefixes
+
+- `[a_1, ..., a_i, *, ..., *]`
+- `[a_1, ..., a_i + 1, *, ..., *]`
+
+when `f_i(a_1, ..., a_i)` is nonzero. The total edge count is
+
+`m(G) = sum_i sum_e 1_{f_i(e) != (0,0)} d_{i+1} ... d_k`.
+
+The vertex count is
+
+`n(G) = d_1 ... d_k`.
 
 ## Legality Constraints
 
-### On `X`
+### `X`
 
 - `(0,0)` must be present.
-- Every nonzero `(a,b)` in `X` must satisfy `a + b != 0`.
-- `X` is finite.
+- Every nonzero label `(a,b)` must satisfy `a + b != 0`.
+- All labels used anywhere in `f_i` or `R` must belong to `X`.
 
-### On `d_1, ..., d_k`
+### `G = (d, f_1, ..., f_k)`
 
-- The challenge is meaningful only for a nonempty grid.
-- A future evaluator should reject zero dimensions as malformed for this task, even though the prose says "non-negative integers", because the witness is supposed to encode a nonempty constructible graph and forcing process.
+- `k >= 1`.
+- Each `d_i` must be a positive integer.
+- There must be exactly `k` dictionaries in line 4.
+- Every key in `f_i` must have length `i`.
+- Every key component must lie in the proper range:
+  - `1 <= a_j <= d_j` for `j < i`
+  - `1 <= a_i <= d_i - 1`
+- Omitted entries are interpreted as `(0,0)`, not as missing data.
 
-### On `f_1, ..., f_k`
+### `T`
 
-- Each key of `f_i` must have length `i`.
-- The first `i-1` coordinates must lie in the ranges `1..d_1`, ..., `1..d_{i-1}`.
-- The last coordinate must lie in `1..(d_i - 1)`.
-- Every value must lie in `X`.
-- Omitted keys mean `(0,0)` and do not contribute to `m(G)`.
+- Every vertex in `T` must lie in `V`.
+- Future evaluators should deduplicate repeated vertices before computing `|T|`.
 
-### On `T`
+### `R`
 
-- Each element of `T` must be a vertex of `V`.
-- Duplicate vertices should be rejected or deduplicated before score recomputation; the safer canonical rule is to reject duplicates.
+- Each element of `R` is a partial dictionary from vertices to labels in `X`.
+- In the initial witness, each element of `R` must have exactly one supported vertex with a nonzero label.
+- The supported label must belong to `X`.
+- Future evaluators should reject any initial `R` element that already has two or more nonzero supported vertices.
 
-### On `R`
+## Forcing Semantics
 
-- Each element of `R` is a function `V -> X` with exactly one nonzero support vertex.
-- The single nonzero value must belong to `X`.
-- Support size is counted by value, not by dictionary entry count. A dictionary that stores `(0,0)` at extra vertices is malformed.
+An exact evaluator should treat `(R,T)` as forcing if repeated use of the following operations reaches `T = V`:
+
+1. Edge relation insertion:
+   - for any edge induced by some nonzero `f_i(prefix) = x`, add the two-support function taking one endpoint to `x` and the adjacent endpoint to `-x`.
+2. Singleton certification:
+   - if some function equals `(a,-a)` on one vertex `e` with `a != 0` and is zero outside `T U {e}`, then add `e` to `T`.
+3. Closure under subtraction:
+   - if `f, g in R`, then `f - g` may be added.
 
 ## Exact Score
 
-- `score = (m(G) + |R|) / (n(G) - |T|)`.
-- The denominator must be strictly positive.
-- A verifier should recompute `m(G)`, `|R|`, `n(G)`, and `|T|` from lines 2-6 and ignore the human summary line if they disagree.
+The score is
+
+`S(X,G,R,T) = (m(G) + |R|) / (n(G) - |T|)`.
+
+The denominator must be strictly positive for a legal certificate of this form.
 
 ## Worked Validation Checks
 
-### Check 1: `X` legality
+### Check 1: illegal nonzero label in `X`
 
-- Example valid `X`:
-  - `[(0,0), (1,0), (2,1)]`
-- Example invalid `X`:
-  - `[(0,0), (1,-1)]`
-- Why invalid:
-  - the nonzero element `(1,-1)` satisfies `a+b=0`, which the problem forbids.
+- Input:
+  - `X = [(0,0), (2,-2)]`
+- Failure:
+  - `(2,-2)` has coordinate sum `0`, so line 2 is illegal.
 
-### Check 2: `f_i` key shape
+### Check 2: malformed `f_i` key shape
 
-- Example:
-  - `d = [3,2]`
-  - `f_2` keys must have length `2`, with first coordinate in `1..3` and second in `1..1`.
-- Invalid entry:
-  - key `[4,1]` is out of range;
-  - key `[2,2]` is also out of range because `d_2 - 1 = 1`.
+- Input:
+  - `d = [3,4]`
+  - `f_1` contains key `[2,1]`
+- Failure:
+  - keys of `f_1` must have length `1`, not `2`.
 
-### Check 3: `R` single-support condition
+### Check 3: out-of-range edge prefix
 
-- Example valid element of `R`:
-  - `{ [1,2]: (2,0) }`
-- Example invalid element of `R`:
-  - `{ [1,2]: (2,0), [1,1]: (0,0) }`
-- Why invalid:
-  - the canonical function representation is supposed to have exactly one nonzero support vertex, not one nonzero plus explicit zero clutter.
+- Input:
+  - `d = [3,4]`
+  - `f_2` contains key `[3,4]`
+- Failure:
+  - the second coordinate of an `f_2` key must lie in `1..d_2-1 = 1..3`, so `[3,4]` is illegal.
 
-### Check 4: score recomputation
+### Check 4: invalid initial `R` support
 
-- Example:
-  - `d = [2,3]`, so `n(G)=6`.
-  - one nonzero entry in `f_1`, so it contributes `d_2 = 3` edges.
-  - one nonzero entry in `f_2`, so it contributes `1` edge.
-  - if `|R|=2` and `|T|=1`, then score is `(4 + 2) / (6 - 1) = 6/5`.
-- A future evaluator must recompute this and ignore any mismatched human summary.
+- Input:
+  - one `R` entry maps `[1,1] -> (1,0)` and `[1,2] -> (0,1)`
+- Failure:
+  - an initial `R` element must have exactly one nonzero supported vertex.
 
-### Check 5: denominator positivity
+### Check 5: invalid `T` vertex
 
-- Example:
-  - if `|T| = n(G)`, then the denominator is `0`.
-- Why invalid:
-  - the score is undefined, so such a witness must be rejected.
+- Input:
+  - `d = [2,2,2]`
+  - `T` contains `[1,3,1]`
+- Failure:
+  - the second coordinate is outside `1..2`.
 
-### Check 6: forcing-rule precondition for certifying a vertex
+### Check 6: exact score accounting
 
-- A future exact verifier must not add a vertex `e` to `T` merely because some function in the span contains `(a,-a)` at `e`.
-- It must also enforce the masking condition from the problem statement:
-  - all other nonzero support of that function must lie inside `T`.
-- This prevents illegal "certificate leakage" where a relation certifies more than one still-unforced vertex at once.
+- Input:
+  - `d = [2,3]`, so `n(G) = 6`
+  - `f_1` has one nonzero entry and contributes `d_2 = 3` edges
+  - `f_2` has two nonzero entries and contributes `2` edges
+  - `|R| = 4`
+  - `|T| = 1`
+- Result:
+  - `m(G) = 3 + 2 = 5`
+  - `S = (5 + 4) / (6 - 1) = 9/5`
 
-## Non-Negotiable Evaluator Behavior
+## Evaluator Guidance
 
-- No repair step.
-- No modular relaxation.
-- No permissive coercion of malformed dictionaries.
-- No trust in the human summary line.
-- Exact forcing must be checked over `\mathbb{Z}` with the stated closure rules.
+- Do not trust the human-readable first line.
+- Compute `m(G)`, `n(G)`, `|R|`, and `|T|` from lines 2-6.
+- Reject illegal labels, malformed keys, out-of-range vertices, or malformed initial `R`.
+- Only after legality checks should the forcing closure and score be evaluated.
