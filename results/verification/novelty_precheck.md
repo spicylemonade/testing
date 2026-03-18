@@ -8,7 +8,7 @@ Branch status at this checkpoint:
 - `H2_lag_space_ca_167`: gate-only backup, still closed
 - `H3_spacetime_row_emission_ca`: reserve-only, still closed
 
-Tooling note: `item_015` asked for `novelty_checker`, `citation_auditor`, and `integrator`. The additional child-agent route was not usable in this wrapper after the earlier launch failures, so this file is the direct researcher synthesis over `results/literature/prior_art_gap.md`, `results/swarm/falsifier.md`, `results/branches/*.md`, `results/concept_evolve/probe_result.json`, and `sources.bib`.
+Tooling note: `item_015` asked for `novelty_checker`, `citation_auditor`, and `integrator`. `results/verification/novelty_checker_note.md` landed from the novelty-checker route; the citation/integrator notes did not land cleanly, so this file is the direct researcher synthesis over `results/verification/novelty_checker_note.md`, `results/literature/prior_art_gap.md`, `results/swarm/falsifier.md`, `results/branches/*.md`, `results/concept_evolve/probe_result.json`, and `sources.bib`.
 
 ## Cellular Automata Applications in Shortest Path Problem (2017)
 
@@ -83,3 +83,8 @@ Proceed to Phase 4 with the novelty claim kept narrow:
 The only defensible live claim at this point is:
 
 > a seed-matched cellular-automaton repair program on the recovered 64-modular order-668 frontier object may be different enough from the named prior work to justify one matched control experiment
+
+## Evidence Anchors
+
+- Citation support and wording constraints for the named-paper comparisons are summarized in `results/verification/novelty_citation_note.md`.
+- The corresponding evidence-artifact links have been appended to `results/literature/prior_art_gap.md`.
