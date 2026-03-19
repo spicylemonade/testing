@@ -199,3 +199,22 @@ These entries remain relevant only as a reminder that the original novelty guard
 - Novelty consequence:
   - the live CA-positive lane narrows again.
   - the updated contribution is not “typed interfaces work,” but rather that small fixed alphabets can be ruled out early by exact width-4 certificate screening before any level-transfer or folklore-heavy interpretation is entertained.
+
+## I. Phase 6 Complexity-Frontier Update
+
+- New exact artifact:
+  - `results/phase6_complexity_frontier.md`
+  - `results/phase6_complexity_frontier.json`
+
+- What is new relative to the current gap log:
+  - earlier notes warned qualitatively about bounded-slope and hidden-complexity traps, but they did not freeze one explicit exact ledger over score, palette size, coordinate height, grammar length, active state count, extractor complexity, seed budget, and boundary initialization.
+  - the new artifact makes those hidden variables part of the verifier-backed optimization problem and reruns matched deterministic `2x8` baselines inside that ledger.
+
+- Why this is not just Tao's bounded-slope warning in different language:
+  - Tao's warning is a structural barrier statement about bounded-many-slopes style sets.
+  - the new result is an archive-level exact comparison showing that the only surviving width-8 score in the repo sits outside the matched benchmark envelope once the hidden coordinates are frozen.
+  - the conclusion is therefore a ranking reversal / impossibility statement about exact witness accounting, not a prose reformulation of the slope barrier.
+
+- Novelty consequence:
+  - score alone is no longer a stable ordering on the current width-8 archive.
+  - any future positive claim now has to survive the explicit complexity ledger, not just beat a raw score table.

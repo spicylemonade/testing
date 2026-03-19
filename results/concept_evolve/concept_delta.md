@@ -16,6 +16,7 @@
   bandwidth counting before transfer, boundary-sensitivity screens before interpretation, and exact tiny-instance SAT/UNSAT evidence before reopening any CA-native route.
 - Phase 6 item 026 then froze one low-height asymmetric family `X = {(0,0),(1,0),(0,1),(1,1),(2,-1)}`, one five-symbol typed interface alphabet, one symmetry quotient, and one unchanged extractor inside `scripts/phase6_experiments.py`.
 - That route was tested by exact width-4 word enumeration and no-repair width-8 composition in `results/phase6_h4_typed_residue_interfaces.{md,json}`.
+- Phase 6 item 027 then added one explicit hidden-complexity ledger and one deterministic width-8 rerun for each of the same-palette, low-height asymmetric, bounded-slope, and slowly-growing-`X` direct baselines in `results/phase6_complexity_frontier.{md,json}`.
 
 ## Result
 
@@ -28,6 +29,8 @@
 - The mandatory iterate pass was used to re-rank bridges around the verified negative result, promoting exact falsification, boundary-sensitivity, and bandwidth-first screens while retiring the dead H1/H2 bridges.
 - The first Phase 6 champion test failed even earlier than expected:
   the frozen typed-interface grammar produced no forcing width-4 witness under the matched boundary-seed budget, so there was no nontrivial width-8 transfer left to compare against direct search.
+- The next Phase 6 pass overturned the score-only reading of the saved width-8 archive:
+  every matched deterministic rerun stayed empty, while the only score-bearing width-8 row remained the earlier exploratory `29/14` artifact outside the matched benchmark envelope.
 
 ## Novelty Delta
 
@@ -38,3 +41,5 @@
 - The only promoted forward-looking novelty is now methodological: better early kill tests and exact tiny-instance search, not a surviving CA mechanism.
 - The typed-interface negative result narrows that methodological claim further:
   fixed-alphabet CA routes can be killed at the width-4 exact-certificate stage before any level-to-level transfer or folklore-heavy interpretation is allowed.
+- The complexity-frontier result adds one more narrowing:
+  exact score without hidden-complexity coordinates is not a stable ordering on the current archive, because the only surviving width-8 score comes from an unmatched exploratory row rather than from the matched families under test.

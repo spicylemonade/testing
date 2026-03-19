@@ -36,6 +36,18 @@ LOW_HEIGHT_X_FAMILIES: Dict[str, Tuple[Vector, ...]] = {
     "asym_c": ((0, 0), (1, 0), (0, 1), (1, 2), (2, -1)),
 }
 
+COMPLEXITY_BASELINES: Dict[str, Tuple[Vector, ...]] = {
+    "same_palette_2x8": ((0, 0), (0, 1), (1, 0), (2, -1), (3, -2)),
+    "low_height_asymmetric_2x8": LOW_HEIGHT_X_FAMILIES["asym_a"],
+    "bounded_slope_2x8": ((0, 0), (1, 0), (2, 0), (1, 1), (2, 1)),
+    "slowly_growing_x_2x8": ((0, 0), (1, 0), (0, 1), (1, 1), (2, -1), (2, 1), (1, 2)),
+}
+
+COMPLEXITY_BASELINE_OUTPUTS = {
+    family_id: RESULTS / f"phase6_complexity_{family_id}.json"
+    for family_id in COMPLEXITY_BASELINES
+}
+
 ROW_SWAP = {
     "closed": "closed",
     "top": "bottom",
@@ -273,14 +285,39 @@ def aggregate_direct_search(
     boundary_band: int,
     seeds: Sequence[int],
 ) -> Dict[str, object]:
+    return aggregate_random_search(
+        family_id=grammar.family_id,
+        x_labels=grammar.x_labels,
+        height=2,
+        width=8,
+        trials=trials,
+        seed_budget=seed_budget,
+        initial_t_budget=initial_t_budget,
+        boundary_band=boundary_band,
+        seeds=seeds,
+    )
+
+
+def aggregate_random_search(
+    *,
+    family_id: str,
+    x_labels: Sequence[Vector],
+    height: int,
+    width: int,
+    trials: int,
+    seed_budget: int,
+    initial_t_budget: int,
+    boundary_band: int,
+    seeds: Sequence[int],
+) -> Dict[str, object]:
     runs = []
     best = None
     forcing_trials = 0
     for rng_seed in seeds:
         payload = random_search_grid(
-            height=2,
-            width=8,
-            x_labels=grammar.x_labels,
+            height=height,
+            width=width,
+            x_labels=x_labels,
             trials=trials,
             seed_budget=seed_budget,
             initial_t_budget=initial_t_budget,
@@ -305,11 +342,251 @@ def aggregate_direct_search(
     total_trials = trials * len(seeds)
     hit_rate = 0.0 if total_trials == 0 else forcing_trials / total_trials
     return {
+        "family_id": family_id,
+        "height": height,
+        "width": width,
         "total_trials": total_trials,
         "forcing_trials": forcing_trials,
         "hit_rate": hit_rate,
         "best": best,
         "runs": runs,
+    }
+
+
+def ledger_row(
+    family_id: str,
+    x_labels: Sequence[Vector],
+    aggregate: Dict[str, object],
+    *,
+    seed_budget: int,
+    initial_t_budget: int,
+    boundary_band: int,
+    extractor_complexity: int = 1,
+) -> Dict[str, object]:
+    best = aggregate["best"]
+    row = {
+        "family_id": family_id,
+        "score": None if best is None else best["score"],
+        "forcing_hit_rate": aggregate["hit_rate"],
+        "x_size": len(x_labels),
+        "coordinate_height": coordinate_height(x_labels),
+        "grammar_length": None if best is None else best["grammar_length"],
+        "active_state_count": None if best is None else best["active_state_count"],
+        "extractor_complexity": extractor_complexity,
+        "seed_budget": seed_budget,
+        "boundary_initialization": initial_t_budget + boundary_band,
+        "best_certificate_lines": None if best is None else best["certificate_lines"],
+        "total_trials": aggregate["total_trials"],
+        "forcing_trials": aggregate["forcing_trials"],
+    }
+    return row
+
+
+def legacy_row_from_saved(path: Path, family_id: str) -> Dict[str, object]:
+    payload = json.loads(path.read_text())
+    best = payload.get("best")
+    if not best:
+        return {
+            "family_id": family_id,
+            "score": None,
+            "forcing_hit_rate": 0.0,
+            "x_size": len(payload["x_labels"]),
+            "coordinate_height": coordinate_height(tuple(tuple(label) for label in payload["x_labels"])),
+            "grammar_length": None,
+            "active_state_count": None,
+            "extractor_complexity": 1,
+            "seed_budget": None,
+            "boundary_initialization": None,
+            "best_certificate_lines": None,
+            "total_trials": payload.get("trials", 0),
+            "forcing_trials": 0,
+        }
+    used = {
+        tuple(best["vertical"])
+    }
+    used |= {
+        tuple(label)
+        for label in best["top"] + best["bottom"]
+        if tuple(label) != (0, 0)
+    }
+    used |= {
+        tuple(label)
+        for _, label in best["seeds"]
+        if tuple(label) != (0, 0)
+    }
+    return {
+        "family_id": family_id,
+        "score": best["score"],
+        "forcing_hit_rate": 1.0 / max(payload.get("trials", 1), 1),
+        "x_size": len(payload["x_labels"]),
+        "coordinate_height": coordinate_height(tuple(tuple(label) for label in payload["x_labels"])),
+        "grammar_length": best["m"] + best["r"] + best["t"],
+        "active_state_count": len(used),
+        "extractor_complexity": 1,
+        "seed_budget": 8,
+        "boundary_initialization": 2,
+        "best_certificate_lines": best["certificate_lines"],
+        "total_trials": payload.get("trials", 0),
+        "forcing_trials": 1,
+    }
+
+
+def deterministic_width8_pattern(
+    family_id: str,
+    x_labels: Sequence[Vector],
+) -> Tuple[Tuple[Vector, ...], Tuple[Tuple[Vector, ...], ...]]:
+    zero = (0, 0)
+    nonzero = [label for label in x_labels if label != zero]
+    if len(nonzero) < 3:
+        raise ValueError(f"{family_id} needs at least three nonzero labels")
+    primary = nonzero[-1]
+    secondary = nonzero[-2]
+    tertiary = nonzero[-3]
+    vertical = (secondary,)
+    if family_id == "same_palette_2x8":
+        top = (zero, primary, primary, zero, primary, primary, zero)
+        bottom = (primary, zero, zero, primary, zero, zero, zero)
+    elif family_id == "low_height_asymmetric_2x8":
+        top = (zero, primary, tertiary, zero, primary, tertiary, zero)
+        bottom = (secondary, zero, zero, secondary, zero, zero, zero)
+    elif family_id == "bounded_slope_2x8":
+        top = (zero, tertiary, primary, zero, tertiary, primary, zero)
+        bottom = (secondary, zero, secondary, zero, secondary, zero, zero)
+    elif family_id == "slowly_growing_x_2x8":
+        extra = nonzero[-4] if len(nonzero) >= 4 else tertiary
+        top = (zero, primary, tertiary, extra, primary, tertiary, zero)
+        bottom = (secondary, zero, extra, secondary, zero, extra, zero)
+    else:
+        raise ValueError(f"unknown family_id {family_id}")
+    return vertical, (top, bottom)
+
+
+def deterministic_direct_rerun(
+    family_id: str,
+    x_labels: Sequence[Vector],
+    *,
+    seed_budget: int,
+    initial_t_budget: int,
+    boundary_band: int,
+) -> Dict[str, object]:
+    vertical, horizontal = deterministic_width8_pattern(family_id, x_labels)
+    instance = greedy_seed_search_grid(
+        height=2,
+        width=8,
+        x_labels=x_labels,
+        vertical=vertical,
+        horizontal=horizontal,
+        seed_budget=seed_budget,
+        initial_t_budget=initial_t_budget,
+        boundary_band=boundary_band,
+    )
+    payload = build_payload(
+        instance if instance is not None and instance.is_forcing() else None,
+        candidate_count=1,
+        x_labels=x_labels,
+        height=2,
+        width=8,
+        seed_budget=seed_budget,
+        initial_t_budget=initial_t_budget,
+        boundary_band=boundary_band,
+    )
+    payload["family_id"] = family_id
+    payload["deterministic_pattern"] = {
+        "vertical": [list(label) for label in vertical],
+        "horizontal": [[list(label) for label in row] for row in horizontal],
+    }
+    payload["forcing_trials"] = 1 if payload["best"] is not None else 0
+    payload["total_trials"] = 1
+    return payload
+
+
+def pareto_frontier(rows: Sequence[Dict[str, object]]) -> List[Dict[str, object]]:
+    metrics = (
+        "score",
+        "x_size",
+        "coordinate_height",
+        "grammar_length",
+        "active_state_count",
+        "extractor_complexity",
+        "seed_budget",
+        "boundary_initialization",
+    )
+
+    def value(row: Dict[str, object], metric: str) -> float:
+        datum = row[metric]
+        if datum is None:
+            return float("inf")
+        return float(datum)
+
+    def dominates(left: Dict[str, object], right: Dict[str, object]) -> bool:
+        left_values = [value(left, metric) for metric in metrics]
+        right_values = [value(right, metric) for metric in metrics]
+        return all(lv <= rv for lv, rv in zip(left_values, right_values)) and any(
+            lv < rv for lv, rv in zip(left_values, right_values)
+        )
+
+    frontier = []
+    for row in rows:
+        if any(dominates(other, row) for other in rows if other is not row):
+            continue
+        frontier.append(row)
+    frontier.sort(key=lambda row: (row["score"] is None, row["score"] or 999.0, row["family_id"]))
+    return frontier
+
+
+def complexity_statement(rows: Sequence[Dict[str, object]]) -> Dict[str, str]:
+    row_map = {row["family_id"]: row for row in rows}
+    slow = row_map["slowly_growing_x_2x8"]
+    legacy = row_map.get("legacy_exploratory_width8_3label")
+    fixed_rows = [
+        row_map["same_palette_2x8"],
+        row_map["low_height_asymmetric_2x8"],
+        row_map["bounded_slope_2x8"],
+    ]
+    if legacy is not None and legacy["score"] is not None and all(
+        row["score"] is None for row in fixed_rows
+    ):
+        return {
+            "type": "impossibility_statement",
+            "text": (
+                "Score-only ranking would promote the saved exploratory width-8 witness at 29/14, but the "
+                "ledger shows that every matched rerun with fixed |X|=5 and the same extractor stays empty. "
+                "The apparent improvement is therefore outside the matched benchmark envelope, which score-only "
+                "reporting cannot express."
+            ),
+        }
+    if slow["score"] is not None and all(
+        row["score"] is None or row["score"] >= slow["score"] for row in fixed_rows
+    ):
+        return {
+            "type": "impossibility_statement",
+            "text": (
+                "Score-only ranking would promote the slowly-growing-X baseline because it is the only matched "
+                "family here that clears the width-8 verifier. The hidden-complexity ledger overturns that reading: "
+                "every fixed-size |X|=5 baseline stays empty, so the apparent gain is not a same-budget certificate "
+                "improvement but an escape through larger X and higher state usage."
+            ),
+        }
+    best_score_row = min(
+        rows,
+        key=lambda row: (row["score"] is None, row["score"] or 999.0, row["family_id"]),
+    )
+    simplest_row = min(
+        rows,
+        key=lambda row: (
+            row["x_size"],
+            row["coordinate_height"],
+            float("inf") if row["grammar_length"] is None else row["grammar_length"],
+            row["family_id"],
+        ),
+    )
+    return {
+        "type": "ranking_reversal",
+        "text": (
+            f"Score-only ranks `{best_score_row['family_id']}` first, but the compression-aware ledger ranks "
+            f"`{simplest_row['family_id']}` as the cheapest surviving family. The reversal happens because score "
+            "alone ignores X growth, active state count, and boundary initialization."
+        ),
     }
 
 
@@ -462,16 +739,259 @@ def write_typed_residue_markdown(payload: Dict[str, object]) -> None:
     path.write_text("\n".join(lines) + "\n")
 
 
+def write_complexity_frontier_results() -> Dict[str, object]:
+    seed_budget = 3
+    initial_t_budget = 1
+    boundary_band = 1
+    aggregates = {}
+    rows = []
+    for family_id, x_labels in COMPLEXITY_BASELINES.items():
+        aggregate = deterministic_direct_rerun(
+            family_id,
+            x_labels,
+            seed_budget=seed_budget,
+            initial_t_budget=initial_t_budget,
+            boundary_band=boundary_band,
+        )
+        aggregates[family_id] = aggregate
+        rows.append(
+            ledger_row(
+                family_id,
+                x_labels,
+                {
+                    "best": aggregate["best"],
+                    "hit_rate": 1.0 if aggregate["best"] is not None else 0.0,
+                    "total_trials": 1,
+                    "forcing_trials": 1 if aggregate["best"] is not None else 0,
+                },
+                seed_budget=seed_budget,
+                initial_t_budget=initial_t_budget,
+                boundary_band=boundary_band,
+            )
+        )
+    rows.append(
+        legacy_row_from_saved(
+            RESULTS / "phase4_width8_seed501.json",
+            "legacy_exploratory_width8_3label",
+        )
+    )
+    frontier = pareto_frontier(rows)
+    statement = complexity_statement(rows)
+    payload = {
+        "route": "phase6_complexity_frontier",
+        "ledger_definition": {
+            "score": "exact best verifier-backed score (m+r)/(n-t)",
+            "x_size": "|X| including (0,0)",
+            "coordinate_height": "max_i max(|a_i|,|b_i|) over nonzero X labels",
+            "grammar_length": "nonzero edge count plus seed count plus initial-T count in the best extracted witness",
+            "active_state_count": "number of distinct nonzero labels actually used in the best extracted witness",
+            "extractor_complexity": "1 for direct no-CA baselines because no extra interface or controller parser is introduced",
+            "seed_budget": "maximum singleton-seed budget given to greedy search",
+            "boundary_initialization": "initial_t_budget + boundary_band",
+        },
+        "benchmark_spec": {
+            "geometry": "height 2, width 8",
+            "rerun_mode": "one deterministic direct-control motif per family, each checked by the exact verifier under the same seed and boundary budgets",
+            "seed_budget": seed_budget,
+            "initial_t_budget": initial_t_budget,
+            "boundary_band": boundary_band,
+            "families": {
+                family_id: [list(label) for label in x_labels]
+                for family_id, x_labels in COMPLEXITY_BASELINES.items()
+            },
+        },
+        "rows": rows,
+        "pareto_frontier": frontier,
+        "score_only_leader": min(
+            rows,
+            key=lambda row: (row["score"] is None, row["score"] or 999.0, row["family_id"]),
+        )["family_id"],
+        "complexity_statement": statement,
+        "aggregates": aggregates,
+        "novelty_argument": (
+            "This is not a restatement of the current paper or of Tao's bounded-slope warning because the ledger "
+            "treats hidden complexity variables as part of the exact optimization problem itself. The comparison is "
+            "between verifier-backed witnesses under one explicit coordinate system, not between prose-level warnings."
+        ),
+    }
+    dump_json(RESULTS / "phase6_complexity_frontier.json", payload)
+    write_complexity_frontier_markdown(payload)
+    return payload
+
+
+def write_complexity_baseline_run(
+    family_id: str,
+    *,
+    trials: int,
+    seed_budget: int,
+    initial_t_budget: int,
+    boundary_band: int,
+    seeds: Sequence[int],
+) -> Dict[str, object]:
+    x_labels = COMPLEXITY_BASELINES[family_id]
+    aggregate = deterministic_direct_rerun(
+        family_id,
+        x_labels,
+        seed_budget=seed_budget,
+        initial_t_budget=initial_t_budget,
+        boundary_band=boundary_band,
+    )
+    payload = {
+        "family_id": family_id,
+        "x_labels": [list(label) for label in x_labels],
+        "seed_budget": seed_budget,
+        "initial_t_budget": initial_t_budget,
+        "boundary_band": boundary_band,
+        "aggregate": aggregate,
+    }
+    dump_json(COMPLEXITY_BASELINE_OUTPUTS[family_id], payload)
+    return payload
+
+
+def write_complexity_frontier_from_saved() -> Dict[str, object]:
+    rows = []
+    aggregates = {}
+    for family_id, path in COMPLEXITY_BASELINE_OUTPUTS.items():
+        payload = json.loads(path.read_text())
+        x_labels = tuple(tuple(label) for label in payload["x_labels"])
+        aggregate = payload["aggregate"]
+        aggregates[family_id] = aggregate
+        rows.append(
+            ledger_row(
+                family_id,
+                x_labels,
+                aggregate,
+                seed_budget=payload["seed_budget"],
+                initial_t_budget=payload["initial_t_budget"],
+                boundary_band=payload["boundary_band"],
+            )
+        )
+    rows.append(
+        legacy_row_from_saved(
+            RESULTS / "phase4_width8_seed501.json",
+            "legacy_exploratory_width8_3label",
+        )
+    )
+    frontier = pareto_frontier(rows)
+    statement = complexity_statement(rows)
+    payload = {
+        "route": "phase6_complexity_frontier",
+        "ledger_definition": {
+            "score": "exact best verifier-backed score (m+r)/(n-t)",
+            "x_size": "|X| including (0,0)",
+            "coordinate_height": "max_i max(|a_i|,|b_i|) over nonzero X labels",
+            "grammar_length": "nonzero edge count plus seed count plus initial-T count in the best extracted witness",
+            "active_state_count": "number of distinct nonzero labels actually used in the best extracted witness",
+            "extractor_complexity": "1 for direct no-CA baselines because no extra interface or controller parser is introduced",
+            "seed_budget": "maximum singleton-seed budget given to greedy search",
+            "boundary_initialization": "initial_t_budget + boundary_band",
+        },
+        "benchmark_spec": {
+            "geometry": "height 2, width 8",
+            "rerun_mode": "aggregate previously saved deterministic direct-control reruns",
+            "families": {
+                family_id: [list(label) for label in x_labels]
+                for family_id, x_labels in COMPLEXITY_BASELINES.items()
+            },
+            "saved_baseline_files": {
+                family_id: str(path.relative_to(ROOT))
+                for family_id, path in COMPLEXITY_BASELINE_OUTPUTS.items()
+            },
+        },
+        "rows": rows,
+        "pareto_frontier": frontier,
+        "score_only_leader": min(
+            rows,
+            key=lambda row: (row["score"] is None, row["score"] or 999.0, row["family_id"]),
+        )["family_id"],
+        "complexity_statement": statement,
+        "aggregates": aggregates,
+        "novelty_argument": (
+            "This is not a restatement of the current paper or of Tao's bounded-slope warning because the ledger "
+            "treats hidden complexity variables as part of the exact optimization problem itself. The comparison is "
+            "between verifier-backed witnesses under one explicit coordinate system, not between prose-level warnings."
+        ),
+    }
+    dump_json(RESULTS / "phase6_complexity_frontier.json", payload)
+    write_complexity_frontier_markdown(payload)
+    return payload
+
+
+def write_complexity_frontier_markdown(payload: Dict[str, object]) -> None:
+    path = RESULTS / "phase6_complexity_frontier.md"
+    rows = payload["rows"]
+    frontier_names = ", ".join(row["family_id"] for row in payload["pareto_frontier"]) or "none"
+    lines = [
+        "# Phase 6 Complexity-Accounted Frontier",
+        "",
+        "## Benchmark Spec",
+        "",
+        f"- Geometry: `{payload['benchmark_spec']['geometry']}`.",
+        f"- Rerun mode: {payload['benchmark_spec']['rerun_mode']}",
+        f"- Seed budget: `{payload['benchmark_spec']['seed_budget']}`.",
+        f"- Initial-T budget: `{payload['benchmark_spec']['initial_t_budget']}`.",
+        f"- Boundary band: `{payload['benchmark_spec']['boundary_band']}`.",
+        "",
+        "## Ledger",
+        "",
+        "- Score, |X|, coordinate height, grammar length, active state count, extractor complexity, seed budget, and boundary initialization are all treated as first-class coordinates.",
+        "- A row with no forcing witness is represented explicitly rather than hidden behind best-of-run score reporting.",
+        "",
+        "## Rows",
+        "",
+    ]
+    for row in rows:
+        lines.append(
+            f"- `{row['family_id']}`: score={row['score']}, hit_rate={row['forcing_hit_rate']:.4f}, "
+            f"|X|={row['x_size']}, height={row['coordinate_height']}, grammar={row['grammar_length']}, "
+            f"active_states={row['active_state_count']}."
+        )
+    lines.extend(
+        [
+            "",
+            "## Frontier",
+            "",
+            f"- Pareto frontier rows: {frontier_names}.",
+            f"- Score-only leader: `{payload['score_only_leader']}`.",
+            f"- Complexity statement: {payload['complexity_statement']['text']}",
+            "",
+            "## Novelty Position",
+            "",
+            f"- {payload['novelty_argument']}",
+        ]
+    )
+    path.write_text("\n".join(lines) + "\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "command",
-        choices=("typed-residue",),
+        choices=("typed-residue", "complexity-frontier", "complexity-baseline", "complexity-frontier-aggregate"),
     )
+    parser.add_argument("--family-id", default=None)
     args = parser.parse_args()
     if args.command == "typed-residue":
         payload = write_typed_residue_results()
         print(json.dumps(payload["decision"], indent=2))
+    elif args.command == "complexity-frontier":
+        payload = write_complexity_frontier_results()
+        print(json.dumps(payload["complexity_statement"], indent=2))
+    elif args.command == "complexity-baseline":
+        if args.family_id is None:
+            raise SystemExit("--family-id is required for complexity-baseline")
+        payload = write_complexity_baseline_run(
+            args.family_id,
+            trials=5,
+            seed_budget=3,
+            initial_t_budget=1,
+            boundary_band=1,
+            seeds=(4201,),
+        )
+        print(json.dumps({"family_id": payload["family_id"], "best": payload["aggregate"]["best"]}, indent=2))
+    elif args.command == "complexity-frontier-aggregate":
+        payload = write_complexity_frontier_from_saved()
+        print(json.dumps(payload["complexity_statement"], indent=2))
 
 
 if __name__ == "__main__":
