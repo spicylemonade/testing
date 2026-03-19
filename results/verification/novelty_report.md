@@ -1,80 +1,131 @@
 # Novelty Report
 
-Snapshot date: 2026-03-18 UTC
-Review round: review_round_1
+Snapshot date: 2026-03-19 UTC
+Verification phase: `post_deepen`
 
 ## Executive Judgment
 
-The current paper is not materially distinct from known prior art at the mathematical-result level. The repo contains no new arithmetic-Kakeya witness, no verified score improvement toward `<= 1.675`, no exact verifier-backed benchmark block, and no theorem beyond target formalization plus internal decoder-contract claims.
+The current manuscript is materially distinct from known prior art only in a
+narrow, local-result sense. Its strongest novel content is not "cellular
+automata for arithmetic Kakeya" in the broad methodological sense. It is:
 
-The only potentially distinct contribution is narrower: a verifier-coupled, no-repair, witness-faithful cellular-automata search design for the exact six-line witness object `(X,G,R,T)`. Even that distinction is design-level only. The code artifacts do not implement an exact witness verifier or a CA experiment runner, and the phase-4 reports record `0` exact decodes and `0` verified witnesses.
+- an implemented exact witness-level verifier and synchronous trace engine;
+- a width-`2` seedless-column obstruction proved under that executable
+  quotient-span semantics;
+- an exhaustive `2 x 2` exact audit showing a rigid `7/4` nucleus; and
+- an exhaustive one-sided local no-go atlas in heights `2` and `3`.
 
-The safest framing is therefore not "novel CA method for arithmetic Kakeya." It is "audited design and blocker report for a verifier-coupled search program." That is a real but modest distinction.
+Against the real prior-art boundary, that is enough to support a narrow
+theorem-and-computation claim under repository semantics. It is **not** enough
+to support:
 
-## Real Prior-Art Boundary
+- arithmetic-Kakeya progress in the Katz-Tao / Green-Ruzsa sense;
+- a benchmark-cleared new CA search method beyond generic automated discovery;
+- or a strong bridge / system novelty claim.
 
-- Mathematical direct pressure: Katz-Tao (1999), Green-Ruzsa (2017), and Tao (2025). These papers define the target object, equivalent-form warning signs, and low-complexity objections that any genuine progress must clear.
-- Mathematical adjacent pressure: Cowen-Breen et al. (2020), Pohoata-Zakharov (2024), and Hickman-Wright (2018). These papers show how easy it is to drift into nearby pattern problems, generalized formulations, or modular shadows without improving the stated forcing-pair task.
-- Methodological direct pressure: Novikov et al. (2025) and Georgiev et al. (2025). These remove any novelty claim based only on "an automated system searched a mathematical object."
-- Methodological adjacent pressure: Bond-Levine (2013, 2014), Dennunzio-Formenti-Margara (2023), and Faldor-Cully (2024). These cover local symbolic dynamics, additive/group CA structure, and CA-search or quality-diversity exploration.
-- False-overlap cleanup: the malformed watchlist entries in `results/literature/prior_art_watchlist.md` are token-collision junk, not real neighbors.
-- Search result boundary: the local literature pass plus targeted web search did not surface a paper directly using cellular automata to search arithmetic-Kakeya constructible witnesses. That helps only a little. Absence of a direct title match does not establish material novelty if the work still overlaps broader automated-discovery and CA-search lines.
+## Source-Of-Truth Boundary
+
+For this review, the current manuscript and the 2026-03-19 exact-trace pivot
+artifacts are treated as the active claim source. The malformed watchlist
+entries remain false overlaps only. Older blocker-era files are still relevant
+where they expose unresolved packaging or evidence problems, but they are not
+the right prior-art comparison set.
 
 ## Closest Prior Art By Major Claim
 
-| Manuscript claim | Closest paper or line of work | Concrete overlap signal | What is actually different | Novelty judgment |
+| Major claim now being made | Closest paper or line of work | Concrete overlap signal | Distinctness judgment | Missing gap evidence |
 | --- | --- | --- | --- | --- |
-| Contribution 1: formalize `H1` as a CA search program over the original six-line witness object instead of a proxy task. | Katz-Tao (1999); Green-Ruzsa (2017); Cowen-Breen et al. (2020); Pohoata-Zakharov (2024) | Same arithmetic-Kakeya target object, or nearby formulations that can easily be mistaken for progress on the forcing-pair task. | `H1` keeps the state space aligned with the six-line witness grammar and rejects drift to proxy pattern tasks. | This is target-faithfulness, not material novelty. Without a new witness, score improvement, or transfer argument, it is an admissibility condition rather than a contribution that clears prior art. |
-| Major method claim: `H1` is a proof-carrying, stage-indexed symbolic CA rather than generic search over serialized witnesses. | Novikov et al. (2025); Georgiev et al. (2025); Faldor-Cully (2024); Dennunzio-Formenti-Margara (2023) | Automated mathematical search, CA-local-rule exploration, and rich finite-state search spaces already exist. The repo itself admits that "we used a CA" is not enough. | `H1` uses witness-aware typed fibers, a fixed decoder, and a no-repair rule. | Partial design differentiation only. No matched exact comparison against non-CA or decoder-matched search was run, so there is no evidence that the CA family contributes anything beyond a constrained proposal language. |
-| Contribution 2: the paper "proves" system-level correctness claims about accepted states, no-repair score faithfulness, and confounder-excluding controls. | Specification-level decoder/evaluator correctness as a line of work; nearest cited comparators are evaluator-centered search systems and local symbolic-processing analogies in Bond-Levine (2013, 2014) | The Section 5 theorems are immediate consequences of Algorithm 1 and the lane-gate definitions in the repo. They certify the author's own contract, not a new external result. | The manuscript writes these contracts as formal lemmas and theorems. | Weak differentiation. These are internal consistency statements, not evidence of a new mathematical or methodological gap over prior work. Treat them as hygiene, not novelty. |
-| Contribution 3: the negative empirical outcome and pivot to verifier recovery are methodologically significant. | Novikov et al. (2025); Georgiev et al. (2025); benchmark-audit and falsifier practice in the repo | Evaluator-backed evidence discipline and honest negative-result reporting are part of normal rigorous search practice, not a new result class. | The repo explicitly refuses to substitute proxy metrics when the exact verifier is missing. | Good practice, not material novelty by itself. The distinctive part is the strictness of the refusal, but there is no comparative evidence that this protocol changes outcomes relative to prior systems. |
-| Major defense claim: the planned control suite clears bounded-slope, modular-mirage, decoder-leakage, and geometry-only confounders. | Tao (2025); Green-Ruzsa (2017); Hickman-Wright (2018); `results/swarm/falsifier.md` | These are exactly the objections already identified in the literature and falsifier memo. | The repo encodes them as explicit kill gates and matched-baseline requirements. | Not cleared. Planned controls are not gap evidence until they run. Right now this is a well-specified defense plan, not demonstrated differentiation. |
-| Contribution 4: the ConceptEvolve narrowing process and promoted bridge set add novelty. | AlphaEvolve-style discovery workflows; Bond-Levine bridge language; uncited SAT/egraph-style bridge ideas | Bridge generation and narrowing are generic discovery mechanics, and several promoted bridges remain uncited or unevaluated. | The retained bridges are filtered through the no-repair exact-decoder discipline. | Hypothesis inventory only. The bridge list is useful for restart triage, but it is not evidence of distinction from prior art. |
+| Exact verifier-native semantics and a witness-faithful CA search language over the six-line witness object | Katz-Tao (1999), Green-Ruzsa (2017), Hickman-Wright (2018), plus AlphaEvolve (2025) and Georgiev et al. (2025) on the automation side | The target object is still the pre-existing arithmetic-Kakeya witness problem, while the search-side story is still automated exploration over a mathematical object | **Weak-to-moderate.** The `no-repair`, witness-faithful decoder discipline is real differentiation, but mostly as admissibility and governance. It is not a new mathematical target, not a new theorem, and not yet a demonstrated CA-method advantage | No equivalence theorem from the executable quotient-span semantics to the full original forcing-pair definition; no matched non-CA baseline block; no held-out `X` / geometry controls; no completed complexity sweep |
+| Width-`2` seedless-column obstruction for full `2 x N` strips | Katz-Tao as the mathematical target; Bond-Levine (2013, 2014) as the closest structural bridge | This is an exact local obstruction inside the original witness class, with an abelian-coverability interpretation rather than a new abelian-network theorem | **Strongest novelty in the paper.** This is an actual theorem, not just a design note or search log. The differentiation is real because the result is local, exact, and not merely a reformulation of prior arithmetic-Kakeya papers | The result is still narrow and semantics-relative. The paper does not show transfer beyond unilateral seedless width `2`, nor equivalence to every formulation of the original forcing-pair semantics |
+| Exhaustive audited `2 x 2` classification: `44,608` checked, `48` exact-valid, all score `7/4`, one `1+3` trace shape | Katz-Tao / Green-Ruzsa for the core target, with Cowen-Breen et al. (2020) and Pohoata-Zakharov (2024) as proxy-drift guardrails, and Tao (2025) as the low-complexity warning | It is an exhaustive finite audit on the true witness object rather than on nearby pattern or generalized tasks, but it lives in a tiny fixed-palette regime | **Moderate.** The exact finite classification appears genuinely new and materially different from the named prior work. Its significance is limited because all valid cases remain at `7/4`, above `67/40`, in exactly the kind of small-complexity regime Tao warns can create false progress stories | No coupling theorem or empirical transfer from the rigid `2 x 2` nucleus to larger families; no success in medium or unrestricted complexity regimes; no witness at or below `1.675` |
+| Exhaustive one-sided fresh-column no-go atlas in heights `2` and `3` | Dennunzio-Formenti-Margara (2023) and Bond-Levine as the closest CA / local symbolic-dynamics neighbors | The atlas is a complete finite local-state audit for CA-like propagation rules, but still anchored to the arithmetic witness verifier rather than to general CA theory | **Moderate.** The result is exact and exhaustive in named audited classes, which is materially better than a heuristic CA failure story. The scope is still narrow: one-sided, low-height, fixed-palette, and not a general CA impossibility theorem | No extension to higher heights, broader palettes, held-out `X`, or genuinely two-sided coupling; no evidence that the local no-go governs the larger-family failures beyond the audited classes |
+| Negative larger-family frontier and the claim that only coupled / macrocell stories remain open | AlphaEvolve (2025), Georgiev et al. (2025), and generic CA-search lines such as Faldor-Cully (2024) | This is still automated search over candidate families with negative outcomes and no matched baseline win | **Weakest differentiation.** Honest negative reporting is good practice, not material novelty by itself. Without controls, distributions, or benchmark-cleared comparisons, this sits close to generic automated exploration with a stricter evaluator | No decoder-matched baseline, no label-shuffle, no held-out `X`, no held-out geometry, no candidate-level repeated-run distributions, and no exact-valid promoted family below the target |
 
 ## Strongest Novelty Illusions
 
 ### 1. Witness-faithfulness mistaken for novelty
 
-Staying on the original Katz-Tao witness object is necessary, but it does not itself beat Katz-Tao, Green-Ruzsa, Cowen-Breen et al., or Pohoata-Zakharov. It only shows that the search did not drift into an easier neighboring formulation.
+Keeping the search on the exact `(X,G,R,T)` witness object is necessary to avoid
+the proxy drift identified by Cowen-Breen et al. and Pohoata-Zakharov. It does
+not by itself create a strong novelty gap over Katz-Tao or Green-Ruzsa. It is a
+target-discipline requirement first, not a research contribution by itself.
 
-### 2. "CA" mistaken for methodological separation
+### 2. "Implemented verifier" mistaken for "validated H1 CA method"
 
-The nearest methodological pressure is not a direct arithmetic-Kakeya CA paper. It is the broader combination of CA-search literature and automated-discovery systems. Without exact baseline wins, calling the generator a cellular automaton does not separate it from existing CA or agentic-search practice.
+The executable `tools/kakeya_ca_exact.py` is real and materially changes the
+repo state. But the implemented tool is a witness verifier plus a reduced exact
+search utility, not the full proof-carrying `H1` fiber machine described in
+`results/core/h1_design.md`. Any novelty story that presents `H1` as already
+implemented and benchmark-cleared overstates the gap over prior automated
+discovery systems.
 
-### 3. Definitions-level theorems mistaken for research contribution
+### 3. Tiny exact audits mistaken for frontier progress
 
-The Section 5 results are mostly unpackings of the manuscript's own decoder and gate definitions. They do not solve a recognized open problem in CA theory, automated discovery, or arithmetic Kakeya. Presenting them as formal theorems may create a novelty aura larger than the substance.
+The `2 x 2` rigidity result is a valid exact classification, but it lives in a
+tiny fixed-palette regime. Tao (2025) is the right cautionary paper here:
+bounded-slope and low-rational-complexity behavior is exactly where false
+progress stories become plausible. The paper should not let the rigidity of the
+`7/4` nucleus read as evidence of progress toward `67/40`.
 
-### 4. Planned controls mistaken for cleared objections
+### 4. Negative search honesty mistaken for a new method
 
-The paper repeatedly invokes label shuffling, decoder-matched baselines, held-out geometries, and complexity sweeps as if they already separate the method from Tao-style bounded-slope or Hickman-Wright-style modular concerns. They do not. The repo's own experiment artifacts record that none of these controls executed.
+The larger-family failures and the refusal to overclaim are scientifically
+valuable, but they are not a new search method in the AlphaEvolve / Georgiev et
+al. comparison class. They are good governance plus a stricter evaluator.
 
-### 5. Negative-result honesty mistaken for new methodology
+### 5. Bridge shortlist mistaken for novelty support
 
-The refusal to overclaim is important and should stay. But it is better described as good scientific governance than as a novel search method. The paper should not lean on rigor alone as if rigor itself creates a strong novelty gap over AlphaEvolve-style or other evaluator-centered systems.
+The surviving bridge list is a restart triage artifact, not evidence that the
+current work materially outruns prior art. Hypothesis management is not the same
+thing as demonstrated differentiation.
 
-### 6. No direct title match mistaken for material novelty
+## Weak Differentiation And Missing Gap Evidence
 
-A targeted search failing to find "cellular automata for arithmetic Kakeya witness search" is useful negative evidence, but only weakly so. The stronger overlaps are structural: automated search over mathematical objects, local-dynamics search, and exact-target drift already have well-populated prior art.
+1. The manuscript is exact only relative to the repository's executable
+   quotient-span semantics. It still lacks a proved equivalence bridge to every
+   formulation of the original forcing-pair definition. That limits how far the
+   local theorem and finite audits can be presented as arithmetic-Kakeya
+   progress.
 
-## Missing Gap Evidence
+2. The CA-method story remains weakly differentiated from AlphaEvolve-style or
+   Georgiev-style automated exploration because the mandatory separation tests
+   remain absent: no decoder-matched baseline block, no label shuffle, no
+   held-out `X`, no held-out geometry, and no completed medium/unrestricted
+   complexity sweep.
 
-1. No exact verifier or shared exact decoder implementation exists in the code artifacts. The visible scripts are orchestration and literature utilities, not witness-verification code.
-2. No exact comparison was run against Random Local Search, Whole-Witness Mutation, or Decoder-Matched Search, so the CA-specific claim is unmeasured.
-3. No label-shuffle, held-out-geometry, held-out-`X`, or complexity-sweep control executed, so the paper has not actually cleared the objections raised by Tao (2025), Green-Ruzsa (2017), Hickman-Wright (2018), or the falsifier memo.
-4. No evidence shows that the proof-carrying fields (`proof_tag`, `mask_tag`, provenance state) predict or generate forcing success better than simpler non-CA parameterizations.
-5. No external gap evidence shows that the Section 5 correctness lemmas answer a known need in prior automated-discovery or CA-search systems. They currently certify only the author's own specification.
-6. No exact-valid witness family exists, so there is no bridge from design novelty to mathematical or empirical novelty.
-7. The promoted bridge ideas remain below both citation level and verification level; they should not be counted as novelty support.
+3. The paper still blurs "implemented exact verifier" with "implemented
+   proof-carrying CA lane." The strongest defensible novelty claim is about the
+   verifier plus the resulting exact local theorem/computation package, not
+   about an already-executed `H1` CA method.
+
+4. The `2 x 2` and one-sided atlas results are materially distinct only at a
+   local finite scale. They do not yet defeat the main gap notes in
+   `results/literature/prior_art_gap.md`: bounded-slope trapping, generalized
+   formulation drift, modular mirages, and generic automated-search overlap.
+
+5. Several repo artifacts still muddy the novelty boundary:
+   `results/final_assessment.md` still says "Exact verified witnesses found: 0"
+   even though the audited `2 x 2` corpus contains `48` exact-valid witnesses;
+   blocker-era experiment summaries still speak as if the verifier is absent;
+   and bridge-status traceability remains only partially reconciled. These are
+   packaging problems, not prior-art overlaps, but they weaken the clarity of
+   the novelty case.
 
 ## Bottom Line
 
-The claimed contribution is materially distinct from the malformed watchlist only. Against the real prior-art boundary, it is:
+The manuscript has a real novelty core, but it is narrower than the CA-search
+framing makes it sound.
 
-- not materially distinct in mathematical results;
-- only partially distinct in methodological design;
-- strongest as an audited blocker-aware research protocol, not as a demonstrated new CA method.
+- **Materially distinct:** the width-`2` obstruction, the exact `2 x 2`
+  classification, and the exact one-sided no-go atlas, all stated under the
+  repository's executable verifier semantics.
+- **Only weakly distinct:** the verifier-coupled CA search discipline and the
+  reduced search stack.
+- **Not materially distinct yet:** arithmetic-Kakeya progress, empirical CA
+  advantage, or a generic automated-discovery system contribution.
 
-A revised manuscript could survive if it narrows itself to that exact claim boundary and stops implying stronger methodological separation than the evidence supports. In its current form, the differentiation is real but too weakly evidenced to count as a strong novelty win.
+The right revision is to center the exact local theorem/computation package,
+demote the search-stack novelty claim, and foreground the semantics boundary
+and remaining missing controls explicitly.
 
-REVISE
+VERDICT: REVISE

@@ -1,98 +1,154 @@
 # Benchmark Report
 
-Snapshot date: 2026-03-18 UTC
+Snapshot date: 2026-03-19 UTC
+Verification phase: `post_deepen`
 
 ## Scope
 
-This audit reviews:
+This audit reads:
 
+- `research_rubric.json`
 - `results/research_context.md`
 - `results/swarm/falsifier.md`
 - `results/baselines/benchmark_spec.md`
-- `results/baselines/witness_spec.md`
-- `results/experiments/h1_tiny_grid_report.md`
-- `results/experiments/h1_controls.md`
-- `results/experiments/complexity_sweep.md`
-- `results/verification/verification_summary.md`
-- `results/core/lane_gates.md`
-- `results/swarm/tool_plan.md`
-- `results/swarm/phase_3_h1_review.md`
+- current experiment outputs under `results/experiments/`
 
-The question is narrow: does the current artifact set support publication-quality benchmark claims about `H1` relative to matched baselines and mandatory controls?
+The scope here is narrow: baselines, ablations, controls, stress tests, error
+analysis, compute parity, and publication-quality claim boundaries.
+
+The repo currently contains two benchmark states:
+
+- blocker-era documents such as `results/swarm/falsifier.md`,
+  `results/experiments/h1_tiny_grid_report.md`,
+  `results/experiments/h1_controls.md`, and
+  `results/experiments/complexity_sweep.md` still describe a no-verifier,
+  `0`-decode regime;
+- post-deepen documents such as `results/research_context.md`,
+  `results/theory/forcing_trace_normal_form.md`,
+  `results/theory/local_rule_no_go_atlas.md`,
+  `results/experiments/h1_exact_advantage.md`,
+  `results/experiments/macrocell_scaling.md`,
+  `results/experiments/arithmetic_sensitivity_phase_transition.md`, and
+  `results/experiments/spatial_coupling_threshold.md` assume the exact engine in
+  `tools/kakeya_ca_exact.py` exists and was used.
+
+This report treats the exact verifier as present and audits the remaining
+benchmark gaps. The stale blocker-era documents are themselves a benchmark
+provenance failure.
 
 ## Headline Verdict
 
-- Blocker-handling integrity: `pass`
-- Benchmark evidence for empirical claims: `fail`
-- Publication-quality readiness: `fail`
+- Exact evaluator availability: `pass`
+- Benchmark provenance consistency: `fail`
+- Baseline execution: `fail`
+- Control and ablation execution: `fail`
+- Error analysis and compute parity reporting: `fail`
+- Publication-quality benchmark readiness: `fail`
 
-The current outputs show honest blocker handling, not benchmark evidence. The tiny-grid sweep records `0 / 3` H1 families and `0` exact decodes; the control and complexity reports are empty by design. That preserves compute hygiene and negative results, but it leaves every empirical benchmark claim untested.
+What survives is narrower: exact negative-result and obstruction claims. What
+does not survive is any claim of CA advantage, coupling advantage, scaling
+advantage, robustness, or phase-transition behavior.
 
-## What The Current Artifacts Actually Establish
+## What The Current Evidence Actually Shows
 
-- The benchmark matrix is specified clearly enough to audit later.
-- The exact score `(m(G)+|R|)/(n(G)-|T|)` remained the only admissible objective.
-- No proxy score, permissive decoder, or repaired witness was substituted.
-- The run preserved negative results honestly by reporting blocked status and empty distributions.
+- `tools/kakeya_ca_exact.py` is now a real exact verifier, trace engine, and
+  bounded search entry point.
+- `results/theory/forcing_trace_normal_form.md` and the trace corpus establish
+  exact negative structure in the audited `2x2` regime.
+- `results/theory/local_rule_no_go_atlas.md` establishes an exact one-sided
+  strip obstruction in widths `2` and `3`.
+- `results/experiments/h1_exact_advantage.md`,
+  `results/experiments/spatial_coupling_threshold.md`,
+  `results/experiments/macrocell_scaling.md`, and
+  `results/experiments/arithmetic_sensitivity_phase_transition.md` are negative
+  feasibility reports, not matched benchmark wins.
 
-Those are process strengths, not benchmark outcomes. They do not show baseline superiority, robustness, decoder independence, or generalization.
+That is enough for exact null-result reporting. It is not enough for any
+baseline-cleared empirical method claim.
 
-## Missing Evidence By Category
+## Missing Baselines
 
-### Baselines
+| Claim block | Required baselines | Current state | Why this is insufficient | Falsifiable next test |
+| --- | --- | --- | --- | --- |
+| `H1` exact advantage | Random Local Search, Whole-Witness Mutation, Decoder-Matched Search | `results/experiments/h1_controls.md` has placeholder rows only; `results/experiments/h1_exact_advantage.md` has no comparator runs or distributions | No evidence isolates CA-specific value from generic search or decoder reuse | On one already audited exact geometry family, run CA plus all three baselines with the same exact decoder, same `X` or `|X|` budget, same density band, and same exact-decode count `N`; kill the empirical `H1` claim if CA fails to beat all three on legality hit rate, forcing hit rate, and median verified score |
+| `H1` negative-search efficiency | Same three H1 baselines | Not executed even though exact negative searches now exist | The absence of a positive family does not waive benchmarking; otherwise "the CA search failed in an informative way" is unmeasured | Re-run one reported negative block from `results/experiments/h1_exact_advantage.md` with matched baselines and compare exact-valid yield, legality hit rate, forcing hit rate, and best or median verified score; if all families are equally null, drop CA-specific search-efficiency language |
+| `H2` spatial coupling | Uncoupled repetition, Random Local Search, Whole-Witness Mutation | `results/experiments/spatial_coupling_threshold.md` names these only as acceptance criteria; there is no comparator table | No evidence that coupling beats simple repetition or generic search on the same micro-bank | Freeze one micro-bank, two coupling widths, and one slab-count block; kill `H2` if the coupled construction does not beat uncoupled repetition and both non-CA baselines on hit rate or median verified score under the same exact budget |
+| `H3` macrocell scaling | Flat-lattice CA, static grammar enumeration, independent local matching | `results/experiments/macrocell_scaling.md` names flat CA and static grammar only as required future comparators; no executed runs | No evidence that macrocell typing adds anything beyond representation or enumeration | Evaluate the same interface bank on the largest held-out macroboard against all required comparators; if there is no win over both flat CA and static grammar, keep the claim purely negative |
+| Branch-specific benchmark freezing for `H2` and `H3` | Dedicated frozen benchmark artifacts, not just H1 carryover | `results/swarm/falsifier.md` explicitly says there is no H1-equivalent frozen benchmark artifact for `H2` or `H3` | Without lane-specific matrices, later baseline claims are under-specified and not audit-ready | Write branch-specific benchmark specs before any new promotion; if those specs are absent, treat `H2` and `H3` experiment notes as feasibility memos, not benchmark claims |
 
-| Required evidence | Current state | Audit judgment | Falsifiable completion criterion |
+## Missing Controls And Ablations
+
+| Missing test | Current state | Why this blocks publication-quality claims | Falsifiable completion criterion |
 | --- | --- | --- | --- |
-| Random local search baseline | Defined in `results/baselines/benchmark_spec.md`, never executed | missing | Run on the same grid block with the same `X` or `|X|`, density band, decoder, and exact-decode count `N` as the CA family; report legality hit rate, forcing hit rate, and full score distribution |
-| Whole-witness mutation baseline | Defined in `results/baselines/benchmark_spec.md`, never executed, and not broken out separately in `results/experiments/h1_controls.md` | missing plus reporting gap | Give it its own comparison row and matched-budget distribution; do not merge it into a generic non-CA bucket |
-| Decoder-matched search baseline | Placeholder exists in `results/experiments/h1_controls.md`, but executions and distributions are empty | missing | Run with the identical decoder, extractor, legality checks, and verifier stack; if CA gains vanish here, the decoder is doing the work |
+| `X`-label shuffle at fixed geometry | Still unexecuted in the post-deepen experiment set | No evidence the signal depends on arithmetic labels rather than geometry or density | Re-run the same comparison block with fixed geometry and fixed nonzero-label multiset; kill the claim if shuffled runs retain at least `50%` of unshuffled hit rate or at least `75%` of the median-score gain |
+| Held-out legal `X` | Mentioned in acceptance criteria, absent as an explicit executed row | Geometry generalization without held-out `X` still allows alphabet overfit | Add a held-out-`X` row with the same cardinality and complexity band; kill the claim if the effect disappears across held-out legal alphabets |
+| Held-out larger grids or aspect ratios | `results/experiments/h1_controls.md` is empty; `results/experiments/h1_exact_advantage.md` spans multiple geometries but not as a frozen in-vs-out-of-distribution comparison block | Multi-geometry failure notes are not the same as a generalization test on a fixed promoted family against matched baselines | Freeze one family and one in-distribution block, then evaluate on held-out shapes under the same budget; kill the claim if hit rate falls below `25%` of in-distribution hit rate or the median gain disappears everywhere |
+| Small, medium, unrestricted complexity sweep | `results/experiments/complexity_sweep.md` is a blocker-era document and has not been rerun against the exact engine | No evidence clears the bounded-slope trap or the low-rational-complexity trap | Rerun the sweep under the exact engine and matched baselines; kill the claim if gains occur only in `small` and not in `medium` or `unrestricted` |
+| Modular-to-integer lift | Still only a placeholder row | Any modular-only effect remains off-target for the integer witness problem | Report a lift result with the same exact score accounting; reject any claim that disappears before integer lift-back |
+| Decoder ablation or randomization | Required in the benchmark spec, absent from the experiment outputs | Decoder leakage remains unmeasured even though the verifier now exists | Remove or randomize nonsemantic decoder choices inside the same comparison block; kill the claim if the gain disappears |
+| Canonicalization ablation or randomization for `H1` | Named in `results/experiments/h1_exact_advantage.md` only as a future check | No evidence the apparent signal is CA-specific rather than canonicalization-specific | Randomize or ablate canonical class IDs while holding the decoder and budget fixed; kill `H1` if the same effect is reproducible without the claimed proof-state structure |
+| Template randomization for `H2` | Named only as an acceptance condition in `results/experiments/spatial_coupling_threshold.md` | A coupling story without template-randomization collapse can still be geometry theater | On the same micro-bank and slab block, randomize the template bank; kill `H2` if the putative coupling gain survives |
+| Interface randomization or independent local matching for `H3` | Not executed | Macrocell typing could hide the work in the interface library | Compare against independent local matching or a randomized interface bank under the same exact budget; kill `H3` if the advantage survives |
 
-### Ablations And Controls
+## Missing Error Analysis And Fairness Reporting
 
-| Required evidence | Current state | Audit judgment | Existing kill or pass rule |
+| Missing evidence | Current state | Why this is insufficient | Falsifiable completion criterion |
 | --- | --- | --- | --- |
-| `X`-label shuffle at fixed geometry | Planned, not executed | missing | Kill `H1` if shuffled runs retain at least `50%` of unshuffled hit rate or at least `75%` of the median-score gain over matched baselines |
-| Decoder ablation or decoder randomization | Required in `results/baselines/benchmark_spec.md`, absent from phase-4 outputs | missing | Kill the CA-specific claim if removing nonessential decoder choices removes the effect |
-| Matched-budget parity in actual runs | Planned and documented, never exercised | missing execution evidence | Require identical exact-decode count `N` for CA and every baseline in the same comparison block |
-| No-repair runtime audit | Design rule exists, but no decoded run log shows rejection counts for malformed candidates | missing | Record how many candidates are rejected directly by decode-time legality checks; any repair step is an automatic fail |
-
-### Error Analysis
-
-| Required evidence | Current state | Audit judgment | Falsifiable completion criterion |
-| --- | --- | --- | --- |
-| Legality hit rate | `not available` | missing | Report per family and per baseline, not only in aggregate |
-| Forcing hit rate | `not available` | missing | Report per family and per baseline under the shared exact verifier |
-| Failure-reason distribution | The benchmark spec defines categories, but the phase-4 outputs record only the infrastructure blocker | missing | Count at minimum `illegal X`, `malformed f_i`, `malformed R`, `failed forcing`, `denominator failure`, and `other` for every comparison block |
-| Restart and seed variance | No family-level score distributions exist | missing | Preserve all scores inside the fixed budget so median and quartile comparisons are meaningful |
-
-### Stress Tests
-
-| Required evidence | Current state | Audit judgment | Existing kill or pass rule |
-| --- | --- | --- | --- |
-| Held-out larger grids or aspect ratios | Planned, not executed | missing | Kill `H1` if held-out hit rate falls below `25%` of in-distribution hit rate or the median gain disappears on every held-out geometry |
-| Held-out alphabets `X` | Required by `results/swarm/falsifier.md` and `results/swarm/phase_3_h1_review.md`, but no phase-4 artifact reserves this test | missing from plan and execution | Add explicit held-out-`X` rows; kill `H1` if the effect disappears across held-out legal alphabets |
-| Small, medium, unrestricted complexity sweep | Placeholder exists, no runs | missing | Kill `H1` as bounded-slope trapped if gains occur only in `small` and not in `medium` or `unrestricted` at matched budget |
-| Modular curriculum to integer lift | Placeholder exists, no runs | missing | Reject any empirical story that wins only before integer lift-back |
-| Equivalent-formulation or encoding transfer | Called out in `results/swarm/falsifier.md`, absent from phase-4 outputs | missing from plan and execution | Re-evaluate the same candidate family under a semantically equivalent serialization or nearby forcing formulation; kill the claim if rankings change materially |
+| Full verified score distributions | `results/experiments/h1_exact_advantage.md` reports only best exact forced counts on negative searches; other benchmark rows are empty | Best-of-many or best-forced-count reporting is not the frozen benchmark metric | For every family and baseline, report count, min, quartiles, median, and max of verified score; keep forced-count diagnostics as secondary debug output only |
+| Legality hit rate | Missing from the post-deepen experiment notes | Without it, one cannot tell whether a method fails because it proposes illegal witnesses or because legal witnesses still do not force | Report the fraction of proposals that decode to legal witnesses for every family and baseline |
+| Forcing hit rate | Missing from the post-deepen experiment notes | Without it, exact-valid yield is unmeasured even in a negative result paper | Report the fraction of legal witnesses that pass exact forcing for every family and baseline |
+| Failure-reason distribution | Not broken out beyond "no hit" or "failed to recover a family" | Publication review cannot separate malformed outputs, failed forcing, denominator pathologies, and other failure modes | Count at minimum `illegal X`, `malformed f_i`, `malformed R`, `failed forcing`, `denominator failure`, and `other` in every comparison block |
+| Score decomposition | No experiment file exposes `m(G)`, `|R|`, `n(G)`, and `|T|` separately | A branch can look good for the wrong reason if only the collapsed score is shown | Publish the four components beside every reported verified score summary |
+| Generator-side compute parity | The benchmark spec warns that exact-decode parity alone is not enough, but the post-deepen experiments do not publish proposal counts, SAT solves, or wall-clock or solver budgets | A CA branch could receive materially more proposer-side compute than its baselines while still claiming matched decode counts | Publish per-family proposal count, exact verifier calls, solver invocations, and wall-clock or solver-step budget; if CA gets materially more search compute, mark the block unmatched |
+| Negative-result preservation with candidate-level traceability | Negative outcomes are preserved narratively, but not as full candidate ledgers | Reviewers cannot re-audit whether discarded candidates were illegal, low-score, or simply underreported | Store the candidate ledger for each comparison block, or at minimum an aggregate table that preserves all evaluated candidates inside the fixed budget |
+| Benchmark provenance after the exact-trace pivot | Old reports still say no verifier exists while new ones use one | It is unclear which evaluator, budget, and claim boundary are authoritative | Write one post-deepen evaluation manifest naming `tools/kakeya_ca_exact.py`, the active budget table, and every superseded blocker-era benchmark file; if this cannot be done, withdraw cross-document benchmark claims |
 
 ## Where The Evidence Is Insufficient For Publication-Quality Claims
 
-The current artifact set does not support any of the following claims:
+The current artifact set does **not** support any of the following claims:
 
-- `H1` beats random local search, whole-witness mutation, or decoder-matched search.
+- `H1` beats Random Local Search, Whole-Witness Mutation, or Decoder-Matched Search.
 - The observed signal depends on arithmetic labels rather than fixed geometry.
-- The decoder is not the true source of the gain.
-- The method generalizes beyond tiny seen geometries or beyond the tuned alphabet.
-- The method escapes bounded-slope or low-rational-complexity traps.
-- Any modular or curriculum signal transfers back to the integer target.
-- Any family improves exact verified score toward `<= 1.675`.
+- The decoder is not doing the real work.
+- The method generalizes to held-out legal alphabets or held-out aspect ratios.
+- The method escapes the bounded-slope or modular-only traps.
+- Spatial coupling beats uncoupled repetition or matched non-CA baselines.
+- Macrocell typing beats flat-lattice CA or static grammar enumeration.
+- There is a measured arithmetic-sensitivity phase transition.
 
-The only defensible benchmark claim is narrower: the run preserved benchmark hygiene while blocked on the missing exact `(X,G,R,T)` decoder and verifier.
+The current artifact set **does** support a narrower claim boundary:
+
+- exact negative-result reporting for the audited search families;
+- exact local-obstruction results in the audited `2x2`, width-`2`, and
+  width-`3` regimes;
+- honest preservation of negative outcomes without substituting proxy success
+  metrics.
 
 ## Priority Next Checks
 
-1. Do not expand search. Recover or implement a shared exact decoder and verifier first.
-2. Run one fully matched comparison block: one CA family versus Random Local Search, Whole-Witness Mutation, and Decoder-Matched Search, all on the same grid block with identical `X` or `|X|`, density band, decoder, and exact-decode budget.
-3. Split the control report into explicit rows for all three baseline families plus label-shuffle, decoder-ablation, held-out geometry, held-out `X`, and complexity-regime tests.
-4. Preserve candidate-level failure reasons and full score distributions for every family and baseline. Without that, there is no publishable error analysis.
-5. Apply the existing kill thresholds verbatim once data exists. If the CA signal survives label shuffling, disappears under decoder ablation, vanishes on held-out geometries or alphabets, or wins only in the `small` complexity regime, reject the empirical CA claim.
+1. Freeze a post-deepen benchmark manifest.
+   Name the exact evaluator entry point, the comparison budgets, and which
+   blocker-era files are superseded. If this cannot be written cleanly, keep
+   all benchmark claims at the negative-result level.
+
+2. Run one matched `H1` comparison block on an already audited geometry family.
+   Use CA plus Random Local Search, Whole-Witness Mutation, and
+   Decoder-Matched Search with identical exact-decode counts, identical
+   generator-side compute limits, identical `X` or `|X|` budget, and identical
+   density band.
+
+3. Add the frozen benchmark reporting fields to every post-deepen run.
+   Report legality hit rate, forcing hit rate, full verified score
+   distributions, score decomposition, failure reasons, and compute ledgers.
+   Do not headline `best exact forced count` alone.
+
+4. Only if a family has nonzero exact-valid yield, run the mandatory kill tests.
+   Apply label shuffle, held-out `X`, held-out geometry, complexity sweep, and
+   decoder or canonicalization ablations with the thresholds already written in
+   `results/core/lane_gates.md`.
+
+5. Keep `H2` and `H3` benchmark claims closed until their lane-specific
+   baselines and randomization controls are frozen and executed.
+   Without uncoupled repetition, template randomization, flat-lattice CA,
+   static grammar, and interface-matching controls, those lanes are still
+   feasibility stories rather than benchmark-cleared results.

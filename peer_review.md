@@ -1,86 +1,103 @@
 # Peer Review
 
-I reviewed `research_paper.tex`, rebuilt the manuscript, read `research_rubric.json`, inspected the required `results/` and `figures/` artifacts, and verified every bibliography entry in `sources.bib` via web search against publisher, arXiv, DOI, or other primary bibliographic sources. The paper is honest about its negative empirical outcome, but it still falls short on novelty and on several publication-readiness details.
+I read `research_paper.tex`, rebuilt `research_paper.pdf`, read `research_rubric.json`, inspected the claimed result artifacts under `results/` and `figures/`, re-ran `python3 tools/kakeya_trace_corpus.py`, and verified every bibliography entry in `sources.bib` against web-searchable sources.
+
+The paper has a real narrow core: the exact verifier exists, the `2 x 2` corpus and one-sided strip atlas are reproducible, and the main quantitative claims in the paper match the newer machine-readable artifacts. But the manuscript is not publication-ready. The bibliography has zero-tolerance failures, the repository still contains contradictory “verifier missing” source-of-truth files, several figures are not yet publication quality, and the novelty is narrower than the framing suggests.
 
 ## Scores
 
-| Criterion | Score (1-5) | Rationale |
+| Criterion | Score | Rationale |
 | --- | ---: | --- |
-| Completeness | 5 | All required major sections are present: abstract, introduction, related work, method, experimental setup/results, discussion, conclusion, and references. |
-| Technical Rigor | 2 | The witness formalization and no-repair decoder contract are written clearly, but the core empirical stack is missing: there is no exact `(X,G,R,T)` verifier in the repo, no executed CA benchmark, and no reproducible evaluator-backed method beyond manuscript reconstruction. |
-| Results Integrity | 3 | The paper does not fabricate positive results and the `0/3`, `0`, and blocked-control claims match the experiment artifacts, but bridge-status reporting is inconsistent across `results/concept_evolve/bridge_candidates.json`, `results/concept_evolve/concept_delta.md`, and `results/final_assessment.md`. |
-| Citation Accuracy | 2 | Most cited papers are real and verifiable, but the bibliography contains at least one incorrect metadata entry (`novikov2025` author list), and one source (`leng2024`) is real but misapplied to a Kakeya-specific claim. |
-| Compilation | 3 | `research_paper.pdf` exists and I rebuilt it with `pdflatex -> bibtex -> pdflatex -> pdflatex`, but the build is not clean: the log still reports many overfull boxes and citation-destination warnings. |
-| Writing Quality | 4 | The prose is generally clear, professional, and appropriately cautious about the negative result. The main weakness is that some related-work comparisons and novelty framing are stronger than the evidence justifies. |
-| Figure Quality | 3 | The figures are not default-matplotlib throwaways: they use a custom palette, layout, and higher-resolution export. But they are mostly schematic blocker/architecture figures rather than data-rich experimental figures, and they will need replacement or extension if the work is deepened into a results paper. |
-| Novelty & Creative Contribution | 2 | The actual contribution is an audited blocker report plus a verifier-coupled CA design. There is no new witness, no exact benchmark win, no surprising theorem, and no demonstrated conversion of ConceptEvolve bridges into tested mechanisms. |
+| Completeness | 5 | The paper contains Abstract, Introduction, Related Work, Method, Experimental Setup, Results, Discussion, Conclusion, References, and appendices. |
+| Technical Rigor | 3 | The exact finite-audit portion is formal and reproducible, but the larger-search and CA-method story is not benchmark-complete and the semantics boundary is still limited to the repository verifier. |
+| Results Integrity | 3 | The core exact-trace claims match the current artifacts and I reproduced the tiny-corpus outputs, but the repo still contains stale blocker-era files that contradict the paper’s current narrative. |
+| Citation Accuracy | 1 | Several entries are incorrect or not web-verifiable, which is a hard failure under the stated zero-tolerance standard. |
+| Compilation | 4 | The PDF builds successfully with `pdflatex -> bibtex -> pdflatex -> pdflatex`, but the log still has multiple overfull-box warnings and some layout rough edges. |
+| Writing Quality | 4 | The prose is clear and professional, but it sometimes frames the contribution more broadly than the evidence supports. |
+| Figure Quality | 2 | The style is custom rather than default, but several figures are crowded or hard to read, especially the coverability and bridge-decision graphics. |
+| Novelty & Creative Contribution | 2 | The strongest contribution is a narrow semantics-relative local theorem plus tiny exact audits. This is not yet a surprising arithmetic-Kakeya advance or a demonstrated CA-method breakthrough, and the ConceptEvolve trail is only weakly tied to experimentally validated new ideas. |
 
-## High-Priority Findings
+## Major Findings
 
-1. The paper does not yet make a nontrivial scientific contribution on the stated arithmetic-Kakeya task. The repo contains no exact verifier, no exact-valid CA run, no matched baseline comparison, and no verified witness improvement toward score `<= 1.675`.
+1. The core exact-result claims are supported by the newer exact-trace artifacts.
+The `44,608 / 48 / 7/4 / four trace signatures of size 12` claims match `results/theory/forcing_traces/tiny_2x2_full_seeds_le3/corpus_summary.json`. The `256 / 8,192 / 0 strict improvements` claims match `results/theory/forcing_traces/index.json`. The larger-family negative frontier matches `results/experiments/h1_exact_advantage.md`. Re-running `python3 tools/kakeya_trace_corpus.py` reproduced the same summary counts.
 
-2. Citation accuracy fails a zero-tolerance standard. `novikov2025` is a real paper, but the bibliography entry is incorrect because it appends `Google DeepMind` as an author. `leng2024` is also a real paper, but it is used to support a Kakeya/Hausdorff-dimension motivation claim even though it is a Szemeredi-theorem paper.
+2. Source-of-truth hygiene is still poor.
+The paper says older blocker-era files are historical only, but the repo still contains live contradictory artifacts such as `results/final_assessment.md`, `results/experiments/h1_controls.md`, and `results/experiments/complexity_sweep.md`, all of which still describe a missing-verifier regime. The manuscript acknowledges this conflict, but the repo still needs one authoritative post-pivot manifest.
 
-3. Results traceability is inconsistent around the bridge narrative. `results/concept_evolve/bridge_candidates.json` records `spatially_coupled_peeling_ladders` as `hold` and gives a `2/3/4` promote/hold/retire split, while `results/concept_evolve/concept_delta.md` and `results/final_assessment.md` treat the bridge as promoted/surviving. The manuscript adopts one view without resolving the discrepancy.
+3. Citation accuracy fails the review standard.
+Most entries are real papers, but `sources.bib` still contains at least one non-web-verifiable local artifact and at least two metadata-defective entries. Under the stated review rules, that alone blocks acceptance.
 
-4. The ConceptEvolve evidence is not materially operationalized. The concept tree contains concept cards and bridge chains, but the `concept.json` files under `results/concept_evolve/tree/` contain zero `experimental_result` fields, so the CE layer reads as ideation and triage, not executed research.
+4. The paper’s real novelty is narrow.
+The most credible novelty is the width-`2` seedless-column obstruction under the repository’s executable semantics, together with the exact `2 x 2` and one-sided-strip classifications. That is interesting, but it is much narrower than “solved using cellular automata,” much narrower than genuine arithmetic-Kakeya progress, and not a benchmark-cleared CA contribution. The ConceptEvolve tree does not show strong experiment-trace evidence inside the `concept.json` files; I did not find `experimental_result` fields demonstrating that the bridge ideas themselves were rigorously turned into tested new directions.
 
-5. The LaTeX build succeeds but is not publication-clean. The rebuilt PDF is 23 pages, yet the log still contains numerous overfull boxes and citation-destination warnings, which weakens the Compilation score.
+5. Several figures are not yet publication quality.
+The figure suite is styled and not generic, which is good. But `fig_coverability_modes` has overlapping text and weak contrast in the central labels, `fig_bridge_decisions` is cramped and text-heavy, and some panels rely on annotation blocks to compensate for sparse data. That is below top-tier figure quality.
 
 ## Citation Verification Report
 
-All in-text citation keys used in `research_paper.tex` are present in `sources.bib`.
+All in-text citation keys used in `research_paper.tex` resolve to entries in `sources.bib`. `leng2024` is present in `sources.bib` but not cited in the manuscript.
 
 | Bib key | Status | Verification result |
 | --- | --- | --- |
-| `katz1999` | Verified via web search | Real paper. Title, authors, year, journal, and DOI `10.4310/MRL.1999.v6.n6.a3` match the Mathematical Research Letters record. |
-| `green2017` | Verified via web search | Real paper. Title, authors, publication year `2019`, journal `Periodica Mathematica Hungarica`, and DOI `10.1007/s10998-018-0270-z` match. Bib key name is older than the publication year, but the entry metadata is correct. |
-| `cowenbreen2020` | Verified via web search | Real arXiv paper `arXiv:2011.07056`. Title, authors, and year match. The bib URL is noncanonical because it points to Semantic Scholar rather than the arXiv page. |
-| `pohoata2024` | Verified via web search | Real arXiv paper `arXiv:2411.13395`. Title, authors, and year match. The bib URL is noncanonical but the paper is real. |
-| `tao2025` | Verified via web search | Real arXiv paper `arXiv:2511.15135`. Title, author, and year match. The bib URL is noncanonical but the paper is real. |
-| `hickman2018` | Verified via web search | Real paper. Title, authors, journal `Discrete Analysis`, year `2018`, and DOI `10.19086/DA.3682` match. |
-| `bond2013` | Verified via web search | Real paper. Title, authors, journal `SIAM Journal on Discrete Mathematics`, year `2016`, and DOI `10.1137/15M1030984` match. Bib key name does not match the publication year, but the entry metadata is correct. |
-| `bond2014` | Verified via web search | Real paper. Title, authors, journal `Selecta Mathematica`, year `2016`, and DOI `10.1007/s00029-015-0192-z` match. Bib key name does not match the publication year, but the entry metadata is correct. |
-| `dennunzio2023` | Verified via web search | Real paper. Title, authors, year `2023`, journal `IEEE Access`, and DOI `10.1109/ACCESS.2023.3328540` match. |
-| `faldor2024` | Verified via web search | Real paper. Title, authors, year `2024`, and DOI `10.1162/isal_a_00827` match. The venue is the ALIFE 2024 proceedings; the current bib `journal` field is understandable but could be normalized to the formal proceedings title. |
-| `novikov2025` | Incorrect metadata | Real paper `arXiv:2506.13131`, but the bibliography entry is inaccurate because the author list does not match the arXiv record: it appends `Google DeepMind` as an author. This fails the required title/authors/year/venue metadata check. |
-| `georgiev2025` | Verified via web search | Real paper `arXiv:2511.02864`. Title, authors, and year match. The `journal={arXiv.org}` field is nonstandard but still points to a real arXiv preprint. |
-| `bourgain1999` | Verified via web search | Real paper. Title, author, year `1999`, journal `Geometric and Functional Analysis`, and DOI `10.1007/S000390050087` match. |
-| `leng2024` | Verified paper, but misapplied in manuscript | Real arXiv paper `arXiv:2402.17995`. Title, authors, and year match. However, this is a Szemeredi-theorem paper and does not support the manuscript’s Kakeya/Hausdorff-dimension motivation sentence as written. |
+| `katz1999` | Verified | International Press / Mathematical Research Letters confirms the title, Nets Hawk Katz and Terence Tao, 1999, *Mathematical Research Letters*, DOI `10.4310/MRL.1999.V6.N6.A3`. |
+| `green2017` | Verified | Springer confirms *On the arithmetic Kakeya conjecture of Katz and Tao*, Ben Green and Imre Z. Ruzsa, published 2018 / volume year 2019 in *Periodica Mathematica Hungarica*, DOI `10.1007/s10998-018-0270-z`. |
+| `cowenbreen2020` | Verified | arXiv confirms *Pattern Problems related to the Arithmetic Kakeya Conjecture*, Charlie Cowen-Breen, Elene Karangozishvili, Narmada Varadarajan, Thomas Wang, 2020, arXiv `2011.07056`. |
+| `pohoata2024` | Verified | arXiv confirms *Generalized Arithmetic Kakeya*, Cosmin Pohoata and Dmitrii Zakharov, 2024, arXiv `2411.13395`. |
+| `tao2025` | Verified | arXiv confirms *Sum-difference exponents for boundedly many slopes, and rational complexity*, Terence Tao, 2025, arXiv `2511.15135`. |
+| `hickman2018` | Verified | Discrete Analysis confirms *The Fourier restriction and Kakeya problems over rings of integers modulo N*, Jonathan Hickman and James Wright, 2018, DOI `10.19086/da.3682`. |
+| `bond2013` | Verified | DBLP and the unpaywalled paper confirm *Abelian Networks I. Foundations and Examples*, Benjamin Bond and Lionel Levine, 2016, *SIAM Journal on Discrete Mathematics*, DOI `10.1137/15M1030984`. |
+| `bond2014` | Verified | arXiv plus external publication metadata confirm *Abelian networks II. Halting on all inputs*, Benjamin Bond and Lionel Levine, published 2016 in *Selecta Mathematica*, DOI `10.1007/s00029-015-0192-z`. |
+| `dennunzio2023` | Verified | DBLP / IEEE metadata confirm *An Easy to Check Characterization of Positive Expansivity for Additive Cellular Automata Over a Finite Abelian Group*, Dennunzio, Formenti, Margara, 2023, *IEEE Access*, DOI `10.1109/ACCESS.2023.3328540`. |
+| `faldor2024` | Verified | The paper is real: *Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity*, Maxence Faldor and Antoine Cully, 2024, DOI `10.1162/isal_a_00827`, arXiv `2406.04235`. The venue string in the BibTeX should be normalized to the actual ALIFE proceedings form, but the paper itself is real. |
+| `novikov2025` | Incorrect metadata | arXiv `2506.13131` is real, but the author list in `sources.bib` is wrong: the arXiv record lists 18 human authors and does not list `Google DeepMind` as a bibliographic author. The `journal={arXiv.org}` field is also not a proper venue/preprint citation. |
+| `georgiev2025` | Incorrect metadata | arXiv `2511.02864` is real and the title/authors/year are correct, but the entry uses `journal={arXiv.org}` instead of a proper arXiv-preprint citation form. Under the stated zero-tolerance rule, I count this as incorrect metadata. |
+| `bourgain1999` | Verified | The paper exists as *On the Dimension of Kakeya Sets and Related Maximal Inequalities*, J. Bourgain, 1999, *Geometric and Functional Analysis*, DOI `10.1007/S000390050087`. |
+| `leng2024` | Verified but unused | arXiv confirms *Improved Bounds for Szemerédi's Theorem*, James Leng, Ashwin Sah, Mehtaab Sawhney, 2024, arXiv `2402.17995`. It is unused in the paper and should probably be removed from `sources.bib` unless needed. |
+| `moura2008` | Verified | Springer confirms *Z3: An Efficient SMT Solver*, Leonardo de Moura and Nikolaj Bjørner, TACAS 2008, DOI `10.1007/978-3-540-78800-3_24`. |
+| `wang2025` | Verified | The preprint is real: *Volume estimates for unions of convex sets, and the Kakeya set conjecture in three dimensions*, Hong Wang and Joshua Zahl, 2025, arXiv `2502.17655`. The BibTeX should ideally cite the arXiv DOI or arXiv URL directly rather than a Semantic Scholar landing page. |
+| `archivara2026task` | Incorrect / not web-verifiable | I could not verify this via web search as a public paper or external scholarly source. It is a local repository provenance artifact, not a normal bibliography entry, and should be cited as repository/task provenance or a footnote instead of a scholarly reference. |
 
 ## Novelty Assessment
 
-The manuscript’s strongest honest contribution is methodological discipline, not a new mathematical or algorithmic result. It documents a verifier-coupled, no-repair, witness-faithful CA design and shows restraint in not fabricating proxy-based success claims. That is useful process work, but it is not the kind of surprising contribution that would interest arithmetic-combinatorics or automated-discovery experts on its own. The real prior-art pressure is not the malformed watchlist; it is the combination of arithmetic-Kakeya literature, CA/local-dynamics literature, and modern automated-discovery systems. Against that boundary, the paper does not deliver a new witness, a new exact algorithm, a new invariant, a new control-cleared benchmark advantage, or a counterintuitive negative finding beyond “the exact verifier is missing, so we stopped.” The ConceptEvolve layer also remains mostly rhetorical: `results/concept_evolve/semantic_bridge.json` contains bridge chains, but the tree artifacts contain zero `experimental_result` fields, so there is no evidence that the cross-domain ideas were actually turned into experiments. What is novel here is mainly caution and workflow design. What is not novel is automated search framing, CA vocabulary, bridge generation, or internal decoder-correctness lemmas written around the author’s own contract.
+This work does contribute something new, but only in a narrow sense. The width-`2` seedless-column obstruction, the exact `2 x 2` classification, and the one-sided low-height no-go atlas appear to be genuinely new repository-level results under the executable verifier semantics. That said, this is not a surprising arithmetic-Kakeya advance, not a witness below `1.675`, not an equivalence theorem back to the full forcing-pair formulation, and not a demonstrated CA-method breakthrough over baseline search. The ConceptEvolve scaffolding also does not show strong evidence of genuine cross-domain novelty generation: the tree `concept.json` files do not visibly carry `experimental_result` fields that would show the bridge ideas were systematically converted into validated experiments. In its current state, the paper reads more like a careful exact local audit plus a semantics-relative obstruction theorem than a field-moving creative contribution.
 
 ## Overall Verdict
 
 **DEEPEN**
 
-This is not just a revise-and-polish case. Even after fixing the citation, compilation, and traceability issues, the core contribution would still be too modest for a top-tier venue. The paper needs deeper research, not only cleaner presentation.
+The paper is technically more serious than a generic pipeline writeup, and the exact local theorem/computation package is real. But the research contribution is still too narrow for a top-tier venue, and it is coupled to fixable paper-quality problems that also need attention. Even if the citation issues were corrected, the present contribution would still read as a careful local negative-result package rather than a genuinely surprising arithmetic-Kakeya or cellular-automaton breakthrough.
 
-## What Must Be Fixed In The Deepening Cycle
+## What “Deeper” Needs To Mean Here
 
-1. Recover or implement the exact six-line decoder and forcing verifier over `\mathbb{Z}`. Without this, the paper cannot graduate from design audit to scientific result.
+1. Produce a stronger mathematical contribution.
+Examples: an exact theorem beyond the current width-`2` / one-sided-height-`3` audited classes; a nontrivial two-sided or macrocell obstruction theorem; or an exact verified witness family that materially improves the current `7/4` micro-regime and pushes toward or below `1.675`.
 
-2. Execute one fully matched benchmark block: one CA family versus random local search, whole-witness mutation, and decoder-matched search, with identical decode budgets, alphabet constraints, density bands, and exact scoring.
+2. Bridge the semantics gap.
+If the paper wants to matter mathematically beyond the repository, it needs either a proof that the executable quotient-span semantics matches the intended forcing-pair definition in the needed regime, or a sharply delimited claim that is much more explicit about what is and is not being proved.
 
-3. Run the controls the paper already promises: label shuffling, held-out geometry, held-out legal alphabets, and small/medium/unrestricted complexity sweeps. Until those run, the manuscript has not actually cleared the objections it invokes from the literature.
+3. Either drop the CA-method claim or earn it.
+If the paper wants to claim something methodologically novel about CA search, it needs at least one matched benchmark block against non-CA baselines using the same exact verifier, plus the promised label-shuffle, held-out-geometry, held-out-`X`, and complexity controls.
 
-4. Turn at least one ConceptEvolve bridge into a real experiment. The current concept tree reads as ideation because the `concept.json` artifacts do not contain experimental outcomes.
+4. Make the ConceptEvolve story real rather than retrospective.
+If CE is part of the novelty case, the concept-tree artifacts need explicit experiment linkage and outcomes, not just bridge labels and narrative summaries.
 
-5. Repair the bibliography rigorously. At minimum: correct `novikov2025`, remove or replace the misapplied `leng2024` support, normalize noncanonical arXiv/proceedings metadata, and rerun a full citation audit.
+5. Fix the quality blockers in parallel.
+Correct the defective bibliography entries, remove or reclassify the local provenance citation, create a single authoritative post-pivot evaluation manifest, and regenerate the weak figures so they are readable without dense explanatory text.
 
-6. Resolve the bridge-status source of truth. The final manuscript cannot claim a `2/3/4` bridge split while other repo artifacts describe three surviving/promoted bridges.
+## Actionable Feedback
 
-7. Clean the LaTeX build. Eliminate the citation-destination warnings and major overfull boxes before resubmission.
+1. Correct `sources.bib` immediately.
+Remove `archivara2026task` from the scholarly bibliography, fix `novikov2025`, fix `georgiev2025`, and normalize the preprint/proceedings entries so the venue and URL/DOI fields match the actual source.
 
-## What “Novel” Would Need To Mean Here
+2. Reconcile the repository narrative.
+Create one explicit post-pivot manifest that states which artifacts are authoritative and which blocker-era files are historical. Right now the manuscript is correct that the newer exact-trace artifacts exist, but the repo is still self-contradictory.
 
-For this domain, a genuinely publishable deepened version would need at least one of the following:
+3. Reframe the paper around the narrow supported claim.
+The strongest honest title/subtitle story is an exact local theorem-and-computation paper under repository semantics, not “cellular automata solved the task” and not broad arithmetic-Kakeya progress.
 
-- a new exact algorithm or invariant that generates or certifies legal witnesses more effectively than matched non-CA baselines;
-- a surprising exact negative or positive empirical result that domain experts would not predict in advance, backed by the real verifier;
-- a nontrivial transfer from a CA, peeling, SAT/e-graph, or abelian-network idea into exact witness generation, shown to matter experimentally rather than only rhetorically;
-- or a theorem-level contribution about the witness representation, forcing dynamics, or search space that is not merely an unpacking of the paper’s own decoder definitions.
+4. Improve the figures before resubmission.
+`fig_coverability_modes` and `fig_bridge_decisions` should be redesigned from scratch for readability. Reduce text density, remove overlaps, enlarge labels, and make each figure intelligible without a paragraph-length caption.
 
-Until the work reaches one of those levels, the honest framing remains “audited blocker-aware search design,” not a substantive research advance.
+5. If you want a stronger paper rather than a cleaner narrow paper, deepen the science.
+The clearest next targets are a genuine coupled or two-sided construction, a stronger exact obstruction beyond the audited narrow classes, or a benchmark-cleared CA result on the exact witness object.
