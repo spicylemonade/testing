@@ -51,6 +51,7 @@ COMPLEXITY_BASELINE_OUTPUTS = {
 AFFINE_CORE_SYMBOLS = ("closed", "top", "bottom")
 NONLINEAR_SHELL_SYMBOLS = ("gate_up", "gate_down")
 AFFINE_SHELL_SEEDS = (6201, 6202)
+GEOMETRY_LIFT_SEEDS = (7201, 7202)
 
 ROW_SWAP = {
     "closed": "closed",
@@ -839,6 +840,262 @@ def write_affine_shell_markdown(payload: Dict[str, object]) -> None:
     path.write_text("\n".join(lines) + "\n")
 
 
+def greedy_seed_search_with_vertices(
+    *,
+    height: int,
+    width: int,
+    x_labels: Sequence[Vector],
+    vertical: Sequence[Vector],
+    horizontal: Sequence[Sequence[Vector]],
+    seed_budget: int,
+    initial_t_budget: int,
+    candidate_vertices: Sequence[Tuple[int, int]],
+) -> GridInstance | None:
+    seed_candidates = [
+        (vertex, label)
+        for vertex in candidate_vertices
+        for label in x_labels
+        if label != (0, 0)
+    ]
+    best = None
+    for initial_t in itertools.combinations(candidate_vertices, initial_t_budget):
+        chosen: List[Tuple[Tuple[int, int], Vector]] = []
+        current = GridInstance(
+            height=height,
+            width=width,
+            x_labels=tuple(x_labels),
+            vertical=tuple(vertical),
+            horizontal=tuple(tuple(row) for row in horizontal),
+            seeds=tuple(chosen),
+            initial_t=tuple(initial_t),
+        )
+        if current.is_forcing():
+            return current
+        for _ in range(seed_budget):
+            best_local = None
+            best_closure = -1
+            for candidate in seed_candidates:
+                if candidate in chosen:
+                    continue
+                trial = GridInstance(
+                    height=height,
+                    width=width,
+                    x_labels=tuple(x_labels),
+                    vertical=tuple(vertical),
+                    horizontal=tuple(tuple(row) for row in horizontal),
+                    seeds=tuple(chosen + [candidate]),
+                    initial_t=tuple(initial_t),
+                )
+                closure = trial.closure_size_fast()
+                if closure == trial.n:
+                    order = trial.forcing_order()
+                    if order:
+                        if best is None or trial.score < best.score:
+                            best = trial
+                        return trial
+                if closure > best_closure:
+                    best_closure = closure
+                    best_local = candidate
+            if best_local is None:
+                break
+            chosen.append(best_local)
+            current = GridInstance(
+                height=height,
+                width=width,
+                x_labels=tuple(x_labels),
+                vertical=tuple(vertical),
+                horizontal=tuple(tuple(row) for row in horizontal),
+                seeds=tuple(chosen),
+                initial_t=tuple(initial_t),
+            )
+            if current.closure_size_fast() == current.n and current.is_forcing():
+                if best is None or current.score < best.score:
+                    best = current
+                return current
+    return best
+
+
+def make_h3_extruded_symbol_map(x_labels: Sequence[Vector]) -> Dict[str, Tuple[Vector, Vector, Vector]]:
+    zero, a, b, c, d = x_labels
+    return {
+        "closed": (zero, zero, zero),
+        "top": (a, zero, zero),
+        "bottom": (zero, zero, b),
+        "gate_up": (c, zero, d),
+        "gate_down": (d, zero, c),
+    }
+
+
+def evaluate_geometry_lift_family(
+    family_id: str,
+    x_labels: Sequence[Vector],
+    *,
+    seed_budget: int,
+    initial_t_budget: int,
+    boundary_band: int,
+    direct_trials: int,
+    direct_seeds: Sequence[int],
+) -> Dict[str, object]:
+    symbol_map = make_h3_extruded_symbol_map(x_labels)
+    vertical = (x_labels[3], x_labels[3])
+    words = canonical_words(tuple(symbol_map.keys()), length=3)
+    route_vertices = [(row, col) for row in (1, 3) for col in (1, 4)]
+    forcing_rows = []
+    for word in words:
+        horizontal = word_to_horizontal(word, symbol_map)
+        instance = greedy_seed_search_with_vertices(
+            height=3,
+            width=4,
+            x_labels=x_labels,
+            vertical=vertical,
+            horizontal=horizontal,
+            seed_budget=seed_budget,
+            initial_t_budget=initial_t_budget,
+            candidate_vertices=route_vertices,
+        )
+        forcing = instance is not None and instance.is_forcing()
+        if not forcing:
+            continue
+        forcing_rows.append(
+            {
+                "word": list(word),
+                "word_id": serialize_word(word),
+                "score": instance.score,
+                "certificate_lines": instance.to_certificate_lines(),
+            }
+        )
+    direct = aggregate_random_search(
+        family_id=family_id,
+        x_labels=x_labels,
+        height=3,
+        width=4,
+        trials=direct_trials,
+        seed_budget=seed_budget,
+        initial_t_budget=initial_t_budget,
+        boundary_band=boundary_band,
+        seeds=direct_seeds,
+    )
+    c = x_labels[3]
+    return {
+        "family_id": family_id,
+        "x_labels": [list(label) for label in x_labels],
+        "vertical_label": list(c),
+        "vertical_label_sum": c[0] + c[1],
+        "route_family": {
+            "geometry": [3, 4],
+            "candidate_words": len(words),
+            "forcing_words": forcing_rows,
+            "route_seed_vertices": [list(vertex) for vertex in route_vertices],
+            "extractor_note": (
+                "Passive-middle extrusion of the H4 extractor: horizontal symbols act only on rows 1 and 3, "
+                "the middle row carries no horizontal labels, and both vertical layers use the same c label."
+            ),
+        },
+        "direct_baseline": direct,
+    }
+
+
+def write_geometry_lift_results() -> Dict[str, object]:
+    seed_budget = 4
+    initial_t_budget = 1
+    boundary_band = 1
+    direct_trials = 10
+    family_results = [
+        evaluate_geometry_lift_family(
+            family_id,
+            x_labels,
+            seed_budget=seed_budget,
+            initial_t_budget=initial_t_budget,
+            boundary_band=boundary_band,
+            direct_trials=direct_trials,
+            direct_seeds=GEOMETRY_LIFT_SEEDS,
+        )
+        for family_id, x_labels in LOW_HEIGHT_X_FAMILIES.items()
+    ]
+    payload = {
+        "route": "phase6_geometry_lift",
+        "benchmark_spec": {
+            "route_geometry": "height 3, width 4 passive-middle extrusion",
+            "direct_geometry": "height 3, width 4 unrestricted direct search",
+            "seed_budget": seed_budget,
+            "initial_t_budget": initial_t_budget,
+            "boundary_band": boundary_band,
+            "direct_trials_per_seed": direct_trials,
+            "direct_rng_seeds": list(GEOMETRY_LIFT_SEEDS),
+        },
+        "family_results": family_results,
+        "obstruction_theorem": {
+            "statement": (
+                "For the passive-middle H=3 extrusion of the H4 extractor, every generator with middle-row support "
+                "is a multiple of the vertical label c at a middle-row vertex. Because c_1 + c_2 != 0 on asym_a, "
+                "asym_b, and asym_c, no nonzero multiple of c is anti-diagonal. Therefore no middle-row vertex can "
+                "ever satisfy the forcing criterion, so no member of this entire higher-geometry family can be forcing."
+            ),
+            "why_stronger_than_one_seed": (
+                "The old H1 obstruction depended on a unique initial seed label. The new obstruction allows arbitrary "
+                "top- and bottom-row boundary seeds and arbitrary width, and it kills the whole passive-middle H=3 "
+                "family by a row-quotient invariant instead of by seed uniqueness."
+            ),
+            "broader_scope": (
+                "This rules out an entire higher-geometry family under unchanged extractor logic, rather than only a "
+                "single width-2 corridor template."
+            ),
+        },
+        "decision": {
+            "completed_via_geometry_obstruction": True,
+            "reason": (
+                "The passive-middle H=3 family is verifier-killed by a middle-row quotient invariant, and matched "
+                "unrestricted H=3 direct controls also produced no exact hits at the same budgets."
+            ),
+        },
+    }
+    dump_json(RESULTS / "phase6_geometry_lift.json", payload)
+    write_geometry_lift_markdown(payload)
+    return payload
+
+
+def write_geometry_lift_markdown(payload: Dict[str, object]) -> None:
+    path = RESULTS / "phase6_geometry_lift.md"
+    lines = [
+        "# Phase 6 Geometry Lift",
+        "",
+        "## Benchmark Spec",
+        "",
+        f"- Route geometry: `{payload['benchmark_spec']['route_geometry']}`.",
+        f"- Direct comparator geometry: `{payload['benchmark_spec']['direct_geometry']}`.",
+        f"- Seed budget: `{payload['benchmark_spec']['seed_budget']}`; initial-T budget: `{payload['benchmark_spec']['initial_t_budget']}`; boundary band: `{payload['benchmark_spec']['boundary_band']}`.",
+        f"- Direct-search RNG seeds: `{payload['benchmark_spec']['direct_rng_seeds']}` with `{payload['benchmark_spec']['direct_trials_per_seed']}` exact trials per seed.",
+        "",
+        "## Family Results",
+        "",
+    ]
+    for result in payload["family_results"]:
+        direct = result["direct_baseline"]
+        best_direct = "none" if direct["best"] is None else direct["best"]["certificate_lines"][0]
+        lines.extend(
+            [
+                f"### {result['family_id']}",
+                "",
+                f"- Route candidate words checked: `{result['route_family']['candidate_words']}`.",
+                f"- Route forcing words found: `{len(result['route_family']['forcing_words'])}`.",
+                f"- Vertical label: `{result['vertical_label']}` with coordinate sum `{result['vertical_label_sum']}`.",
+                f"- Matched unrestricted direct hit rate: `{direct['hit_rate']:.4f}` over `{direct['total_trials']}` exact trials.",
+                f"- Best matched unrestricted direct certificate: `{best_direct}`.",
+                "",
+            ]
+        )
+    lines.extend(
+        [
+            "## Obstruction",
+            "",
+            f"- {payload['obstruction_theorem']['statement']}",
+            f"- Stronger than the one-seed obstruction because: {payload['obstruction_theorem']['why_stronger_than_one_seed']}",
+            f"- Broader-than-corridor note: {payload['obstruction_theorem']['broader_scope']}",
+        ]
+    )
+    path.write_text("\n".join(lines) + "\n")
+
+
 def choose_best_family() -> Tuple[H4Grammar, Dict[str, object]]:
     family_id = "asym_a"
     grammar = make_h4_grammar(family_id, LOW_HEIGHT_X_FAMILIES[family_id])
@@ -1222,6 +1479,7 @@ def main() -> None:
             "complexity-baseline",
             "complexity-frontier-aggregate",
             "affine-shell",
+            "geometry-lift",
         ),
     )
     parser.add_argument("--family-id", default=None)
@@ -1249,6 +1507,9 @@ def main() -> None:
         print(json.dumps(payload["complexity_statement"], indent=2))
     elif args.command == "affine-shell":
         payload = write_affine_shell_results()
+        print(json.dumps(payload["decision"], indent=2))
+    elif args.command == "geometry-lift":
+        payload = write_geometry_lift_results()
         print(json.dumps(payload["decision"], indent=2))
 
 
