@@ -35,3 +35,19 @@
 - search :: Mathematical exploration and discovery at scale (results=5, cache_hits=1, network_calls=0)
 - search :: Improved Bounds for Szemeredi's Theorem (results=5, cache_hits=0, network_calls=1)
 - search :: Leng Sah Sawhney Kakeya (results=0, cache_hits=0, network_calls=0)
+
+## 2026-03-19 Exact Trace Pivot
+
+- The project now has a working exact rational-span verifier and synchronous
+  trace engine in `tools/kakeya_ca_exact.py`.
+- The first theory artifact is no longer blocker-shaped: the exact-valid `2x2`
+  micro-regime has been exhaustively enumerated in
+  `results/theory/forcing_traces/tiny_2x2_full_seeds_le3/`.
+- That corpus is rigid: all exact-valid witnesses there have score `7/4` and
+  the same two-layer nucleation trace up to the choice of initial corner.
+- The one-sided strip-local CA lane has a checked obstruction in widths `2` and
+  `3`; see `results/theory/forcing_trace_normal_form.md` and
+  `results/theory/local_rule_no_go_atlas.md`.
+- The active search question is now narrower:
+  can a coupled, non-unilateral strip or macrocell family produce a
+  `<= 1.675` witness, or does the local obstruction extend further?

@@ -30,9 +30,17 @@ The later mandatory `iterate` pass then converted those ideas into bridge decisi
 
 The run incorporated those suggestions in the following concrete artifacts:
 
+- `tools/kakeya_ca_exact.py`
+  - recovered the exact rational-span forcing verifier as a synchronous trace engine
+  - exposed canonical layer-by-layer support certificates instead of only yes/no forcing outcomes
+- `tools/kakeya_trace_corpus.py`
+  - exhaustively generated an exact-valid tiny corpus and one-sided strip-state tables
 - `results/core/h1_design.md`
   - adopted the stage-indexed fiber layout and fixed exact decoder interface
   - enforced the no-repair rule so the decoder cannot hide search failures
+- `results/theory/forcing_trace_normal_form.md`
+  - fixed the exact normal form around quotient-span closure layers
+  - recorded the rigid `2x2` warm-up trace family and the strip no-go pattern
 - `results/swarm/phase_3_h1_review.md`
   - kept `H1` active only behind exact-verifier, label-shuffle, and out-of-distribution gates
 - `results/concept_evolve/tree/phase_3_core/`
@@ -51,11 +59,15 @@ The run incorporated those suggestions in the following concrete artifacts:
 
 - The ConceptEvolve output did not justify opening a neural-CA or modular curriculum lane.
 - It did strengthen the case for a proof-carrying, stage-indexed CA whose state decodes directly to `(X,G,R,T)`.
-- The verifier blocker still dominates execution risk, so the delta is architectural and falsification-oriented rather than experimental.
+- The original verifier blocker is now materially reduced: an exact trace verifier exists for explicit witnesses, and it is already producing machine-readable derivation artifacts.
+- The search bottleneck moved from “missing verifier” to “find a coupled local rule that escapes the new no-go atlas.”
 - The completed `reframe` output widened the analogy set without moving the active lane: it sharpened vocabulary around proof-carrying local certificates but did not produce a better empirical target than the current H1 design.
 - The later `reframe` pass broadened the analogy set into proof-labeling schemes, group-testing peeling, Petri-net coverability, network coding, Datalog saturation, sheaf consistency, and synchronizing automata.
 - Those reframings reinforced the local-certificate / singleton-isolation interpretation of the task, but they did not justify changing the champion lane or relaxing the exact-verifier gate.
 - The final `iterate` pass narrowed the actionable bridge set to three promoted ideas and explicitly retired the transport-proxy and observer-heavy bridges.
+- The new exact trace corpus added two concrete findings that were not present in the earlier planning-only phase:
+  - every exact-valid witness in the audited full `2x2` regime collapses to the same `7/4` two-layer nucleation pattern;
+  - one-sided local strip activation has zero exact-valid improving cases in widths `2` and `3` over the audited palette.
 
 ## Novelty Delta
 
@@ -71,4 +83,7 @@ The run incorporated those suggestions in the following concrete artifacts:
 - After the `iterate` pass, the novelty story is also operationally narrower:
   - exact-decoder-compatible bridges stay alive
   - proxy-dynamics bridges are retired rather than left ambiguously “interesting”
+- After the exact trace corpus, the novelty story also has a theorem-like negative component:
+  - the search is no longer justified by vague “local propagation might work”
+  - there is now a checked obstruction showing that unilateral strip waves are not enough in the first two nontrivial widths
 - This does not create mathematical novelty by itself. It only reduces methodological overlap with generic automated-discovery systems and bounded-slope CA heuristics.
