@@ -1,11 +1,11 @@
 # Research Context
 
-- Stage: phase6_item031_completed
+- Stage: phase6_item032_completed
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
 - Note: gap_queries=4, swarm_agents=4
-- Rubric progress: 31/32 handled (`30` completed, `1` failed)
+- Rubric progress: 32/32 handled (`31` completed, `1` failed)
 - Known papers tracked: 135
 - `sources.bib` entries: 29
 - Swarm hypotheses: 3
@@ -26,6 +26,9 @@
 - Exact H6 result: the only apparent aperiodic gain is the `H=2` word `SDP`, but it is already the archived direct `13/7` certificate on `asym_a`, dies under seed thinning and reversal, and does not survive the passive-middle `H=3` lift; see `results/phase6_h6_defect_transport.md`.
 - `item_031` is now completed.
 - Exact solver result: exhaustive width-4 H6 controller search over `75,276` programs recovers the same `13/7` frontier as direct certificate search under equal expressivity, while the `H=3` passive-middle family remains blocked by the stronger row-quotient UNSAT core; see `results/phase6_boundary_controller.md`.
+- `item_032` is now completed.
+- Exact metastability result: on the full H6 width-4 word bank, the best-score frontier is a four-word tie already containing the matched direct control `SDP`, while many nonforcing words still achieve closure time `5`, so the dependency-hypergraph transient metrics do not predict better exact certificates; see `results/phase6_metastability.md`.
+- Post-verification ConceptEvolve iterate result: the saved concept state now promotes `row_quotient_unsat_core_obstruction` as the champion bridge and retires the remaining positive CA-mechanism bridges in favor of obstruction mining plus direct-parity audits.
 
 ## Closest Prior Art
 - Cohomological splitting conditions of vector bundles on ${\mathbf P}^{n_1}\times\cdots\times{\mathbf P}^{n_s}$ (2024)

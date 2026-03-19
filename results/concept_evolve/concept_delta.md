@@ -25,6 +25,9 @@
 - Phase 6 item 030 answered that with one frozen periodic-versus-aperiodic audit on asym_a in `results/phase6_h6_defect_transport.{md,json}`.
 - The next pass then asked whether boundary-programmable controllers buy anything once the solver is forced to search the exact same grammar directly.
 - Phase 6 item 031 answered that with one exhaustive equal-expressivity solver audit in `results/phase6_boundary_controller.{md,json}`.
+- The last pass then asked whether long exact transients in the frozen H6 grammar predict anything beyond the already-known direct frontier.
+- Phase 6 item 032 answered that with one exact dependency-hypergraph audit over all 27 H6 words in `results/phase6_metastability.{md,json}`.
+- The mandatory post-verification iterate pass then promoted `row_quotient_unsat_core_obstruction` as the new champion bridge, demoted the remaining positive-route bridges, and recentered the forward-looking search space on obstruction mining plus iso-expressive direct parity.
 
 ## Result
 
@@ -47,6 +50,10 @@
   the only successful aperiodic word was already the archived H=2 direct certificate, and it disappeared under thinning, reversal, and the H=3 lift.
 - The equal-expressivity solver pass then removed the remaining controller optimism:
   exhaustive H=2 controller search found exactly the same 13/7 frontier as direct certificate search, so the only residual solver-level signal is the H=3 UNSAT core.
+- The metastability pass then removed the final dynamics hedge:
+  the best-score frontier is already a direct-control tie, while many near-maximal closure-time words still fail to force, so long exact transients do not predict better certificates here.
+- The iterate pass then compressed the remaining bridge set around negative exact evidence:
+  row-quotient UNSAT cores, direct-frontier parity audits, exact frontier ledgers, and robustness screens now dominate the saved concept state.
 
 ## Novelty Delta
 
@@ -67,3 +74,7 @@
   aperiodic phase coding currently adds no robust exact advantage over the direct certificate archive and collapses into a boundary-programming / decoder-style overlap.
 - The boundary-controller result removes the last controller hedge:
   once grammar and budget are matched exactly, controller synthesis adds no frontier lift over direct search, leaving only stronger negative obstructions as live contributions.
+- The metastability result removes the last runtime-style hedge:
+  in this frozen exact regime, transient complexity is descriptive at best and non-predictive once the direct frontier is included.
+- The iterate result finalizes that narrowing:
+  future work is only defensible if it sharpens the obstruction-first exact program, not if it resurrects positive CA mechanism claims without beating the matched direct frontier.

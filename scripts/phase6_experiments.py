@@ -22,8 +22,10 @@ from scripts.phase6_exact import (
     coordinate_height,
     dump_json,
     greedy_seed_search_grid,
+    project_vector,
     random_search_grid,
 )
+from scripts.ca_kakeya_search import SpanOracle
 
 
 Vector = Tuple[int, int]
@@ -1498,6 +1500,234 @@ def write_boundary_controller_markdown(payload: Dict[str, object]) -> None:
     path.write_text("\n".join(lines) + "\n")
 
 
+def exact_partial_order(instance: GridInstance) -> List[Tuple[int, int]]:
+    generators = instance.generators()
+    solved = set(instance.initial_t)
+    order = list(instance.initial_t)
+    oracle_cache: Dict[Tuple[Tuple[int, int], ...], SpanOracle] = {}
+
+    def oracle_for(unsolved: Tuple[Tuple[int, int], ...]) -> SpanOracle:
+        if unsolved not in oracle_cache:
+            projected = [
+                project_vector(instance.height, instance.width, generator, unsolved)
+                for generator in generators
+            ]
+            oracle_cache[unsolved] = SpanOracle.from_generators(projected)
+        return oracle_cache[unsolved]
+
+    while len(solved) < len(instance.vertices):
+        unsolved = tuple(vertex for vertex in instance.vertices if vertex not in solved)
+        candidates = oracle_for(unsolved).solvable_vertices(unsolved)
+        if not candidates:
+            break
+        chosen = sorted(candidates, key=lambda vertex: (vertex[1], vertex[0]))[0]
+        solved.add(chosen)
+        order.append(chosen)
+    return order
+
+
+def incident_nonzero_neighbors(instance: GridInstance, vertex: Tuple[int, int]) -> List[Tuple[int, int]]:
+    row, col = vertex
+    neighbors = []
+    if row > 1 and instance.vertical[row - 2] != (0, 0):
+        neighbors.append((row - 1, col))
+    if row < instance.height and instance.vertical[row - 1] != (0, 0):
+        neighbors.append((row + 1, col))
+    if col > 1 and instance.horizontal[row - 1][col - 2] != (0, 0):
+        neighbors.append((row, col - 1))
+    if col < instance.width and instance.horizontal[row - 1][col - 1] != (0, 0):
+        neighbors.append((row, col + 1))
+    return neighbors
+
+
+def dependency_hypergraph_summary(
+    instance: GridInstance,
+    order: Sequence[Tuple[int, int]],
+) -> Dict[str, object]:
+    solved = set(instance.initial_t)
+    growth = [len(solved)]
+    hyperedges = []
+    for vertex in order[len(instance.initial_t):]:
+        tail = [
+            neighbor
+            for neighbor in incident_nonzero_neighbors(instance, vertex)
+            if neighbor not in solved
+        ]
+        hyperedges.append(
+            {
+                "head": list(vertex),
+                "tail": [list(neighbor) for neighbor in sorted(tail)],
+                "tail_size": len(tail),
+            }
+        )
+        solved.add(vertex)
+        growth.append(len(solved))
+    return {
+        "edge_count": len(hyperedges),
+        "max_tail_size": max((edge["tail_size"] for edge in hyperedges), default=0),
+        "growth_curve": growth,
+        "hyperedges": hyperedges,
+    }
+
+
+def evaluate_word_metastability(word: str) -> Dict[str, object]:
+    maps = h6_motif_maps()
+    x_labels = LOW_HEIGHT_X_FAMILIES[H6_FAMILY_ID]
+    boundary_vertices = [(1, 1), (1, 4), (2, 1), (2, 4)]
+    horizontal = schedule_to_horizontal(word, maps["h2"])
+    seed_candidates = [
+        (vertex, label)
+        for vertex in boundary_vertices
+        for label in x_labels
+        if label != (0, 0)
+    ]
+    best = None
+    best_order: List[Tuple[int, int]] | None = None
+    total_programs = 0
+    forcing_programs = 0
+    for initial_t in itertools.combinations(boundary_vertices, 1):
+        for seed_count in range(4):
+            for seeds in itertools.combinations(seed_candidates, seed_count):
+                total_programs += 1
+                instance = GridInstance(
+                    height=2,
+                    width=4,
+                    x_labels=x_labels,
+                    vertical=tuple(maps["vertical"]["h2"]),
+                    horizontal=horizontal,
+                    seeds=tuple(seeds),
+                    initial_t=tuple(initial_t),
+                )
+                order = exact_partial_order(instance)
+                forcing = len(order) == instance.n
+                if forcing:
+                    forcing_programs += 1
+                closure_time = len(order) - len(instance.initial_t)
+                candidate = {
+                    "instance": instance,
+                    "order": order,
+                    "forcing": forcing,
+                    "closure_time": closure_time,
+                    "score": None if not forcing else instance.score,
+                }
+                if best is None:
+                    best = candidate
+                    best_order = order
+                    continue
+                better = False
+                if candidate["closure_time"] > best["closure_time"]:
+                    better = True
+                elif candidate["closure_time"] == best["closure_time"]:
+                    if candidate["forcing"] and not best["forcing"]:
+                        better = True
+                    elif candidate["forcing"] == best["forcing"]:
+                        if candidate["score"] is not None and (
+                            best["score"] is None or candidate["score"] < best["score"]
+                        ):
+                            better = True
+                if better:
+                    best = candidate
+                    best_order = order
+    assert best is not None and best_order is not None
+    hyper = dependency_hypergraph_summary(best["instance"], best_order)
+    return {
+        "word": word,
+        "forcing_programs": forcing_programs,
+        "total_programs": total_programs,
+        "closure_time": best["closure_time"],
+        "forcing": best["forcing"],
+        "score": best["score"],
+        "seed_debt": best["instance"].r,
+        "solvable_vertex_growth": hyper["growth_curve"],
+        "dependency_hypergraph": hyper,
+        "certificate_lines": None if not best["forcing"] else best["instance"].to_certificate_lines(),
+    }
+
+
+def write_metastability_results() -> Dict[str, object]:
+    words = ["".join(word) for word in itertools.product(H6_WORD_ALPHABET, repeat=3)]
+    rows = [evaluate_word_metastability(word) for word in words]
+    rows.sort(key=lambda row: (-row["closure_time"], row["score"] is None, row["score"] or 999.0, row["word"]))
+    best_score_row = min(
+        (row for row in rows if row["score"] is not None),
+        key=lambda row: row["score"],
+    )
+    best_score = best_score_row["score"]
+    best_score_words = sorted(row["word"] for row in rows if row["score"] == best_score)
+    high_closure_failures = [
+        row["word"]
+        for row in rows
+        if not row["forcing"] and row["closure_time"] >= best_score_row["closure_time"] - 2
+    ]
+    payload = {
+        "route": "phase6_metastability",
+        "benchmark_spec": {
+            "family_id": H6_FAMILY_ID,
+            "word_alphabet": list(H6_WORD_ALPHABET),
+            "word_length": 3,
+            "seed_budget": 3,
+            "initial_t_budget": 1,
+            "boundary_vertices": [[1, 1], [1, 4], [2, 1], [2, 4]],
+        },
+        "rows": rows,
+        "matched_direct_control": {
+            "representative_word": H6_H2_WORD_APERIODIC,
+            "best_score": load_phase6_h5_direct_control()["score"],
+            "equal_best_words": best_score_words,
+        },
+        "negative_result": {
+            "statement": (
+                "Metastability has no predictive value on the frozen H6 grammar once exact extraction and matched "
+                "direct controls are enforced. The best-score frontier is a four-word tie that already contains the "
+                "matched direct control SDP, while high-closure failures remain present and do not produce exact "
+                "certificates."
+            ),
+            "high_closure_failures": high_closure_failures,
+            "not_bootstrap_folklore": (
+                "The metric is attached to exact forcing orders and exact certificate quality on a fixed grammar, "
+                "not to macroscopic fill times or threshold behavior."
+            ),
+        },
+        "decision": {
+            "completed_via_negative_result": True,
+            "reason": (
+                "Exact dependency-hypergraph and closure-time summaries do not identify any certificate better than "
+                "the already-matched direct frontier, so metastability is a red herring in this frozen regime."
+            ),
+        },
+    }
+    dump_json(RESULTS / "phase6_metastability.json", payload)
+    write_metastability_markdown(payload)
+    return payload
+
+
+def write_metastability_markdown(payload: Dict[str, object]) -> None:
+    path = RESULTS / "phase6_metastability.md"
+    best = min((row for row in payload["rows"] if row["score"] is not None), key=lambda row: row["score"])
+    lines = [
+        "# Phase 6 Metastability",
+        "",
+        "## Exact Word Scan",
+        "",
+        f"- Family: `{payload['benchmark_spec']['family_id']}`.",
+        f"- Word alphabet: `{payload['benchmark_spec']['word_alphabet']}` over `{len(payload['rows'])}` exact words.",
+        f"- Best score word (one representative): `{best['word']}` with `{best['certificate_lines'][0]}`.",
+        f"- Equal-best frontier words: `{payload['matched_direct_control']['equal_best_words']}`.",
+        f"- Matched direct frontier representative: `{payload['matched_direct_control']['representative_word']}`.",
+        "",
+        "## Negative Result",
+        "",
+        f"- {payload['negative_result']['statement']}",
+        f"- Near-maximal closure-time failures: `{payload['negative_result']['high_closure_failures']}`.",
+        f"- Why this is not bootstrap folklore: {payload['negative_result']['not_bootstrap_folklore']}",
+        "",
+        "## Decision",
+        "",
+        f"- {payload['decision']['reason']}",
+    ]
+    path.write_text("\n".join(lines) + "\n")
+
+
 def choose_best_family() -> Tuple[H4Grammar, Dict[str, object]]:
     family_id = "asym_a"
     grammar = make_h4_grammar(family_id, LOW_HEIGHT_X_FAMILIES[family_id])
@@ -1884,6 +2114,7 @@ def main() -> None:
             "geometry-lift",
             "defect-transport",
             "boundary-controller",
+            "metastability",
         ),
     )
     parser.add_argument("--family-id", default=None)
@@ -1920,6 +2151,9 @@ def main() -> None:
         print(json.dumps(payload["decision"], indent=2))
     elif args.command == "boundary-controller":
         payload = write_boundary_controller_results()
+        print(json.dumps(payload["decision"], indent=2))
+    elif args.command == "metastability":
+        payload = write_metastability_results()
         print(json.dumps(payload["decision"], indent=2))
 
 

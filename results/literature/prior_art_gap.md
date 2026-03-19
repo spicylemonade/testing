@@ -291,3 +291,21 @@ These entries remain relevant only as a reminder that the original novelty guard
 - Novelty consequence:
   - boundary programming currently contributes no exact solver lift beyond direct certificate search.
   - the only surviving solver-level novelty is the stronger `H=3` UNSAT core, not a better controller frontier.
+
+## N. Phase 6 Metastability Update
+
+- New exact artifact:
+  - `results/phase6_metastability.md`
+  - `results/phase6_metastability.json`
+
+- What is new relative to the current gap log:
+  - earlier notes warned against importing bootstrap or decoder runtime intuitions, but they did not attach a concrete dependency-hypergraph metric to the exact H6 word bank and compare it against the matched direct frontier.
+  - the new artifact does exactly that on all 27 H6 words using exact partial closure orders and local dependency hypergraphs.
+
+- Why this is not just bootstrap-percolation runtime folklore:
+  - the measured object is not fill time in an infection process; it is closure time, seed debt, and exact certificate score inside a fixed verifier-backed grammar.
+  - the conclusion is negative precisely because the longest or nearly-longest transient words do not identify anything beyond the already-matched direct frontier.
+
+- Novelty consequence:
+  - metastability currently offers no predictive signal once exact extraction and matched direct controls are enforced.
+  - future appeals to long transients, delays, or quasi-stable defect clouds now need exact certificate lift, not just evocative dynamics language.
