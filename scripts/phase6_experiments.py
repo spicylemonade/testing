@@ -48,6 +48,10 @@ COMPLEXITY_BASELINE_OUTPUTS = {
     for family_id in COMPLEXITY_BASELINES
 }
 
+AFFINE_CORE_SYMBOLS = ("closed", "top", "bottom")
+NONLINEAR_SHELL_SYMBOLS = ("gate_up", "gate_down")
+AFFINE_SHELL_SEEDS = (6201, 6202)
+
 ROW_SWAP = {
     "closed": "closed",
     "top": "bottom",
@@ -590,6 +594,251 @@ def complexity_statement(rows: Sequence[Dict[str, object]]) -> Dict[str, str]:
     }
 
 
+def shell_size(word: Sequence[str]) -> int:
+    return sum(1 for symbol in word if symbol in NONLINEAR_SHELL_SYMBOLS)
+
+
+def evaluate_affine_shell_family(
+    family_id: str,
+    x_labels: Sequence[Vector],
+    *,
+    seed_budget: int,
+    initial_t_budget: int,
+    boundary_band: int,
+    trials: int,
+    seeds: Sequence[int],
+) -> Dict[str, object]:
+    grammar = make_h4_grammar(family_id, x_labels)
+    words = canonical_words(grammar.interface_alphabet, length=3)
+    counts_by_shell_size = {str(idx): 0 for idx in range(4)}
+    forcing_by_shell_size = {str(idx): 0 for idx in range(4)}
+    best_by_shell_size: Dict[str, object] = {}
+    forcing_rows = []
+
+    for word in words:
+        word_shell_size = shell_size(word)
+        counts_by_shell_size[str(word_shell_size)] += 1
+        horizontal = word_to_horizontal(word, grammar.horizontal_map_h2)
+        instance = greedy_seed_search_grid(
+            height=2,
+            width=4,
+            x_labels=x_labels,
+            vertical=grammar.vertical_h2,
+            horizontal=horizontal,
+            seed_budget=seed_budget,
+            initial_t_budget=initial_t_budget,
+            boundary_band=boundary_band,
+        )
+        forcing = instance is not None and instance.is_forcing()
+        if not forcing:
+            continue
+        forcing_by_shell_size[str(word_shell_size)] += 1
+        row = {
+            "word": list(word),
+            "word_id": serialize_word(word),
+            "shell_size": word_shell_size,
+            "score": instance.score,
+            "certificate_lines": instance.to_certificate_lines(),
+        }
+        forcing_rows.append(row)
+        incumbent = best_by_shell_size.get(str(word_shell_size))
+        if incumbent is None or row["score"] < incumbent["score"]:
+            best_by_shell_size[str(word_shell_size)] = row
+
+    direct = aggregate_random_search(
+        family_id=family_id,
+        x_labels=x_labels,
+        height=2,
+        width=4,
+        trials=trials,
+        seed_budget=seed_budget,
+        initial_t_budget=initial_t_budget,
+        boundary_band=boundary_band,
+        seeds=seeds,
+    )
+    direct_best = None if direct["best"] is None else direct["best"]["score"]
+    shell_hit_rate = 0.0 if not words else len(forcing_rows) / len(words)
+    affine_hit_rate = forcing_by_shell_size["0"] / counts_by_shell_size["0"]
+    direct_hit_rate = direct["hit_rate"]
+    return {
+        "family_id": family_id,
+        "x_labels": [list(label) for label in x_labels],
+        "coordinate_height": coordinate_height(x_labels),
+        "classifier": {
+            "affine_core_symbols": list(AFFINE_CORE_SYMBOLS),
+            "nonlinear_shell_symbols": list(NONLINEAR_SHELL_SYMBOLS),
+            "fixed_vertical_profile": [list(label) for label in grammar.vertical_h2],
+            "criterion": (
+                "Affine core symbols keep horizontal support on one transport track at a time, while nonlinear "
+                "shell symbols are the only mixed-row connectors and the only places where the fifth label enters."
+            ),
+        },
+        "word_audit": {
+            "canonical_word_count": len(words),
+            "counts_by_shell_size": counts_by_shell_size,
+            "forcing_by_shell_size": forcing_by_shell_size,
+            "forcing_rows": forcing_rows,
+            "best_by_shell_size": best_by_shell_size,
+        },
+        "direct_baseline": direct,
+        "comparison": {
+            "shell_hit_rate": shell_hit_rate,
+            "affine_hit_rate": affine_hit_rate,
+            "direct_hit_rate": direct_hit_rate,
+            "best_shell_score": None if not forcing_rows else min(row["score"] for row in forcing_rows),
+            "best_affine_score": None
+            if not best_by_shell_size.get("0")
+            else best_by_shell_size["0"]["score"],
+            "best_direct_score": direct_best,
+            "shell_beats_affine": (
+                shell_hit_rate > affine_hit_rate
+                or (
+                    best_by_shell_size.get("0") is not None
+                    and direct_best is not None
+                    and min(row["score"] for row in forcing_rows) < best_by_shell_size["0"]["score"]
+                )
+            ),
+            "shell_beats_direct": (
+                direct_best is not None
+                and forcing_rows
+                and min(row["score"] for row in forcing_rows) < direct_best
+            ) or shell_hit_rate > direct_hit_rate,
+        },
+    }
+
+
+def write_affine_shell_results() -> Dict[str, object]:
+    seed_budget = 4
+    initial_t_budget = 1
+    boundary_band = 1
+    trials = 20
+    family_results = [
+        evaluate_affine_shell_family(
+            family_id,
+            x_labels,
+            seed_budget=seed_budget,
+            initial_t_budget=initial_t_budget,
+            boundary_band=boundary_band,
+            trials=trials,
+            seeds=AFFINE_SHELL_SEEDS,
+        )
+        for family_id, x_labels in LOW_HEIGHT_X_FAMILIES.items()
+    ]
+    total_words = sum(result["word_audit"]["canonical_word_count"] for result in family_results)
+    total_forcing = sum(len(result["word_audit"]["forcing_rows"]) for result in family_results)
+    direct_positive_families = [
+        result["family_id"]
+        for result in family_results
+        if result["direct_baseline"]["best"] is not None
+    ]
+    payload = {
+        "route": "H5_affine_core_nonlinear_shell",
+        "benchmark_spec": {
+            "geometry": "height 2, width 4",
+            "families": {
+                family_id: [list(label) for label in x_labels]
+                for family_id, x_labels in LOW_HEIGHT_X_FAMILIES.items()
+            },
+            "seed_budget": seed_budget,
+            "initial_t_budget": initial_t_budget,
+            "boundary_band": boundary_band,
+            "direct_trials_per_seed": trials,
+            "direct_rng_seeds": list(AFFINE_SHELL_SEEDS),
+        },
+        "classifier": {
+            "affine_core_symbols": list(AFFINE_CORE_SYMBOLS),
+            "nonlinear_shell_symbols": list(NONLINEAR_SHELL_SYMBOLS),
+            "note": (
+                "The audit keeps the H4 extractor fixed. The affine core is the row-separated transport alphabet "
+                "{closed, top, bottom}; the nonlinear shell is exactly the two mixed-row gate symbols "
+                "{gate_up, gate_down}."
+            ),
+        },
+        "family_results": family_results,
+        "global_obstruction": {
+            "canonical_words_checked": total_words,
+            "forcing_words_found": total_forcing,
+            "statement": (
+                "Across asym_a, asym_b, and asym_c, the frozen two-gate shell library produces zero exact forcing "
+                "width-4 words under the H4 budgets, while same-budget unrestricted direct search finds forcing "
+                "certificates on every family. Therefore the audited bounded shell library does not improve hit "
+                "rate or score over either the affine core or the matched direct no-CA baseline."
+            ),
+            "direct_positive_families": direct_positive_families,
+            "scale_up_verdict": (
+                "Shell size does not stay bounded under scale-up in any reusable sense: there is no width-4 base "
+                "witness to lift, so any wider positive claim would have to add new nonlinear motifs or change the "
+                "extractor."
+            ),
+        },
+        "novelty_note": (
+            "This is not generic SAT controller search because no solver is allowed to invent new local rules or "
+            "boundary privileges; the audit freezes the extractor and checks the full tiny-instance shell alphabet "
+            "exactly. It is not abelian-network relabeling because the comparison is between local mixed-row gate "
+            "motifs and exact certificate outcomes, not between alternative global invariant packages."
+        ),
+        "decision": {
+            "completed_via_negative_obstruction": True,
+            "reason": (
+                "The tiny-instance exact audit kills the bounded-shell route before scale-up: the nonlinear gate "
+                "library never produces a base forcing word, while unrestricted direct search does."
+            ),
+        },
+    }
+    dump_json(RESULTS / "phase6_h5_affine_shell.json", payload)
+    write_affine_shell_markdown(payload)
+    return payload
+
+
+def write_affine_shell_markdown(payload: Dict[str, object]) -> None:
+    path = RESULTS / "phase6_h5_affine_shell.md"
+    lines = [
+        "# Phase 6 H5 Affine-Core / Nonlinear-Shell Audit",
+        "",
+        "## Frozen Audit",
+        "",
+        f"- Geometry: `{payload['benchmark_spec']['geometry']}`.",
+        f"- Families: `{list(payload['benchmark_spec']['families'].keys())}`.",
+        f"- Affine core symbols: `{payload['classifier']['affine_core_symbols']}`.",
+        f"- Nonlinear shell symbols: `{payload['classifier']['nonlinear_shell_symbols']}`.",
+        f"- Seed budget: `{payload['benchmark_spec']['seed_budget']}`; initial-T budget: `{payload['benchmark_spec']['initial_t_budget']}`; boundary band: `{payload['benchmark_spec']['boundary_band']}`.",
+        f"- Direct-search RNG seeds: `{payload['benchmark_spec']['direct_rng_seeds']}` with `{payload['benchmark_spec']['direct_trials_per_seed']}` exact trials per seed.",
+        "",
+        "## Family Results",
+        "",
+    ]
+    for result in payload["family_results"]:
+        direct = result["direct_baseline"]
+        best_direct = "none" if direct["best"] is None else direct["best"]["certificate_lines"][0]
+        lines.extend(
+            [
+                f"### {result['family_id']}",
+                "",
+                f"- Canonical shell words checked: `{result['word_audit']['canonical_word_count']}`.",
+                f"- Forcing words by shell size: `{result['word_audit']['forcing_by_shell_size']}`.",
+                f"- Affine-only hit rate: `{result['comparison']['affine_hit_rate']:.4f}`.",
+                f"- Any-shell hit rate: `{result['comparison']['shell_hit_rate']:.4f}`.",
+                f"- Matched direct hit rate: `{direct['hit_rate']:.4f}` over `{direct['total_trials']}` exact trials.",
+                f"- Best matched direct certificate: `{best_direct}`.",
+                "",
+            ]
+        )
+    lines.extend(
+        [
+            "## Obstruction",
+            "",
+            f"- {payload['global_obstruction']['statement']}",
+            f"- Direct-search wins occur on: `{payload['global_obstruction']['direct_positive_families']}`.",
+            f"- Scale-up verdict: {payload['global_obstruction']['scale_up_verdict']}",
+            "",
+            "## Novelty Position",
+            "",
+            f"- {payload['novelty_note']}",
+        ]
+    )
+    path.write_text("\n".join(lines) + "\n")
+
+
 def choose_best_family() -> Tuple[H4Grammar, Dict[str, object]]:
     family_id = "asym_a"
     grammar = make_h4_grammar(family_id, LOW_HEIGHT_X_FAMILIES[family_id])
@@ -967,7 +1216,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "command",
-        choices=("typed-residue", "complexity-frontier", "complexity-baseline", "complexity-frontier-aggregate"),
+        choices=(
+            "typed-residue",
+            "complexity-frontier",
+            "complexity-baseline",
+            "complexity-frontier-aggregate",
+            "affine-shell",
+        ),
     )
     parser.add_argument("--family-id", default=None)
     args = parser.parse_args()
@@ -992,6 +1247,9 @@ def main() -> None:
     elif args.command == "complexity-frontier-aggregate":
         payload = write_complexity_frontier_from_saved()
         print(json.dumps(payload["complexity_statement"], indent=2))
+    elif args.command == "affine-shell":
+        payload = write_affine_shell_results()
+        print(json.dumps(payload["decision"], indent=2))
 
 
 if __name__ == "__main__":

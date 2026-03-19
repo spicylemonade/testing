@@ -218,3 +218,21 @@ These entries remain relevant only as a reminder that the original novelty guard
 - Novelty consequence:
   - score alone is no longer a stable ordering on the current width-8 archive.
   - any future positive claim now has to survive the explicit complexity ledger, not just beat a raw score table.
+
+## J. Phase 6 Affine-Shell Update
+
+- New exact artifact:
+  - `results/phase6_h5_affine_shell.md`
+  - `results/phase6_h5_affine_shell.json`
+
+- What is new relative to the current gap log:
+  - the earlier notes warned that hidden nonlinearity or solver glue could be doing the real work, but they did not freeze one extractor, split the local alphabet into affine-core versus nonlinear-shell symbols, and then exhaust the tiny exact shell language itself.
+  - the new audit does exactly that on `asym_a`, `asym_b`, and `asym_c`, and compares the frozen shell language against same-budget unrestricted direct search on the same families.
+
+- Why this is not generic SAT controller search or abelian-network relabeling:
+  - no solver is permitted to invent new gates, boundary codes, or post-extraction repairs; the audit checks the full frozen shell alphabet directly with the exact verifier.
+  - the comparison is between local mixed-row motifs and exact certificate outcomes, not between competing global invariant packages or relabelings of the same linear algebra.
+
+- Novelty consequence:
+  - the bounded-shell positive lane is now killed on tiny exact instances, not just suspected to be cosmetic.
+  - any future revival would need new nonlinear motifs or a changed extractor, which means it would no longer be the audited `H5_affine_core_nonlinear_shell` route.

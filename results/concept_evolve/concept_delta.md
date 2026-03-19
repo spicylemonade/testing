@@ -17,6 +17,8 @@
 - Phase 6 item 026 then froze one low-height asymmetric family `X = {(0,0),(1,0),(0,1),(1,1),(2,-1)}`, one five-symbol typed interface alphabet, one symmetry quotient, and one unchanged extractor inside `scripts/phase6_experiments.py`.
 - That route was tested by exact width-4 word enumeration and no-repair width-8 composition in `results/phase6_h4_typed_residue_interfaces.{md,json}`.
 - Phase 6 item 027 then added one explicit hidden-complexity ledger and one deterministic width-8 rerun for each of the same-palette, low-height asymmetric, bounded-slope, and slowly-growing-`X` direct baselines in `results/phase6_complexity_frontier.{md,json}`.
+- The fresh item-028 probe then asked whether any bounded nonlinear shell can beat affine transport or direct search on the low-height asymmetric family bank before scale-up is even attempted.
+- Phase 6 item 028 answered that with one exact width-4 audit in `results/phase6_h5_affine_shell.{md,json}`, freezing the affine core `{closed, top, bottom}`, the nonlinear shell `{gate_up, gate_down}`, and the H4 extractor across `asym_a`, `asym_b`, and `asym_c`.
 
 ## Result
 
@@ -31,6 +33,8 @@
   the frozen typed-interface grammar produced no forcing width-4 witness under the matched boundary-seed budget, so there was no nontrivial width-8 transfer left to compare against direct search.
 - The next Phase 6 pass overturned the score-only reading of the saved width-8 archive:
   every matched deterministic rerun stayed empty, while the only score-bearing width-8 row remained the earlier exploratory `29/14` artifact outside the matched benchmark envelope.
+- The probe-guided H5 audit then killed the bounded-shell backup route on tiny exact instances:
+  all `117` canonical shell words across the low-height asymmetric family bank failed, while same-budget unrestricted direct search found exact width-4 certificates on every family.
 
 ## Novelty Delta
 
@@ -43,3 +47,5 @@
   fixed-alphabet CA routes can be killed at the width-4 exact-certificate stage before any level-to-level transfer or folklore-heavy interpretation is allowed.
 - The complexity-frontier result adds one more narrowing:
   exact score without hidden-complexity coordinates is not a stable ordering on the current archive, because the only surviving width-8 score comes from an unmatched exploratory row rather than from the matched families under test.
+- The affine-shell result narrows the route set again:
+  hidden nonlinear gate libraries are not just unproven but verifier-killed in the frozen tiny-instance regime, so any future positive claim would need new motifs or a changed extractor rather than a reusable bounded shell.
