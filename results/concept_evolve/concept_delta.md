@@ -21,6 +21,8 @@
 - Phase 6 item 028 answered that with one exact width-4 audit in `results/phase6_h5_affine_shell.{md,json}`, freezing the affine core `{closed, top, bottom}`, the nonlinear shell `{gate_up, gate_down}`, and the H4 extractor across `asym_a`, `asym_b`, and `asym_c`.
 - The next probe then asked whether any honest `H=3` lift survives the same `X` budget and extractor logic, or whether higher geometry itself forces a broader obstruction.
 - Phase 6 item 029 answered that with one passive-middle `H=3` extrusion audit in `results/phase6_geometry_lift.{md,json}`, together with a row-quotient obstruction and matched unrestricted `H=3` controls.
+- The next narrow pass then asked whether an aperiodic defect schedule can buy real seed economics rather than just re-encoding the known H=2 direct witness.
+- Phase 6 item 030 answered that with one frozen periodic-versus-aperiodic audit on asym_a in `results/phase6_h6_defect_transport.{md,json}`.
 
 ## Result
 
@@ -39,6 +41,8 @@
   all `117` canonical shell words across the low-height asymmetric family bank failed, while same-budget unrestricted direct search found exact width-4 certificates on every family.
 - The higher-geometry pass then killed the simplest lift route as well:
   the passive-middle `H=3` family has no forcing word across the full word audit, and the matched unrestricted `H=3` direct controls stayed empty under the same budgets.
+- The defect-transport pass then narrowed the reserve route to zero:
+  the only successful aperiodic word was already the archived H=2 direct certificate, and it disappeared under thinning, reversal, and the H=3 lift.
 
 ## Novelty Delta
 
@@ -55,3 +59,5 @@
   hidden nonlinear gate libraries are not just unproven but verifier-killed in the frozen tiny-instance regime, so any future positive claim would need new motifs or a changed extractor rather than a reusable bounded shell.
 - The geometry-lift result narrows it once more:
   unchanged higher-geometry extrusion is now blocked by a row-quotient invariant, so the surviving search space must change geometry logic rather than merely adding one more passive layer.
+- The defect-transport result removes the last fixed-X seed-economics hedge:
+  aperiodic phase coding currently adds no robust exact advantage over the direct certificate archive and collapses into a boundary-programming / decoder-style overlap.

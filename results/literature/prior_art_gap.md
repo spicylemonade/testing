@@ -254,3 +254,22 @@ These entries remain relevant only as a reminder that the original novelty guard
 - Novelty consequence:
   - the current negative contribution is no longer only corridor-local.
   - one explicit higher-geometry family is now ruled out by a row-quotient invariant, so any future lift claim has to leave the passive-middle extrusion regime entirely.
+
+## L. Phase 6 Defect-Transport Update
+
+- New exact artifact:
+  - `results/phase6_h6_defect_transport.md`
+  - `results/phase6_h6_defect_transport.json`
+
+- What is new relative to the current gap log:
+  - the earlier notes warned that defect-routing language would overlap with local decoders and chip-firing unless it survived exact extraction and matched controls, but they did not freeze one exact periodic-versus-aperiodic schedule family and run the minimal robustness checks.
+  - the new artifact does that on fixed `X = asym_a`, comparing the periodic word `SDS` and the aperiodic word `SDP` on `H=2` and `H=3` under the same budgets.
+
+- Why this collapses into the local-decoder / chip-firing overlap trap:
+  - the only successful aperiodic word is already an archived direct certificate rather than a new transport-specific frontier point.
+  - it dies as soon as seed budget is thinned or the schedule is reversed, and it does not survive the modest `H=3` lift.
+  - this is exactly the profile of a boundary-scripted sweep rather than a robust transport mechanism.
+
+- Novelty consequence:
+  - there is no surviving exact evidence that aperiodic phase coding improves seed economics beyond boundary programming.
+  - any future defect-transport claim now has to beat the direct certificate frontier and survive the same thinning and orientation tests, or it will be treated as local-decoder / chip-firing rebranding.

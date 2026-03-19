@@ -52,6 +52,9 @@ AFFINE_CORE_SYMBOLS = ("closed", "top", "bottom")
 NONLINEAR_SHELL_SYMBOLS = ("gate_up", "gate_down")
 AFFINE_SHELL_SEEDS = (6201, 6202)
 GEOMETRY_LIFT_SEEDS = (7201, 7202)
+H6_FAMILY_ID = "asym_a"
+H6_H2_WORD_PERIODIC = "SDS"
+H6_H2_WORD_APERIODIC = "SDP"
 
 ROW_SWAP = {
     "closed": "closed",
@@ -1096,6 +1099,255 @@ def write_geometry_lift_markdown(payload: Dict[str, object]) -> None:
     path.write_text("\n".join(lines) + "\n")
 
 
+def h6_motif_maps() -> Dict[str, Dict[str, Tuple[Vector, ...]]]:
+    zero, a, b, c, d = LOW_HEIGHT_X_FAMILIES[H6_FAMILY_ID]
+    return {
+        "h2": {
+            "S": (c, c),
+            "D": (d, a),
+            "P": (a, c),
+        },
+        "h3": {
+            "S": (c, zero, c),
+            "D": (d, zero, a),
+            "P": (a, zero, c),
+        },
+        "vertical": {
+            "h2": (b,),
+            "h3": (b, b),
+        },
+    }
+
+
+def schedule_to_horizontal(
+    word: str,
+    motif_map: Dict[str, Tuple[Vector, ...]],
+) -> Tuple[Tuple[Vector, ...], ...]:
+    rows = len(next(iter(motif_map.values())))
+    return tuple(
+        tuple(motif_map[symbol][row] for symbol in word)
+        for row in range(rows)
+    )
+
+
+def evaluate_fixed_schedule(
+    *,
+    height: int,
+    word: str,
+    vertical: Sequence[Vector],
+    motif_map: Dict[str, Tuple[Vector, ...]],
+    seed_budget: int,
+    initial_t_budget: int,
+    boundary_band: int,
+) -> Dict[str, object]:
+    horizontal = schedule_to_horizontal(word, motif_map)
+    instance = greedy_seed_search_grid(
+        height=height,
+        width=4,
+        x_labels=LOW_HEIGHT_X_FAMILIES[H6_FAMILY_ID],
+        vertical=vertical,
+        horizontal=horizontal,
+        seed_budget=seed_budget,
+        initial_t_budget=initial_t_budget,
+        boundary_band=boundary_band,
+    )
+    forcing = instance is not None and instance.is_forcing()
+    if not forcing:
+        return {
+            "word": word,
+            "forcing": False,
+            "score": None,
+            "forced_vertices_per_seed": None,
+            "vertical": [list(label) for label in vertical],
+            "horizontal": [[list(label) for label in row] for row in horizontal],
+            "certificate_lines": None,
+        }
+    forced_vertices_per_seed = (instance.n - instance.t) / instance.r
+    return {
+        "word": word,
+        "forcing": True,
+        "score": instance.score,
+        "forced_vertices_per_seed": forced_vertices_per_seed,
+        "vertical": [list(label) for label in instance.vertical],
+        "horizontal": [[list(label) for label in row] for row in instance.horizontal],
+        "certificate_lines": instance.to_certificate_lines(),
+        "r": instance.r,
+        "t": instance.t,
+    }
+
+
+def load_phase6_h5_direct_control() -> Dict[str, object]:
+    payload = json.loads((RESULTS / "phase6_h5_affine_shell.json").read_text())
+    for row in payload["family_results"]:
+        if row["family_id"] == H6_FAMILY_ID:
+            return row["direct_baseline"]["best"]
+    raise ValueError("missing asym_a direct baseline in phase6_h5_affine_shell.json")
+
+
+def load_phase6_h3_direct_control() -> Dict[str, object]:
+    payload = json.loads((RESULTS / "phase6_geometry_lift.json").read_text())
+    for row in payload["family_results"]:
+        if row["family_id"] == H6_FAMILY_ID:
+            return row["direct_baseline"]
+    raise ValueError("missing asym_a direct baseline in phase6_geometry_lift.json")
+
+
+def write_defect_transport_results() -> Dict[str, object]:
+    maps = h6_motif_maps()
+    h2_periodic = evaluate_fixed_schedule(
+        height=2,
+        word=H6_H2_WORD_PERIODIC,
+        vertical=maps["vertical"]["h2"],
+        motif_map=maps["h2"],
+        seed_budget=3,
+        initial_t_budget=1,
+        boundary_band=1,
+    )
+    h2_aperiodic = evaluate_fixed_schedule(
+        height=2,
+        word=H6_H2_WORD_APERIODIC,
+        vertical=maps["vertical"]["h2"],
+        motif_map=maps["h2"],
+        seed_budget=3,
+        initial_t_budget=1,
+        boundary_band=1,
+    )
+    h2_thinned = evaluate_fixed_schedule(
+        height=2,
+        word=H6_H2_WORD_APERIODIC,
+        vertical=maps["vertical"]["h2"],
+        motif_map=maps["h2"],
+        seed_budget=2,
+        initial_t_budget=1,
+        boundary_band=1,
+    )
+    h2_reversed = evaluate_fixed_schedule(
+        height=2,
+        word="PDS",
+        vertical=maps["vertical"]["h2"],
+        motif_map=maps["h2"],
+        seed_budget=3,
+        initial_t_budget=1,
+        boundary_band=1,
+    )
+    h3_periodic = evaluate_fixed_schedule(
+        height=3,
+        word=H6_H2_WORD_PERIODIC,
+        vertical=maps["vertical"]["h3"],
+        motif_map=maps["h3"],
+        seed_budget=3,
+        initial_t_budget=1,
+        boundary_band=1,
+    )
+    h3_aperiodic = evaluate_fixed_schedule(
+        height=3,
+        word=H6_H2_WORD_APERIODIC,
+        vertical=maps["vertical"]["h3"],
+        motif_map=maps["h3"],
+        seed_budget=3,
+        initial_t_budget=1,
+        boundary_band=1,
+    )
+    h2_direct = load_phase6_h5_direct_control()
+    h3_direct = load_phase6_h3_direct_control()
+    same_as_direct = (
+        h2_aperiodic["forcing"]
+        and h2_direct["vertical"] == h2_aperiodic["vertical"]
+        and h2_direct["horizontal"] == h2_aperiodic["horizontal"]
+    )
+    payload = {
+        "route": "phase6_h6_defect_transport",
+        "fixed_family": {
+            "family_id": H6_FAMILY_ID,
+            "x_labels": [list(label) for label in LOW_HEIGHT_X_FAMILIES[H6_FAMILY_ID]],
+            "motifs": {
+                key: [list(label) for label in value]
+                for key, value in maps["h2"].items()
+            },
+            "vertical_h2": [list(label) for label in maps["vertical"]["h2"]],
+            "vertical_h3": [list(label) for label in maps["vertical"]["h3"]],
+        },
+        "benchmark_spec": {
+            "seed_budget": 3,
+            "initial_t_budget": 1,
+            "boundary_band": 1,
+            "periodic_word": H6_H2_WORD_PERIODIC,
+            "aperiodic_word": H6_H2_WORD_APERIODIC,
+            "reversed_word": "PDS",
+            "thinned_seed_budget": 2,
+        },
+        "height2": {
+            "periodic": h2_periodic,
+            "aperiodic": h2_aperiodic,
+            "aperiodic_boundary_thinned": h2_thinned,
+            "aperiodic_reversed": h2_reversed,
+        },
+        "height3": {
+            "periodic": h3_periodic,
+            "aperiodic": h3_aperiodic,
+        },
+        "matched_controls": {
+            "height2_direct": {
+                "certificate_lines": h2_direct["certificate_lines"],
+                "same_as_aperiodic_schedule": same_as_direct,
+            },
+            "height3_direct": {
+                "hit_rate": h3_direct["hit_rate"],
+                "best": h3_direct["best"],
+            },
+        },
+        "decision": {
+            "completed_via_falsification": True,
+            "reason": (
+                "The only apparent aperiodic gain is the exact H=2 word SDP, but that schedule is already an archived "
+                "direct certificate, dies under boundary thinning and reversal, and does not survive the H=3 lift. "
+                "The gain therefore collapses to boundary programming rather than phase-coded defect transport."
+            ),
+        },
+        "overlap_trap_note": (
+            "This falls into the local-decoder and chip-firing overlap traps: the successful word behaves like a "
+            "boundary-scripted sweep on one orientation, not like a transport mechanism that remains visible after "
+            "seed thinning, orientation changes, or a modest geometry lift."
+        ),
+    }
+    dump_json(RESULTS / "phase6_h6_defect_transport.json", payload)
+    write_defect_transport_markdown(payload)
+    return payload
+
+
+def write_defect_transport_markdown(payload: Dict[str, object]) -> None:
+    path = RESULTS / "phase6_h6_defect_transport.md"
+    h2 = payload["height2"]
+    h3 = payload["height3"]
+    lines = [
+        "# Phase 6 H6 Defect Transport",
+        "",
+        "## Frozen Family",
+        "",
+        f"- Family: `{payload['fixed_family']['family_id']}` with `X = {payload['fixed_family']['x_labels']}`.",
+        f"- Typed motifs on H=2: `{payload['fixed_family']['motifs']}`.",
+        f"- Periodic word: `{payload['benchmark_spec']['periodic_word']}`; aperiodic word: `{payload['benchmark_spec']['aperiodic_word']}`; reversed word: `{payload['benchmark_spec']['reversed_word']}`.",
+        f"- Seed budget: `{payload['benchmark_spec']['seed_budget']}`; thinned seed budget: `{payload['benchmark_spec']['thinned_seed_budget']}`; initial-T budget: `{payload['benchmark_spec']['initial_t_budget']}`.",
+        "",
+        "## Results",
+        "",
+        f"- H=2 periodic: forcing=`{h2['periodic']['forcing']}`, score=`{h2['periodic']['score']}`.",
+        f"- H=2 aperiodic: forcing=`{h2['aperiodic']['forcing']}`, score=`{h2['aperiodic']['score']}`, forced-vertices-per-seed=`{h2['aperiodic']['forced_vertices_per_seed']}`.",
+        f"- H=2 aperiodic after boundary thinning: forcing=`{h2['aperiodic_boundary_thinned']['forcing']}`.",
+        f"- H=2 aperiodic after reversal: forcing=`{h2['aperiodic_reversed']['forcing']}`.",
+        f"- H=3 periodic: forcing=`{h3['periodic']['forcing']}`.",
+        f"- H=3 aperiodic: forcing=`{h3['aperiodic']['forcing']}`.",
+        f"- H=2 matched direct control equals the aperiodic schedule: `{payload['matched_controls']['height2_direct']['same_as_aperiodic_schedule']}`.",
+        f"- H=3 matched direct hit rate: `{payload['matched_controls']['height3_direct']['hit_rate']}`.",
+        "",
+        "## Falsification",
+        "",
+        f"- {payload['decision']['reason']}",
+        f"- Overlap-trap note: {payload['overlap_trap_note']}",
+    ]
+    path.write_text("\n".join(lines) + "\n")
+
+
 def choose_best_family() -> Tuple[H4Grammar, Dict[str, object]]:
     family_id = "asym_a"
     grammar = make_h4_grammar(family_id, LOW_HEIGHT_X_FAMILIES[family_id])
@@ -1480,6 +1732,7 @@ def main() -> None:
             "complexity-frontier-aggregate",
             "affine-shell",
             "geometry-lift",
+            "defect-transport",
         ),
     )
     parser.add_argument("--family-id", default=None)
@@ -1510,6 +1763,9 @@ def main() -> None:
         print(json.dumps(payload["decision"], indent=2))
     elif args.command == "geometry-lift":
         payload = write_geometry_lift_results()
+        print(json.dumps(payload["decision"], indent=2))
+    elif args.command == "defect-transport":
+        payload = write_defect_transport_results()
         print(json.dumps(payload["decision"], indent=2))
 
 

@@ -1,11 +1,11 @@
 # Research Context
 
-- Stage: phase6_item029_completed
+- Stage: phase6_item030_completed
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
 - Note: gap_queries=4, swarm_agents=4
-- Rubric progress: 29/32 handled (`28` completed, `1` failed)
+- Rubric progress: 30/32 handled (`29` completed, `1` failed)
 - Known papers tracked: 135
 - `sources.bib` entries: 29
 - Swarm hypotheses: 3
@@ -22,6 +22,8 @@
 - Exact H5 result: on `asym_a`, `asym_b`, and `asym_c`, the frozen width-4 affine-core / nonlinear-shell audit found zero forcing words across all `117` canonical shell words, while same-budget unrestricted direct search found exact certificates on all three families; see `results/phase6_h5_affine_shell.md`.
 - `item_029` is now completed.
 - Exact geometry-lift result: the passive-middle `H=3` extrusion of the H4 extractor is killed by a row-quotient invariant across `asym_a`, `asym_b`, and `asym_c`, and the matched unrestricted `H=3` direct controls also stayed at zero hit rate under the same budgets; see `results/phase6_geometry_lift.md`.
+- `item_030` is now completed.
+- Exact H6 result: the only apparent aperiodic gain is the `H=2` word `SDP`, but it is already the archived direct `13/7` certificate on `asym_a`, dies under seed thinning and reversal, and does not survive the passive-middle `H=3` lift; see `results/phase6_h6_defect_transport.md`.
 
 ## Closest Prior Art
 - Cohomological splitting conditions of vector bundles on ${\mathbf P}^{n_1}\times\cdots\times{\mathbf P}^{n_s}$ (2024)
