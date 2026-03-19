@@ -31,38 +31,35 @@
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
 \theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
 
 \newcommand{\AK}{\mathrm{AK}}
 \newcommand{\score}{\mathrm{score}}
-\newcommand{\Span}{\mathrm{span}}
-\newcommand{\rank}{\mathrm{rank}}
+\newcommand{\SpanQ}{\operatorname{span}_{\mathbb{Q}}}
+\newcommand{\SpanZ}{\operatorname{span}_{\mathbb{Z}}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\supp}{\operatorname{supp}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\Q}{\mathbb{Q}}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\cG}{\mathcal{G}}
-\newcommand{\cR}{\mathcal{R}}
-\newcommand{\cT}{\mathcal{T}}
-\newcommand{\cU}{\mathcal{U}}
-\newcommand{\cV}{\mathcal{V}}
-\newcommand{\corr}{\mathrm{Corr}}
 
 \begin{document}
 
 \hypersetup{pageanchor=false}
 \begin{titlepage}
   \centering
-  {\Large Archivara Agent: Exact Falsification of a Cellular-Automaton Corridor Route to Arithmetic Kakeya Certificates\par}
+  {\Large Archivara Agent: Exact Falsification of Cellular-Automaton Routes to Arithmetic Kakeya Certificates\par}
   \vspace{1.2cm}
   {\large Archivara Research Pipeline / Codex CLI\par}
   \vspace{0.4cm}
-  {\large March 18, 2026\par}
+  {\large March 19, 2026\par}
   \vfill
   \begin{minipage}{0.92\textwidth}
   \textbf{Abstract.}
-  We study a FrontierMath-style finite-certificate version of the arithmetic Kakeya problem under a deliberately narrow hypothesis: can a frozen cellular-automaton-inspired corridor grammar compile to legal $(X;d_i;f_i;T;R)$ certificates with score at most $1.675$? The repository contains a pre-registered program with three routes, of which only the primary macrocell-substitution route (\textsc{H1}) and the backup abelian-screening route (\textsc{H2}) were executed. We formalize the exact compiler from width-$2$ corridor instances to verifier-compatible certificates, prove that the repository verifier is sound and complete for this family, and then prove a one-seed obstruction theorem: any extracted instance with exactly one singleton seed and empty initial solved set is impossible to force. This kills the frozen \textsc{H1} route before any score comparison is meaningful. We then synthesize the exact saved experiments: direct no-CA corridor controls achieve score $2.0$ at widths $4$ and $6$, an exploratory width-$8$ witness reaches only $29/14$, the \textsc{H2} invariant package adds no screening lift beyond raw arithmetic descriptors, and ablations show that the surviving width-$4$ control is boundary-sensitive and does not scale under frozen $X$. The contribution is therefore a narrow negative operational result, not a new theorem or reformulation of arithmetic Kakeya. What survives is an audit-ready benchmark-and-falsification workflow showing that the frozen cellular-automaton corridor route does not approach the $1.675$ target. 
+  We study a FrontierMath-style finite-certificate benchmark for the arithmetic Kakeya problem: find a legal verifier-side certificate $(X;d_i;f_i;T;R)$ with score at most $1.675$, ideally using a cellular-automaton-inspired local grammar. The present repository state does not support a positive cellular-automaton claim. Instead, it supports an exact benchmark-and-falsification paper. We formalize the low-height grid compiler used throughout the saved experiments and prove that the repository verifier is sound and complete for this specialization. Two exact obstruction theorems then kill the headline positive routes: a one-seed theorem eliminates the frozen \textsc{H1} corridor pilot, and a passive-middle row-quotient theorem eliminates the height-$3$ lift of the typed-interface family. The remaining route audits are negative by exact computation. \textsc{H4} typed residue interfaces produce $0$ forcing width-$4$ words out of $39$ canonical candidates, so composition never begins. The width-$8$ complexity ledger shows that every matched rerun at fixed budget is empty; the saved exploratory $29/14$ witness survives only outside that ledger. The \textsc{H5} affine-core / nonlinear-shell audit finds $0$ forcing shell words across $117$ canonical checks, while matched direct search on low-height asymmetric families finds exact certificates of score $13/7$, $13/7$, and $14/7$. The \textsc{H6} phase-coded schedules, exhaustive controller enumeration over $75{,}276$ programs, and $27$-word metastability scan yield no advantage over the same direct frontier. The best surviving exact objects are therefore direct low-height asymmetric certificates at score $13/7$ and $14/7$, still well above the benchmark target. 
   \end{minipage}
   \vfill
 \end{titlepage}
@@ -76,513 +73,583 @@
 
 \section{Introduction}
 
-The arithmetic Kakeya program asks for finite-set sum-difference inequalities strong enough to imply geometric Kakeya lower bounds. In the form introduced by Katz and Tao and clarified by Green and Ruzsa, the question is whether one can control the anti-diagonal projection of an arbitrary finite set by finitely many oblique projections with exponent $1$ rather than the trivial exponent $2$ \citep{katz1999,green2017}. Later work reformulated neighboring pattern problems, established related implications, and enlarged the theorem-level frontier, but the core finite-certificate problem remains difficult \citep{cowenbreen2020,pohoata2024,tao2025}. 
+The geometric Kakeya conjecture asks whether every bounded set in $\R^d$ that contains a unit line segment in every direction must have full Hausdorff and Minkowski dimension $d$. Katz and Tao introduced an arithmetic projection formalism strong enough to imply geometric Kakeya lower bounds, and Green and Ruzsa later gave a clean modern account of the arithmetic Kakeya conjecture in that finite-set language \citep{katz1999,green2017}. In the notation used throughout this paper, the conjectural endpoint is $\AK(1)$: finitely many oblique projections should control the anti-diagonal projection with exponent $1$, not merely the trivial exponent $2$. Via Bourgain's slicing argument and subsequent Szemer\'edi-type transfer machinery, progress on $\AK(\alpha)$ yields dimension lower bounds for geometric Kakeya sets \citep{bourgain1999,leng2024}.
 
-The present repository did not set out to prove a new theorem in that line. Instead, it asked a narrower computational question: can a cellular-automaton-style local grammar, compiled exactly into the verifier's $(X;d_i;f_i;T;R)$ language, discover a certificate with score at most $1.675$? That question is mathematically delicate. It is easy to overstate what a local metaphor contributes. Bootstrap percolation and critical cellular automata provide natural intuition for local growth \citep{bollobas2014,hartarsky2018}; abelian networks provide natural invariants for commutative update systems \citep{bond2013,bond2014,bond2015}; decoder-style constructions suggest additional local heuristics \citep{sipser1996,hemenway2013,kubica2018}. But none of those nearby languages changes the source of mathematical truth here: the only acceptable evidence is an exact forcing certificate checked against the original arithmetic rules.
+The benchmark studied in this repository packages that program into an exact finite search problem. Given the verifier-side forcing formalism from the task statement, one asks for a legal certificate $(X;d_i;f_i;T;R)$ with score
+\[
+\frac{m(G)+|R|}{n(G)-|T|}\leq 1.675,
+\]
+where $m(G)$ counts nonzero edge labels, $n(G)$ counts vertices, $R$ is the initial singleton-generator set, and $T$ is the initial solved set \citep{epochai2025arithmetickakeya,archivara_phase1_plan}. The user request that launched the repo was explicit: \emph{solve this using cellular automata}. The present manuscript shows why that slogan has to be rejected, at least for the audited routes saved in the repository.
 
-The verification artifacts in this repository force a much sharper conclusion than the original bridge narrative. The pre-registered cellular-automaton route dies by proof, not by an unfavorable random seed. The backup abelian screen adds no value on the tested family set. The only positive objects that survive exact checking are small direct corridor controls near score $2.0$. The paper therefore does not claim a cellular-automaton solution to the arithmetic Kakeya benchmark. It documents an exact negative result.
+The difficulty is not only mathematical; it is epistemic. Bootstrap percolation, critical cellular automata, abelian networks, chip-firing systems, and decoder-style local rules all offer natural metaphors for forcing and propagation \citep{bollobas2014,hartarsky2018,bond2013,bond2014,bond2015,sipser1996,hemenway2013,kubica2018}. But in arithmetic Kakeya the source of truth is not a rollout picture. It is the original forcing semantics: a certificate counts only if an exact verifier can derive anti-diagonal singleton relations by legal integer-span operations. The repository therefore treats cellular-automaton language only as a proposal mechanism for candidate certificates, never as evidence in its own right \citep{archivara_prior_art_gap,archivara_benchmark_report}.
+
+At the current repository endpoint, every tested cellular-automaton-positive lane has either failed exactly or collapsed to parity with matched direct search. The Phase 4 corridor pilot already killed the frozen \textsc{H1} route by a one-seed obstruction and found only small direct controls at score $2.0$ \citep{archivara_h1_obstruction,archivara_h1_frontier,archivara_h2}. Phase 6 pushed the negative story further. \textsc{H4} typed residue interfaces yield $0$ forcing width-$4$ words out of $39$ canonical candidates and therefore never reach a nontrivial width-$8$ composition test \citep{archivara_h4_typed_interfaces}. The width-$8$ complexity ledger shows that every matched rerun with fixed budget is empty, so the saved exploratory $29/14$ witness is not part of a valid matched frontier \citep{archivara_complexity_frontier}. The \textsc{H5} shell audit finds no forcing shell word across $117$ canonical checks, while matched direct search on low-height asymmetric families produces exact certificates of score $13/7$, $13/7$, and $14/7$ \citep{archivara_h5_affine_shell}. The \textsc{H6} schedule family, exhaustive controller search, and metastability summaries recover the same best direct object rather than a new mechanism \citep{archivara_h6_defect_transport,archivara_boundary_controller,archivara_metastability}. The honest endpoint is therefore negative: the best surviving exact rows are direct certificates, not cellular-automaton-derived ones.
 
 Our contributions are the following.
 
 \begin{enumerate}
-  \item We formalize the corridor compiler used in the repository and show that every corridor instance induces a legal verifier-side certificate \citep{archivara_certificate_grammar,archivara_search_script}.
-  \item We prove that the exact verifier implemented in the repository is sound and complete for the width-$2$ corridor family: it returns a full forcing order exactly when the compiled certificate is forcing.
-  \item We prove a one-seed obstruction theorem that kills the frozen \textsc{H1} macrocell-substitution route at every scale. The theorem applies whenever the extracted instance has one singleton seed and no initially solved vertices, which is exactly the saved \textsc{H1} pilot \citep{archivara_h1_obstruction,archivara_h1_program}.
-  \item We synthesize the saved exact experiments: the best verified direct controls achieve score $2.0$ at widths $4$ and $6$, exploratory width-$8$ witnesses are worse, the \textsc{H2} abelian screen adds no ranking lift, and ablations show strong boundary sensitivity and poor scale transfer \citep{archivara_width4,archivara_width6,archivara_width8,archivara_h2,archivara_ablations}.
-  \item We position the work honestly relative to prior art: it is a negative operational benchmark inside the existing arithmetic-Kakeya finite-certificate setting, not a new formulation, new theorem, or validated cellular-automaton mechanism \citep{green2017,cowenbreen2020,pohoata2024,tao2025,archivara_verification}.
+  \item We formalize the low-height grid specialization used throughout the repository and prove that the exact rational-span verifier is sound and complete for this family. This theorem covers every saved Phase 4 and Phase 6 search row in the paper.
+  \item We prove a general one-seed obstruction theorem and apply it to the frozen \textsc{H1} corridor pilot, recovering the repository's exact Phase 4 route kill from first principles \citep{archivara_h1_obstruction,archivara_h1_program}.
+  \item We prove a stronger passive-middle row-quotient obstruction theorem for the height-$3$ lift of the typed-interface family. Unlike the one-seed theorem, it allows arbitrary boundary seeds and arbitrary width inside that family \citep{archivara_geometry_lift,archivara_boundary_controller}.
+  \item We synthesize the saved Phase 6 route audits: \textsc{H4} interfaces fail before composition, the matched width-$8$ ledger stays empty, \textsc{H5} bounded shell words lose to direct search, and \textsc{H6} schedules, controller search, and metastability show no lift over the direct frontier \citep{archivara_h4_typed_interfaces,archivara_complexity_frontier,archivara_h5_affine_shell,archivara_h6_defect_transport,archivara_boundary_controller,archivara_metastability}.
+  \item We identify the actual positive frontier currently present in the repository: direct low-height asymmetric width-$4$ certificates at scores $13/7$, $13/7$, and $14/7$, all still above the target $1.675$ \citep{archivara_h5_affine_shell}.
+  \item We position the work honestly relative to prior art: it is an exact benchmark-and-falsification paper inside the existing arithmetic-Kakeya certificate setting, not a new theorem line, not a new formulation, and not a validated cellular-automaton mechanism \citep{green2017,cowenbreen2020,pohoata2024,tao2025,archivara_prior_art_gap,archivara_verification}.
 \end{enumerate}
 
-The rest of the paper is organized as follows. Section~\ref{sec:related} explains exactly how this work differs from the arithmetic Kakeya literature and from nearby cellular-automaton, abelian-network, and decoder lines. Section~\ref{sec:background} restates the benchmark and introduces the corridor specialization. Section~\ref{sec:method} describes the compiler, verifier, search program, and ablation protocol. Section~\ref{sec:theory} proves the compiler and verifier correctness statements together with the one-seed obstruction theorem. Section~\ref{sec:setup} documents the saved experimental setup. Section~\ref{sec:results} presents the exact empirical findings. Sections~\ref{sec:discussion} and \ref{sec:conclusion} discuss limitations, implications, and next steps. Supplementary appendices provide explicit certificates, command lines, and additional implementation details.
+Figure~\ref{fig:pipeline} summarizes the repository pipeline at the current endpoint. Section~\ref{sec:related} explains the novelty boundary. Section~\ref{sec:background} restates the arithmetic benchmark and defines the grid specialization. Section~\ref{sec:method} describes the exact verifier, the direct-search routines, and the route-specific audits. Section~\ref{sec:theory} proves the compiler/verifier theorems and the two obstruction theorems. Sections~\ref{sec:setup} and \ref{sec:results} present the saved experiments. Sections~\ref{sec:discussion} and \ref{sec:conclusion} close with limitations, open questions, and the final evidence-based interpretation.
 
 \section{Related Work}
 \label{sec:related}
 
-\subsection{Arithmetic Kakeya and Sum-Difference Certificates}
+\subsection{Arithmetic Kakeya and Neighboring Theorem Lines}
 
-The closest mathematical line is the arithmetic Kakeya program itself. Katz and Tao introduced the arithmetic-projection viewpoint as a tool strong enough to imply geometric Kakeya statements \citep{katz1999}. Green and Ruzsa later gave a modern discussion of the conjecture and several equivalent formulations \citep{green2017}. Cowen-Breen, Karangozishvili, Varadarajan, and Wang studied related pattern problems and implications, again within the same finite-certificate universe \citep{cowenbreen2020}. Pohoata and Zakharov broadened the theorem-level landscape via generalized arithmetic Kakeya inequalities \citep{pohoata2024}. Tao's bounded-many-slopes and rational-complexity analysis is especially relevant here because it identifies a natural basin in which small, low-complexity certificate families can stagnate \citep{tao2025}. 
+The closest mathematical line is the arithmetic Kakeya program itself. Katz and Tao introduced the projection framework that motivates the benchmark studied here \citep{katz1999}. Green and Ruzsa gave a modern formulation and several equivalent perspectives on the conjecture \citep{green2017}. Cowen-Breen, Karangozishvili, Varadarajan, and Wang developed related pattern problems inside the same finite-certificate universe \citep{cowenbreen2020}. Pohoata and Zakharov extended the theorem-level landscape with a generalized arithmetic Kakeya statement \citep{pohoata2024}. Tao's analysis of bounded-many-slopes sets and rational complexity is especially relevant because it warns that tiny fixed-$X$ or low-complexity families can look active without meaningfully approaching the real conjectural frontier \citep{tao2025}. Lemm's counterexample line is an additional caution against over-trusting overly symmetric or homogeneous search spaces \citep{lemm2014}.
 
-Our work is not another theorem in this line. It neither proves a new sum-difference exponent nor proposes a new equivalent formulation. The mathematical object throughout remains the standard finite certificate: a legal choice of $X$, a constructible graph, and a forcing pair. The contribution is operational. We ask whether one particular local generator language produces better exact certificates than matched direct search. The answer, for the frozen corridor family tested here, is no.
+This paper is not another theorem in that line. It proves no new arithmetic Kakeya exponent, no new implication, and no new equivalent formulation. The mathematical object is always the original verifier-side certificate. The contribution is operational and negative: a collection of exact compiler, verifier, obstruction, and benchmark results that eliminate several cellular-automaton-adjacent routes inside the existing certificate setting \citep{archivara_prior_art_gap,archivara_benchmark_report}.
 
-\subsection{Cellular Automata, Bootstrap Growth, and Local Mechanisms}
+\subsection{Bootstrap Growth, Abelian Networks, and Decoder Overlap}
 
-Bootstrap percolation and critical cellular automata are natural nearby metaphors because the forcing rules repeatedly convert local constraints into new solved vertices \citep{bollobas2014,hartarsky2018}. That overlap is conceptual rather than structural. In arithmetic Kakeya, the decisive operation is the global integer-span closure on relation generators, not a purely local update rule. The repository therefore treated the cellular-automaton language only as a proposal mechanism for candidate certificates. This distinction is central to our negative conclusion: the local corridor grammar did not produce a legal forcing certificate, and the exact verifier---not the automaton metaphor---settled the matter.
+The natural nearby languages all come from local propagation. Bootstrap percolation and critical cellular automata suggest droplet, threshold, or interface heuristics \citep{bollobas2014,hartarsky2018}. Abelian networks and chip-firing suggest commutative invariant packages based on rank, torsion, and recurrent-state structure \citep{bond2013,bond2014,bond2015}. Decoder and expander-code ideas suggest local correction, message passing, or sweep-style transport heuristics \citep{sipser1996,hemenway2013,kubica2018}. The repository tested all three types of overlap language, but only in the limited role justified by the verifier. H2 used abelian-style descriptors only as a screening package; H4 and H5 froze local interface and gate alphabets and asked whether those alphabets produced legal exact certificates; H6 treated phase schedules, controllers, and metastability metrics as finite audited proposal banks \citep{archivara_h2,archivara_h4_typed_interfaces,archivara_h5_affine_shell,archivara_h6_defect_transport,archivara_boundary_controller,archivara_metastability}. None of those routes yielded a publication-safe positive mechanism claim.
 
-\subsection{Abelian Networks and Decoder Overlaps}
+\subsection{Novelty Boundary and the Corrupted Watchlist}
 
-The backup \textsc{H2} route imported rank, Smith normal form, and target-direction torsion ideas from abelian-network and chip-firing viewpoints \citep{bond2013,bond2014,bond2015}. The reserve \textsc{H3} route, which was never activated, sat closer to local-decoder heuristics and expander-code style propagation \citep{sipser1996,hemenway2013,kubica2018}. The saved verification artifacts are explicit about the boundary: \textsc{H2} was screening-only, not an ontological claim that arithmetic Kakeya forcing is an abelian network, and \textsc{H3} never progressed past reserve status. In the executed experiments, \textsc{H2} did not outperform raw arithmetic descriptors on the same family IDs, so no positive abelian-network claim survives.
-
-\subsection{Novelty Boundary and Excluded False Positives}
-
-The repository's prior-art audit also records several spurious watchlist items that appeared because early automated searches over-weighted TeX tokens such as $\mathbf{P}^{n_1}\times\cdots\times\mathbf{P}^{n_s}$ and $\mathbb{Z}_2\times\mathbb{Z}_2$ \citep{archivara_verification}. Those product-space vector-bundle, Lie-theoretic, automorphic, and general-topology papers are mathematically unrelated to the arithmetic Kakeya benchmark. We exclude them entirely from substantive comparison. Doing so matters for the narrative: the real novelty burden comes from the arithmetic Kakeya line and from nearby local-growth metaphors, not from irrelevant symbolic overlap.
+The repository's novelty audit records an additional complication: early automated watchlists were corrupted by TeX-token overlap such as $\mathbf{P}^{n_1}\times\cdots\times\mathbf{P}^{n_s}$ and $\mathbb{Z}_2\times\mathbb{Z}_2$, producing false positives in vector bundles, Lie theory, automorphic forms, and topology \citep{archivara_prior_art_watchlist,archivara_prior_art_gap}. Those papers are irrelevant to the arithmetic benchmark and are cited only as evidence that keyword silence is not novelty evidence. The real novelty burden comes from the arithmetic Kakeya line and from the danger of rebranding a failed direct-search regime as a successful local mechanism.
 
 \section{Background and Preliminaries}
 \label{sec:background}
 
-\subsection{Arithmetic Kakeya in Finite-Certificate Form}
+\subsection{Arithmetic Kakeya and the Verifier-Side Task}
 
-We recall the arithmetic Kakeya statement in the form relevant to this repository. For a finite set $G\subset \Z^2$ and a vector $\mathbf{x}=(x_1,x_2)\in\Z^2$, write
+\begin{definition}[Arithmetic Kakeya exponent]
+Let $\alpha\geq 1$. For a finite set $G\subset \Z^2$ and a vector $\mathbf{x}=(x_1,x_2)\in \Z^2$, define
 \[
-\mathbf{x}\cdot G = \{x_1 g_1 + x_2 g_2 : (g_1,g_2)\in G\}.
+\mathbf{x}\cdot G=\{x_1g_1+x_2g_2:(g_1,g_2)\in G\}.
 \]
-For $\alpha\ge 1$, we say that $\AK(\alpha)$ holds if for every $\varepsilon>0$ there exists a finite set $X\subset \Z^2$ such that $x_1+x_2\neq 0$ for every nonzero $\mathbf{x}\in X$ and
+We say that $\AK(\alpha)$ holds if, for every $\varepsilon>0$, there exists a finite set $X\subset \Z^2$ such that $x_1+x_2\neq 0$ for every nonzero $\mathbf{x}\in X$ and
 \[
 \lvert (1,-1)\cdot G\rvert \ll_{\varepsilon} \max_{\mathbf{x}\in X}\lvert \mathbf{x}\cdot G\rvert^{\alpha+\varepsilon}
 \]
-for all finite $G\subset \Z^2$ \citep{katz1999,green2017}. The conjectural endpoint is $\AK(1)$.
+for every finite $G\subset \Z^2$.
+\end{definition}
 
-The repository benchmark packages this problem into explicit finite certificates. The input is a finite label set $X\subset \Z^2$, an $X$-constructible graph $G$, and a forcing pair $(R,T)$, where $R$ is a set of singleton-supported relation generators and $T$ is a set of vertices declared solved at time zero. The verifier repeatedly performs three operations:
+\begin{conjecture}[Arithmetic Kakeya conjecture]
+\label{conj:ak}
+The endpoint statement $\AK(1)$ holds.
+\end{conjecture}
 
+\begin{theorem}[Geometric consequence of $\AK(\alpha)$]
+\label{thm:kakeya-dimension}
+If $\AK(\alpha)$ holds, then every Kakeya set $E\subset \R^d$ has Hausdorff dimension at least
+\[
+\alpha^{-1}d+1-\alpha^{-1}.
+\]
+\end{theorem}
+
+Theorem~\ref{thm:kakeya-dimension} is background motivation rather than a result of this paper; it follows from Bourgain's slicing argument together with later progress that upgrades the Hausdorff-dimension conclusion \citep{bourgain1999,leng2024}.
+
+The benchmark studied here uses the verifier-side certificate language supplied by the task.
+
+\begin{definition}[Verifier-side certificate]
+Fix a finite label set $X\subset \Z^2$ with $(0,0)\in X$ and no nonzero label on the anti-diagonal line $\langle(1,-1)\rangle$. A verifier-side certificate over $X$ consists of:
 \begin{enumerate}
-  \item add edge generators coming from graph edges;
-  \item solve a vertex once a nonzero anti-diagonal singleton $(a,-a)$ appears there with all other unsolved coordinates zero;
-  \item take arbitrary integer linear combinations of previously available generators.
+  \item positive integers $d_1,\dots,d_k$ and a vertex set
+  \[
+  V=[d_1]\times \cdots \times [d_k], \qquad [m]:=\{1,\dots,m\};
+  \]
+  \item edge-label functions
+  \[
+  f_i:[d_1]\times\cdots\times[d_{i-1}]\times[d_i-1]\to X
+  \]
+  for $1\leq i\leq k$;
+  \item a set $T\subseteq V$ of initially solved vertices;
+  \item a finite set $R$ of singleton-supported functions $r:V\to X$, meaning that each $r\in R$ is nonzero at exactly one vertex of $V$.
 \end{enumerate}
+For a nonzero value $f_i(a_1,\dots,a_i)=x$, the verifier interprets this as an edge joining the two vertices whose first $i-1$ coordinates equal $(a_1,\dots,a_{i-1})$ and whose $i$th coordinates are $a_i$ and $a_i+1$, with label $x$.
+\end{definition}
 
-If every vertex is eventually solved, the pair is forcing, and the certificate score is
+\begin{definition}[Forcing and score]
+The verifier repeatedly applies the following operations:
+\begin{enumerate}
+  \item add the signed two-vertex relation contributed by any graph edge;
+  \item if a relation is supported outside the current solved set on exactly one vertex $u$ and has value $(a,-a)$ there with $a\neq 0$, then add $u$ to the solved set;
+  \item add any integer linear combination of already available relations.
+\end{enumerate}
+If all vertices are eventually solved, the certificate is \emph{forcing}. Its score is
 \[
 S(X,G,R,T)=\frac{m(G)+|R|}{n(G)-|T|},
 \]
-where $n(G)$ is the number of vertices and $m(G)$ is the number of nonzero labelled edges. Lower score is better. The specific task studied here asked for a certificate with score at most $1.675$.
+where $n(G)=|V|$ and $m(G)$ counts the nonzero graph edges induced by the $f_i$.
+\end{definition}
 
-\subsection{Corridor Specialization}
+The repo benchmark asks for a certificate with score at most $1.675$ \citep{epochai2025arithmetickakeya,archivara_phase1_plan}. No such certificate appears in the saved artifacts.
 
-The repository deliberately restricted attention to a thin family of certificates that we can define without any cellular-automaton language.
+\subsection{Low-Height Grid Specialization}
 
-\begin{definition}[Width-$2$ corridor instance]
-A \emph{corridor instance} is a tuple
+All saved search rows in the repository lie in a two-coordinate specialization of the verifier language.
+
+\begin{definition}[Grid instance]
+\label{def:grid}
+A \emph{grid instance} is a tuple
 \[
-C=(W,X,v,\tau,\beta,R,T)
+C=(H,W,X,v,h,R,T)
 \]
 with the following data.
 \begin{enumerate}
-  \item $W\ge 1$ is the corridor width.
-  \item $X\subset \Z^2$ is finite, $(0,0)\in X$, and every nonzero label in $X$ avoids the anti-diagonal line $\langle(1,-1)\rangle$.
-  \item $v\in X$ is the constant vertical label.
-  \item $\tau=(\tau_1,\dots,\tau_{W-1})\in X^{W-1}$ and $\beta=(\beta_1,\dots,\beta_{W-1})\in X^{W-1}$ are the top-row and bottom-row horizontal labels.
-  \item $R$ is a finite multiset of pairs $((r,c),x)$ with $r\in\{1,2\}$, $1\le c\le W$, and $x\in X\setminus\{(0,0)\}$.
-  \item $T\subseteq \{1,2\}\times\{1,\dots,W\}$ is the initial solved set.
+  \item integers $H\geq 2$ and $W\geq 1$;
+  \item a finite label set $X\subset \Z^2$ as above;
+  \item a vertical profile $v=(v_1,\dots,v_{H-1})\in X^{H-1}$;
+  \item horizontal row data $h=(h_{r,c})_{1\leq r\leq H,\ 1\leq c\leq W-1}$ with each $h_{r,c}\in X$;
+  \item a finite set $R$ of singleton seeds, each specified by a vertex $u\in [H]\times[W]$ and a nonzero label $x\in X$;
+  \item an initial solved set $T\subseteq [H]\times[W]$.
 \end{enumerate}
 \end{definition}
 
-The induced graph has vertex set $\{1,2\}\times\{1,\dots,W\}$, vertical edges $((1,c),(2,c))$ labelled by $v$, top horizontal edges $((1,c),(1,c+1))$ labelled by $\tau_c$, and bottom horizontal edges $((2,c),(2,c+1))$ labelled by $\beta_c$. This is exactly the family implemented in \texttt{scripts/ca\_kakeya\_search.py} \citep{archivara_search_script}.
-
-\begin{definition}[Compiled certificate]
-Given a corridor instance $C=(W,X,v,\tau,\beta,R,T)$, define
+\begin{definition}[Compiled grid certificate]
+\label{def:compiled-grid}
+Given a grid instance $C=(H,W,X,v,h,R,T)$, define $d_1=H$ and $d_2=W$. Set
 \[
-d_1=2,\qquad d_2=W.
+f_1(i)=v_i \qquad (1\leq i\leq H-1),
 \]
-Set $f_1(1)=v$, $f_2(1,c)=\tau_c$, and $f_2(2,c)=\beta_c$ for $1\le c\le W-1$. The singleton generators in $R$ and the initial solved vertices in $T$ are copied verbatim into the verifier format.
+and
+\[
+f_2(r,c)=h_{r,c} \qquad (1\leq r\leq H,\ 1\leq c\leq W-1).
+\]
+Each singleton seed in $R$ becomes a singleton-supported function on $[H]\times [W]$, and the set $T$ is copied verbatim. The resulting verifier-side certificate is the \emph{compiled} certificate associated to $C$.
 \end{definition}
 
-\subsection{Generator Vectors and Projected Targets}
+This specialization allows different horizontal labels on different rows, but the vertical label between two adjacent rows is constant across columns. The Phase 4 corridor family is the special case $H=2$.
 
-For the proofs below it is convenient to identify a compiled certificate with an integer matrix problem. Enumerate the vertices of the corridor lexicographically:
+\subsection{Generator Vectors and Target Vectors}
+
+Fix a grid instance $C$ with vertex set $V=[H]\times [W]$ and write $n=HW$. Enumerate $V$ in row-major order:
 \[
-(1,1),(2,1),(1,2),(2,2),\dots,(1,W),(2,W).
+(1,1),(1,2),\dots,(1,W),(2,1),\dots,(H,W).
 \]
-Each generator becomes a vector in $\Z^{2n}$, where $n=2W$:
-
+Each available verifier relation is identified with a vector in $\Z^{2n}$:
 \begin{itemize}
-  \item a singleton seed at vertex $u$ with label $x=(a,b)$ contributes a vector supported only on the two coordinates of $u$, namely $(a,b)$;
-  \item an edge generator on vertices $u$ and $w$ with label $x=(a,b)$ contributes $(a,b)$ at $u$, $(-a,-b)$ at $w$, and zero elsewhere.
+  \item a singleton seed at vertex $u$ with label $(a,b)$ contributes $(a,b)$ in the two coordinates of $u$ and zero elsewhere;
+  \item an edge relation on vertices $u$ and $w$ with label $(a,b)$ contributes $(a,b)$ at $u$, $(-a,-b)$ at $w$, and zero elsewhere.
 \end{itemize}
 
-Given a solved set $S$, let $U=V\setminus S$ be the unsolved vertices. We write $M_U$ for the matrix whose columns are the generator vectors projected onto the coordinates indexed by $U$. For an unsolved vertex $u\in U$, let $e_u\in \Q^{2|U|}$ denote the anti-diagonal unit target at $u$:
+If $S\subseteq V$ is the current solved set, write $U=V\setminus S$ for the unsolved vertices and let $M_U$ be the matrix whose columns are the current generator vectors projected to the coordinates indexed by $U$. For an unsolved vertex $u\in U$, let $e_u\in \Q^{2|U|}$ denote the anti-diagonal target vector supported only at $u$:
 \[
-e_u = (0,\dots,0,1,-1,0,\dots,0).
+e_u=(0,\dots,0,1,-1,0,\dots,0).
 \]
-Rule 2 can solve $u$ precisely when some nonzero integer multiple of $e_u$ lies in the integer column span of $M_U$.
+Rule~2 can solve $u$ precisely when a nonzero integer multiple of $e_u$ lies in the integer column span of $M_U$.
 
 \begin{remark}[Scope]
-Every theorem below concerns the exact corridor family just defined. We do not claim a sound-and-complete verifier for arbitrary constructible graphs, only for the repository's frozen width-$2$ corridor program.
+\label{rem:scope}
+Every theorem proved below concerns the grid specialization from Definition~\ref{def:grid}. We do not claim a general sound-and-complete verifier theorem for arbitrary constructible graphs beyond this family.
 \end{remark}
 
 \section{Method}
 \label{sec:method}
 
-\subsection{Design Goals}
+\subsection{Evidence Boundary and Route Order}
 
-The saved research plan imposed three non-negotiable constraints before any experiment could count as evidence \citep{archivara_certificate_grammar,archivara_h1_program}. First, every candidate had to compile directly into the verifier language with no scale-dependent repair. Second, score had to be computed exactly, never replaced by occupancy or rollout surrogates. Third, the CA route had to be compared to matched direct search on the same corridor geometry and with the same fixed label budget.
+The paper uses only saved repository artifacts as experimental evidence. No new search row is run for the manuscript. The only new computations performed during writing are figure regeneration and LaTeX compilation. This boundary is deliberate: the verification artifacts explicitly recommend \emph{REVISE} rather than a new experimental pass, provided the paper narrows every claim to the saved evidence \citep{archivara_verification,archivara_benchmark_report}.
 
-Those constraints explain the narrowness of the method. The project did not run a broad search over all constructible graphs. It froze a small corridor family because that family was the simplest place where a local grammar, an exact compiler, and matched direct controls could coexist without hidden complexity in the extractor.
+The repository proceeds in two stages. Phase 4 executed the corridor pilot routes \textsc{H1} and \textsc{H2}. Phase 6 shifted to obstruction-first audits of typed residue interfaces, bounded shell libraries, passive-middle lifts, phase-coded schedules, controller search, and metastability summaries. Figure~\ref{fig:pipeline} shows the resulting pipeline: a single exact compiler and verifier serve both theorem-level obstructions and all benchmark rows.
 
-\subsection{Compiler}
-
-The compiler is trivial once the corridor instance is fixed, but that triviality is a feature. Hidden repair was one of the main risks identified in the benchmark sign-off. The compiler therefore does only three things.
-
-\begin{enumerate}
-  \item It sets $d_1=2$ and $d_2=W$.
-  \item It copies the constant vertical label and the rowwise horizontal labels into $f_1$ and $f_2$.
-  \item It copies the singleton seeds and the initial solved set directly into $R$ and $T$.
-\end{enumerate}
-
-No post-processing is permitted. If a candidate needs another pass to become legal, the route fails by design.
-
-\begin{center}
-\fbox{
-\begin{minipage}{0.94\textwidth}
-\textbf{Algorithm 1: Corridor compiler}
-\begin{enumerate}
-  \item Input a corridor instance $C=(W,X,v,\tau,\beta,R,T)$.
-  \item Set $d_1\leftarrow 2$ and $d_2\leftarrow W$.
-  \item Set $f_1(1)\leftarrow v$.
-  \item For each $c=1,\dots,W-1$, set $f_2(1,c)\leftarrow \tau_c$ and $f_2(2,c)\leftarrow \beta_c$.
-  \item Output the certificate $(X;d_1,d_2;f_1,f_2;T;R)$.
-\end{enumerate}
-\end{minipage}
-}
-\end{center}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/figure1_pipeline.pdf}
+  \caption{Repository pipeline at the current endpoint. The target is the exact verifier-side benchmark score $1.675$. Every route, positive or negative, is tested through the same grid compiler and exact verifier. The Phase 4 corridor pilot kills \textsc{H1} and gives a local null for \textsc{H2}; the Phase 6 audits eliminate typed interfaces, bounded shell grammars, passive-middle lifts, and defect-transport-style controller families. The only surviving positive objects are direct low-height asymmetric certificates at scores $13/7$, $13/7$, and $14/7$. The figure is a workflow summary, not a performance plot.}
+  \label{fig:pipeline}
+\end{figure}
 
 \subsection{Exact Verifier}
 
-The exact verifier repeatedly asks a single question: from the currently unsolved coordinates, can the available generators produce a nonzero anti-diagonal singleton at one vertex? If yes, that vertex may be solved. The repository implementation answers the question by exact rational linear algebra rather than lattice reduction. This is enough because rule 2 only requires \emph{some} nonzero multiple $(a,-a)$, not specifically $(1,-1)$; clearing denominators recovers an integer witness.
+The verifier used throughout the repo is exact. It never accepts a candidate because of rollout occupancy, closure size alone, or any approximate local statistic. At a given solved set $S$, it asks whether any anti-diagonal target $e_u$ lies in the rational column span of the projected generator matrix $M_U$. If the answer is yes, the corresponding vertex may be solved. Otherwise the certificate fails.
 
 \begin{center}
 \fbox{
 \begin{minipage}{0.94\textwidth}
-\textbf{Algorithm 2: Exact corridor verifier}
+\textbf{Algorithm 1: Exact verifier for a compiled grid certificate}
 \begin{enumerate}
-  \item Input a compiled corridor certificate and initialize the solved set $S\leftarrow T$.
+  \item Input a compiled grid certificate and initialize the solved set $S\leftarrow T$.
   \item While $S\neq V$:
   \begin{enumerate}
-    \item Let $U=V\setminus S$.
-    \item Build the projected generator matrix $M_U$.
-    \item For each $u\in U$, test whether $e_u$ lies in the rational column span of $M_U$.
-    \item If no such $u$ exists, return failure.
-    \item Otherwise add one such $u$ to $S$ and continue.
+    \item set $U\leftarrow V\setminus S$ and build the projected matrix $M_U$;
+    \item for each $u\in U$, test whether $e_u\in \SpanQ(\mathrm{columns}(M_U))$;
+    \item if no such $u$ exists, return failure;
+    \item otherwise solve one such $u$ and continue.
   \end{enumerate}
-  \item Return the resulting forcing order.
+  \item Return the forcing order.
 \end{enumerate}
 \end{minipage}
 }
 \end{center}
 
-Two design choices deserve explanation.
+The exact implementation uses rational linear algebra for paper-facing decisions. The repo also contains fast closure heuristics, based on floating-point rank tests or modular filters, but those are used only inside proposal generation. Any exact score, exact hit rate, exact frontier row, or exact forcing claim in this paper is backed by Algorithm~1 rather than by a surrogate \citep{archivara_benchmark_report,archivara_h5_affine_shell}.
 
-\paragraph{Why exact rational span rather than integer span?}
-If $e_u$ is in the rational span of the projected generators, then some common denominator $D\neq 0$ satisfies $D e_u\in \Span_{\Z}(M_U)$, which is exactly the type of witness needed for rule 2. Conversely, an integer witness is automatically a rational witness. Section~\ref{sec:theory} proves this formally.
+\subsection{Greedy Seed Search and Direct Baselines}
 
-\paragraph{Why greedy solving is safe.}
-Solvability is monotone in the solved set: once a vertex is solvable, enlarging $T$ cannot destroy that fact, because rule 2 only becomes easier when more coordinates are allowed to be nonzero. Therefore the verifier may pick any currently solvable vertex without risking a false negative.
+Most positive rows in the repository come from fixed geometry plus a direct search over seeds and, in some phases, over edge labels. For a fixed choice of $H$, $W$, $X$, vertical profile $v$, horizontal labels $h$, seed budget, initial-$T$ budget, and boundary band, the repo uses a greedy proposal rule.
 
-\subsection{Frozen \textsc{H1} Route}
+\begin{center}
+\fbox{
+\begin{minipage}{0.94\textwidth}
+\textbf{Algorithm 2: Greedy seed search on a fixed grid family}
+\begin{enumerate}
+  \item Enumerate candidate boundary vertices according to the boundary band.
+  \item For each allowed initial solved set $T_0$ of the prescribed size:
+  \begin{enumerate}
+    \item initialize the seed set $R_0\leftarrow \varnothing$;
+    \item if the current certificate is already forcing, return it;
+    \item for each remaining seed slot:
+    \begin{enumerate}
+      \item evaluate every admissible new singleton seed using a fast closure oracle;
+      \item keep the seed that maximizes closure size;
+      \item if exact verification now succeeds, return the exact forcing certificate.
+    \end{enumerate}
+  \end{enumerate}
+  \item If no forcing certificate is found, return failure.
+\end{enumerate}
+\end{minipage}
+}
+\end{center}
 
-The pre-registered active route, \textsc{H1\_macrocell\_substitution}, was a height-$2$ corridor substitution family with finite interface alphabet $\{\mathrm{closed},\mathrm{carry\_a},\mathrm{carry\_b},\mathrm{gate}\}$, state cap $|\Sigma_{\mathrm{active}}|\le 8$, and one exact extractor \citep{archivara_h1_program}. The saved pilot that matters for this paper is even narrower:
+Random direct search wraps Algorithm~2 in an outer loop that samples the edge labels themselves. Deterministic reruns fix the edge pattern and use Algorithm~2 only for seeds and initial solved vertices. In either case, a candidate is recorded only if Algorithm~1 certifies forcing.
 
-\begin{itemize}
-  \item level-$1$ and level-$2$ are generated by the identity-style word built from $L_a$, $M_a$, and $R_a$;
-  \item the extracted corridor has one singleton seed at the left boundary;
-  \item the initial solved set is empty;
-  \item horizontal top edges carry one nonzero label, horizontal bottom edges are zero, and vertical edges carry one fixed nonzero label.
-\end{itemize}
+\subsection{Route-Specific Audit Protocols}
 
-Figure~\ref{fig:h1-grammar} shows the frozen level-$1$ word and its exact corridor extraction. Theorem~\ref{thm:one-seed} proves that every instance of this type is impossible, independently of search budget.
+\paragraph{Phase 4 corridor pilot.}
+The Phase 4 corridor pilot froze a same-sum width-$2$ family. The \textsc{H1} representative used a single singleton seed, empty initial solved set, one nonzero top-row label, zero bottom row, and a constant vertical label. \textsc{H2} then computed an abelian-style invariant package on the four family IDs that mattered to the pilot: \textsc{H1} level $1$, \textsc{H1} level $2$, the width-$4$ direct control, and the width-$6$ direct control \citep{archivara_h1_program,archivara_h1_obstruction,archivara_h2}. These rows remain useful because they establish the initial corridor obstruction and a local null result for the imported H2 feature package.
 
-\subsection{Direct No-CA Controls}
+\paragraph{H4 typed residue interfaces.}
+The Phase 6 champion route fixes one low-height asymmetric family
+\[
+X=\{(0,0),(1,0),(0,1),(1,1),(2,-1)\},
+\]
+one interface alphabet
+\[
+\{\mathrm{closed},\mathrm{top},\mathrm{bottom},\mathrm{gate\_up},\mathrm{gate\_down}\},
+\]
+and one exact extractor. A canonicalization quotient identifies words up to horizontal reversal and the row-swap involution top$\leftrightarrow$bottom, gate\_up$\leftrightarrow$gate\_down, leaving $39$ canonical width-$4$ interface words of length $3$. Each word is compiled to an $H=2$, $W=4$ grid, passed through Algorithm~2 with seed budget $4$, initial-$T$ budget $1$, and boundary band $1$, and then checked by Algorithm~1. Level-$2$ composition is allowed only if level-$1$ forcing words exist; composition must use the same alphabet, the same extractor, and no repair pass \citep{archivara_h4_typed_interfaces}.
 
-Once \textsc{H1} was fixed, the only fair baseline was matched direct search on the same corridor geometry and with the same fixed label budget. The repository used a randomized outer loop over top, bottom, and vertical edge labels together with a greedy inner loop over singleton seeds. Each candidate was accepted only if the exact verifier returned a full forcing order \citep{archivara_search_script,archivara_h1_frontier}. The saved control runs were:
+\paragraph{Complexity-accounted width-$8$ ledger.}
+The width-$8$ ledger re-runs one deterministic pattern for each of four family types: same-palette, low-height asymmetric, bounded-slope, and slowly growing $X$. Every row uses the same geometry ($H=2$, $W=8$), the same seed budget $3$, initial-$T$ budget $1$, and boundary band $1$. The ledger records not only score but also $|X|$, coordinate height, grammar length, active state count, extractor complexity, and boundary initialization. The saved exploratory $29/14$ witness is retained only as a legacy row outside that matched ledger \citep{archivara_complexity_frontier}.
 
-\begin{itemize}
-  \item width $4$, seed $601$, $50$ trials, $4$ nonzero labels;
-  \item width $6$, seed $602$, $20$ trials, $4$ nonzero labels;
-  \item width $8$, seed $501$, $1$ exploratory trial, $3$ nonzero labels;
-  \item width $8$, seed $502$, $1$ exploratory unrestricted trial, $3$ nonzero labels.
-\end{itemize}
+\paragraph{H5 affine-core / nonlinear-shell audit.}
+This audit keeps the H4 extractor fixed and splits the interface alphabet into an affine core
+\[
+\{\mathrm{closed},\mathrm{top},\mathrm{bottom}\}
+\]
+and a nonlinear shell
+\[
+\{\mathrm{gate\_up},\mathrm{gate\_down}\}.
+\]
+For each of the three low-height asymmetric families $\mathrm{asym\_a}$, $\mathrm{asym\_b}$, and $\mathrm{asym\_c}$, the repo checks all $39$ canonical shell words on a width-$4$ grid with seed budget $4$, initial-$T$ budget $1$, and boundary band $1$. The matched direct comparator runs $20$ exact trials at each of two seeds for the same family and budgets \citep{archivara_h5_affine_shell}.
 
-The first two rows are the substantive direct controls. The width-$8$ rows are exploratory only and are reported as such throughout the paper.
+\paragraph{Passive-middle geometry lift.}
+The height-$3$ lift keeps the H4 extractor but inserts a passive middle row. Horizontal labels are allowed only on the top and bottom rows; the middle row has no horizontal edges. Both vertical layers use the same label $c$. Seeds and initial solved vertices are restricted to the top and bottom boundary rows. The audit checks all $39$ canonical width-$4$ route words for each low-height asymmetric family and compares them to unrestricted direct search with $10$ exact trials at each of two seeds \citep{archivara_geometry_lift}.
 
-\subsection{\textsc{H2} Screen and Ablations}
+\paragraph{H6 defect transport, controller parity, and metastability.}
+The H6 family fixes one asymmetric label set and one width-$4$ motif alphabet $\{S,D,P\}$. The periodic word is $\mathrm{SDS}$, the aperiodic word is $\mathrm{SDP}$, and the reversed word is $\mathrm{PDS}$. The route is tested at $H=2$ and $H=3$, with seed budget $3$, initial-$T$ budget $1$, and a thinned-seed robustness check at budget $2$ \citep{archivara_h6_defect_transport}. A separate exhaustive controller solver enumerates all $75{,}276$ programs in the frozen controller bank and compares the best controller certificate to the matched direct archive \citep{archivara_boundary_controller}. Finally, the metastability audit scans all $27$ words in the same bank and records the best closure-time program for each word, together with exact score and a dependency-hypergraph summary \citep{archivara_metastability}.
 
-The backup \textsc{H2} route computed an invariant package on the same family IDs: relation-matrix rank, Smith diagonal, support size, edge density, determinant pattern in $X$, coordinate height, and the number of vertices already target-solvable at time zero \citep{archivara_h2}. The route survived only if those imported descriptors ordered candidates strictly better than raw arithmetic features.
+\subsection{Complexity and Search-Space Accounting}
 
-The ablation program acted on the best saved width-$4$ direct control \citep{archivara_ablations}. It included isotropic replacements, boundary-seed removal, separate randomizations of $R$, $T$, and $X$, and frozen-$X$ scaling to widths $6$ and $8$. Because the active \textsc{H1} grammar died, stage-order perturbation was not applicable.
+Let $n=HW$ be the number of vertices and let $g=m+r$ be the number of initial generators in a compiled grid instance. At one verifier stage with $u$ unsolved vertices, the projected matrix $M_U$ has $2u$ rows and $g$ columns. Dense exact elimination on $M_U$ has polynomial cost in $u$, $g$, and coefficient size; a coarse dense bound is $O(u^2g+u^3)$ arithmetic operations per span test. Testing all vertices across all stages therefore yields a worst-case bound polynomial in $n$ and $g$, with the saved repo rows remaining tiny enough that exact auditability is preferable to asymptotic scale.
 
-\subsection{Complexity Analysis}
-
-Let $n=2W$ be the number of corridor vertices and let $g=m+r$ be the number of initial generators. The compiler is linear in the certificate size: $O(W+g)$ time and memory. The exact verifier is more expensive. At one solved-set stage with $u$ unsolved vertices, the projected matrix has $2u$ rows and $g$ columns. Dense exact Gaussian elimination on this matrix costs polynomial time in $u$, $g$, and the coefficient bit-length; a conservative dense bound is $O(u^2 g + u^3)$ arithmetic operations for one row-reduction pass. Testing all candidate vertices across all stages yields a coarse worst-case bound of $O(n^4 + n^3 g)$ arithmetic operations, with large constants coming from exact rational arithmetic. 
-
-The repository accepts this cost because all saved instances are tiny ($n\le 16$). The project explicitly traded asymptotic scale for exact auditability. The random-search outer loop multiplies that verifier cost by the number of sampled edge-label patterns and greedy seed additions; in the saved runs the budgets were $50$, $20$, $1$, and $1$ outer-loop trials, so the runtime remained negligible on a commodity multi-core server.
+The route audits are finite and explicit. Table~\ref{tab:setup} records the exact search spaces, trial budgets, and seeds. The critical point is methodological rather than asymptotic: the repo freezes and reports the proposal bank itself. A route cannot claim lift by silently enlarging $X$, adding interface symbols, changing the extractor, or loosening the boundary budget \citep{archivara_benchmark_report,archivara_complexity_frontier}.
 
 \section{Theoretical Results and Proofs}
 \label{sec:theory}
 
-\subsection{Compiler Correctness}
+\subsection{Compiler and Verifier Correctness}
 
 \begin{proposition}
 \label{prop:compiler}
-Let $C=(W,X,v,\tau,\beta,R,T)$ be a corridor instance. The compiled object $(X;d_1,d_2;f_1,f_2;T;R)$ is a legal certificate in the benchmark sense. Its graph has $n=2W$ vertices and
+Let $C=(H,W,X,v,h,R,T)$ be a grid instance. Its compiled object from Definition~\ref{def:compiled-grid} is a legal verifier-side certificate. The compiled graph has
 \[
-m = W\cdot 1_{v\neq (0,0)} + \sum_{c=1}^{W-1}1_{\tau_c\neq (0,0)} + \sum_{c=1}^{W-1}1_{\beta_c\neq (0,0)}.
+n=HW
 \]
+vertices and
+\[
+m=W\sum_{i=1}^{H-1}1_{v_i\neq (0,0)}+\sum_{r=1}^{H}\sum_{c=1}^{W-1}1_{h_{r,c}\neq (0,0)}
+\]
+nonzero edges.
 \end{proposition}
 
 \begin{proof}
-By definition, the compiled certificate has $d_1=2$ and $d_2=W$, so its vertex set is
+The compiled certificate has $d_1=H$ and $d_2=W$, so its vertex set is $[H]\times [W]$ and therefore has size $HW$.
+
+We next check legality of the edge-label functions. For $f_1$, the domain is $[H-1]$, and $f_1(i)=v_i\in X$ by definition of a grid instance. For $f_2$, the domain is $[H]\times [W-1]$, and $f_2(r,c)=h_{r,c}\in X$. Hence every nonzero edge label used by the compiled certificate belongs to $X\setminus\{(0,0)\}$, as required.
+
+Now consider the singleton seeds. Every element of $R$ is, by definition of a grid instance, supported on a single vertex $u\in [H]\times [W]$ and takes a nonzero value in $X$. Therefore each compiled seed is a legal singleton-supported verifier function. The initial solved set $T$ is a subset of the vertex set, so it is also legal.
+
+It remains to count nonzero edges. For each inter-row layer $i\in\{1,\dots,H-1\}$ and each column $c\in\{1,\dots,W\}$, the label $v_i$ contributes one vertical edge exactly when $v_i\neq (0,0)$. Summing over columns gives the term
 \[
-\{1,2\}\times\{1,\dots,W\}.
+W\sum_{i=1}^{H-1}1_{v_i\neq (0,0)}.
 \]
-Hence the number of vertices is $n=d_1d_2=2W$.
-
-Next we verify legality of the edge dictionaries. The function $f_1$ is defined only on the single point $1\in (d_1-1)$ and takes value $v\in X$. Therefore every nonzero value of $f_1$ belongs to $X\setminus\{(0,0)\}$, exactly as required. The function $f_2$ is defined on $\{1,2\}\times\{1,\dots,W-1\}$ and takes values $\tau_c$ on row $1$ and $\beta_c$ on row $2$. Again every nonzero value lies in $X\setminus\{(0,0)\}$ by the definition of a corridor instance. Thus the compiled graph is an $X$-constructible graph in the verifiable format.
-
-Now consider $R$. Each element of $R$ is, by hypothesis, a pair $((r,c),x)$ with $x\in X\setminus\{(0,0)\}$. In the verifier format this becomes a function on the vertex set that is zero everywhere except at the single vertex $(r,c)$, where it equals $x$. Therefore every compiled element of $R$ has support size exactly one, which is the legality condition for singleton generators. The set $T$ is simply a subset of the vertex set, so it is also legal.
-
-Finally we count edges. There are exactly $W$ vertical positions. Each contributes one nonzero edge precisely when $v\neq (0,0)$. There are $W-1$ top horizontal positions, each nonzero exactly when $\tau_c\neq (0,0)$, and $W-1$ bottom horizontal positions, each nonzero exactly when $\beta_c\neq (0,0)$. Summing these contributions gives the displayed formula for $m$.
+For horizontal edges, each pair $(r,c)$ with $1\leq r\leq H$ and $1\leq c\leq W-1$ contributes one nonzero edge exactly when $h_{r,c}\neq (0,0)$. Summing these indicators gives
+\[
+\sum_{r=1}^{H}\sum_{c=1}^{W-1}1_{h_{r,c}\neq (0,0)}.
+\]
+Adding the vertical and horizontal contributions yields the stated formula for $m$.
 \end{proof}
 
-\subsection{Exact Solvability Criterion}
-
 \begin{lemma}
-\label{lem:integer-vs-rational}
+\label{lem:int-vs-rat}
 Let $M$ be an integer matrix and let $e$ be a rational vector. The following are equivalent:
 \begin{enumerate}
-  \item there exists a nonzero integer $a$ such that $a e$ lies in the integer column span of $M$;
-  \item $e$ lies in the rational column span of $M$.
+  \item there exists a nonzero integer $a$ such that $ae\in \SpanZ(\mathrm{columns}(M))$;
+  \item $e\in \SpanQ(\mathrm{columns}(M))$.
 \end{enumerate}
 \end{lemma}
 
 \begin{proof}
-Assume first that there exists a nonzero integer $a$ with $a e = Mz$ for some integer vector $z$. Then
+Assume (1). Then $ae=Mz$ for some integer vector $z$. Dividing by the nonzero integer $a$ gives
 \[
-e = M\left(\frac{1}{a}z\right),
+e=M\left(\frac{1}{a}z\right),
 \]
-so $e$ lies in the rational column span of $M$.
+so $e$ lies in the rational column span of $M$. Thus (1)$\Rightarrow$(2).
 
-Conversely, suppose $e=Mq$ for some rational vector $q$. Let $D$ be a common positive denominator for the coordinates of $q$. Then $Dq$ is an integer vector, and hence
+Assume (2). Then $e=Mq$ for some rational vector $q$. Let $D>0$ be a common denominator of the coordinates of $q$. Then $Dq$ is an integer vector, so
 \[
-De = M(Dq)
+De=M(Dq)\in \SpanZ(\mathrm{columns}(M)).
 \]
-lies in the integer column span of $M$. Because $D>0$, the integer $a=D$ is nonzero.
-\end{proof}
-
-\begin{lemma}
-\label{lem:left-nullspace}
-Let $M$ be an $m\times g$ matrix over $\Q$. Then the rational column space of $M$ equals the orthogonal complement of the left nullspace:
-\[
-\Span_{\Q}(\text{columns of }M)=\ker(M^\top)^\perp.
-\]
-\end{lemma}
-
-\begin{proof}
-Let $C$ denote the rational column space of $M$. If $y\in C$, then $y=Mz$ for some $z\in\Q^g$. For every $\lambda\in\ker(M^\top)$ we have
-\[
-\lambda^\top y = \lambda^\top M z = (M^\top \lambda)^\top z = 0.
-\]
-Thus $C\subseteq \ker(M^\top)^\perp$.
-
-It remains to compare dimensions. Because $C$ is the column space of $M$,
-\[
-\dim C = \rank(M).
-\]
-Also,
-\[
-\dim \ker(M^\top)^\perp = m - \dim \ker(M^\top).
-\]
-By rank-nullity applied to $M^\top$,
-\[
-\dim \ker(M^\top) = m - \rank(M^\top)=m-\rank(M).
-\]
-Therefore
-\[
-\dim \ker(M^\top)^\perp = m-(m-\rank(M))=\rank(M)=\dim C.
-\]
-Since $C$ is a subspace of $\ker(M^\top)^\perp$ and the two spaces have the same finite dimension, they are equal.
+Because $D$ is a nonzero integer, (1) holds with $a=D$. Thus (2)$\Rightarrow$(1).
 \end{proof}
 
 \begin{lemma}
 \label{lem:single-step}
-Fix a compiled corridor certificate and a solved set $S$. Let $U=V\setminus S$, let $M_U$ be the projected generator matrix, and let $u\in U$. Then $u$ is legally solvable at this stage if and only if $e_u$ lies in the rational column span of $M_U$.
+Fix a compiled grid certificate and a solved set $S$. Let $U=V\setminus S$ and let $M_U$ be the projected generator matrix. For an unsolved vertex $u\in U$, the following are equivalent:
+\begin{enumerate}
+  \item the verifier may solve $u$ by one application of rule~2 at this stage;
+  \item $e_u\in \SpanQ(\mathrm{columns}(M_U))$.
+\end{enumerate}
 \end{lemma}
 
 \begin{proof}
-By the verifier rules, $u$ is solvable exactly when some relation can be produced whose projection to the unsolved coordinates is supported only at $u$ and has value $(a,-a)$ there for some nonzero integer $a$. In the projected coordinates this means precisely that
+The verifier may solve $u$ exactly when some available relation is supported outside $S$ on the single vertex $u$ and has value $(a,-a)$ there for some nonzero integer $a$. In projected coordinates this means precisely that
 \[
-a e_u \in \Span_{\Z}(\text{columns of }M_U)
+ae_u\in \SpanZ(\mathrm{columns}(M_U))
 \]
-for some nonzero integer $a$. By Lemma~\ref{lem:integer-vs-rational}, that condition is equivalent to
+for some nonzero integer $a$. By Lemma~\ref{lem:int-vs-rat}, this is equivalent to
 \[
-e_u \in \Span_{\Q}(\text{columns of }M_U).
+e_u\in \SpanQ(\mathrm{columns}(M_U)).
 \]
 \end{proof}
 
 \begin{theorem}
 \label{thm:verifier}
-For the width-$2$ corridor family, Algorithm~2 is sound and complete: it returns a full forcing order if and only if the compiled corridor certificate is forcing.
+For the grid specialization from Definition~\ref{def:grid}, Algorithm~1 is sound and complete: it returns a full forcing order if and only if the compiled grid certificate is forcing.
 \end{theorem}
 
 \begin{proof}
-We first prove soundness. Suppose Algorithm~2 returns a full order
-\[
-u_1,u_2,\dots,u_n
-\]
-of the vertices, where the initial segment agrees with the originally solved set $T$. At each stage the algorithm adds a vertex $u$ only after checking that $e_u$ lies in the rational column span of the projected generator matrix $M_U$. By Lemma~\ref{lem:single-step}, that is equivalent to the existence of a legal rule-2 witness for $u$ at that stage. Therefore every step performed by the algorithm is a legal verifier step. Since the algorithm solves every vertex, the certificate is forcing.
+We first prove soundness. Suppose Algorithm~1 returns a full order of the vertices. At each step, the algorithm adds a vertex $u$ only after checking that $e_u$ lies in the rational column span of the current projected generator matrix. By Lemma~\ref{lem:single-step}, that condition is equivalent to the existence of a legal rule~2 witness for $u$ at that stage. Therefore every step taken by the algorithm is legal in the verifier semantics. Because the algorithm eventually solves every vertex, the certificate is forcing.
 
-We now prove completeness. Assume the compiled certificate is forcing. We induct on the number of unsolved vertices. If no vertices are unsolved, the claim is trivial. Assume now that at least one vertex is unsolved and that the claim holds whenever fewer vertices are unsolved.
+We next prove completeness. Assume that the compiled certificate is forcing. We induct on the number of unsolved vertices.
 
-Because the certificate is forcing, there exists at least one legal next rule-2 step from the current solved set $S$. Let $u$ be a vertex that can be solved in such a step. By Lemma~\ref{lem:single-step}, $e_u$ lies in the rational column span of $M_U$. Hence Algorithm~2 will include $u$ in its candidate set.
+If all vertices are already solved, the claim is immediate. Assume now that at least one vertex is unsolved and that the theorem has already been proved for every forcing instance with fewer unsolved vertices.
 
-Algorithm~2 may choose $u$ or another currently solvable vertex $u'$. We must show that any such choice preserves the existence of a full forcing sequence. This follows from monotonicity. Suppose $u'$ is solvable from $S$. Then there exists a relation whose support outside $S$ is exactly $u'$. If we enlarge the solved set from $S$ to $S\cup\{u\}$ for some other vertex $u\neq u'$, the same relation still has support outside $S\cup\{u\}$ equal to $u'$, because every coordinate that was previously allowed to lie in $S$ is still allowed and one extra coordinate has been moved into the solved set. Therefore solving one currently solvable vertex cannot destroy the solvability of any other currently solvable vertex.
+Because the certificate is forcing, there exists at least one legal next rule~2 step from the current solved set $S$. Choose a vertex $u$ that can be solved in such a step. By Lemma~\ref{lem:single-step}, $e_u$ lies in the rational column span of the current projected generator matrix, so Algorithm~1 will include $u$ among its admissible candidates.
 
-Now take any full forcing sequence from $S$. If its first solved vertex is not the one chosen by Algorithm~2, use the preceding monotonicity argument to move the algorithm's chosen vertex to the front: it is already solvable from $S$, and after solving it every subsequent rule-2 witness remains valid or becomes easier because the solved set has grown. Thus there exists a full forcing sequence beginning with the algorithm's chosen vertex. After removing that first step, the remaining problem has one fewer unsolved vertex. By the inductive hypothesis, Algorithm~2 completes the rest of the order.
+Algorithm~1 may choose $u$ or it may choose another admissible candidate $u'$. We claim that solving one admissible vertex cannot destroy the admissibility of another admissible vertex. Indeed, suppose $u'$ is admissible from $S$. Then there exists a relation whose support outside $S$ is exactly $\{u'\}$ and whose value there is anti-diagonal. If we enlarge the solved set from $S$ to $S\cup\{u\}$ with $u\neq u'$, the same relation still has support outside the larger solved set equal to $\{u'\}$, because every coordinate that was allowed to be nonzero on the solved set remains allowed and one additional coordinate has become solved. Therefore $u'$ remains admissible after solving $u$.
 
-Therefore Algorithm~2 returns a full forcing order whenever the compiled certificate is forcing. Together with soundness, this proves the theorem.
+Now take any full forcing sequence from $S$. If its first solved vertex is already the vertex chosen by Algorithm~1, remove that step and apply the induction hypothesis to the remaining suffix. Otherwise, if the first vertex in that forcing sequence is some other admissible vertex $u'$, the previous paragraph shows that Algorithm~1's chosen vertex is also admissible at the same stage and that solving it first does not destroy the admissibility of $u'$. Hence we may swap Algorithm~1's chosen vertex to the front of the forcing sequence. After that swap, the remaining unsolved problem has one fewer vertex than before and is still forcing. By the induction hypothesis, Algorithm~1 solves the remainder.
+
+Thus Algorithm~1 returns a full forcing order whenever the compiled certificate is forcing. Together with soundness, this proves the theorem.
 \end{proof}
 
-\subsection{A General One-Seed Obstruction}
+\subsection{Obstruction Theorems}
 
-\begin{theorem}
+\begin{theorem}[One-seed obstruction]
 \label{thm:one-seed}
-Let $X\subset \Z^2$ be finite, and assume $x\notin \langle (1,-1)\rangle$ for every nonzero $x\in X$. Consider any legal certificate whose initial solved set is empty and whose initial singleton-generator set consists of exactly one seed,
+Let $X\subset \Z^2$ be finite, and assume that no nonzero element of $X$ lies in $\langle(1,-1)\rangle$. Consider any legal verifier-side certificate with empty initial solved set and exactly one initial singleton seed,
 \[
-R=\{x g_0\},
+R=\{x u_0\},
 \]
-with $x\in X\setminus\{(0,0)\}$. Then the certificate is not forcing.
+where $u_0$ is a vertex and $x\in X\setminus\{(0,0)\}$. Then the certificate is not forcing.
 \end{theorem}
 
 \begin{proof}
-Let $\Sigma$ be the total-label map that sums the $2$-dimensional labels across all vertices of a relation. More explicitly, if a relation is represented as a $2\times |V|$ integer matrix, then $\Sigma$ adds all columns and returns an element of $\Z^2$.
+Let $\Sigma$ denote the total-label map that sums a relation over all vertices and returns an element of $\Z^2$. We inspect the three verifier operations.
 
-We first compute $\Sigma$ on the generators allowed by rules 1 and 3.
-
-\textbf{Step 1:} Every edge generator has total label zero. Indeed, an edge generator with label $y$ places $y$ at one endpoint and $-y$ at the other endpoint, so its total label is
+\textbf{Step 1: edge generators have zero total label.}
+An edge generator with label $y$ places $y$ at one endpoint and $-y$ at the other endpoint, so its total label is
 \[
 y+(-y)=0.
 \]
 
-\textbf{Step 2:} The unique initial seed has total label $x$. This is immediate because it is supported at one vertex only.
+\textbf{Step 2: the unique initial seed has total label $x$.}
+This is immediate because the seed is supported at a single vertex.
 
-\textbf{Step 3:} Every relation ever generated has total label in the rank-one lattice $\Z x$. We prove this by induction over the verifier steps. Initially the claim holds because the only available non-edge generator is the seed itself, whose total label is $x$, while every edge generator has total label $0\in \Z x$. If two already available relations have total labels $k_1x$ and $k_2x$, then any integer linear combination of them has total label $(a k_1+b k_2)x\in \Z x$. Therefore the claim persists after every application of rule 3.
+\textbf{Step 3: every generated relation has total label in $\Z x$.}
+Initially, the available nonzero relations are the unique seed, of total label $x$, and the edge generators, all of total label $0$. Thus the claim holds at time zero. If two already available relations have total labels $k_1x$ and $k_2x$, then any integer linear combination of them has total label $(a k_1+b k_2)x$ for integers $a,b$. Therefore the claim is preserved by rule~3, and it is obviously preserved by adding more edge generators of total label $0$.
 
-Now suppose toward contradiction that some rule-2 step is possible. Then there exists a generated relation whose support outside the currently solved set consists of one vertex and whose label there is $(a,-a)$ for some nonzero integer $a$. Because the initial solved set is empty and rule 2 has not yet been applied before the first such step, the total label of that relation is exactly $(a,-a)$. By Step 3 this vector must lie in $\Z x$, so there exists an integer $k$ with
+Now suppose, for contradiction, that the certificate is forcing. Because the initial solved set is empty, some first rule~2 step must eventually occur. At that first rule~2 step, there exists a generated relation whose support is a single vertex and whose value there is $(a,-a)$ with $a\neq 0$. Since no vertex has yet been solved, the total label of that relation is exactly $(a,-a)$. By Step~3, this total label must lie in $\Z x$, so there exists $k\in \Z$ such that
 \[
 kx=(a,-a).
 \]
-If $k=0$, then $(a,-a)=0$, which contradicts $a\neq 0$. If $k\neq 0$, then
+If $k=0$, then $(a,-a)=(0,0)$, contradicting $a\neq 0$. If $k\neq 0$, then
 \[
 x=\frac{a}{k}(1,-1),
 \]
-so $x\in \langle (1,-1)\rangle$, contradicting the hypothesis on $X$.
+so $x\in \langle(1,-1)\rangle$, contradicting the hypothesis on $X$.
 
-Thus no rule-2 step is ever possible. Since the initial solved set is empty, the solved set can never grow. The certificate is therefore not forcing.
+Therefore no first rule~2 step exists. The solved set can never grow from the empty set, so the certificate is not forcing.
 \end{proof}
 
 \begin{corollary}
 \label{cor:h1}
-Every frozen \textsc{H1} pilot instance saved in the repository fails exact verification before scoring.
+Every frozen \textup{\textsc{H1}} pilot instance in the repository fails exact verification before scoring.
 \end{corollary}
 
 \begin{proof}
-The saved obstruction artifact records that every extracted frozen \textsc{H1} level has exactly one singleton seed and no initially solved vertices \citep{archivara_h1_obstruction}. The nonzero labels all belong to the benchmark-legal set $X$, so none lies in $\langle (1,-1)\rangle$. Therefore Theorem~\ref{thm:one-seed} applies directly.
+The saved obstruction artifact records that every frozen \textsc{H1} level has exactly one singleton seed and empty initial solved set \citep{archivara_h1_obstruction}. The active same-sum palette contains no nonzero anti-diagonal label, so Theorem~\ref{thm:one-seed} applies directly.
 \end{proof}
 
-\begin{remark}
-Corollary~\ref{cor:h1} is stronger than a failed transfer test. It says that the frozen \textsc{H1} route never reaches a stage where a score comparison between levels is meaningful. Figure~\ref{fig:obstruction} turns the proof into the invariant picture used throughout the paper, and Table~\ref{tab:frontier} confirms that the saved \textsc{H1} rows are exact failures rather than poor but finite scores.
-\end{remark}
+\begin{theorem}[Passive-middle row-quotient obstruction]
+\label{thm:row-quotient}
+Fix a nonzero vector $c\in \Z^2$ with $c\notin \langle(1,-1)\rangle$. Let $W\geq 1$, and consider a height-$3$ grid instance with the following properties:
+\begin{enumerate}
+  \item the vertical profile is $(c,c)$;
+  \item every horizontal label on the middle row is $(0,0)$;
+  \item every singleton seed and every initially solved vertex lies on the top or bottom row.
+\end{enumerate}
+Then the compiled certificate is not forcing.
+\end{theorem}
+
+\begin{proof}
+For each column $j\in\{1,\dots,W\}$, let $m_j=(2,j)$ be the middle-row vertex in that column, and let $\pi_j$ be the projection map that extracts the two coordinates of a relation at the vertex $m_j$.
+
+We first prove that every available relation has middle-row projection in the rank-one lattice $\Z c$ at each column.
+
+\textbf{Singleton seeds.}
+By hypothesis, singleton seeds are supported only on the top or bottom row. Therefore $\pi_j$ sends every singleton seed to $0$, which lies in $\Z c$.
+
+\textbf{Horizontal edge generators.}
+A horizontal edge on the top or bottom row does not touch $m_j$, so its $\pi_j$-projection is $0\in \Z c$. A horizontal edge on the middle row has label $(0,0)$ by assumption, so its generator is the zero relation and again has $\pi_j$-projection $0\in \Z c$.
+
+\textbf{Vertical edge generators.}
+At column $j$, the upper vertical edge contributes either $c$ or $-c$ at $m_j$, and the lower vertical edge contributes either $c$ or $-c$ at $m_j$. Hence the $\pi_j$-projection of every nonzero vertical edge generator lies in $\Z c$.
+
+Because rule~1 only adds edge generators of the three types above and rule~3 only takes integer linear combinations, it follows that every relation ever generated satisfies
+\[
+\pi_j(r)\in \Z c
+\]
+for every column $j$.
+
+Now suppose, toward contradiction, that the certificate is forcing. Since no middle-row vertex lies in the initial solved set, there must be a first time at which some middle-row vertex is solved by rule~2. Let that vertex be $m_j$. At that moment, rule~2 provides a relation $r$ whose support outside the already solved vertices is exactly $\{m_j\}$ and whose value at $m_j$ is $(a,-a)$ with $a\neq 0$. In particular,
+\[
+\pi_j(r)=(a,-a).
+\]
+But the previous paragraph shows that $\pi_j(r)\in \Z c$, so there exists $k\in \Z$ with
+\[
+k c=(a,-a).
+\]
+If $k=0$, then $(a,-a)=(0,0)$, contradicting $a\neq 0$. If $k\neq 0$, then
+\[
+c=\frac{a}{k}(1,-1),
+\]
+which means that $c\in \langle(1,-1)\rangle$, contradicting the hypothesis.
+
+Therefore no middle-row vertex can ever be solved. Since the initial solved set contains no middle-row vertex and a forcing certificate must eventually solve every vertex, the compiled certificate is not forcing.
+\end{proof}
+
+\begin{corollary}
+\label{cor:h3}
+The passive-middle $H=3$ lift audited in the repository is impossible on the families $\mathrm{asym\_a}$, $\mathrm{asym\_b}$, and $\mathrm{asym\_c}$.
+\end{corollary}
+
+\begin{proof}
+In the saved geometry-lift audit, the three vertical labels are $c=(1,1)$, $c=(2,-1)$, and $c=(1,2)$, whose coordinate sums are $2$, $1$, and $3$ respectively \citep{archivara_geometry_lift}. Hence none lies in $\langle(1,-1)\rangle$. The audit also fixes zero horizontal labels on the middle row and restricts seeds and initial solved vertices to the top and bottom boundary rows. Therefore Theorem~\ref{thm:row-quotient} applies to each family.
+\end{proof}
 
 \section{Experimental Setup}
 \label{sec:setup}
 
-\subsection{Evidence Boundary}
+\subsection{Saved Artifacts Used as Evidence}
 
-The paper uses only saved repository artifacts. No new search rows were run for the manuscript. This decision matches the verification memo, which judged the existing evidence sufficient for a clean negative write-up but not for a broadened benchmark claim \citep{archivara_verification}. Consequently, every quantitative statement in Sections~\ref{sec:results}--\ref{sec:discussion} is traced either to a formal theorem above or to one of the saved JSON/markdown artifacts cited in the text.
-
-\subsection{Executed Rows}
-
-Table~\ref{tab:setup} lists the executed rows that matter for the paper. The first row is the exact symbolic obstruction for \textsc{H1}. The next four are the saved direct-search outputs. The remaining rows summarize the saved \textsc{H2} screen and the saved ablations.
+Table~\ref{tab:setup} lists the saved artifacts used in the paper. The table is intentionally explicit: the benchmark contribution here is as much about auditable route accounting as it is about any single score.
 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{2.0cm} >{\raggedright\arraybackslash}p{5.4cm} >{\raggedright\arraybackslash}p{2.3cm}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.5cm} >{\raggedright\arraybackslash}p{2.1cm} >{\raggedright\arraybackslash}p{2.3cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{4.0cm}}
 \toprule
-Row & Artifact & Key settings & Purpose \\
+Phase & Artifact & Geometry / family & Search space or budget & Role in the paper \\
 \midrule
-\textsc{H1} obstruction & \texttt{h1\_obstruction} & one singleton seed, empty initial $T$, legal same-sum palette & prove route impossibility \\
-width $4$ direct control & \texttt{width4\_601} & seed $601$, $50$ trials, $4$ nonzero labels, seed budget $8$, initial-$T$ budget $2$ & matched direct baseline \\
-width $6$ direct control & \texttt{width6\_602} & seed $602$, $20$ trials, $4$ nonzero labels, seed budget $8$, initial-$T$ budget $2$ & matched direct baseline \\
-width $8$ exploratory control & \texttt{width8\_501} & seed $501$, $1$ trial, $3$ nonzero labels, seed budget $12$, initial-$T$ budget $2$ & exploratory stress test \\
-width $8$ unrestricted exploratory control & \texttt{width8\_502} & seed $502$, $1$ trial, $3$ nonzero labels, boundary band $0$ & exploratory stress test \\
-\textsc{H2} screen & \texttt{h2\_screen} & four family IDs: H1 level 1, H1 level 2, width $4$, width $6$ & invariant comparison \\
-ablations & \texttt{ablations} & base width-$4$ witness, isotropy, boundary seed removal, $R/T/X$ randomization, frozen-$X$ scaling & robustness audit \\
+4 & \textsc{H1} obstruction & width-$2$ corridor, same-sum palette & exact symbolic route invariant, no RNG & theorem-backed kill of the frozen macrocell pilot \\
+4 & \textsc{H2} screen & four family IDs & fixed feature computation, no RNG & local null result for the abelian-style descriptor package \\
+6 & \textsc{H4} typed interfaces & $\mathrm{asym\_a}$, $H=2$, $W=4\to 8$ & $39$ canonical width-$4$ words; matched direct width-$8$ comparator with $60$ exact trials & interface-sufficiency audit \\
+6 & width-$8$ complexity ledger & four matched width-$8$ families plus one legacy row & four deterministic reruns at seed budget $3$, initial-$T$ budget $1$, boundary band $1$ & hidden-complexity accounting for the width-$8$ story \\
+6 & \textsc{H5} shell audit & $\mathrm{asym\_a}$, $\mathrm{asym\_b}$, $\mathrm{asym\_c}$, $H=2$, $W=4$ & $3\times 39=117$ canonical shell words; matched direct comparator $=3\times 40=120$ exact trials & bounded-shell mechanism audit and direct frontier extraction \\
+6 & geometry lift & $\mathrm{asym\_a}$, $\mathrm{asym\_b}$, $\mathrm{asym\_c}$, $H=3$, $W=4$ & $117$ route words; matched unrestricted direct comparator $=60$ exact trials & passive-middle row-quotient audit \\
+6 & \textsc{H6} schedule tests & $\mathrm{asym\_a}$, $H=2$ and $H=3$ & five fixed schedule rows, including periodic, aperiodic, thinned, reversed, and lifted variants & defect-transport falsification \\
+6 & controller enumeration & $\mathrm{asym\_a}$, $H=2$, $W=4$ & exhaustive bank of $75{,}276$ programs & parity check against the direct frontier \\
+6 & metastability scan & $\mathrm{asym\_a}$, $H=2$, $W=4$ & all $27$ words in the frozen motif bank, each with exhaustive boundary seeds / initial-$T$ choices & test whether closure-time summaries predict score \\
 \bottomrule
 \end{tabular}
-\caption{Saved experimental rows used in this paper. Every row uses the exact verifier, never a surrogate score \citep{archivara_search_script,archivara_h1_frontier,archivara_h2,archivara_ablations}.}
+\caption{Saved artifacts used as evidence. Every route-facing score or hit rate in the paper is backed by the exact verifier, not by rollout proxies \citep{archivara_h1_obstruction,archivara_h2,archivara_h4_typed_interfaces,archivara_complexity_frontier,archivara_h5_affine_shell,archivara_geometry_lift,archivara_h6_defect_transport,archivara_boundary_controller,archivara_metastability}.}
 \label{tab:setup}
 \end{table}
 
-\subsection{Hardware and Software}
+\subsection{Budgets, Random Seeds, and Exhaustive Enumerations}
 
-All saved scripts were executed on a Linux x86\_64 server with $20$ logical CPU cores and approximately $1.0$~TiB RAM available. The software environment used Python $3.10.17$, SymPy $1.14.0$, and NumPy $2.2.6$. The manuscript figures were generated afterward from the saved JSON artifacts with Matplotlib $3.10.8$. The central numerical kernel is exact rational linear algebra in SymPy rather than floating-point simulation.
+The saved budgets are part of the evidence:
+\begin{itemize}
+  \item H4 uses seed budget $4$, initial-$T$ budget $1$, boundary band $1$, and two direct-search seeds $(3101,3102)$ with $30$ exact trials each \citep{archivara_h4_typed_interfaces}.
+  \item The width-$8$ complexity ledger fixes seed budget $3$, initial-$T$ budget $1$, and boundary band $1$ for all matched reruns \citep{archivara_complexity_frontier}.
+  \item H5 uses seed budget $4$, initial-$T$ budget $1$, boundary band $1$, and direct-search seeds $(6201,6202)$ with $20$ exact trials each per family \citep{archivara_h5_affine_shell}.
+  \item The geometry-lift direct comparator uses seeds $(7201,7202)$ with $10$ exact trials each per family \citep{archivara_geometry_lift}.
+  \item H6 fixed schedules use seed budget $3$, initial-$T$ budget $1$, boundary band $1$, together with one thinned-seed test at budget $2$ \citep{archivara_h6_defect_transport}.
+  \item The controller bank and metastability scan are exhaustive over their frozen finite banks and therefore use no randomness \citep{archivara_boundary_controller,archivara_metastability}.
+\end{itemize}
 
-\subsection{Random Seeds and Uncertainty Quantification}
+\subsection{Reproducibility Caveats}
 
-The saved direct-control searches use random seeds $601$, $602$, $501$, and $502$. The ablation script uses deterministic randomization seed $1901$ for the four saved $R$, $T$, and $X$ randomizations. Because the core outputs are exact finite certificates, most reported quantities are deterministic measurements, not estimates. The only confidence intervals in the paper are descriptive Wilson intervals for small Bernoulli success rates in the saved randomization and width-$8$ boundary-stress experiments. Those intervals are included to make sample size limitations visible, not to claim asymptotic statistical power.
+The repository saves command lines, seeds, geometry, budgets, and exact JSON outputs, but it does not preserve publication-grade hardware logs for the original search runs. We therefore do \emph{not} make runtime or throughput claims. The reproducibility burden carried by this paper is exact logical and exact numerical reproducibility: same scripts, same seeds, same route banks, same verifier, same saved outputs.
 
 \section{Results}
 \label{sec:results}
 
-\subsection{\textsc{H1} Fails Before Scoring}
+Table~\ref{tab:route-summary} gives the route-level summary before we discuss the routes one by one.
 
-Corollary~\ref{cor:h1} proves that the frozen \textsc{H1} pilot cannot produce a forcing certificate at any scale. The saved artifact agrees exactly: both the level-$1$ and level-$2$ rows are verification failures with no score at all \citep{archivara_h1_obstruction,archivara_h1_frontier}. Figure~\ref{fig:obstruction} visualizes the invariant used in the proof. The important point is that this is not a weak negative result. The route is not merely uncompetitive; it is structurally impossible.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.0cm} >{\raggedright\arraybackslash}p{2.1cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{3.2cm}}
+\toprule
+Route & Exact search space & Route outcome & Matched direct comparator & Evidence-based conclusion \\
+\midrule
+\textsc{H1} & theorem plus frozen pilot instances & no forcing row at any level & phase-4 corridor controls at score $2.0$ & killed by Theorem~\ref{thm:one-seed}; no score comparison is meaningful \\
+\textsc{H2} & four saved family IDs & no ranking lift beyond raw support and target-solvable counts & none needed beyond the same four IDs & local null result only \\
+\textsc{H4} & $39$ canonical width-$4$ interface words & $0$ forcing words, hence $0$ compositions & matched width-$8$ direct hit rate $0/60$ & typed interfaces fail before composition \\
+ledger & four matched width-$8$ reruns plus one legacy row & all matched rows empty; only legacy $29/14$ row scores & same matched reruns & the saved $29/14$ witness is outside the matched envelope \\
+\textsc{H5} & $117$ canonical shell words across three families & $0$ forcing shell words & direct search finds $13/7$, $13/7$, and $14/7$ & bounded shell library loses to direct search \\
+$H=3$ lift & $117$ passive-middle route words plus Theorem~\ref{thm:row-quotient} & no forcing route word on any family & direct hit rate $0/20$ on each family & passive-middle lift is killed by a row quotient \\
+\textsc{H6} & periodic / aperiodic / thinned / reversed / lifted schedules & only $\mathrm{SDP}$ at $H=2$ forces, with score $13/7$ & the same $13/7$ direct certificate already exists & no mechanism lift survives robustness checks \\
+controller & $75{,}276$ exact programs & $48$ forcing programs; best word $\mathrm{SDP}$ at $13/7$ & best direct certificate also $13/7$ & exhaustive controller search recovers parity, not improvement \\
+metastability & $27$ words with exhaustive boundary programs & four-word tie at score $13/7$; many high-closure failures remain nonforcing & direct representative $\mathrm{SDP}$ belongs to the tie & closure-time summaries do not predict better certificates \\
+\bottomrule
+\end{tabular}
+\caption{Route summary at the repository endpoint. Every number in the table is an exact theorem statement or an exact measurement backed by a saved artifact \citep{archivara_h1_obstruction,archivara_h2,archivara_h4_typed_interfaces,archivara_complexity_frontier,archivara_h5_affine_shell,archivara_geometry_lift,archivara_h6_defect_transport,archivara_boundary_controller,archivara_metastability}.}
+\label{tab:route-summary}
+\end{table}
+
+\subsection{The Phase 4 Pilot Dies by Proof, and H2 Adds Only a Local Null Result}
+
+The frozen \textsc{H1} pilot is a theorem-level failure, not a poor score. Corollary~\ref{cor:h1} shows that every saved \textsc{H1} level has one singleton seed and empty initial solved set, so exact verification fails before scoring. Figure~\ref{fig:h1-grammar} reminds the reader what that family looks like, while Figure~\ref{fig:obstruction}a translates the proof into the invariant picture used by the repo.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{figures/figure2_h1_grammar.pdf}
-  \caption{Frozen \textsc{H1} corridor grammar. \textbf{a}, the level-$1$ identity word built from the left, middle, and right templates permitted by the saved pilot. \textbf{b}, the exact compiled corridor instance induced by that word: every vertical edge carries the same label $z$, the top row carries $u$, the bottom row is zero, the initial solved set is empty, and there is exactly one singleton seed at the left boundary. This is precisely the setting to which Theorem~\ref{thm:one-seed} applies \citep{archivara_h1_program,archivara_h1_obstruction}.}
+  \caption{Frozen \textsc{H1} corridor pilot. \textbf{a}, the saved level-$1$ identity word. \textbf{b}, its exact compiled corridor instance: one singleton seed at the left boundary, empty initial solved set, one nonzero top-row label, zero bottom row, and constant vertical label. This is precisely the setting of Corollary~\ref{cor:h1}. The figure remains relevant even after Phase 6 because it visualizes the pilot route that first failed by proof.}
   \label{fig:h1-grammar}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.96\textwidth]{figures/figure3_obstruction.pdf}
-  \caption{Proof mechanism behind the frozen \textsc{H1} failure. Edge generators always have total label zero, so with one initial singleton seed every derived relation has total label in the rank-one lattice $\Z x$. Rule~2, however, requires a nonzero anti-diagonal singleton $(a,-a)$, whose total label lies in $\langle(1,-1)\rangle$. Since the seed label $x$ is benchmark-legal and therefore outside that line, the two requirements are incompatible. The figure is a visualization of Theorem~\ref{thm:one-seed}, not a heuristic after-the-fact interpretation.}
+  \includegraphics[width=\textwidth]{figures/figure3_obstruction.pdf}
+  \caption{The two formal obstructions proved in Section~\ref{sec:theory}. \textbf{a}, the one-seed obstruction: every generated relation has total label in the rank-one lattice generated by the unique seed, but rule~2 requires a nonzero anti-diagonal singleton. \textbf{b}, the passive-middle row-quotient obstruction: in the height-$3$ lift, every middle-row contribution is a multiple of the vertical label $c$, while the middle row must eventually produce an anti-diagonal singleton to force. The first panel explains the Phase 4 \textsc{H1} failure; the second anticipates the Phase 6 geometry-lift failure.}
   \label{fig:obstruction}
 \end{figure}
 
-\subsection{Direct Controls Plateau Near Score \texorpdfstring{$2.0$}{2.0}}
-
-Once \textsc{H1} is removed, the surviving positive rows are the matched direct corridor controls. Table~\ref{tab:frontier} collects the exact saved frontier. The best verified score is $2.0$ at width $4$ and again $2.0$ at width $6$. The two width-$8$ witnesses are exploratory, use smaller nonzero palettes, and are worse than the width-$4$ and width-$6$ controls.
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{lcccccc}
-\toprule
-Family & forcing? & score & $m$ & $r$ & $n$ & $t$ \\
-\midrule
-\textsc{H1} level $1$ identity & no & -- & $7$ & $1$ & $8$ & $0$ \\
-\textsc{H1} level $2$ identity & no & -- & $15$ & $1$ & $16$ & $0$ \\
-width $4$ direct control & yes & $2.0$ & $7$ & $5$ & $8$ & $2$ \\
-width $6$ direct control & yes & $2.0$ & $13$ & $7$ & $12$ & $2$ \\
-width $8$ exploratory control & yes & $29/14 \approx 2.0714$ & $20$ & $9$ & $16$ & $2$ \\
-width $8$ unrestricted exploratory control & yes & $30/14 \approx 2.1429$ & $18$ & $12$ & $16$ & $2$ \\
-\bottomrule
-\end{tabular}
-\caption{Exact frontier extracted from the saved artifacts. The width-$4$ and width-$6$ rows are the matched direct controls. The width-$8$ rows are exploratory only and do not repair the benchmark gap at level $2$ \citep{archivara_h1_frontier,archivara_width4,archivara_width6,archivara_width8}.}
-\label{tab:frontier}
-\end{table}
-
-Figure~\ref{fig:frontier} makes the same point graphically. The red dashed line marks the target $1.675$. The gold dotted line marks the broader $1.70$ neighborhood that the pre-registered plan used as a plausibility threshold. Nothing in the saved frontier approaches either line.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{figures/figure4_frontier.pdf}
-  \caption{Exact frontier of the saved corridor program. \textbf{a}, the best saved direct-control scores at widths $4$, $6$, and exploratory width $8$, together with the target threshold $1.675$ and the broader $1.70$ neighborhood used in the experiment plan. The two red crosses show the \textsc{H1} level-$1$ and level-$2$ verification failures. \textbf{b}, best-score-so-far trajectories for the saved width-$4$ and width-$6$ runs. These are exact verifier outputs, not heuristic rollout scores \citep{archivara_width4,archivara_width6,archivara_width8}.}
-  \label{fig:frontier}
-\end{figure}
-
-The explicit width-$4$ and width-$6$ certificates are useful because they show what the surviving positives actually look like. Figure~\ref{fig:certificates} plots their corridor geometry, seeds, and initial solved vertices. Both witnesses are visibly boundary loaded. The width-$6$ witness even places two distinct singleton labels at the same rightmost top vertex, which is legal but underlines how small and hand-shaped the surviving controls are.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{figures/figure7_certificates.pdf}
-  \caption{The best exact direct controls saved in the repository. \textbf{a}, the width-$4$ witness with score $2.0$. \textbf{b}, the width-$6$ witness with score $2.0$. Gold nodes mark the initial solved set $T$, red squares mark singleton seeds in $R$, and colored edges show nonzero labels. These diagrams are rendered directly from the saved JSON certificates \citep{archivara_width4,archivara_width6}.}
-  \label{fig:certificates}
-\end{figure}
-
-\subsection{\textsc{H2} Adds No Screening Value}
-
-The saved \textsc{H2} experiment compared four family IDs: \textsc{H1} level $1$, \textsc{H1} level $2$, the width-$4$ direct control, and the width-$6$ direct control. Table~\ref{tab:h2} reports the exact features that mattered. The direct controls are already separated from the dead \textsc{H1} rows by raw support size and target-solvable count alone. The additional abelian-style descriptors never change the decision boundary \citep{archivara_h2}.
+The H2 feature package is weaker still. It is not a failed theorem route, but a local screening null on a four-family set. Table~\ref{tab:h2} and Figure~\ref{fig:h2-screen} show that raw support size and target-solvable count already separate the dead \textsc{H1} rows from the surviving direct controls. The imported abelian-style descriptors do not improve the ranking on this tiny screened set \citep{archivara_h2}.
 
 \begin{table}[H]
 \centering
@@ -593,55 +660,97 @@ Family & forcing? & $r$ & rank & Smith tail & $m/n$ & target-solvable \\
 \midrule
 \textsc{H1} level $1$ & no & $1$ & $8$ & $1$ & $0.875$ & $0$ \\
 \textsc{H1} level $2$ & no & $1$ & $16$ & $1$ & $0.9375$ & $0$ \\
-width $4$ control & yes & $5$ & $12$ & $2$ & $0.875$ & $2$ \\
-width $6$ control & yes & $7$ & $20$ & $2$ & $1.0833$ & $1$ \\
+phase-4 width $4$ control & yes & $5$ & $12$ & $2$ & $0.875$ & $2$ \\
+phase-4 width $6$ control & yes & $7$ & $20$ & $2$ & $1.0833$ & $1$ \\
 \bottomrule
 \end{tabular}
-\caption{\textsc{H2} invariant summary on the saved family IDs. The determinant pattern and coordinate height are constant across all four rows and are omitted for brevity. Raw support size and target-solvable counts already separate the dead \textsc{H1} rows from the surviving direct controls \citep{archivara_h2}.}
+\caption{The saved H2 feature screen. The table is intentionally narrow: it covers only the four family IDs actually screened in the repository, and no claim beyond that scope is warranted \citep{archivara_h2,archivara_verification}.}
 \label{tab:h2}
 \end{table}
 
-Figure~\ref{fig:h2-screen} makes the same failure visually explicit. Panel~(a) presents the feature matrix used in the screen. Panel~(b) shows that a two-dimensional projection using support size and target-solvable count already isolates the \textsc{H1} failures. No additional ranking lift is visible. This empirical outcome matches the route design: \textsc{H2} was only allowed to survive if the imported invariants demonstrably beat the direct arithmetic descriptors on the same family set. They did not.
+\subsection{The Best Saved Exact Certificates Are Direct Low-Height Asymmetric Controls}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{figures/figure5_h2_screen.pdf}
-  \caption{\textsc{H2} screening results. \textbf{a}, the saved feature matrix for the four screened family IDs. \textbf{b}, a low-dimensional view of the same data: support size and target-solvable count already separate the dead \textsc{H1} rows from the surviving direct controls. The point of the figure is not that these two features are universally sufficient, but that the imported \textsc{H2} package adds no visible screening value on the tested family set \citep{archivara_h2}.}
-  \label{fig:h2-screen}
-\end{figure}
-
-\subsection{Ablations Show Boundary Sensitivity and Poor Transfer}
-
-The ablation study starts from the width-$4$ control with score $2.0$. Only one nontrivial ablation remains successful: replacing the bottom-row labels by the top-row pattern preserves forcing but worsens the score to $13/6\approx 2.1667$. Every other executed ablation fails exact verification or fails to recover a forcing witness under the fixed-motif search.
+Phase 6 changes the repo-wide frontier. Table~\ref{tab:direct-frontier} and Figure~\ref{fig:frontier}a show that the best currently saved exact certificates are no longer the phase-4 corridor controls at score $2.0$, but the low-height asymmetric direct certificates at score $13/7$ on $\mathrm{asym\_a}$ and $\mathrm{asym\_b}$ \citep{archivara_h5_affine_shell}. The best $\mathrm{asym\_c}$ certificate is $14/7=2.0$, tying rather than improving the phase-4 width-$4$ and width-$6$ controls.
 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{ll}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{3.0cm} >{\centering\arraybackslash}p{1.7cm} >{\centering\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{3.2cm}}
 \toprule
-Ablation & Exact outcome \\
+Family & Status & Geometry & Exact score & Note \\
 \midrule
-isotropic top $\rightarrow$ bottom & forcing, score $13/6\approx 2.1667$ \\
-isotropic bottom $\rightarrow$ top & verification failure \\
-boundary seed removal & verification failure \\
-randomize $R$ & $0/4$ successes \\
-randomize $T$ & $0/4$ successes \\
-randomize $X$ & $3/4$ successes, all at score $2.0$ \\
-freeze $X$, scale to width $6$ & no forcing witness found \\
-freeze $X$, scale to width $8$ & no forcing witness found \\
+phase-4 width-$4$ control & matched direct baseline & $H=2$, $W=4$ & $2.0$ & corridor pilot \\
+phase-4 width-$6$ control & matched direct baseline & $H=2$, $W=6$ & $2.0$ & corridor pilot \\
+$\mathrm{asym\_a}$ & matched direct baseline & $H=2$, $W=4$ & $13/7\approx 1.8571$ & best current exact row \\
+$\mathrm{asym\_b}$ & matched direct baseline & $H=2$, $W=4$ & $13/7\approx 1.8571$ & best current exact row \\
+$\mathrm{asym\_c}$ & matched direct baseline & $H=2$, $W=4$ & $14/7=2.0$ & ties the old corridor controls \\
+legacy width-$8$ witness & exploratory unmatched row & $H=2$, $W=8$ & $29/14\approx 2.0714$ & excluded by the matched ledger \\
 \bottomrule
 \end{tabular}
-\caption{Saved ablation outcomes for the width-$4$ direct control. The stage-order perturbation row was not applicable because no grammar-mediated \textsc{H1} family survived \citep{archivara_ablations}.}
-\label{tab:ablations}
+\caption{Positive exact rows saved in the repository. The low-height asymmetric certificates from Phase 6 dominate the Phase 4 corridor pilot. The legacy width-$8$ row is retained for transparency but is not part of the matched benchmark frontier \citep{archivara_h1_frontier,archivara_width4,archivara_width6,archivara_h5_affine_shell,archivara_complexity_frontier}.}
+\label{tab:direct-frontier}
 \end{table}
-
-Figure~\ref{fig:ablations} supplements Table~\ref{tab:ablations} with uncertainty information for the randomized rows. The saved $R$- and $T$-randomization success rates are $0/4$, with $95\%$ Wilson upper bounds of approximately $0.49$. The saved $X$-randomization success rate is $3/4$, with a $95\%$ Wilson interval of roughly $[0.30,0.95]$. The width-$8$ boundary-stress archive contains $0/16$ successes, giving an upper Wilson bound of about $0.19$. These are tiny samples, but they already support the qualitative claim that the surviving direct-control mechanism is strongly dependent on boundary placement and much less dependent on the exact arithmetic label identities than on the corridor geometry and seed layout.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{figures/figure6_ablations.pdf}
-  \caption{Saved ablation results. \textbf{a}, exact scores for successful ablations, with failures plotted at the top of the panel. Only the isotropic top-to-bottom replacement survives, and it worsens the score. \textbf{b}, success rates for the randomized and boundary-stress rows together with $95\%$ Wilson intervals. These intervals are descriptive summaries of the saved finite samples rather than asymptotic statistical claims \citep{archivara_ablations}.}
-  \label{fig:ablations}
+  \includegraphics[width=\textwidth]{figures/figure4_frontier.pdf}
+  \caption{Direct frontier and width-$8$ ledger. \textbf{a}, the best saved exact positive certificates: the Phase 4 corridor controls at score $2.0$, the Phase 6 low-height asymmetric controls at $13/7$, $13/7$, and $14/7$, and the unmatched legacy width-$8$ witness at $29/14$. The red dashed line marks the target $1.675$. \textbf{b}, the complexity-accounted width-$8$ ledger. Every matched rerun at fixed budget is empty; the only score-bearing row is the saved exploratory $29/14$ witness, which uses a different palette and therefore sits outside the matched envelope.}
+  \label{fig:frontier}
+\end{figure}
+
+\subsection{Typed Interfaces Fail Before Composition, and the Width-\texorpdfstring{$8$}{8} Ledger Stays Empty}
+
+The H4 interface audit is the cleanest saved test of whether a finite cellular-automaton interface alphabet carries real arithmetic content. It does not. The route checks $39$ canonical width-$4$ words and finds zero forcing words, so the level-$2$ composition space is empty by definition. The matched direct width-$8$ search on the same family and budgets also finds no witness in $60$ exact trials \citep{archivara_h4_typed_interfaces}. Figure~\ref{fig:route-audits}a reports the H4 hit rate together with its Wilson interval.
+
+The complexity-accounted width-$8$ ledger sharpens the same negative story. All four matched reruns---same palette, low-height asymmetric, bounded slope, and slowly growing $X$---remain empty. The only score-bearing width-$8$ row is the saved exploratory three-label witness at $29/14$. Figure~\ref{fig:frontier}b therefore matters as much as Figure~\ref{fig:frontier}a: score-only ranking would suggest width-$8$ progress, but the matched ledger says otherwise \citep{archivara_complexity_frontier}.
+
+\subsection{The Bounded Shell Audit Loses to Direct Search}
+
+The H5 audit turns the local-mechanism question into a finite competition: can a frozen two-gate shell library beat either the affine core or unrestricted direct search under the same extractor and the same budgets? Across the three low-height asymmetric families, the answer is no. The shell audit checks $39$ canonical words per family, hence $117$ in total, and finds zero forcing shell words. The matched direct comparator finds forcing certificates on all three families, with hit rate $0.2$ over $40$ exact trials in each case and best scores $13/7$, $13/7$, and $14/7$ \citep{archivara_h5_affine_shell}.
+
+Figure~\ref{fig:route-audits}a aggregates the shell and direct hit rates. Figure~\ref{fig:certificates} renders two representative direct certificates. Panel~(a) is the best $\mathrm{asym\_a}$ row at score $13/7$; panel~(b) shows the best $\mathrm{asym\_c}$ row at score $14/7$. The direct frontier is visibly boundary-loaded, but it is exact and legal, which the shell route is not.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/figure7_certificates.pdf}
+  \caption{Best saved direct low-height asymmetric certificates. \textbf{a}, the $\mathrm{asym\_a}$ certificate at score $13/7$; the $\mathrm{asym\_b}$ frontier row has the same score with a different label set. \textbf{b}, the $\mathrm{asym\_c}$ certificate at score $14/7$. Gold vertices belong to the initial solved set, red squares mark singleton seeds, and colored edges indicate nonzero labels. These are the best exact positive rows currently saved in the repository \citep{archivara_h5_affine_shell}.}
+  \label{fig:certificates}
+\end{figure}
+
+\subsection{The Passive-Middle Geometry Lift Is Killed by a Row Quotient}
+
+Theorem~\ref{thm:row-quotient} predicts that the passive-middle height-$3$ lift cannot force, regardless of width, as long as the middle row stays horizontal-zero and the vertical label $c$ is not anti-diagonal. The Phase 6 geometry-lift artifact confirms that prediction on all three low-height asymmetric families: each family checks $39$ route words and finds zero forcing words, while the matched unrestricted direct comparator also records hit rate $0.0000$ over $20$ exact trials \citep{archivara_geometry_lift}. Figure~\ref{fig:obstruction}b is therefore both a proof diagram and a faithful picture of the saved route family.
+
+This obstruction is formally stronger than the one-seed theorem. The one-seed argument rules out a specific seed pattern. The row-quotient argument rules out an entire higher-geometry family while allowing arbitrary boundary seeds and arbitrary width inside that family. In the current repository, it is the strongest theorem-level negative contribution.
+
+\subsection{H6 Schedules, Exhaustive Controllers, and Metastability Show No Lift}
+
+The H6 schedule family produces exactly one apparent positive row: the aperiodic word $\mathrm{SDP}$ at height $2$ forces with score $13/7$. But the saved defect-transport audit immediately removes the mechanism-level interpretation. The periodic word $\mathrm{SDS}$ does not force, the same $\mathrm{SDP}$ word fails under seed thinning and reversal, and the height-$3$ lift does not force at all \citep{archivara_h6_defect_transport}. Moreover, the saved direct archive already contains the exact same $13/7$ certificate.
+
+The controller audit reinforces the same point. Exhaustive enumeration of $75{,}276$ exact controller programs yields $48$ forcing programs and identifies $\mathrm{SDP}$ as the best word, again with score $13/7$ \citep{archivara_boundary_controller}. This is not a new frontier. It is parity with the matched direct row.
+
+Finally, the metastability scan shows that closure-time and dependency-hypergraph summaries do not identify any better certificate than the direct frontier. Among the $27$ words in the frozen motif bank, the equal-best score $13/7$ is achieved by four words,
+\[
+\{\mathrm{DPS},\mathrm{PDS},\mathrm{SDP},\mathrm{SPD}\},
+\]
+and the direct representative $\mathrm{SDP}$ is already among them. Many high-closure failures remain nonforcing \citep{archivara_metastability}. Figure~\ref{fig:route-audits} summarizes all three facts.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/figure6_route_audits.pdf}
+  \caption{Phase 6 route audits beyond the corridor pilot. \textbf{a}, forcing hit rates with $95\%$ Wilson intervals: H4 typed interfaces and H5 shell words both stay at zero, while the aggregated H5 direct comparator remains positive. \textbf{b}, H6 parity: the only positive schedule is the aperiodic word $\mathrm{SDP}$ at score $13/7$, and the exhaustive controller bank recovers the same best score rather than a stronger one. \textbf{c}, metastability scatter: high closure time does not predict score, and the matched direct representative $\mathrm{SDP}$ lies inside a four-word tie rather than below it.}
+  \label{fig:route-audits}
+\end{figure}
+
+\subsection{The H2 Feature Screen Remains a Local Null}
+
+The H2 screen is no longer the most important result in the repo, but it remains instructive. Figure~\ref{fig:h2-screen} shows exactly what the Phase 4 screen established and, equally importantly, what it did not establish. On the four screened family IDs, raw support size and target-solvable count already separate the dead \textsc{H1} rows from the surviving direct controls. The imported H2 descriptors do not improve the decision. This remains a local null on a tiny family set, not a theorem about abelian-style screening more generally \citep{archivara_h2,archivara_verification}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/figure5_h2_screen.pdf}
+  \caption{The saved H2 feature screen. \textbf{a}, normalized feature matrix on the four screened family IDs. \textbf{b}, support size and target-solvable count already separate the dead \textsc{H1} rows from the surviving direct controls. The figure is useful precisely because of its narrow scope: it documents a local null result for the imported feature package, not a global no-go theorem.}
+  \label{fig:h2-screen}
 \end{figure}
 
 \section{Discussion}
@@ -649,94 +758,111 @@ Figure~\ref{fig:ablations} supplements Table~\ref{tab:ablations} with uncertaint
 
 \subsection{What the Repository Actually Established}
 
-The strongest claim supported by the saved artifacts is narrow and negative:
+At the current endpoint, the strongest scientifically safe identity of the project is the following.
 
 \begin{itemize}
-  \item the frozen cellular-automaton corridor route is killed exactly by Theorem~\ref{thm:one-seed};
-  \item the backup abelian screening layer adds no visible value on the tested family IDs;
-  \item the only surviving positive rows are small direct corridor controls around score $2.0$.
+  \item The exact verifier and compiler are understood for the low-height grid family actually used in the repo.
+  \item The frozen \textsc{H1} corridor pilot fails by a theorem-level one-seed obstruction.
+  \item The passive-middle height-$3$ lift fails by a stronger row-quotient theorem.
+  \item Every tested cellular-automaton-positive route beyond those theorems either fails before composition (\textsc{H4}, \textsc{H5}) or collapses to parity with matched direct search (\textsc{H6}, controller bank, metastability summaries).
+  \item The best surviving exact certificates are direct low-height asymmetric width-$4$ rows at scores $13/7$ and $14/7$, still above the target $1.675$.
 \end{itemize}
 
-This is still a meaningful result. The repository does not merely report that a heuristic search missed the target. It proves that one carefully specified local mechanism cannot work in the way initially hoped, and it does so with exact verifier-backed evidence rather than informal intuition. In automated mathematical research, such falsifications are valuable: they prevent future work from recycling a dead route under more optimistic language.
+That is not the positive headline posed by the original user request. But it is a real contribution. The repo now contains exact obstructions, explicit direct certificates, matched ledger accounting, and a reproducible route audit that prevents dead cellular-automaton narratives from being reintroduced under softer language.
 
 \subsection{Limitations}
 
-The negative conclusion is rigorous for the frozen corridor program, but the benchmark section remains narrow. The verification memo identifies four gaps that we preserve rather than conceal \citep{archivara_verification}.
+The paper is still narrow in four important ways.
 
 \begin{enumerate}
-  \item There is no fully matched width-$8$ direct baseline with the same four-nonzero palette and search budget as the width-$4$ and width-$6$ rows. The saved width-$8$ witnesses are exploratory only.
-  \item Several pre-registered non-CA baselines were never executed: low-height asymmetric $X$, explicit bounded-slope controls, and slowly growing-$X$ schedules.
-  \item The stored JSON traces are not rich enough to support a benchmark claim about efficiency, hidden complexity, or search-budget frontiers beyond the narrow saved rows.
-  \item The entire study lives in a height-$2$ corridor regime. Nothing here rules out better certificates in broader constructible-graph families.
+  \item Every positive row lives in a low-height, low-width grid family with a frozen extractor. Nothing here implies a barrier for arbitrary constructible graphs.
+  \item The best saved exact score is $13/7\approx 1.8571$, far above the target $1.675$. The paper is a falsification study, not progress on the benchmark frontier itself.
+  \item The matched direct baselines in Phase 6 are much better than the Phase 4 corridor controls, but they are still local to the chosen families. There is no claim that $13/7$ is a natural or stable frontier outside those saved families.
+  \item The repo does not preserve hardware logs for the original search runs, so the paper intentionally makes no runtime-efficiency claims.
 \end{enumerate}
 
-These limitations matter for interpretation. The paper does \emph{not} show that cellular automata are useless for arithmetic Kakeya in general. It shows that one pre-registered corridor route fails exactly, and that the remaining direct controls in the same regime are weak and fragile.
+The saved Phase 4 ablations still matter here. They show that early corridor controls were boundary-sensitive and did not survive naive perturbations of $R$ and $T$ \citep{archivara_ablations}. That fragility motivated the later shell, defect-transport, and controller audits, but it does not by itself explain or refute the later $13/7$ direct rows.
 
 \subsection{Failure Modes and Open Questions}
 
-The theory and experiments point to three concrete failure modes.
+The route audits identify four concrete failure modes.
 
-\paragraph{One-seed bottlenecks.}
-Theorem~\ref{thm:one-seed} shows that any route with one singleton seed and empty initial solved set is doomed, independently of geometry. Future local grammars must therefore create either multiple independent seed directions or nontrivial initial solved sets without simply hiding the complexity there.
+\paragraph{Seed bottlenecks.}
+Theorem~\ref{thm:one-seed} shows that a unique seed direction with empty initial solved set is fatal. Future constructive routes must evade that obstruction without merely hiding the missing complexity inside the initial solved set.
 
-\paragraph{Boundary programming.}
-The saved positive witnesses lean heavily on boundary seeds and small initial solved sets. Removing or randomizing those structures kills the width-$4$ control immediately. Any future route must demonstrate that its gain is not merely boundary placement in disguise.
+\paragraph{Interface insufficiency.}
+H4 demonstrates that a small frozen interface alphabet can fail before any scale-up comparison begins. This suggests that finite-state interface metaphors are much easier to propose than to justify in the exact arithmetic setting.
 
-\paragraph{Frozen-$X$ non-transfer.}
-The direct controls do not improve with width under frozen-$X$ scaling, and the saved frontier remains far above the target. This is consistent with the warning that small fixed alphabets can remain trapped in low-complexity basins \citep{tao2025}, although the repository does not measure rational complexity directly and we therefore keep that comparison interpretive rather than factual.
+\paragraph{Quotient obstructions in higher geometry.}
+Theorem~\ref{thm:row-quotient} shows that moving to height $3$ is not enough if the added row is passive. Any future higher-geometry route will have to escape the passive-middle template itself, not merely widen it.
 
-Open questions follow directly.
+\paragraph{Parity masquerading as mechanism.}
+H6, controller enumeration, and metastability all exhibit the same danger: a local schedule or controller can look distinctive while still reproducing the best already-saved direct certificate. This is the precise sense in which the repo warns against mechanism inflation.
+
+The natural open questions follow directly.
 
 \begin{enumerate}
-  \item Can one design a verifier-legal local grammar whose extracted instances necessarily contain at least two algebraically independent seed directions?
-  \item Does any corridor program with height greater than $2$ evade the one-seed obstruction without moving all complexity into $R$ or $T$?
-  \item What happens if the search space is widened from corridors to more general constructible graphs while retaining exact verification and matched direct baselines?
-  \item Are there direct-search families outside the corridor regime that beat score $2.0$ without relying on growing $X$?
+  \item Is there any exact certificate family outside the passive-middle regime that genuinely exploits height $>2$ without hiding the work in a larger extractor or a much larger $X$?
+  \item Can direct low-height asymmetric search beat $13/7$ while keeping the same level of hidden-complexity accounting used in the Phase 6 ledger?
+  \item What is the right exact benchmark protocol for broader constructible-graph grammars, where the convenience of the grid specialization disappears but the same exact verifier logic can still be preserved?
+  \item Can one formulate reusable obstruction theorems beyond one-seed and row-quotient arguments, rather than rediscovering them route by route?
 \end{enumerate}
 
 \subsection{Societal and Epistemic Implications}
 
-The direct societal impact of this project is low. The broader implication is epistemic. Machine-assisted mathematical research is especially vulnerable to novelty inflation: a vivid metaphor, a local simulator, or an imported vocabulary can look like mathematical progress even when the exact verifier says otherwise. The repository's strongest positive contribution may therefore be procedural. It shows how to keep theorem-level claims, computational measurements, and local research artifacts on separate citation boundaries. That discipline is not cosmetic. It is part of how negative results become reusable scientific knowledge rather than abandoned search logs.
+The direct societal impact of this work is low. Its broader value is methodological. Machine-assisted mathematical research is especially vulnerable to novelty inflation: a vivid metaphor, a finite-state simulator, or an imported vocabulary can look like progress even when the exact arithmetic object has not improved. The present paper is strongest precisely where it resists that inflation. It keeps theorem statements, exact computations, and local heuristic language on separate evidence boundaries. In this problem class, that discipline is not merely stylistic. It is part of the mathematical contribution.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-The frozen cellular-automaton corridor route to the arithmetic Kakeya benchmark does not work. The exact reason is now explicit. For the saved \textsc{H1} pilot, every extracted instance has one singleton seed and empty initial solved set, so Theorem~\ref{thm:one-seed} rules out forcing before any score can be computed. The saved \textsc{H2} backup adds no screening value on the tested family set. The best surviving exact objects are small direct corridor controls with score $2.0$ at widths $4$ and $6$, together with worse exploratory width-$8$ witnesses. Ablations show that these controls are boundary-sensitive and do not scale cleanly under frozen $X$.
+The repository does not solve arithmetic Kakeya using cellular automata. What it does provide is sharper than an anecdotal failure. For the audited low-height grid families, the exact compiler and verifier are understood; the frozen \textsc{H1} corridor pilot is ruled out by a one-seed theorem; the passive-middle height-$3$ lift is ruled out by a stronger row-quotient theorem; the \textsc{H4}, \textsc{H5}, and \textsc{H6} route audits show no improvement over matched direct search; and the width-$8$ complexity ledger explains why the saved exploratory $29/14$ row does not count as matched progress. The best surviving exact rows are direct low-height asymmetric certificates at scores $13/7$ and $14/7$, still above the target $1.675$.
 
-That is a negative result, but it is a sharp one. The paper leaves behind a sound-and-complete verifier for the corridor family, a clean obstruction theorem, explicit surviving control certificates, and an audit trail that prevents the dead cellular-automaton route from being rediscovered under softer language. For this repository state, that is the honest scientific endpoint.
+That is a negative result, but it is a reusable one. The paper leaves behind exact theorems, exact measurements, exact certificates, and a benchmark protocol that makes overclaiming much harder. For the present repository state, that is the honest scientific endpoint.
 
 \appendix
 
-\section{Explicit Certificates}
+\section{Exact Certificates}
 \label{app:certificates}
 
-The saved width-$4$ and width-$6$ witnesses are reproduced verbatim below in the six-line benchmark format.
+This appendix reproduces the strongest saved positive certificates in the six-line verifier format.
 
-\subsection{Width \texorpdfstring{$4$}{4} Control}
+\subsection{\texorpdfstring{$\mathrm{asym\_a}$}{asym\_a} Direct Certificate}
 
 \begin{verbatim}
-12/6 m=7 r=5 n=8 t=2
-[(0,0), (0,1), (1,0), (2,-1), (3,-2)]
+13/7 m=10 r=3 n=8 t=1
+[(0,0), (1,0), (0,1), (1,1), (2,-1)]
 [2,4]
-[{1:(0,1)}, {(1,2):(2,-1), (1,3):(2,-1), (2,1):(2,-1)}]
-[[1,1], [1,2]]
-[{[2,1]:(1,0)}, {[1,3]:(0,1)}, {[1,4]:(0,1)}, {[2,3]:(1,0)}, {[2,4]:(1,0)}]
+[{1:(0,1)}, {(1,1):(1,1), (1,2):(2,-1), (1,3):(1,0), (2,1):(1,1),
+(2,2):(1,0), (2,3):(1,1)}]
+[[1,4]]
+[{[2,4]:(1,0)}, {[1,1]:(1,0)}, {[2,1]:(1,0)}]
 \end{verbatim}
 
-\subsection{Width \texorpdfstring{$6$}{6} Control}
+\subsection{\texorpdfstring{$\mathrm{asym\_b}$}{asym\_b} Direct Certificate}
 
 \begin{verbatim}
-20/10 m=13 r=7 n=12 t=2
-[(0,0), (0,1), (1,0), (2,-1), (3,-2)]
-[2,6]
-[{1:(1,0)}, {(1,3):(2,-1), (1,4):(0,1), (2,1):(2,-1), (2,2):(1,0),
-(2,3):(0,1), (2,4):(1,0), (2,5):(2,-1)}]
-[[1,1], [1,2]]
-[{[2,1]:(0,1)}, {[1,3]:(0,1)}, {[1,4]:(0,1)}, {[2,3]:(0,1)}, {[2,5]:(0,1)},
- {[1,6]:(1,0)}, {[1,6]:(0,1)}]
+13/7 m=10 r=3 n=8 t=1
+[(0,0), (1,0), (0,1), (2,-1), (2,1)]
+[2,4]
+[{1:(0,1)}, {(1,1):(2,-1), (1,2):(2,1), (1,3):(1,0), (2,1):(2,-1),
+(2,2):(1,0), (2,3):(2,-1)}]
+[[1,4]]
+[{[2,4]:(1,0)}, {[1,1]:(2,-1)}, {[1,1]:(1,0)}]
 \end{verbatim}
 
-\subsection{Exploratory Width \texorpdfstring{$8$}{8} Control}
+\subsection{\texorpdfstring{$\mathrm{asym\_c}$}{asym\_c} Direct Certificate}
+
+\begin{verbatim}
+14/7 m=10 r=4 n=8 t=1
+[(0,0), (1,0), (0,1), (1,2), (2,-1)]
+[2,4]
+[{1:(2,-1)}, {(1,1):(1,0), (1,2):(0,1), (1,3):(1,0), (2,1):(1,2),
+(2,2):(1,0), (2,3):(2,-1)}]
+[[1,1]]
+[{[1,4]:(0,1)}, {[1,4]:(1,0)}, {[2,1]:(1,0)}, {[2,4]:(1,0)}]
+\end{verbatim}
+
+\subsection{Legacy Exploratory Width-\texorpdfstring{$8$}{8} Witness}
 
 \begin{verbatim}
 29/14 m=20 r=9 n=16 t=2
@@ -750,68 +876,45 @@ The saved width-$4$ and width-$6$ witnesses are reproduced verbatim below in the
  {[1,8]:(0,1)}, {[2,3]:(0,1)}, {[2,4]:(0,1)}, {[2,7]:(0,1)}, {[2,8]:(0,1)}]
 \end{verbatim}
 
-\section{Additional Proof Commentary}
-\label{app:proofs}
-
-This appendix records two small proof details used repeatedly in the main text.
-
-\begin{lemma}
-\label{lem:monotone}
-If a vertex $u$ is solvable from a solved set $S$ and $S\subseteq S'\subseteq V\setminus\{u\}$, then $u$ is also solvable from $S'$.
-\end{lemma}
-
-\begin{proof}
-By solvability from $S$, there exists a relation whose support outside $S$ is exactly $u$. Because $S\subseteq S'$, every vertex outside $S'$ is also outside $S$. Therefore the same relation has support outside $S'$ contained in $\{u\}$. Since $u\notin S'$, that support is exactly $u$. So the same relation certifies solvability from $S'$.
-\end{proof}
-
-\begin{lemma}
-\label{lem:one-seed-cor}
-If $x\notin \langle(1,-1)\rangle$ and $k\in \Z\setminus\{0\}$, then $kx\notin \langle(1,-1)\rangle$.
-\end{lemma}
-
-\begin{proof}
-Suppose $kx=\lambda(1,-1)$ for some rational $\lambda$. Dividing by the nonzero integer $k$ gives
-\[
-x=\frac{\lambda}{k}(1,-1),
-\]
-which contradicts $x\notin \langle(1,-1)\rangle$.
-\end{proof}
-
-\section{Reproducibility Details}
+\section{Commands and Reproducibility}
 \label{app:repro}
 
-\subsection{Exact Commands}
-
-The saved markdown artifacts record the exact commands used to produce the core results. We reproduce the central ones here for completeness.
+The saved artifacts record the exact commands used to produce the main route audits. We reproduce the central ones here.
 
 \begin{verbatim}
-python3 scripts/ca_kakeya_search.py h1-obstruction --sum-value 1 --nonzero-count 4
-
-python3 scripts/ca_kakeya_search.py random-search \
-  --width-min 4 --width-max 4 --trials 50 --nonzero-count 4 \
-  --seed-budget 8 --initial-t-budget 2 --allow-zero-horizontal \
-  --rng-seed 601 --output results/phase4_width4_seed601.json
-
-python3 scripts/ca_kakeya_search.py random-search \
-  --width-min 6 --width-max 6 --trials 20 --nonzero-count 4 \
-  --seed-budget 8 --initial-t-budget 2 --allow-zero-horizontal \
-  --rng-seed 602 --output results/phase4_width6_seed602.json
+python3 scripts/ca_kakeya_search.py h1-obstruction \
+  --sum-value 1 --nonzero-count 4 \
+  > results/phase4_h1_obstruction.json
 
 python3 scripts/phase4_h2_screen.py \
   --control results/phase4_width4_seed601.json \
   --control results/phase4_width6_seed602.json \
   --output results/phase4_h2_screen.json
 
-python3 scripts/phase4_ablations.py \
-  --base results/phase4_width4_seed601.json \
-  --output results/phase4_ablations.json
+python3 scripts/phase6_experiments.py typed-residue
+python3 scripts/phase6_experiments.py complexity-frontier-aggregate
+python3 scripts/phase6_experiments.py affine-shell
+python3 scripts/phase6_experiments.py geometry-lift
+python3 scripts/phase6_experiments.py defect-transport
+python3 scripts/phase6_experiments.py boundary-controller
+python3 scripts/phase6_experiments.py metastability
+
+python3 scripts/generate_paper_figures.py
 \end{verbatim}
 
-\subsection{Figure Generation}
+\section{Auxiliary Proof Detail}
+\label{app:proofs}
 
-All paper figures were generated from saved local JSON artifacts by
-\texttt{scripts/generate\_paper\_figures.py}.
-No figure depends on unpublished runs or on manual editing of the underlying numerical values.
+The completeness proof of Theorem~\ref{thm:verifier} uses only one monotonicity fact, which we isolate here for convenience.
+
+\begin{lemma}
+\label{lem:monotone}
+Let $S\subseteq S'\subseteq V$, and let $u\in V\setminus S'$. If $u$ is solvable from $S$, then $u$ is solvable from $S'$.
+\end{lemma}
+
+\begin{proof}
+If $u$ is solvable from $S$, then there exists a relation whose support outside $S$ is exactly $\{u\}$ and whose value at $u$ is anti-diagonal. Enlarging the solved set from $S$ to $S'$ can only remove coordinates from the unsolved set, never add them. Therefore the same relation still has support outside $S'$ equal to $\{u\}$ and remains a valid rule~2 witness for $u$.
+\end{proof}
 
 \bibliographystyle{plainnat}
 \bibliography{sources}

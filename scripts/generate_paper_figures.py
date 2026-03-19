@@ -40,7 +40,10 @@ LABEL_COLOR = {
     "(0,0)": "#D8D5CF",
     "(0,1)": "#4C9F70",
     "(1,0)": "#3A6EA5",
+    "(1,1)": "#6C5B9A",
     "(2,-1)": "#D97706",
+    "(2,1)": "#C08A00",
+    "(1,2)": "#0E7490",
     "(3,-2)": "#C44536",
 }
 
@@ -147,8 +150,8 @@ def fig_pipeline() -> None:
 
     rounded_box(
         ax,
-        (0.03, 0.60),
-        0.18,
+        (0.02, 0.62),
+        0.16,
         0.22,
         "Benchmark task\nscore $\\leq 1.675$",
         fc=PALETTE["sand"],
@@ -156,101 +159,100 @@ def fig_pipeline() -> None:
     )
     rounded_box(
         ax,
-        (0.27, 0.60),
-        0.18,
+        (0.22, 0.62),
+        0.17,
         0.22,
-        "Frozen H1 macrocell\nsubstitution route",
-        fc="#FDECEC",
-        ec=PALETTE["red"],
-    )
-    rounded_box(
-        ax,
-        (0.51, 0.60),
-        0.18,
-        0.22,
-        "Exact compiler and\nlinear-span verifier",
+        "Exact grid compiler\nand rational-span\nverifier",
         fc="#EAF2FB",
         ec=PALETTE["blue"],
     )
     rounded_box(
         ax,
-        (0.75, 0.60),
-        0.20,
+        (0.43, 0.62),
+        0.18,
         0.22,
-        "Verified outcome\nH1 impossible;\ndirect controls near 2.0",
-        fc="#EDF6EF",
-        ec=PALETTE["green"],
-    )
-
-    rounded_box(
-        ax,
-        (0.27, 0.20),
-        0.18,
-        0.20,
-        "Matched direct\ncorridor search",
-        fc="#F7F2E8",
-        ec=PALETTE["orange"],
+        "Phase 4 pilot\nH1 one-seed kill,\nH2 local null",
+        fc="#FDECEC",
+        ec=PALETTE["red"],
     )
     rounded_box(
         ax,
-        (0.51, 0.20),
-        0.18,
-        0.20,
-        "H2 abelian\nscreening pass",
-        fc="#F0ECF7",
-        ec=PALETTE["purple"],
-    )
-    rounded_box(
-        ax,
-        (0.75, 0.20),
-        0.20,
-        0.20,
-        "Ablations:\nboundary-sensitive,\nnon-scaling controls",
+        (0.65, 0.62),
+        0.19,
+        0.22,
+        "Phase 6 audits\nH4/H5/H6, ledger,\ncontroller parity",
         fc="#FCF7EA",
         ec=PALETTE["gold"],
     )
     rounded_box(
         ax,
-        (0.03, 0.18),
+        (0.02, 0.20),
+        0.20,
+        0.22,
+        "Direct asymmetric\ncontrols survive:\n$13/7$, $13/7$, $14/7$",
+        fc="#EDF6EF",
+        ec=PALETTE["green"],
+    )
+    rounded_box(
+        ax,
+        (0.29, 0.20),
+        0.20,
+        0.22,
+        "Width-8 ledger:\nall matched reruns\nempty; legacy $29/14$\nunmatched",
+        fc="#F7F2E8",
+        ec=PALETTE["orange"],
+    )
+    rounded_box(
+        ax,
+        (0.56, 0.20),
         0.18,
-        0.10,
-        "H3 reserve route\nnot activated",
-        fc="white",
-        ec=PALETTE["muted"],
-        text_size=9,
+        0.22,
+        "Formal route kills:\none-seed and\nrow-quotient\ntheorems",
+        fc="#F0ECF7",
+        ec=PALETTE["purple"],
+    )
+    rounded_box(
+        ax,
+        (0.78, 0.20),
+        0.18,
+        0.22,
+        "Final identity:\nbenchmark-and-\nfalsification paper,\nnot a CA solution",
+        fc="#FDECEC",
+        ec=PALETTE["red"],
     )
 
-    arrow(ax, (0.21, 0.71), (0.27, 0.71), PALETTE["muted"])
-    arrow(ax, (0.45, 0.71), (0.51, 0.71), PALETTE["muted"])
-    arrow(ax, (0.69, 0.71), (0.75, 0.71), PALETTE["muted"])
-    arrow(ax, (0.36, 0.60), (0.36, 0.40), PALETTE["red"])
-    arrow(ax, (0.60, 0.60), (0.60, 0.40), PALETTE["blue"])
-    arrow(ax, (0.69, 0.30), (0.75, 0.30), PALETTE["muted"])
-    arrow(ax, (0.45, 0.30), (0.51, 0.30), PALETTE["muted"])
+    arrow(ax, (0.18, 0.73), (0.22, 0.73), PALETTE["muted"])
+    arrow(ax, (0.39, 0.73), (0.43, 0.73), PALETTE["muted"])
+    arrow(ax, (0.61, 0.73), (0.65, 0.73), PALETTE["muted"])
+    arrow(ax, (0.74, 0.62), (0.38, 0.42), PALETTE["muted"])
+    arrow(ax, (0.50, 0.62), (0.65, 0.42), PALETTE["muted"])
+    arrow(ax, (0.74, 0.20), (0.78, 0.31), PALETTE["muted"])
+    arrow(ax, (0.22, 0.31), (0.29, 0.31), PALETTE["muted"])
+    arrow(ax, (0.49, 0.31), (0.56, 0.31), PALETTE["muted"])
 
     ax.text(
-        0.36,
         0.49,
-        "exact one-seed\nobstruction",
-        ha="center",
-        va="center",
-        fontsize=9,
-        color=PALETTE["red"],
-    )
-    ax.text(
-        0.60,
-        0.49,
-        "same verifier\nfor all claims",
+        0.53,
+        "same exact verifier\nfor proofs, search,\nand route audits",
         ha="center",
         va="center",
         fontsize=9,
         color=PALETTE["blue"],
     )
+    ax.text(
+        0.73,
+        0.52,
+        "no CA route beats\nmatched direct search",
+        ha="center",
+        va="center",
+        fontsize=9,
+        color=PALETTE["red"],
+    )
 
     ax.text(
-        0.03,
+        0.02,
         0.95,
-        "Pipeline audited in the repository: a pre-registered CA route, exact verification, matched direct controls, and a negative final disposition.",
+        "Repository endpoint after Phase 6: the exact pipeline eliminates every tested CA-positive lane and leaves only direct low-height asymmetric certificates above the target.",
         fontsize=12,
         ha="left",
         va="top",
@@ -331,17 +333,18 @@ def fig_h1_grammar() -> None:
 
 
 def fig_obstruction() -> None:
-    fig, ax = plt.subplots(figsize=(11.2, 4.5))
+    fig, axs = plt.subplots(1, 2, figsize=(12.4, 4.8), gridspec_kw={"width_ratios": [1.0, 1.05]})
+
+    ax = axs[0]
     ax.set_axis_off()
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-
     rounded_box(
         ax,
         (0.04, 0.28),
         0.24,
         0.42,
-        "Initial data\none singleton seed $x$\nwith $x_1+x_2=1$",
+        "Initial data\none singleton seed $x$\nwith $x_1+x_2\\neq 0$",
         fc="#FDECEC",
         ec=PALETTE["red"],
         text_size=11,
@@ -351,7 +354,7 @@ def fig_obstruction() -> None:
         (0.38, 0.22),
         0.24,
         0.54,
-        "Closure under rule 1 and\ninteger linear combinations\nadds only edge relations of\ntotal label $(0,0)$.\n\nHence every derived relation\nhas total label $k x$\nfor some $k\\in\\mathbb{Z}$.",
+        "Rule 1 adds only edge\ngenerators of total label\n$(0,0)$, and rule 3 takes\ninteger linear combinations.\n\nEvery derived relation\ntherefore has total label\n$k x$ for some $k\\in\\mathbb{Z}$.",
         fc="#EAF2FB",
         ec=PALETTE["blue"],
         text_size=10,
@@ -361,23 +364,53 @@ def fig_obstruction() -> None:
         (0.72, 0.28),
         0.24,
         0.42,
-        "Rule 2 needs a singleton\nanti-diagonal vector\n$(a,-a)$ with $a\\neq 0$.\n\nIts total coordinate sum is $0$.",
+        "Rule 2 needs a singleton\nanti-diagonal vector\n$(a,-a)$ with $a\\neq 0$,\nwhose coordinate sum is $0$.",
         fc="#FCF7EA",
         ec=PALETTE["gold"],
         text_size=11,
     )
     arrow(ax, (0.28, 0.49), (0.38, 0.49), PALETTE["muted"])
     arrow(ax, (0.62, 0.49), (0.72, 0.49), PALETTE["muted"])
-
-    ax.text(0.50, 0.80, "Coordinate-sum invariant", fontsize=13, fontweight="bold", ha="center")
+    ax.text(0.50, 0.82, "One-seed obstruction", fontsize=13, fontweight="bold", ha="center")
     ax.text(
         0.50,
         0.12,
-        "If $k x=(a,-a)$ then $k(x_1+x_2)=0$. Since $x_1+x_2=1$, we obtain $k=0$, hence $(a,-a)=(0,0)$, contradicting rule 2.",
-        fontsize=11,
+        "If $k x=(a,-a)$ then $k(x_1+x_2)=0$. Because $x_1+x_2\\neq 0$, we get $k=0$, hence $(a,-a)=(0,0)$, impossible.",
+        fontsize=10.5,
         ha="center",
     )
-    ax.text(0.84, 0.15, "No new vertex can ever enter $T$.", fontsize=11, color=PALETTE["red"], ha="center")
+    panel_label(ax, "a")
+
+    ax = axs[1]
+    ax.set_axis_off()
+    ax.set_xlim(0.5, 4.8)
+    ax.set_ylim(-0.25, 2.35)
+    for row in (1, 2, 3):
+        y = 3.0 - row
+        for col in range(1, 5):
+            if row == 2:
+                face = "#F6F1E8"
+            elif row == 1:
+                face = "#EAF2FB"
+            else:
+                face = "#EDF6EF"
+            ax.scatter([col], [y], s=86, color=face, edgecolors=PALETTE["ink"], zorder=4)
+    for col in range(1, 5):
+        ax.plot([col, col], [0, 1], color=PALETTE["orange"], lw=3)
+        ax.plot([col, col], [1, 2], color=PALETTE["orange"], lw=3)
+        ax.text(col + 0.06, 1.48, "$c$", fontsize=8.5, color=PALETTE["orange"])
+        ax.text(col + 0.06, 0.48, "$c$", fontsize=8.5, color=PALETTE["orange"])
+    for col in range(1, 4):
+        ax.plot([col, col + 1], [2, 2], color=PALETTE["blue"], lw=3.2)
+        ax.plot([col, col + 1], [0, 0], color=PALETTE["green"], lw=3.2)
+        ax.plot([col, col + 1], [1, 1], color=PALETTE["grid"], lw=3.2, ls="--")
+    ax.scatter([1, 4], [2, 0], marker="s", s=150, facecolors="none", edgecolors=PALETTE["red"], linewidths=1.8, zorder=5)
+    ax.text(0.65, 2.20, "Passive-middle $H=3$ family", fontsize=11, ha="left", va="top")
+    ax.text(0.65, 2.00, "Seeds and initial $T$ stay on rows 1 and 3; row 2 has no horizontal labels.", fontsize=8.8, ha="left")
+    ax.text(0.65, 1.78, "At every middle-row vertex, every generator contributes either $0$ or $\\pm c$.", fontsize=8.8, ha="left")
+    ax.text(2.50, -0.18, "Any middle-row singleton must lie in $\\mathbb{Z}c$; if $c_1+c_2\\neq 0$, it can never be anti-diagonal.", fontsize=9, ha="center")
+    ax.text(2.50, 2.28, "Row-quotient obstruction", fontsize=13, fontweight="bold", ha="center")
+    panel_label(ax, "b")
     save(fig, "figure3_obstruction")
 
 
@@ -395,68 +428,99 @@ def extract_history(path: Path) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def fig_frontier() -> None:
-    width4 = load_json(RESULTS / "phase4_width4_seed601.json")
-    width6 = load_json(RESULTS / "phase4_width6_seed602.json")
-    width8 = load_json(RESULTS / "phase4_width8_seed501.json")
-    width8b = load_json(RESULTS / "phase4_sparse_unrestricted_seed502.json")
+    width4 = load_json(RESULTS / "phase4_width4_seed601.json")["best"]
+    width6 = load_json(RESULTS / "phase4_width6_seed602.json")["best"]
+    width8 = load_json(RESULTS / "phase4_width8_seed501.json")["best"]
+    h5 = load_json(RESULTS / "phase6_h5_affine_shell.json")
+    asym_rows = {row["family_id"]: row["direct_baseline"]["best"] for row in h5["family_results"]}
+    complexity = load_json(RESULTS / "phase6_complexity_frontier.json")
 
-    fig, axs = plt.subplots(1, 2, figsize=(12.2, 4.9), gridspec_kw={"width_ratios": [1.15, 1.0]})
+    fig, axs = plt.subplots(1, 2, figsize=(12.4, 5.0), gridspec_kw={"width_ratios": [1.1, 1.0]})
 
     ax = axs[0]
-    xvals = np.array([4, 6, 8, 8.12])
-    yvals = np.array(
-        [
-            width4["best"]["score"],
-            width6["best"]["score"],
-            width8["best"]["score"],
-            width8b["best"]["score"],
-        ]
-    )
-    colors = [PALETTE["blue"], PALETTE["teal"], PALETTE["orange"], PALETTE["purple"]]
-    ax.scatter(xvals, yvals, s=90, c=colors, zorder=4)
-    ax.plot(xvals[:3], yvals[:3], color=PALETTE["muted"], lw=1.5, zorder=2)
-    ax.axhline(1.675, color=PALETTE["red"], lw=1.8, ls="--", label="target 1.675")
-    ax.axhline(1.70, color=PALETTE["gold"], lw=1.2, ls=":", label="1.70 neighborhood")
-    ax.set_xlim(3.4, 8.6)
-    ax.set_ylim(1.62, 2.22)
-    ax.set_xticks([4, 6, 8])
-    ax.set_xlabel("Corridor width $W$")
-    ax.set_ylabel("Exact score $(m+r)/(n-t)$")
-    ax.set_title("Exact direct-control frontier")
-    annotations = [
-        "width 4\n$2.0$",
-        "width 6\n$2.0$",
-        "width 8\n$29/14$",
-        "exploratory\n$30/14$",
+    labels = ["2x4", "2x6", "asym_a", "asym_b", "asym_c", "legacy 2x8"]
+    scores = [
+        width4["score"],
+        width6["score"],
+        asym_rows["asym_a"]["score"],
+        asym_rows["asym_b"]["score"],
+        asym_rows["asym_c"]["score"],
+        width8["score"],
     ]
-    offsets = [(0.0, 0.035), (0.0, -0.055), (0.0, 0.035), (0.20, 0.015)]
-    for xv, yv, text, (dx, dy) in zip(xvals, yvals, annotations, offsets):
-        ax.text(xv + dx, yv + dy, text, ha="center", va="center", fontsize=9)
-    ax.scatter([4, 8], [2.18, 2.18], marker="x", s=100, color=PALETTE["red"], linewidths=2.2)
-    ax.text(4, 2.205, "H1 L1 fail", ha="center", va="bottom", fontsize=9, color=PALETTE["red"])
-    ax.text(8, 2.205, "H1 L2 fail", ha="center", va="bottom", fontsize=9, color=PALETTE["red"])
-    ax.legend(loc="lower right")
+    colors = [
+        PALETTE["blue"],
+        PALETTE["teal"],
+        PALETTE["green"],
+        PALETTE["green"],
+        PALETTE["gold"],
+        PALETTE["orange"],
+    ]
+    xpos = np.arange(len(labels))
+    ax.scatter(xpos, scores, s=100, c=colors, zorder=4)
+    ax.plot(xpos[:5], scores[:5], color=PALETTE["muted"], lw=1.4, zorder=2)
+    ax.axhline(1.675, color=PALETTE["red"], lw=1.8, ls="--", label="target 1.675")
+    ax.set_xticks(xpos, labels)
+    ax.set_ylim(1.70, 2.16)
+    ax.set_ylabel("Exact score $(m+r)/(n-t)$")
+    ax.set_title("Best saved exact certificates")
+    annotations = ["2.0", "2.0", "$13/7$", "$13/7$", "$14/7$", "$29/14$"]
+    for idx, (xv, score, text) in enumerate(zip(xpos, scores, annotations)):
+        dy = 0.025 if idx not in (1, 4) else -0.04
+        ax.text(xv, score + dy, text, ha="center", va="center", fontsize=9)
+    ax.text(
+        xpos[-1],
+        scores[-1] + 0.06,
+        "exploratory,\nunmatched",
+        ha="center",
+        va="center",
+        fontsize=8.5,
+        color=PALETTE["orange"],
+    )
+    ax.legend(loc="upper right")
     panel_label(ax, "a")
 
     ax = axs[1]
-    x4, y4 = extract_history(RESULTS / "phase4_width4_seed601.json")
-    x6, y6 = extract_history(RESULTS / "phase4_width6_seed602.json")
-    ax.step(x4, y4, where="post", color=PALETTE["blue"], lw=2.2, label="width 4, seed 601")
-    ax.step(x6, y6, where="post", color=PALETTE["teal"], lw=2.2, label="width 6, seed 602")
-    ax.axhline(1.675, color=PALETTE["red"], lw=1.6, ls="--")
-    ax.set_xlim(1, 50)
-    ax.set_ylim(1.95, 2.12)
-    ax.set_xlabel("Random-search trial")
-    ax.set_ylabel("Best score so far")
-    ax.set_title("Search trajectories of saved exact runs")
-    ax.legend(loc="upper right")
+    rows = complexity["rows"]
+    jitter = {
+        "same_palette_2x8": -0.18,
+        "low_height_asymmetric_2x8": -0.06,
+        "bounded_slope_2x8": 0.06,
+        "slowly_growing_x_2x8": 0.18,
+        "legacy_exploratory_width8_3label": 0.0,
+    }
+    short = {
+        "same_palette_2x8": "same\npalette",
+        "low_height_asymmetric_2x8": "low-height\nasym.",
+        "bounded_slope_2x8": "bounded\nslope",
+        "slowly_growing_x_2x8": "slowly\ngrowing $X$",
+        "legacy_exploratory_width8_3label": "legacy\n29/14",
+    }
+    y_null = 2.15
+    for row in rows:
+        x = row["x_size"] + jitter[row["family_id"]]
+        if row["score"] is None:
+            ax.scatter(x, y_null, marker="x", s=110, linewidths=2.0, color=PALETTE["red"], zorder=4)
+            ax.text(x, y_null + 0.03, short[row["family_id"]], ha="center", va="bottom", fontsize=8.5, color=PALETTE["red"])
+        else:
+            ax.scatter(x, row["score"], s=100, color=PALETTE["orange"], zorder=4)
+            ax.text(x, row["score"] + 0.04, short[row["family_id"]], ha="center", va="bottom", fontsize=8.5, color=PALETTE["orange"])
+            ax.text(x, row["score"] - 0.05, "$29/14$", ha="center", va="top", fontsize=8.5)
+    ax.axhline(1.675, color=PALETTE["red"], lw=1.8, ls="--")
+    ax.axhline(y_null, color=PALETTE["muted"], lw=1.2, ls=":")
+    ax.text(7.35, y_null + 0.01, "no forcing witness", fontsize=8.5, ha="right", va="bottom", color=PALETTE["muted"])
+    ax.set_xlim(3.6, 7.4)
+    ax.set_ylim(1.70, 2.22)
+    ax.set_xticks([4, 5, 6, 7])
+    ax.set_xlabel("$|X|$ in the width-8 ledger")
+    ax.set_ylabel("Score (crosses denote empty rows)")
+    ax.set_title("Complexity-accounted width-8 ledger")
     ax.text(
-        2,
-        2.105,
-        "Both saved runs hit a forcing witness on trial 1;\nonly width 6 improves from $2.1$ to $2.0$ later in the run.",
-        fontsize=9,
+        5.0,
+        1.76,
+        "All matched reruns at fixed budget are empty.\nOnly the saved 3-label width-8 witness scores,\nbut it sits outside the matched envelope.",
+        fontsize=8.8,
         ha="left",
-        va="top",
+        va="bottom",
         bbox={"boxstyle": "round,pad=0.3", "fc": PALETTE["panel"], "ec": PALETTE["grid"]},
     )
     panel_label(ax, "b")
@@ -644,6 +708,113 @@ def fig_ablations() -> None:
     save(fig, "figure6_ablations")
 
 
+def fig_route_audits() -> None:
+    h4 = load_json(RESULTS / "phase6_h4_typed_residue_interfaces.json")
+    h5 = load_json(RESULTS / "phase6_h5_affine_shell.json")
+    h6 = load_json(RESULTS / "phase6_h6_defect_transport.json")
+    controller = load_json(RESULTS / "phase6_boundary_controller.json")
+    metastability = load_json(RESULTS / "phase6_metastability.json")
+
+    fig, axs = plt.subplots(1, 3, figsize=(14.2, 4.9), gridspec_kw={"width_ratios": [1.0, 0.95, 1.1]})
+
+    ax = axs[0]
+    audit_groups = [
+        ("H4 route", h4["level1"]["forcing_count"], h4["level1"]["candidate_count"], PALETTE["red"]),
+        ("H4 direct", h4["matched_direct_width8"]["forcing_trials"], h4["matched_direct_width8"]["total_trials"], PALETTE["muted"]),
+        (
+            "H5 shell",
+            sum(len(row["word_audit"]["forcing_rows"]) for row in h5["family_results"]),
+            sum(row["word_audit"]["canonical_word_count"] for row in h5["family_results"]),
+            PALETTE["red"],
+        ),
+        (
+            "H5 direct",
+            sum(row["direct_baseline"]["forcing_trials"] for row in h5["family_results"]),
+            sum(row["direct_baseline"]["total_trials"] for row in h5["family_results"]),
+            PALETTE["green"],
+        ),
+    ]
+    labels = [item[0] for item in audit_groups]
+    means = [succ / total if total else 0.0 for _, succ, total, _ in audit_groups]
+    lows = []
+    highs = []
+    for _, succ, total, _ in audit_groups:
+        lo, hi = wilson_interval(succ, total)
+        means_i = succ / total if total else 0.0
+        lows.append(means_i - lo)
+        highs.append(hi - means_i)
+    xpos = np.arange(len(labels))
+    ax.bar(xpos, means, color=[item[3] for item in audit_groups], alpha=0.82)
+    ax.errorbar(xpos, means, yerr=[lows, highs], fmt="none", ecolor=PALETTE["ink"], elinewidth=1.3, capsize=4)
+    ax.set_ylim(0.0, 0.30)
+    ax.set_ylabel("Forcing hit rate with 95% Wilson interval")
+    ax.set_xticks(xpos, labels)
+    ax.set_title("Interface and shell audits")
+    for idx, (_, succ, total, _) in enumerate(audit_groups):
+        ax.text(idx, means[idx] + 0.02, f"{succ}/{total}", ha="center", fontsize=9)
+    panel_label(ax, "a")
+
+    ax = axs[1]
+    schedule_rows = [
+        ("H6 periodic", h6["height2"]["periodic"]["score"], h6["height2"]["periodic"]["forcing"], PALETTE["muted"]),
+        ("H6 SDP", h6["height2"]["aperiodic"]["score"], h6["height2"]["aperiodic"]["forcing"], PALETTE["green"]),
+        (
+            "controller best",
+            controller["controller_solver_h2"]["best"]["score"],
+            controller["controller_solver_h2"]["best"] is not None,
+            PALETTE["gold"],
+        ),
+        ("matched direct", controller["direct_solver_h2"]["best_score"], True, PALETTE["blue"]),
+        ("H3 lift", None, False, PALETTE["red"]),
+    ]
+    xpos = np.arange(len(schedule_rows))
+    y_fail = 2.12
+    for idx, (label, score, forcing, color) in enumerate(schedule_rows):
+        if forcing and score is not None:
+            ax.scatter(idx, score, s=95, color=color, zorder=4)
+            ax.text(idx, score + 0.03, "$13/7$" if abs(score - (13 / 7)) < 1e-9 else f"{score:.3f}", ha="center", fontsize=8.8)
+        else:
+            ax.scatter(idx, y_fail, marker="x", s=120, linewidths=2.0, color=PALETTE["red"], zorder=4)
+            ax.text(idx, y_fail + 0.03, "fail", ha="center", fontsize=8.5, color=PALETTE["red"])
+    ax.axhline(1.675, color=PALETTE["red"], lw=1.6, ls="--")
+    ax.set_ylim(1.72, 2.18)
+    ax.set_xticks(xpos, [row[0] for row in schedule_rows])
+    ax.set_ylabel("Exact score (failures shown at top)")
+    ax.set_title("No H6 mechanism lift over direct search")
+    ax.text(
+        2.5,
+        1.75,
+        f"{controller['controller_solver_h2']['forcing_programs']} of {controller['controller_solver_h2']['total_programs']} controller programs force,\nbut the best score matches the direct archive exactly.",
+        fontsize=8.5,
+        ha="center",
+        va="bottom",
+        bbox={"boxstyle": "round,pad=0.25", "fc": PALETTE["panel"], "ec": PALETTE["grid"]},
+    )
+    panel_label(ax, "b")
+
+    ax = axs[2]
+    rows = metastability["rows"]
+    y_fail = 2.12
+    for row in rows:
+        if row["forcing"] and row["score"] is not None:
+            color = PALETTE["green"] if row["word"] == "SDP" else PALETTE["teal"]
+            ax.scatter(row["closure_time"], row["score"], s=70, color=color, alpha=0.9, zorder=4)
+            if row["word"] in {"DPS", "PDS", "SDP", "SPD"}:
+                ax.text(row["closure_time"] + 0.05, row["score"] + 0.015, row["word"], fontsize=8.2)
+        else:
+            ax.scatter(row["closure_time"], y_fail, s=45, color=PALETTE["muted"], alpha=0.55, zorder=2)
+    ax.axhline(1.675, color=PALETTE["red"], lw=1.6, ls="--")
+    ax.axhline(y_fail, color=PALETTE["muted"], lw=1.2, ls=":")
+    ax.text(6.9, y_fail + 0.02, "nonforcing words", fontsize=8.5, ha="right", va="bottom", color=PALETTE["muted"])
+    ax.set_xlim(0.5, 8.5)
+    ax.set_ylim(1.72, 2.18)
+    ax.set_xlabel("Closure time of the best audited program")
+    ax.set_ylabel("Exact score")
+    ax.set_title("Metastability does not predict score")
+    panel_label(ax, "c")
+    save(fig, "figure6_route_audits")
+
+
 def draw_corridor_certificate(
     ax: plt.Axes,
     *,
@@ -712,31 +883,33 @@ def draw_corridor_certificate(
 
 
 def fig_certificates() -> None:
-    width4 = load_json(RESULTS / "phase4_width4_seed601.json")["best"]
-    width6 = load_json(RESULTS / "phase4_width6_seed602.json")["best"]
+    h5 = load_json(RESULTS / "phase6_h5_affine_shell.json")
+    row_map = {row["family_id"]: row["direct_baseline"]["best"] for row in h5["family_results"]}
+    asym_a = row_map["asym_a"]
+    asym_c = row_map["asym_c"]
 
     fig, axs = plt.subplots(1, 2, figsize=(12.0, 4.8))
     draw_corridor_certificate(
         axs[0],
         width=4,
-        vertical=width4["vertical"],
-        top=width4["top"],
-        bottom=width4["bottom"],
-        seeds=width4["seeds"],
-        initial_t=width4["initial_t"],
-        title="Best exact width-4 control",
-        score=width4["score"],
+        vertical=asym_a["vertical"][0],
+        top=asym_a["horizontal"][0],
+        bottom=asym_a["horizontal"][1],
+        seeds=asym_a["seeds"],
+        initial_t=asym_a["initial_t"],
+        title="Best direct low-height control: asym_a",
+        score=asym_a["score"],
     )
     draw_corridor_certificate(
         axs[1],
-        width=6,
-        vertical=width6["vertical"],
-        top=width6["top"],
-        bottom=width6["bottom"],
-        seeds=width6["seeds"],
-        initial_t=width6["initial_t"],
-        title="Best exact width-6 control",
-        score=width6["score"],
+        width=4,
+        vertical=asym_c["vertical"][0],
+        top=asym_c["horizontal"][0],
+        bottom=asym_c["horizontal"][1],
+        seeds=asym_c["seeds"],
+        initial_t=asym_c["initial_t"],
+        title="Best direct low-height control: asym_c",
+        score=asym_c["score"],
     )
     panel_label(axs[0], "a")
     panel_label(axs[1], "b")
@@ -749,7 +922,7 @@ def main() -> None:
     fig_obstruction()
     fig_frontier()
     fig_h2_screen()
-    fig_ablations()
+    fig_route_audits()
     fig_certificates()
 
 
