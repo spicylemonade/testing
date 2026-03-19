@@ -1,90 +1,87 @@
 # Hypothesis Negative Space
 
-## Context Check
-- Read `results/research_context.md`, `results/literature/prior_art_gap.md`, and `results/literature/gap_frontier.md`.
-- `results/swarm/director_brief.md` is not present in this repo.
-- No ConceptEvolve artifacts were found in this repo.
-- The repo-local literature snapshot is low-signal for this task because the seed query drifted away from arithmetic Kakeya, so the guardrails below come from a narrow external check rather than the generated watchlist.
-- External boundary to respect: current public automated work still frames arithmetic Kakeya through entropy and sum-difference exponents, and Tao's 2025 bounded-many-slopes follow-up suggests that squeezing a bounded slope tuple harder is asymptotically pulled back toward exponent `2`. Treat that basin as explored.
+## Grounding
+- Read `results/research_context.md`, `results/literature/prior_art_gap.md`, `results/literature/gap_frontier.md`, and `results/swarm/director_brief.md`.
+- Inspected `results/swarm/falsifier.md` plus the current ConceptEvolve artifacts: `concept_delta.md`, `probe_result.json`, `introspection.json`, `reframings.json`, `steering_directions.json`, the Phase 3 route freeze, and selected concept leaves.
+- Working negative filter from that scan:
+  - do not repeat `H1_macrocell_substitution` in another width-2 corridor wrapper,
+  - do not repeat `H2_target_direction_abelian` as another invariant screen on the same family IDs,
+  - do not repeat `H3_slope_bloom` as another tiny label schedule or bounded-slope story,
+  - do not fall back to generic bootstrap-droplet, local-decoder, or SAT-wrapper narratives.
 
-## Do Not Repeat
-- Static bounded-slope tuning or "just optimize `X`" with a fixed tiny slope alphabet.
-- Another entropy-only or sum-difference inequality pass with no verifier-local mechanism.
-- Whole-graph mutation or brute-force SAT on tiny instances with no reusable local generator.
-- Euclidean Kakeya intuition with no exact mapping to forcing operations 1 to 3.
+## Direction 1: Cooperative Residue Interface Automata
+**What prior work ignored.** Most of the search mass went into whole-rule or whole-gadget stories. The less-tested object is the boundary code itself: whether a tiny interface really is a sufficient statistic for exact arithmetic composition.
 
-## Direction 1: Slope-Bloom Spacetime Automata
-**Gap attacked.** Prior work has spent real effort on fixed slope sets and fixed inequality templates. The negative space is a local generator whose rule table stays small while the *realized* slope set grows with scale.
+**Derivative overlap and pivot.**
+- Overlap: this is adjacent to `H1_macrocell_substitution`, `graph_grammar_macrosearch`, and regional boundary-control search.
+- Pivot: make interface bandwidth and recognizability the first-class hypothesis. Reject occupancy-style, seed-count-only, or width-2-only boundaries before any level-transfer experiment.
 
-**CA formulation.**
-- Use a 1D or 2D radius-1 CA with state like `(phase, label, carry)`.
-- Interpret time as an extra constructibility dimension.
-- Let local collisions emit edge labels for the next layer, so the induced `f_i` dictionaries are generated rather than hand-written.
+**Hypothesis.** There exists a finite interface alphabet carrying a signed residue basis, a phase bit, and a seed-debt counter such that pairwise and `2 x 2` macrocell compositions remain exact under one unchanged extractor, and level-2 lowers `R` faster than it raises `m`.
 
-**Testable hypothesis.** There exists a finite rule with small alphabet but unbounded effective slope complexity `|X_T|` as the automaton is unrolled for `T` steps, and the score surrogate drops because the rule reuses a short description to realize many labels.
+**Why this attacks the negative space.** The repo-local gap analysis says fixed `X` can only win through boundary reuse, defect routing, or seed economics. This route attacks boundary reuse directly instead of searching another local rule and hoping transfer appears later.
 
 **First experiment.**
-- Search reversible or second-order rules on strips and small tori.
-- Unroll `L x T` spacetime into a constructible graph.
-- Measure:
-  - effective `|X_T|`,
-  - rational complexity of realized labels,
-  - greedy forcing yield,
-  - score surrogate `(m+r)/(n-t)`.
+- Fix one low-height asymmetric `X` under a strict alphabet budget.
+- Enumerate exact local residue summaries on tiny macrotiles.
+- Count canonical legal interface traces and compare them to the unresolved residue classes seen in exact local elimination.
+- Continue only if the same interface table parses both level-1 and level-2 compositions with no new symbols and no repair pass.
 
-**Strongest failure mode.** The automaton falls into a short periodic orbit, so the realized slope complexity stays bounded and the whole direction collapses back into the bounded-slope regime.
+**Kill signal.**
+- The interface trace language is tiny or quickly periodic.
+- Level 2 needs new interface symbols, new merge rules, or direct global repair.
+- Direct grammar search with the same description budget finds the same family.
 
-**Angle to avoid.** Do not keep a tiny fixed slope alphabet and call the time evolution "cellular automata." That is only a relabeling of the already-explored bounded-slope basin.
+**Angle to avoid.** Do not propose another fixed-corridor transfer experiment and call it new. If interface sufficiency is not the explicit object being tested, this is just H1 again.
 
-## Direction 2: Abelian Chip-Firing Forcing Waves
-**Gap attacked.** Forcing rule 3 gives arbitrary `Z`-linear closure, but current arithmetic Kakeya work is not organized around abelian-network or odometer dynamics that might compress the seed term `r`.
+## Direction 2: Affine-Core / Nonlinear-Shell CA With UNSAT-Core Motif Mining
+**What prior work failed to test.** The previous routes did not isolate where the useful nonlinearity lives. That leaves a major hidden-failure mode: diffuse nonlinear repair in the bulk, only discovered after extraction fails.
 
-**CA formulation.**
-- Give each vertex a two-component integer charge.
-- Treat operation 1 as a local signed transport rule.
-- Treat topplings as chip-firing events that isolate `(a,-a)` residues off the already-solved set.
-- Use the odometer as the certificate that the forcing wave is well defined.
+**Derivative overlap and pivot.**
+- Overlap: this touches `affine_ca_negative_filter` and the SAT boundary-control compiler.
+- Pivot: use SAT only for tiny-instance obstruction mining and gate certification. The bulk dynamics must stay interpretable and mostly affine; the solver is not allowed to become the real search engine.
 
-**Testable hypothesis.** There exists an anisotropic chip-firing family where boundary seeds of size `O(L)` or smaller force `Theta(L^2)` or better solved volume, so `r/n -> 0` while `m/n` stays below the target regime.
+**Hypothesis.** A viable AK-oriented CA family has an affine transport interior over fixed `X` and a very small nonlinear shell at interface or defect-collision sites, and that shell can be recovered from stable SAT/UNSAT motifs on `2`- and `3`-layer exact instances.
 
-**First experiment.**
-- Search directed strips or sparse anisotropic lattices rather than full square grids.
-- Compare regular-grid controls against hand-biased transport rules.
-- Track `r(L)`, `m(L)`, `t(L)`, and whether isolated `(a,-a)` residues are produced systematically.
-
-**Strongest failure mode.** Symmetric diffusion smears certificates instead of isolating them, so the model becomes a pretty metaphor for linear closure but does not actually create new forced vertices efficiently.
-
-**Angle to avoid.** Do not run vanilla sandpile diffusion on a regular grid and hope the verifier likes it. If the dynamics are not explicitly engineered to isolate `(a,-a)` residues and shrink `r`, the CA interpretation is cosmetic.
-
-## Direction 3: Renormalized Macro-Cell / Substitution Automata
-**Gap attacked.** Numerical constructions can discover intricate finite gadgets, but that does not automatically produce a scalable family. The missing piece is a recursive local-rule grammar whose score can be analyzed level by level.
-
-**CA formulation.**
-- Build a macro-cell automaton that emits sparse active corridors and shared boundary interfaces.
-- Use substitution rules to tile macro-cells into larger ones.
-- Use SAT or SMT only to verify one local motif and its lift across scales, not to brute-force whole graphs.
-
-**Testable hypothesis.** There exists a substitution family with transfer matrix
-that makes `m+r` grow strictly slower than `n-t`, so the level-`k` score `S_k`
-decreases with scale and crosses `1.675`.
+**Why this attacks the negative space.** The forcing formalism is globally linear but support-sensitive. Concentrating nonlinearity at audited gates is the cleanest way to distinguish a real local mechanism from hidden solver glue.
 
 **First experiment.**
-- Solve level-1 and level-2 motifs with hard verifier legality constraints.
-- Derive a transfer matrix on boundary certificate types.
-- Reject motifs whose transfer ratio is flat or worse than the target.
-- Keep only motifs with sublinear or shared-boundary growth in active edges.
+- Classify candidate local updates into affine interior pieces and nonlinear gates.
+- Encode tiny exact instances into SAT or MaxSAT.
+- Log satisfiable motifs and UNSAT cores.
+- Keep only families whose extracted behavior survives when bulk nonlinearity is stripped away and whose UNSAT cores stabilize into a small gate library.
 
-**Strongest failure mode.** Interfaces duplicate costs as fast as they create solved volume, so recursion gives no asymptotic gain and the substitution system is just a dressed-up tensor product.
+**Kill signal.**
+- The gain disappears once bulk nonlinearity is removed.
+- UNSAT cores do not stabilize into a reusable gate library.
+- The route needs scale-specific repair or unrestricted direct search beats it on the same exact budget.
 
-**Angle to avoid.** Do not repeat wallpaper tilings, plain tensor powers, or SAT on whole small graphs with no renormalizable grammar. If there is no reusable macro-cell interface, there is no scaling story.
+**Angle to avoid.** Do not run full-graph SAT or a diffuse nonlinear CA and retrofit a story afterward. That is another wrapper or prior, not a new CA mechanism.
+
+## Direction 3: Phase-Coded Defect Transport On Aperiodic Corridors
+**What prior work could not scale.** Fixed-`X` routes flattened into periodic strips, boundary programming, or tiny bounded-slope basins. The under-tested alternative is geometric phase structure: improve seed economics without adding slopes.
+
+**Derivative overlap and pivot.**
+- Overlap: this is adjacent to `sweep_decoder_defect_transport`, chip-firing or seed-compression motifs, and H3-style fixed-rule dynamics.
+- Pivot: keep `X` fixed and use phase-coded stage order or aperiodic corridor geometry to route typed residues toward sinks. The point is lower seed debt, not larger realized slope complexity and not decoder-threshold folklore.
+
+**Hypothesis.** A height-2 or height-3 anisotropic corridor with a tiny aperiodic phase schedule and one or two sink types can move anti-diagonal obligations efficiently enough that `r/n` falls with scale even though `X` stays fixed and slope complexity stays bounded.
+
+**Why this attacks the negative space.** The probe artifacts say fixed `X` can only help through boundary reuse, defect routing, or better seed economics. This is the cleanest version of defect routing that is not just another diffusion metaphor.
+
+**First experiment.**
+- Use two corner defects and one typed sink on thin corridors.
+- Compare periodic versus aperiodic phase schedules under the same extractor.
+- Add orientation-randomized and transposed controls on the same geometry.
+- Track `r/n`, exact score, stage-order robustness, and whether removing extra boundary seeds leaves transport intact.
+
+**Kill signal.**
+- Gains disappear under transposition or orientation perturbation.
+- Seed reduction vanishes once periodicity is broken.
+- The model needs wider interfaces or richer `X` to survive.
+
+**Angle to avoid.** Do not market vanilla sandpile diffusion, toric-code threshold heuristics, or another slope-bloom schedule as progress. If the lever is not seed-debt reduction at fixed `X`, it is derivative.
 
 ## Recommended Order
-1. Start with Direction 2 if the team wants the cleanest alignment with forcing rule 3.
-2. Start with Direction 3 if the team wants the fastest scale or no-scale verdict.
-3. Keep Direction 1 as the hedge against bounded-slope saturation.
-
-## Pivot Triggers
-- Realized slope complexity stays `O(1)` across scale.
-- `r/n` does not shrink.
-- Level-to-level transfer ratios stop improving.
-- The CA description is no shorter or more reusable than directly writing `f_i`.
+1. Start with Direction 2. It is the cheapest audit and prevents hidden bulk nonlinearity or solver repair from contaminating everything else.
+2. Move to Direction 1 only if a small nonlinear gate library survives the audit.
+3. Keep Direction 3 as the scaling hedge once fixed-`X` seed economics becomes the real bottleneck.

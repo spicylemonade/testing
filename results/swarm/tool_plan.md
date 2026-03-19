@@ -1,161 +1,111 @@
 # Tool Plan
 
-## Global Routing
+## Global Constraints
 
-- Current mode: synthesis-first, zero experiments, zero solver code, zero broad web expansion.
-- Lead order:
-  - `H1_macrocell_substitution`
-  - `H2_target_direction_abelian`
-  - `H3_slope_bloom` only as a hedge
-- Global acceptance test for any future run:
-  - exact extracted legal certificate `(X; d_i; f_i; T; R)`
-  - live target `<= 1.675`
-  - matched no-CA arithmetic baseline
-  - same-family ablations
-  - no hidden complexity in `X`, state count, extractor, or scale-specific macrotiles
+- Mode: synthesis-first, local-artifact-first.
+- Do not run experiments, solver changes, wide searches, theorem searches, or new scripts from this plan.
+- The only admissible success criterion for future work is a legal exact certificate `(X; d_i; f_i; T; R)` at the live `<= 1.675` target.
+- No route is allowed to revive retired `H1` or `H2` claims in new wording.
+- Before any future experiment is authorized, freeze:
+  - one exact certificate grammar,
+  - one matched baseline matrix,
+  - one symmetry quotient policy,
+  - one hidden-complexity ledger.
+
+The matched baseline matrix must include:
+
+- a true matched `2 x 8` same-palette direct no-CA control,
+- low-height asymmetric `X` baselines,
+- bounded-slope baselines,
+- slowly growing `X` baselines,
+- `H in {2,3,4}` geometry rows,
+- boundary, `R`, `T`, and `X` perturbations,
+- exact-elimination replacement controls,
+- full logging of budgets, failures, grammar size, active state count, coordinate height, and rational-complexity summaries.
 
 ## Orchestrator
 
-- Tools:
-  - local repo artifacts
-  - shell for read-only inspection and planning-doc updates
-  - no web unless a blocker forces one narrow citation repair
-- Budget envelope: `0.5-1 day`, zero compute
+- Tools: local repo artifacts and shell for read-only inspection and planning-doc drafting only; web only for one narrow citation repair if strictly necessary.
+- Budget envelope: `0.5-1 day`, zero compute.
 - Responsibilities:
-  - freeze one certificate grammar
-  - freeze one matched baseline matrix
-  - freeze one symmetry-quotient policy
-  - keep `H1` as the active route and `H2` as the only live pivot
+  - freeze the certificate grammar, matched baseline matrix, symmetry policy, and route order,
+  - keep `H4_typed_residue_interfaces` as champion, `H5_affine_core_nonlinear_shell` as backup, and `H6_phase_coded_defect_transport` as reserve,
+  - enforce that every downstream claim remains certificate-first and benchmark-complete.
 - Stop/go:
-  - go only if every downstream claim can still be stated as “CA-inspired certificate search/compiler plus exact verifier”
-  - stop if novelty depends on silence, or if complexity is being hidden in the compiler
+  - go only if no complexity is being hidden in `X`, state count, extractor logic, or boundary programming,
+  - stop if a plan revives retired routes, leans on keyword-silence novelty, or skips matched non-CA baselines.
 
 ## Researcher
 
-- Tools:
-  - local repo artifacts
-  - shell for synthesis notes and benchmark-spec drafting
-  - no experiments until the orchestrator gate is cleared
-- Budget envelope: `1-1.5 days`, zero compute
+- Tools: local artifacts and shell for memo and benchmark-spec drafting only.
+- Budget envelope: `1-1.5 days`, zero compute.
 - Responsibilities:
-  - turn the gap map into a single research memo centered on anisotropic recursive products, boundary defects, and low-height asymmetric `X`
-  - spell out the exact `H1` interface grammar first
-  - prepare the `H2` invariant package only on the same families used for `H1`
-- Required controls:
-  - same-geometry direct certificate search
-  - isotropic and random-label controls
-  - stage-order and aspect-ratio perturbations
-  - bounded-slope and slowly growing-`X` baselines
+  - draft the one exact next experiment for `H4_typed_residue_interfaces` on low-height asymmetric `X`,
+  - embed the `H5_affine_core_nonlinear_shell` gate audit as the first leakage screen on tiny exact instances,
+  - carry `H6_phase_coded_defect_transport` only as a reserve hedge tied to fixed-`X` seed economics.
 - Stop/go:
-  - go only if the imported structure beats direct arithmetic descriptors on paper
-  - stop if a route is still metaphor, brute force, or fixed tiny-slope retuning
+  - go only if the proposed experiment can falsify interface sufficiency under exact extraction and matched no-CA baselines,
+  - stop if the plan reduces to CA metaphor, bounded-slope retuning, or another width-2 corridor recycle.
 
 ## Falsifier
 
-- Tools:
-  - local repo artifacts
-  - shell for a pre-registered kill sheet
-  - no new search except narrow local sanity checks
-- Budget envelope: `0.75-1 day`, zero compute
+- Tools: local artifacts and shell for a kill sheet only.
+- Budget envelope: `0.75-1 day`, zero compute.
 - Responsibilities:
-  - write the kill sheet before any run
-  - enforce exact-score, matched-baseline, and finite-size sensitivity checks
-  - define the pivot trigger from `H1` to `H2`
-- Required controls:
-  - matched `|X|`, coordinate height, `k`, `m/n`, geometry, and optimizer budget
-  - symmetry quotienting
-  - exact-elimination replacement controls
-  - boundary and scale perturbations
+  - pre-register kill criteria for missing exact certificates, missing matched `2 x 8` comparator, absent non-CA baselines, proxy leakage, symmetry leakage, width or palette mixing, and boundary programming,
+  - define the exact pivot trigger from `H4` failure to `H5`,
+  - reject any route that needs repair-heavy extraction or unlogged complexity.
 - Stop/go:
-  - go only if the strongest surviving claim is still honest under the weak form “CA prior plus exact arithmetic verification”
-  - stop if the story relies on sub-`1.70` trends, fill-time proxies, or extractor asymmetry
+  - go only if the strongest surviving claim still holds under exact extracted score and matched budgets,
+  - stop on finite-size-only wins, confounded ablations, route drift, or proxy-metric substitution.
 
 ## Writer
 
-- Tools:
-  - local repo artifacts
-  - shell for drafting only
-  - no broad literature sweep
-- Budget envelope: `0.5-0.75 day`, zero compute
+- Tools: local artifacts and shell for drafting only; no broad literature sweep.
+- Budget envelope: `0.5-0.75 day`, zero compute.
 - Responsibilities:
-  - draft a narrow positioning note before any experiment starts
-  - describe `H1` as the champion and `H2` as the fallback
-  - state up front that the watchlist is low-signal and that no direct CA-to-certificate bridge has yet been validated
-- Required controls:
-  - exact certificate language
-  - the `<= 1.675` target
-  - bounded-slope and rational-complexity barriers
-  - explicit disclaimers around repackaging risk
+  - write the positioning note as a narrow benchmark-and-falsification program,
+  - state explicitly that no CA solution claim is currently supported,
+  - describe `H4` as the champion direction and `H5` as the backup without implying verified score progress.
 - Stop/go:
-  - go only if the draft never overclaims beyond “certificate-first CA-guided search”
-  - stop if the prose needs evidence that has not been pre-registered
+  - go only if the prose stays inside the evidence,
+  - stop if it implies a solved result, a new AK formulation, or verified sub-`1.70` progress.
 
 ## Reviewer
 
-- Tools:
-  - local repo artifacts
-  - shell for consistency review
-  - no external expansion unless a citation gap is proven
-- Budget envelope: `0.5 day`, zero compute
+- Tools: local artifacts and shell for consistency review only; no external expansion unless a citation hole is proven.
+- Budget envelope: `0.5 day`, zero compute.
 - Responsibilities:
-  - check that each route maps explicitly to forcing operations `1-3`
-  - reject Euclidean analogies, binary translation-invariant defaults, and non-compilable spacetime pictures
-  - confirm that every hypothesis has a clear failure mode and pivot trigger
-- Required controls:
-  - exact mapping to `(X; d_i; f_i; T; R)`
-  - explicit boundary/interface accounting
-  - same-geometry no-CA comparisons
+  - enforce exact mapping to `(X; d_i; f_i; T; R)`,
+  - enforce matched geometry, palette, and budget comparisons,
+  - enforce symmetry quotienting and explicit boundary or interface accounting.
 - Stop/go:
-  - go only if local propagation is never confused with an upper-bound certificate
-  - stop if any step depends on implicit global repair
+  - go only if every claim is auditable from exact scores and matched controls,
+  - stop if local propagation is confused with a certificate or if implicit global repair enters the story.
 
 ## Citation Auditor
 
-- Tools:
-  - local repo artifacts first
-  - narrow web checks only for named nearby branches if a citation sentence cannot be grounded locally
-- Budget envelope: `0.5 day`, minimal web, no broad search
+- Tools: local artifacts first, shell second, narrow web only when a specific overlap sentence cannot be grounded locally.
+- Budget envelope: `0.5 day`, minimal web.
 - Responsibilities:
-  - attach every novelty sentence to its nearest overlapping literature branch
-  - add disclaimers that the current watchlist is corrupted and not novelty evidence
-  - clear the specific overlap risks around Katz-Tao small-graph repackaging, bootstrap folklore, chip-firing folklore, and decoder folklore
-- Required controls:
-  - arithmetic Kakeya line
-  - bounded-slope and rational-complexity obstruction line
-  - Lemm-style non-uniformity warning
-  - bootstrap / critical CA line
-  - abelian-network and chip-firing line
-  - expander / local-decoder line
+  - ground novelty and overlap language in the arithmetic Kakeya line, Tao's bounded-slope and rational-complexity barrier, the Lemm asymmetry warning, bootstrap and critical CA folklore, abelian-network folklore, and local-decoder folklore,
+  - state plainly that the corrupted watchlist is not novelty evidence.
 - Stop/go:
-  - go only if a skeptical reader cannot collapse the claim into a known nearby framework without losing the proposed differentiator
-  - stop if novelty is resting on keyword silence
+  - go only if novelty survives without keyword-silence reasoning,
+  - stop if the claim collapses into known folklore without a precise differentiator.
 
 ## Benchmark Auditor
 
-- Tools:
-  - local repo artifacts
-  - shell for benchmark and ablation spec drafting
-  - no runs
-- Budget envelope: `0.75-1 day`, zero compute
+- Tools: local artifacts and shell for benchmark-spec drafting only.
+- Budget envelope: `0.75-1 day`, zero compute.
 - Responsibilities:
-  - write the exact benchmark matrix before any experiment
-  - keep the evaluation frontier on extracted score, not proxy dynamics
-  - specify the pivot test that sends the program from `H1` to `H2`
-- Required controls:
-  - direct no-CA certificate search
-  - low-height asymmetric `X` enumeration
-  - bounded-slope and slowly growing-`X` baselines
-  - isotropic and random-label controls
-  - remove anisotropy
-  - randomize `R` and `T`
-  - randomize `X`
-  - replace local decoding with exact elimination
-  - freeze `X` while scaling
-  - freeze the rule while perturbing aspect ratio and stage order
+  - freeze the exact benchmark matrix named above before any route is reopened,
+  - require frontier reporting on exact extracted score rather than proxy dynamics,
+  - require per-trial logging of verifier outcomes, failure reasons, budgets, grammar size, active-state count, coordinate height, and rational-complexity summaries.
 - Stop/go:
-  - go only if future evidence will be judged on exact extracted score and matched-baseline frontier
-  - stop if finite-size wins or extractor differences can masquerade as progress
+  - go only if future evidence will be judged on exact-certificate frontiers with matched baselines,
+  - stop if confounded ablations, thin traces, or proxy metrics remain.
 
 ## Gate Condition
 
-No experiment should be authorized until the falsifier and benchmark auditor both sign off on a certificate-first benchmark spec for `H1`, with `H2` pre-registered as the only pivot.
+No future experiment should be authorized until the falsifier and benchmark auditor both sign off on a certificate-first benchmark spec for `H4_typed_residue_interfaces`, with `H5_affine_core_nonlinear_shell` pre-registered as the only backup pivot.
