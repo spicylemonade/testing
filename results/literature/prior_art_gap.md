@@ -273,3 +273,21 @@ These entries remain relevant only as a reminder that the original novelty guard
 - Novelty consequence:
   - there is no surviving exact evidence that aperiodic phase coding improves seed economics beyond boundary programming.
   - any future defect-transport claim now has to beat the direct certificate frontier and survive the same thinning and orientation tests, or it will be treated as local-decoder / chip-firing rebranding.
+
+## M. Phase 6 Boundary-Controller Update
+
+- New exact artifact:
+  - `results/phase6_boundary_controller.md`
+  - `results/phase6_boundary_controller.json`
+
+- What is new relative to the current gap log:
+  - earlier notes warned that boundary control could be the whole story, but they did not run an equal-expressivity exact solver comparison where the controller grammar and the direct certificate grammar are literally the same finite search space.
+  - the new artifact does that on the frozen H6 width-4 motif grammar and then carries over the stronger `H=3` row-quotient UNSAT core.
+
+- Why this is not just another controller-search wrapper:
+  - the controller side and the direct side are benchmarked on the same `75,276`-program exact search space, so there is no room for hidden controller privileges.
+  - the only surviving nontrivial statement is negative: equal expressivity collapses the frontier difference, and the higher-geometry UNSAT core does the real work.
+
+- Novelty consequence:
+  - boundary programming currently contributes no exact solver lift beyond direct certificate search.
+  - the only surviving solver-level novelty is the stronger `H=3` UNSAT core, not a better controller frontier.

@@ -23,6 +23,8 @@
 - Phase 6 item 029 answered that with one passive-middle `H=3` extrusion audit in `results/phase6_geometry_lift.{md,json}`, together with a row-quotient obstruction and matched unrestricted `H=3` controls.
 - The next narrow pass then asked whether an aperiodic defect schedule can buy real seed economics rather than just re-encoding the known H=2 direct witness.
 - Phase 6 item 030 answered that with one frozen periodic-versus-aperiodic audit on asym_a in `results/phase6_h6_defect_transport.{md,json}`.
+- The next pass then asked whether boundary-programmable controllers buy anything once the solver is forced to search the exact same grammar directly.
+- Phase 6 item 031 answered that with one exhaustive equal-expressivity solver audit in `results/phase6_boundary_controller.{md,json}`.
 
 ## Result
 
@@ -43,6 +45,8 @@
   the passive-middle `H=3` family has no forcing word across the full word audit, and the matched unrestricted `H=3` direct controls stayed empty under the same budgets.
 - The defect-transport pass then narrowed the reserve route to zero:
   the only successful aperiodic word was already the archived H=2 direct certificate, and it disappeared under thinning, reversal, and the H=3 lift.
+- The equal-expressivity solver pass then removed the remaining controller optimism:
+  exhaustive H=2 controller search found exactly the same 13/7 frontier as direct certificate search, so the only residual solver-level signal is the H=3 UNSAT core.
 
 ## Novelty Delta
 
@@ -61,3 +65,5 @@
   unchanged higher-geometry extrusion is now blocked by a row-quotient invariant, so the surviving search space must change geometry logic rather than merely adding one more passive layer.
 - The defect-transport result removes the last fixed-X seed-economics hedge:
   aperiodic phase coding currently adds no robust exact advantage over the direct certificate archive and collapses into a boundary-programming / decoder-style overlap.
+- The boundary-controller result removes the last controller hedge:
+  once grammar and budget are matched exactly, controller synthesis adds no frontier lift over direct search, leaving only stronger negative obstructions as live contributions.

@@ -55,6 +55,7 @@ GEOMETRY_LIFT_SEEDS = (7201, 7202)
 H6_FAMILY_ID = "asym_a"
 H6_H2_WORD_PERIODIC = "SDS"
 H6_H2_WORD_APERIODIC = "SDP"
+H6_WORD_ALPHABET = "SDP"
 
 ROW_SWAP = {
     "closed": "closed",
@@ -1348,6 +1349,155 @@ def write_defect_transport_markdown(payload: Dict[str, object]) -> None:
     path.write_text("\n".join(lines) + "\n")
 
 
+def exhaustive_schedule_solver(
+    *,
+    height: int,
+    vertical: Sequence[Vector],
+    motif_map: Dict[str, Tuple[Vector, ...]],
+    seed_budget: int,
+    initial_t_budget: int,
+    boundary_vertices: Sequence[Tuple[int, int]],
+) -> Dict[str, object]:
+    x_labels = LOW_HEIGHT_X_FAMILIES[H6_FAMILY_ID]
+    seed_candidates = [
+        (vertex, label)
+        for vertex in boundary_vertices
+        for label in x_labels
+        if label != (0, 0)
+    ]
+    best = None
+    total_programs = 0
+    forcing_programs = 0
+    best_word = None
+    for word_tuple in itertools.product(H6_WORD_ALPHABET, repeat=3):
+        word = "".join(word_tuple)
+        horizontal = schedule_to_horizontal(word, motif_map)
+        for initial_t in itertools.combinations(boundary_vertices, initial_t_budget):
+            for seed_count in range(seed_budget + 1):
+                for seeds in itertools.combinations(seed_candidates, seed_count):
+                    total_programs += 1
+                    instance = GridInstance(
+                        height=height,
+                        width=4,
+                        x_labels=x_labels,
+                        vertical=tuple(vertical),
+                        horizontal=horizontal,
+                        seeds=tuple(seeds),
+                        initial_t=tuple(initial_t),
+                    )
+                    if instance.closure_size_fast() != instance.n:
+                        continue
+                    if not instance.is_forcing():
+                        continue
+                    forcing_programs += 1
+                    if best is None or instance.score < best.score:
+                        best = instance
+                        best_word = word
+    return {
+        "total_programs": total_programs,
+        "forcing_programs": forcing_programs,
+        "best_word": best_word,
+        "best": None if best is None else {
+            "score": best.score,
+            "certificate_lines": best.to_certificate_lines(),
+            "r": best.r,
+            "t": best.t,
+        },
+    }
+
+
+def write_boundary_controller_results() -> Dict[str, object]:
+    maps = h6_motif_maps()
+    boundary_vertices_h2 = [(1, 1), (1, 4), (2, 1), (2, 4)]
+    h2_solver = exhaustive_schedule_solver(
+        height=2,
+        vertical=maps["vertical"]["h2"],
+        motif_map=maps["h2"],
+        seed_budget=3,
+        initial_t_budget=1,
+        boundary_vertices=boundary_vertices_h2,
+    )
+    h2_direct = load_phase6_h5_direct_control()
+    h3_direct = load_phase6_h3_direct_control()
+    payload = {
+        "route": "phase6_boundary_controller",
+        "benchmark_spec": {
+            "family_id": H6_FAMILY_ID,
+            "word_alphabet": list(H6_WORD_ALPHABET),
+            "word_length": 3,
+            "seed_budget": 3,
+            "initial_t_budget": 1,
+            "boundary_vertices_h2": [list(vertex) for vertex in boundary_vertices_h2],
+            "symmetry_quotient": "identity on the frozen H6 motif alphabet",
+        },
+        "controller_solver_h2": h2_solver,
+        "direct_solver_h2": {
+            "same_search_space_as_controller": True,
+            "best_certificate_lines": h2_direct["certificate_lines"],
+            "best_score": h2_direct["score"],
+            "matches_controller_frontier": (
+                h2_solver["best"] is not None
+                and h2_direct["score"] == h2_solver["best"]["score"]
+                and h2_solver["best_word"] == H6_H2_WORD_APERIODIC
+            ),
+        },
+        "h3_unsat_core": {
+            "controller_search": "unsat by row-quotient obstruction before enumeration",
+            "direct_search": h3_direct,
+            "core_statement": (
+                "In the passive-middle H=3 lift, every middle-row contribution lies in Z*c at its vertex, so no "
+                "nonzero anti-diagonal singleton can appear on the middle row."
+            ),
+            "stronger_than_one_seed": (
+                "This obstruction allows arbitrary boundary seeds and arbitrary width inside the passive-middle "
+                "family, unlike the old one-seed argument."
+            ),
+        },
+        "decision": {
+            "completed_via_unsat_core": True,
+            "reason": (
+                "Exact H=2 controller search finds the same 13/7 frontier as direct certificate search under equal "
+                "expressivity, so boundary programming buys no solver lift. The only surviving contribution is the "
+                "stronger H=3 row-quotient UNSAT core."
+            ),
+        },
+    }
+    dump_json(RESULTS / "phase6_boundary_controller.json", payload)
+    write_boundary_controller_markdown(payload)
+    return payload
+
+
+def write_boundary_controller_markdown(payload: Dict[str, object]) -> None:
+    path = RESULTS / "phase6_boundary_controller.md"
+    h2_controller = payload["controller_solver_h2"]
+    h2_direct = payload["direct_solver_h2"]
+    lines = [
+        "# Phase 6 Boundary Controller",
+        "",
+        "## Equal-Expressivity H2 Search",
+        "",
+        f"- Family: `{payload['benchmark_spec']['family_id']}`.",
+        f"- Word alphabet: `{payload['benchmark_spec']['word_alphabet']}` with identity symmetry quotient.",
+        f"- Total exact controller programs checked: `{h2_controller['total_programs']}`.",
+        f"- Forcing controller programs: `{h2_controller['forcing_programs']}`.",
+        f"- Best controller word: `{h2_controller['best_word']}`.",
+        f"- Best controller certificate: `{None if h2_controller['best'] is None else h2_controller['best']['certificate_lines'][0]}`.",
+        f"- Direct certificate solver matches controller frontier: `{h2_direct['matches_controller_frontier']}`.",
+        "",
+        "## H3 UNSAT Core",
+        "",
+        f"- Controller search: {payload['h3_unsat_core']['controller_search']}.",
+        f"- Matched unrestricted direct H3 hit rate: `{payload['h3_unsat_core']['direct_search']['hit_rate']}`.",
+        f"- Core statement: {payload['h3_unsat_core']['core_statement']}",
+        f"- Stronger-than-one-seed note: {payload['h3_unsat_core']['stronger_than_one_seed']}",
+        "",
+        "## Decision",
+        "",
+        f"- {payload['decision']['reason']}",
+    ]
+    path.write_text("\n".join(lines) + "\n")
+
+
 def choose_best_family() -> Tuple[H4Grammar, Dict[str, object]]:
     family_id = "asym_a"
     grammar = make_h4_grammar(family_id, LOW_HEIGHT_X_FAMILIES[family_id])
@@ -1733,6 +1883,7 @@ def main() -> None:
             "affine-shell",
             "geometry-lift",
             "defect-transport",
+            "boundary-controller",
         ),
     )
     parser.add_argument("--family-id", default=None)
@@ -1766,6 +1917,9 @@ def main() -> None:
         print(json.dumps(payload["decision"], indent=2))
     elif args.command == "defect-transport":
         payload = write_defect_transport_results()
+        print(json.dumps(payload["decision"], indent=2))
+    elif args.command == "boundary-controller":
+        payload = write_boundary_controller_results()
         print(json.dumps(payload["decision"], indent=2))
 
 

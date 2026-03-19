@@ -1,11 +1,11 @@
 # Research Context
 
-- Stage: phase6_item030_completed
+- Stage: phase6_item031_completed
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
 - Note: gap_queries=4, swarm_agents=4
-- Rubric progress: 30/32 handled (`29` completed, `1` failed)
+- Rubric progress: 31/32 handled (`30` completed, `1` failed)
 - Known papers tracked: 135
 - `sources.bib` entries: 29
 - Swarm hypotheses: 3
@@ -24,6 +24,8 @@
 - Exact geometry-lift result: the passive-middle `H=3` extrusion of the H4 extractor is killed by a row-quotient invariant across `asym_a`, `asym_b`, and `asym_c`, and the matched unrestricted `H=3` direct controls also stayed at zero hit rate under the same budgets; see `results/phase6_geometry_lift.md`.
 - `item_030` is now completed.
 - Exact H6 result: the only apparent aperiodic gain is the `H=2` word `SDP`, but it is already the archived direct `13/7` certificate on `asym_a`, dies under seed thinning and reversal, and does not survive the passive-middle `H=3` lift; see `results/phase6_h6_defect_transport.md`.
+- `item_031` is now completed.
+- Exact solver result: exhaustive width-4 H6 controller search over `75,276` programs recovers the same `13/7` frontier as direct certificate search under equal expressivity, while the `H=3` passive-middle family remains blocked by the stronger row-quotient UNSAT core; see `results/phase6_boundary_controller.md`.
 
 ## Closest Prior Art
 - Cohomological splitting conditions of vector bundles on ${\mathbf P}^{n_1}\times\cdots\times{\mathbf P}^{n_s}$ (2024)
