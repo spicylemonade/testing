@@ -1,15 +1,21 @@
 # Research Context
 
-- Stage: post_director_swarm
+- Stage: phase6_item026_failed
 - Model: gpt-5.4
 - Codex model ref: openai/gpt-5.4
 - Reasoning effort: xhigh
 - Note: gap_queries=4, swarm_agents=4
-- Rubric progress: 25/25 completed
+- Rubric progress: 26/32 handled (`25` completed, `1` failed)
 - Known papers tracked: 135
 - `sources.bib` entries: 29
 - Swarm hypotheses: 3
 - Verification summary present: yes
+
+## Phase 6 Update
+- `item_026` is now failed with a verifier-backed negative result.
+- Frozen family: `X = {(0,0),(1,0),(0,1),(1,1),(2,-1)}`.
+- Frozen route: width-4 typed interface words over `{closed, top, bottom, gate_up, gate_down}` with one unchanged extractor and one symmetry quotient.
+- Exact result: no width-4 forcing witness survives under the matched boundary-seed budget, so the route never reaches a nontrivial no-repair width-8 comparison; see `results/phase6_h4_typed_residue_interfaces.md`.
 
 ## Closest Prior Art
 - Cohomological splitting conditions of vector bundles on ${\mathbf P}^{n_1}\times\cdots\times{\mathbf P}^{n_s}$ (2024)

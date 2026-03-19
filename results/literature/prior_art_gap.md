@@ -180,3 +180,22 @@ These entries remain relevant only as a reminder that the original novelty guard
     - the abelian language was tested only as a screen and failed.
   - from local-decoder folklore:
     - no H3 activation, no decoder-like positive route, no slope-bloom evidence.
+
+## H. Phase 6 Typed-Interface Update
+
+- New exact artifact:
+  - `results/phase6_h4_typed_residue_interfaces.md`
+  - `results/phase6_h4_typed_residue_interfaces.json`
+
+- What is new relative to the current gap log:
+  - the earlier gap notes only argued that typed residue interfaces were the cleanest surviving positive lane.
+  - the new artifact actually freezes one low-height asymmetric `X`, one finite interface alphabet, one symmetry quotient, and one unchanged extractor, then checks exact width-4 legality and no-repair width-8 composition under matched boundary budgets.
+
+- Why this is not bootstrap-percolation or macrocell folklore in new words:
+  - the tested object is a verifier-facing certificate family, not an infection process or threshold phenomenon.
+  - success would have required an exact legal `(X; d_i; f_i; T; R)` witness under the same extractor at both levels, not just a suggestive local evolution picture.
+  - failure happens at the exact-certificate stage: the frozen typed-interface grammar with `X = {(0,0),(1,0),(0,1),(1,1),(2,-1)}` yields no forcing width-4 witness under the matched boundary-seed budget.
+
+- Novelty consequence:
+  - the live CA-positive lane narrows again.
+  - the updated contribution is not “typed interfaces work,” but rather that small fixed alphabets can be ruled out early by exact width-4 certificate screening before any level-transfer or folklore-heavy interpretation is entertained.
