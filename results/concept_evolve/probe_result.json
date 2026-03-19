@@ -1,72 +1,215 @@
 {
-  "parse_error": true,
-  "sub_problem": "How can a stage-indexed proof-carrying cellular automaton compile every local update directly into a legal arithmetic-Kakeya witness over Z while avoiding bounded-slope and decoder-leakage traps?",
-  "input_fingerprint": "0446b834345fe61abc1100d801f9d2eb7ac2b12f97fdacfb697f8b43a2423f42",
-  "input_context": {
-    "command": "probe",
-    "topic": "how can a stage-indexed proof-carrying cellular automaton compile every local update directly into a legal arithmetic-kakeya witness over z while avoiding bounded-slope and decoder-leakage traps?",
-    "context": [
-      {
-        "path": "results/research_context.md",
-        "exists": true,
-        "sha256": "efdfc96958185057fe31b878e4917b40a0b75203967b76768fc624bfdd3f57b3"
-      },
-      {
-        "path": "results/literature/prior_art_watchlist.md",
-        "exists": true,
-        "sha256": "7b4c6d2a3e771794013cf9594e939f59e5ca45609aa0ded48b635f08098444ac"
-      },
-      {
-        "path": "results/literature/prior_art_gap.md",
-        "exists": true,
-        "sha256": "cc98a879a98a56ecf6671cd15af23137ac847c4a5524e4e39b19f053725b95ce"
-      },
-      {
-        "path": "results/literature/semantic_scholar_manifest.json",
-        "exists": true,
-        "sha256": "36986769095e88706fb9302af02d968801d33ce2bad45370632071ef8fc972f2"
-      },
-      {
-        "path": "results/swarm/director_brief.md",
-        "exists": true,
-        "sha256": "14c5fc7aae120d52631e7c70779b080fd6a290320b1f3c7c9917efbc28ef416a"
-      },
-      {
-        "path": "results/swarm/hypotheses.json",
-        "exists": true,
-        "sha256": "0721621434a693ece8c0c887c66dfba295792cfd4cae101c69d50cf2c1a53df3"
-      },
-      {
-        "path": "results/swarm/tool_plan.md",
-        "exists": true,
-        "sha256": "069eeb6f62aa891b5efab6d2c703935db6dc851da28db2eee379b3fc29f2faf7"
-      },
-      {
-        "path": "results/swarm/falsifier.md",
-        "exists": true,
-        "sha256": "bea8bf7310bf6f64b11de713caa8e9a67c4bf04139c663ae43e53e0ada6a739b"
-      },
-      {
-        "path": "results/concept_evolve/concept_cards.json",
-        "exists": true,
-        "sha256": "d16720d134b2353ce4aeb9c7d9ebf97269ad8eb59ca290ff3cf5263a345b59b6"
-      },
-      {
-        "path": "results/concept_evolve/semantic_bridge.json",
-        "exists": true,
-        "sha256": "c70ed468d9814e4848e3d56aada9484c0618dfbf86533f7ead7c719624918588"
-      },
-      {
-        "path": "results/concept_evolve/steering_directions.json",
-        "exists": true,
-        "sha256": "252835d7500c63fd6d361cff2ca33357bd8077dea05a511d6eb7189d0ffac8a8"
-      },
-      {
-        "path": "results/verification/verification_summary.md",
-        "exists": true,
-        "sha256": "50be8bf004ccc238826932f2798048fa83933ad4de10b6fb3ae2ad9e15e98c1a"
-      }
-    ]
-  },
-  "timestamp": "2026-03-18T21:12:48.129488+00:00"
+  "associations": [
+    {
+      "theme": "literal-strip assumption",
+      "content": "Interpret the bottleneck literally as the full product-grid witness with dims=(3,N) and every admissible edge present. Then n=3N and m=5N-3, so the asymptotic score floor is 5/3. The score target 1.675 is therefore not the main difficulty; the difficulty is whether exact forcing can propagate from O(1) initial resources."
+    },
+    {
+      "theme": "stage-1 rigidity",
+      "content": "For dims=(3,N), the two vertical edge labels are global stage-1 choices shared across every column. Only the horizontal row-wise labels vary by position. Most apparent geometric freedom is illusory; a literal wave must live in horizontal phase patterns or in hidden macrocell state."
+    },
+    {
+      "theme": "exact forcing behaves like certificate intersection, not diffusion",
+      "content": "In the repo's reduced exact semantics, a forced vertex supplies all line classes, a seed supplies one line class, each line class propagates through its monochromatic component, and a vertex becomes forced only when at least two distinct line classes meet. This is closer to proof-certificate collision than to ordinary mass transport."
+    },
+    {
+      "theme": "column-to-column obstruction",
+      "content": "A fully forced column does not directly reproduce a fully forced neighboring column on a literal 3xN strip. Top forcing needs the middle horizontal label to seed the upper vertical carrier a, while bottom forcing needs that same middle horizontal label to seed the lower carrier b. If a!=b these demands conflict; if a=b the middle row loses its second line class."
+    },
+    {
+      "theme": "launch and conveyor are distinct problems",
+      "content": "Two singleton seeds may create a tiny collision, but on the literal width-3 strip they do not even cleanly fill one whole column under the exact reduced semantics. That separates the launch-gadget question from the long-range conveyor question."
+    },
+    {
+      "theme": "required transition is a cooperative transducer",
+      "content": "If an O(1)-seed wave exists, the local rule cannot be 'activate if enough neighbors are active'. The minimal plausible macrostep is a frontier transducer Front_j(a,b;c,d,phi) -> Front_{j+1}(a',b';c',d',phi') where the next slab simultaneously realizes top {a,c}, middle {a,b}, and bottom {b,d} before resetting to a reusable certified frontier. A rule that only sees forced bits or neighbor counts cannot express this."
+    },
+    {
+      "theme": "best-fit external analogy",
+      "content": "The closest successful analogy is a boundary-seeded spatially coupled decoding wave, not bootstrap percolation. Width-limited bootstrap results push toward linear seed demand, while threshold-saturated and cooperative-growth systems explain how tiny boundary seeds can launch long exact fronts."
+    },
+    {
+      "theme": "representation conclusion",
+      "content": "The promising object is not a CA whose visible state is only the strip's current forcing status. It is a CA over proof-carrying macrocells or template IDs that later decodes to a witness, so the automaton can carry phase, ancestry, and auxiliary certificate roles that the literal strip cannot store."
+    }
+  ],
+  "forced_bridges": [
+    {
+      "from": "Threshold Saturation via Spatial Coupling",
+      "to": "3xN exact-certificate ladders",
+      "mechanism": "Treat each width-3 slab as a macrocell whose state stores a verified certificate template and a phase bit. Couple slabs through narrow interfaces so only a boundary-seeded front can advance, mirroring a decoding wave rather than generic infection."
+    },
+    {
+      "from": "Bootstrap-percolation lower bounds on narrow grids",
+      "to": "negative filter for literal forcing waves",
+      "mechanism": "Use width-3 bootstrap results as a falsifier. If a proposed rule reduces to monotone threshold activation on the realized strip, expect linear seed demand and kill it before deeper search."
+    },
+    {
+      "from": "Abelian Networks I. Foundations and Examples",
+      "to": "order-independent certificate updates",
+      "mechanism": "Model each local template as a commuting processor that consumes a bounded frontier state and emits the next certified frontier. This imports least-action and confluence ideas, which are exactly what an exact proof wave needs to avoid schedule-sensitive garbage."
+    },
+    {
+      "from": "Discrete analog computing with rotor-routers",
+      "to": "deterministic auxiliary-color scheduling",
+      "mechanism": "Use a tiny rotor or phase state to alternate which auxiliary line is injected on the top and bottom channels, keeping the front balanced instead of drifting into one-sided certificate growth."
+    },
+    {
+      "from": "SAT-Based Exact Synthesis",
+      "to": "local transition discovery",
+      "mechanism": "Search topology families of width-3 or width-4 front transducers rather than raw witnesses. Encode only shift-equivariant, decode-legal local updates and let SAT either find a recurring frontier rule or prove none exists at that radius."
+    },
+    {
+      "from": "egg and equality saturation",
+      "to": "quotiented proof-state alphabets",
+      "mechanism": "Collapse locally different but algebraically equivalent certificate fragments before CA search so the rule table acts on canonical proof states, not raw edge-label strings."
+    },
+    {
+      "from": "Programmable Control of Nucleation for Algorithmic Self-Assembly and intrinsic universality requires cooperation",
+      "to": "two-sided firing interfaces",
+      "mechanism": "Import the self-assembly lesson that seeded, cooperative growth is qualitatively stronger than one-sided local activation. Require the next slab to fire only when top, middle, and bottom boundary tags jointly match a legal certificate interface."
+    },
+    {
+      "from": "collision-based reversible cellular automata",
+      "to": "micro-gadget launch banks",
+      "mechanism": "Mine tiny conservative or reversible motifs that realize signed certificate collisions cleanly, then use them only as launchers that hand off to a deterministic coupled ladder instead of asking them to solve the entire strip directly."
+    }
+  ],
+  "anomaly_results": [
+    {
+      "constraint": "Literal full-strip assumption dims=(3,N) with all admissible edges nonzero",
+      "result": "The score threshold is almost automatic: m=5N-3 and n=3N, so the full-strip asymptote is 5/3. With one initial T and no seeds, score=(5N-3)/(3N-1)<1.675. With two seeds and no initial T, score=(5N-1)/(3N)<1.675.",
+      "implication": "Any failure is a forcing-wave failure, not a score-compression failure."
+    },
+    {
+      "constraint": "Custom Z3 probe of the reduced exact semantics, full strip, exactly one initial T, no seeds, 3 colors",
+      "result": "UNSAT for N=2,3,4,5,6. N=7 remained unresolved at a 40s solver timeout.",
+      "implication": "Small literal strips show no evidence of a one-site traveling exact wave."
+    },
+    {
+      "constraint": "Custom Z3 probe, full strip, exactly two singleton seeds, no initial T, 3 colors",
+      "result": "UNSAT for N=2,3,4,5. N=6 remained unknown at a 50s solver timeout.",
+      "implication": "The two-seed launch already looks structurally hard on the literal strip."
+    },
+    {
+      "constraint": "Strengthened local test: start with an entire left column already forced and ask whether the neighboring column can ever become fully forced",
+      "result": "UNSAT on a 3x2 full strip for color counts 2,3,4,5.",
+      "implication": "A plain column-to-column conveyor does not exist in the literal forcing dynamics. Any O(1)-seed solution needs richer macrostate than 'this column is forced'."
+    },
+    {
+      "constraint": "Strengthened launch test: 3x1 strip, two singleton seeds anywhere, any vertical colors",
+      "result": "UNSAT for color counts 2,3,4,5.",
+      "implication": "Two seeds do not even fill one width-3 column under the direct reduced semantics, so the launch gadget must live in a richer proof-state or macrocell representation."
+    },
+    {
+      "constraint": "Stage-1 product-grid rigidity",
+      "result": "For dims=(3,N), the two vertical labels are shared across all columns; only horizontal labels vary by position.",
+      "implication": "The strip has too little raw geometric freedom for a naive direct wave. Repetition must come from phase or template state, not from ever-changing local geometry."
+    },
+    {
+      "constraint": "Literal monotone-threshold interpretation",
+      "result": "Adjacent bootstrap-percolation results on width-limited grids point toward linear seed requirements, not O(1) contagious sets.",
+      "implication": "If the rule can be paraphrased as neighbor-count activation, it is almost certainly the wrong object."
+    }
+  ],
+  "steering_directions": [
+    {
+      "direction": "Treat the literal full-strip forcing wave as a likely no-go baseline, not the main target",
+      "rationale": "The exact score floor is already fine, but the direct local dynamics look blocked: even a fully forced column does not reproduce itself one step to the right in the reduced exact semantics.",
+      "first_step": "Extract an UNSAT core or a short case proof for the one-column-to-next-column obstruction, then codify it as a kill test for any direct forcing-state CA proposal.",
+      "expected_signal": "A stable UNSAT frontier over small radii and color counts or a concise symbolic impossibility lemma."
+    },
+    {
+      "direction": "Search for a phaseful macrocell transducer rather than a monotone infection rule",
+      "rationale": "A viable frontier must carry more information than forced or unforced. It needs certificate roles such as upper carrier a, lower carrier b, auxiliary top line c, auxiliary bottom line d, and a small ancestry or phase tag.",
+      "first_step": "Define the smallest width-3 or width-4 macrocell alphabet that can represent carrier pair, auxiliary pair, and phase, then SAT-synthesize a shift-equivariant rule that reproduces that frontier one slab to the right.",
+      "expected_signal": "A period-2 or period-3 local rule whose decoded spacetime blocks are legal witness fragments and whose frontier repeats after a bounded number of steps."
+    },
+    {
+      "direction": "Prefer a two-seed cooperative launch gadget over a lone-T launch",
+      "rationale": "Two seeds naturally supply the first two line classes or collision roles, whereas a single T is too symmetric and the literal strip solver already shows poor small-N behavior.",
+      "first_step": "Search 3x3 and 3x4 macrocell gadgets that turn two seeds into a reusable typed frontier state, not into a fully forced strip.",
+      "expected_signal": "A tiny exact-valid gadget bank where a launch gadget composes with a separate conveyor gadget."
+    },
+    {
+      "direction": "Impose abelian-network style confluence on any candidate wave rule",
+      "rationale": "An exact wave must consume local templates without schedule-sensitive garbage buildup. Abelian-network ideas provide the right bias: bounded state, commuting local processors, and odometer-like diagnostics.",
+      "first_step": "Represent each local update as a processor on template IDs and verify that different legal update orders yield the same emitted frontier summary.",
+      "expected_signal": "Rule families with low garbage, stable odometer profiles, and no dependence on asynchronous scheduling choices."
+    },
+    {
+      "direction": "Use cooperative interface typing if width-3 literal strips stay blocked",
+      "rationale": "Self-assembly results suggest that single-sided growth is too weak; cooperative two-sided or three-sided matching can realize seeded growth that narrow threshold rules cannot.",
+      "first_step": "Prototype 4-8 interface types on width-3 macrocells so a slab advances only when top, middle, and bottom boundary tags jointly satisfy a legal certificate interface.",
+      "expected_signal": "Seeded-only advancement that generalizes across N or aspect ratio and collapses when interface cooperation is randomized."
+    },
+    {
+      "direction": "Let SAT and e-graphs prune the rule space before any stochastic search",
+      "rationale": "The search object is tiny local proof-state transducers, not raw witness strings. Exact synthesis and canonicalization are better first tools than free-form CA evolution here.",
+      "first_step": "Build a two-slab SAT template with canonical proof-state IDs from an e-graph and enumerate the smallest legal transition families.",
+      "expected_signal": "Either a very small library of candidate frontier rules or an early impossibility result that closes this bottleneck cleanly."
+    }
+  ],
+  "validation_checks": [
+    {
+      "direction": "Treat the literal full-strip forcing wave as a likely no-go baseline, not the main target",
+      "checks": [
+        "Prove or SAT-certify that one fully forced column cannot force the next full column for any choice of horizontal labels and at least 2-5 line classes.",
+        "Extend the current UNSAT probes from N<=6 to N<=8 or N<=10 with symmetry breaking and cached solver state.",
+        "Repeat the probes under row reflection and reversed strip orientation to confirm the obstruction is not a placement artifact."
+      ],
+      "pass_signal": "Consistent UNSAT or a short algebraic proof.",
+      "kill_signal": "A genuine SAT model for a recurring literal-strip wave."
+    },
+    {
+      "direction": "Search for a phaseful macrocell transducer rather than a monotone infection rule",
+      "checks": [
+        "Encode a frontier state with explicit carrier and auxiliary roles and require it to reproduce itself shifted right after 2-3 CA phases.",
+        "Demand no-repair decode legality of every local spacetime block.",
+        "Run label-shuffle and template-randomization ablations on any discovered rule."
+      ],
+      "pass_signal": "A small repeating frontier whose exact-valid rate and score survive held-out N but collapse under label or template randomization.",
+      "kill_signal": "Only nonrepeating gadgets or effects that survive label shuffling."
+    },
+    {
+      "direction": "Prefer a two-seed cooperative launch gadget over a lone-T launch",
+      "checks": [
+        "Search 3x3 and 3x4 gadgets with exactly two seeds and no initial T for a reusable frontier state rather than full activation.",
+        "Separate launch and conveyor in the evaluation so a lucky launch does not masquerade as a transport mechanism.",
+        "Benchmark against whole-witness mutation and uncoupled repetition at matched exact budgets."
+      ],
+      "pass_signal": "A tiny launch gadget that composes with the conveyor and improves exact-valid yield over matched baselines.",
+      "kill_signal": "Launch succeeds only when it already hard-codes most of the final witness or loses the effect under matched controls."
+    },
+    {
+      "direction": "Impose abelian-network style confluence on any candidate wave rule",
+      "checks": [
+        "Test asynchronous update permutations of the same macrostate and compare emitted frontier summaries.",
+        "Track an odometer-like counter of template firings and confirm bounded growth behind the front.",
+        "Measure whether garbage states disappear or accumulate linearly with N."
+      ],
+      "pass_signal": "Order-independent front advancement with bounded or recycled garbage.",
+      "kill_signal": "Schedule-sensitive behavior or linear garbage accumulation."
+    },
+    {
+      "direction": "Use cooperative interface typing if width-3 literal strips stay blocked",
+      "checks": [
+        "Compare cooperative interfaces against independent local matching at equal alphabet size and defect budget.",
+        "Run held-out aspect-ratio and slab-count tests.",
+        "Require the signal to disappear under interface randomization or label shuffling."
+      ],
+      "pass_signal": "Generalizing seeded growth that depends specifically on cooperation.",
+      "kill_signal": "No gain over flat matching or a gain that survives randomization."
+    },
+    {
+      "direction": "Let SAT and e-graphs prune the rule space before any stochastic search",
+      "checks": [
+        "Enumerate the smallest exact-decodable rule families before any evolutionary search.",
+        "Compare candidate count, exact-valid hit rate, and verifier cost against unpruned random rule sampling.",
+        "Randomize canonical class IDs to test whether canonicalization itself is carrying the gain."
+      ],
+      "pass_signal": "Dramatic shrinkage of the candidate space plus better exact-valid yield per decode budget.",
+      "kill_signal": "No pruning advantage or gains that persist after canonicalization randomization."
+    }
+  ]
 }

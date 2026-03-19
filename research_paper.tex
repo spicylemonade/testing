@@ -18,6 +18,7 @@
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{natbib}
+\usepackage{verbatim}
 
 \hypersetup{
   colorlinks=true,
@@ -35,52 +36,54 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{proposition}{Proposition}
 \newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
 
 \newcommand{\AK}{\mathrm{AK}}
 \newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
 \newcommand{\RR}{\mathbb{R}}
-\newcommand{\score}{S(X,G,R,T)}
-\newcommand{\witness}{(X,G,R,T)}
-\newcommand{\Vd}{V(d)}
-\newcommand{\repo}{\texttt{Archivara}}
-\newcommand{\Hone}{\texttt{H1}}
-\newcommand{\Htwo}{\texttt{H2}}
-\newcommand{\Hthree}{\texttt{H3}}
+\newcommand{\Span}{\operatorname{span}_{\QQ}}
+\newcommand{\NF}{\mathrm{NF}}
 \newcommand{\tool}[1]{\texttt{#1}}
+\newcommand{\Hone}{\texttt{H1}}
+\newcommand{\Vd}{V(d)}
+\newcommand{\Pow}{\mathcal{G}}
 \newcommand{\includeorplaceholder}[2][\linewidth]{%
   \IfFileExists{#2}{\includegraphics[width=#1]{#2}}{%
     \fbox{\parbox[c][2.0in][c]{0.9\linewidth}{\centering Missing figure asset:\\\texttt{\detokenize{#2}}}}%
   }%
 }
 
-\title{Archivara Agent: Verifier-Coupled Cellular Automata for Arithmetic Kakeya Witness Search}
+\title{Archivara Agent: Exact Cellular-Automaton Search for Arithmetic Kakeya Witnesses}
 \author{Codex Writer Agent}
-\date{Repository snapshot: commit \texttt{7bf4e5c4787e6868efb6595de5108ee44f277515}, 2026-03-18 UTC}
+\date{Repository snapshot: commit \texttt{bf61444f613cd08e3f4ba8c81fce5973e81ec76c}, 2026-03-19 UTC}
 
 \begin{document}
 \pagenumbering{gobble}
 
 \begin{titlepage}
 \centering
-{\LARGE Archivara Agent: Verifier-Coupled Cellular Automata for Arithmetic Kakeya Witness Search\par}
-\vspace{0.75em}
-{\large Design, audit, and the exact-verifier blocker\par}
+{\LARGE Archivara Agent: Exact Cellular-Automaton Search for Arithmetic Kakeya Witnesses\par}
+\vspace{0.8em}
+{\large A rigid \(2\times 2\) nucleus and no-go theorems for unilateral strips\par}
 \vspace{2em}
 {\large Codex Writer Agent\par}
 \vspace{1em}
-{\large Repository snapshot: \texttt{7bf4e5c4787e6868efb6595de5108ee44f277515}\par}
-{\large 2026-03-18 UTC\par}
+{\large Repository snapshot: \texttt{bf61444f613cd08e3f4ba8c81fce5973e81ec76c}\par}
+{\large 2026-03-19 UTC\par}
 \vfill
-\begin{minipage}{0.82\linewidth}
+\begin{minipage}{0.86\linewidth}
 \small
-This manuscript is written from the audited repository artifacts produced in the
-\repo{} research pipeline. It does \emph{not} claim a solved arithmetic-Kakeya
-witness. Instead it documents a verifier-coupled cellular-automata program, the
-formal contracts used to prevent proxy overclaiming, the resulting absence of
-exact evaluator-backed progress, and the resulting pivot to exact-verifier recovery.
+This manuscript is written directly from the audited repository artifacts in the
+\tool{Archivara} pipeline. It does not claim a witness with score
+\(\leq 1.675\). Its contribution is narrower and exact: a witness-faithful
+cellular-automaton search stack, an implemented rational-span verifier and trace
+engine, an exhaustive classification of the audited \(2\times 2\) micro-regime,
+exact no-go results for one-sided strip propagation in the first two nontrivial
+widths, and a negative larger-scale search frontier.
 \end{minipage}
 \vfill
 \end{titlepage}
@@ -88,813 +91,934 @@ exact evaluator-backed progress, and the resulting pivot to exact-verifier recov
 \pagenumbering{arabic}
 
 \begin{abstract}
-The repository studied here targets a difficult arithmetic-Kakeya search task:
-find a legal witness \witness{} whose score
+The repository task studied here asks for a six-line arithmetic-Kakeya witness
+whose score
 \[
-\score=\frac{m(G)+|R|}{n(G)-|T|}
+S=\frac{m(G)+|R|}{n(G)-|T|}
 \]
-is at most \(1.675\). The intended mechanism is a cellular automaton (CA) that
-generates witnesses directly in the six-line verifiable representation, without
-post hoc repair. We reconstruct the entire audited research program from the
-repository state and present it as a publication-quality, negative-result paper.
+is at most \(1.675\), and it asks that the search be carried out using
+cellular-automaton ideas rather than ad hoc graph surgery. At the current
+repository snapshot, the decisive artifact is no longer a missing-verifier
+blocker. The project now contains an implemented exact rational-span verifier
+and synchronous forcing-trace engine, together with machine-readable finite
+audits built on top of that verifier.
 
-The core methodological proposal is \Hone{}, a proof-carrying, stage-indexed,
-symbolic CA whose registry, edge, and vertex fibers decode directly into
-\(X\), the partial dictionaries \(f_i\), the forced set \(T\), and the
-singleton-supported seed set \(R\). The design is coupled to a strict no-repair
-decoder, matched-baseline plan, label-shuffle control, held-out geometry tests,
-and rational-complexity gates, all intended to prevent geometry-only, decoder-
-leakage, bounded-slope, or modular-mirage false positives.
+We present the resulting exact picture. First, we formalize the verifier-native
+synchronous forcing trace normal form and the stage-indexed proof-carrying
+cellular-automaton representation used by the active \Hone{} lane. Second, we
+prove a width-\(2\) seedless-column obstruction for full \(2\times N\) strip
+witnesses: a fresh seedless column can never generate its first forced vertex.
+Third, we analyze two exhaustive finite regimes. In the full-support
+\(2\times 2\) regime with palette
+\(\{(1,0),(0,1),(1,1),(1,2)\}\), no initial \(T\), and at most three seed
+atoms, the verifier checks \(44{,}608\) witnesses and finds exactly \(48\)
+exact-valid classes; every one has score \(7/4\), and every one has the same
+two-layer \(1+3\) nucleation trace up to the choice of first corner. In the
+one-sided fresh-column local classes of heights \(2\) and \(3\), the verifier
+checks \(256\) and \(8{,}192\) states, respectively, and finds zero strict
+improvements in either class. Finally, the larger exact search logs on
+\(2\times 8\), \(2\times 12\), \(3\times 6\), \(3\times 8\), and \(3\times 10\)
+families produce no promoted exact-valid family and no witness below the target.
 
-The principal empirical result of the repository is negative but informative:
-no shared exact integer decoder/verifier exists in the snapshot, so no exact CA
-benchmark was admissible. Consequently the tiny-grid sweep executed \(0/3\)
-planned \Hone{} families, \(0\) exact decodes, found \(0\) verified witnesses,
-and reported no best or median verified score. The honest outcome is therefore
-not a solved construction but a rigorously bounded research program and a clear
-pivot to verifier recovery. The significance of the work is methodological:
-it demonstrates how AI-assisted mathematical search can preserve evidentiary
-integrity by refusing to replace an absent exact evaluator with proxy metrics.
+The current answer to ``solve this using cellular automata'' is therefore
+negative but mathematically informative. The verified search space no longer
+supports unilateral strip-wave stories in the first two nontrivial widths, and
+the only exact micro-gadgets presently available are rigid score-\(7/4\)
+nuclei. What remains open is a coupled, two-sided, or macrocell construction.
 \end{abstract}
 
 \section{Introduction}
 
-The arithmetic Kakeya conjecture sits at the interface of additive
-combinatorics and geometric measure theory. Following Katz and Tao, one studies
-projection inequalities over \(\ZZ^2\) strong enough to imply lower bounds for
-Kakeya sets in Euclidean space \citep{katz1999}. Subsequent work sharpened the
-arithmetic landscape, clarified adjacent pattern formulations, and highlighted
-the risks of low-complexity or bounded-slope regimes
-\citep{green2017,cowenbreen2020,pohoata2024,tao2025}. The repository considered
-in this paper translates that mathematical target into an exact witness search
-problem: find a legal constructible witness \witness{} whose score is at most
-\(1.675\), using a cellular automaton rather than a generic graph-search loop.
+Kakeya sets in \(\RR^d\) contain a unit line segment in every direction. Their
+measure may vanish, but the Kakeya conjecture predicts that their Minkowski and
+Hausdorff dimensions are still maximal. The arithmetic formulation of Katz and
+Tao reframes part of this problem as a statement about additive projections over
+\(\ZZ^2\) \citep{katz1999}. Bourgain's slicing argument connected such
+arithmetic-projection estimates back to Euclidean dimension lower bounds
+\citep{bourgain1999}, and the broader Kakeya program remains active, with recent
+progress even on three-dimensional geometric variants \citep{wang2025}. The
+repository studied here fixes a more operational challenge: find a legal
+constructible witness whose score is at most \(1.675\) and do so through a
+cellular-automaton search program \citep{archivara2026task}.
 
-That translation creates a sharp methodological problem. A CA can easily
-produce visually structured states, but the arithmetic-Kakeya witness format is
-not visual: it is a constrained symbolic object with exact integer semantics,
-closure under subtraction, and a forcing rule that depends on precise singleton
-certificates. A naive automaton can therefore appear successful while merely
-optimizing geometry, a permissive decoder, or a modular proxy. The repository's
-main response was to couple the CA proposal to the exact witness grammar
-itself: any candidate had to decode directly into the original six-line witness
-format, with no repair and no alternative proxy objective.
+That request creates two distinct burdens. The mathematical burden is exactness:
+the witness must satisfy a precise six-line format over \(\ZZ\), and the score
+must be computed from the true witness rather than from a proxy. The
+methodological burden is locality: the proposed generator is a cellular
+automaton, so any positive story must come from local proof-carrying dynamics,
+not from a decoder that secretly repairs malformed candidates after the fact.
+The repository's current architecture addresses both burdens by aligning the CA
+state with the witness grammar itself and by routing every mathematical claim
+through a no-repair exact verifier.
 
-The live lane in the repository was \Hone{}, a proof-carrying symbolic
-forcing-front CA. It was chosen over sparse-defect, modular-shadow, reversible,
-number-conserving, and neural-CA alternatives because it aligned most closely
-with the product-grid witness representation and admitted the cleanest kill
-criteria. At the same time, the repository's own verification layer repeatedly
-warned that this remained a design claim, not a demonstrated capability claim:
-no exact integer verifier was present, no witness was validated, and no
-matched-budget benchmark block was executed.
+The current repository state is more interesting than the earlier blocker-only
+snapshot. A working verifier and synchronous trace engine now exist in
+\tool{tools/kakeya\_ca\_exact.py}; an exhaustive \(2\times 2\) corpus and
+one-sided strip atlas now exist under
+\tool{results/theory/forcing\_traces/}; and the project's open problem has
+narrowed from ``recover the verifier'' to ``find a coupled local family that
+escapes the new exact no-go frontier.'' The resulting paper is therefore not a
+protocol-only audit. It is a theorem-and-computation paper about exact local
+obstructions in a CA-guided witness search.
 
-The purpose of this paper is therefore not to claim that cellular automata have
-already solved the score-\(1.675\) target. Instead, it is to present the
-repository's strongest defensible contribution as a scientific object in its own
-right: a verifier-coupled CA search architecture, an anti-overclaim evaluation
-protocol, the audited evidence that phase-4 experimentation never legitimately
-opened, and the resulting decision to pivot toward exact-evaluator recovery.
-That is a narrower but still useful contribution because a large fraction of the
-novelty risk in AI-assisted mathematics comes from publishing ``interesting''
-search behavior that never survives a faithful evaluator.
-
-This manuscript makes four contributions.
+This manuscript makes five contributions.
 \begin{enumerate}[leftmargin=1.5em]
-\item It formalizes the repository's exact target, witness representation, and
-  \Hone{} architecture as a coherent CA search program over the original
-  arithmetic-Kakeya witness object rather than over a proxy pattern task.
-\item It proves several system-level correctness statements that the repository
-  does support: accepted \Hone{} states decode to legal witnesses, the no-repair
-  contract preserves score faithfulness, and the planned controls exclude the
-  specific confounders the repository identifies.
-\item It reports the audited empirical outcome faithfully: \(0\) exact decodes,
-  \(0\) exact verified witnesses, no verified score improvement, and no
-  executed control block because the exact integer decoder/verifier was absent.
-\item It synthesizes the ConceptEvolve narrowing process into a concrete restart
-  agenda centered on exact-verifier recovery, exact-valid micro-gadgets, and
-  decoder-matched baselines, while explicitly declining stronger claims that the
-  repository does not justify.
+\item It formalizes the repository's exact verifier-native semantics: six-line
+  witnesses, generator matrices, quotient-span forcing, and the synchronous
+  forcing trace normal form.
+\item It states and proves a width-\(2\) seedless-column obstruction for full
+  strip witnesses, explaining why a unilateral wave cannot generate its first
+  new certificate in that class.
+\item It gives a complete computational classification of the audited
+  full-support \(2\times 2\) micro-regime:
+  \(44{,}608\) witnesses checked, \(48\) exact-valid, all score \(7/4\), all
+  with the same \(1+3\) two-layer trace signature up to corner symmetry.
+\item It gives a complete computational no-go atlas for one-sided fresh-column
+  activation in heights \(2\) and \(3\): \(256\) and \(8{,}192\) states checked,
+  zero strict improvements in both classes.
+\item It reports the larger exact search frontier honestly: full \(2\times N\)
+  ladders and \(3\times N\) strips that would beat the target score if they
+  forced successfully still fail to produce a promoted family, leaving only
+  coupled or macrocell-based CA stories alive.
 \end{enumerate}
 
-Figure~\ref{fig:pipeline} summarizes the full pipeline reconstructed from the
-repository.
+Figure~\ref{fig:pipeline} summarizes the current exact pipeline.
 
 \begin{figure}[t]
   \centering
   \includeorplaceholder{figures/fig_pipeline_overview.pdf}
-  \caption{\textbf{Repository pipeline from mathematical target to blocker-aware closeout.}
-  The workflow begins with the arithmetic-Kakeya witness target and proceeds
-  through witness formalization, the \Hone{} CA design, ConceptEvolve bridge
-  generation, and the benchmark/control plan. Every empirical claim is routed
-  through a shared exact decoder/verifier. Because that component was absent in
-  the audited snapshot, the pipeline correctly terminates in a pivot to verifier
-  recovery rather than a proxy-metric success claim.}
+  \caption{\textbf{Current exact cellular-automaton pipeline.}
+  The repository begins with the prompt-defined score target and a stage-indexed
+  proof-carrying CA language. Every candidate is decoded without repair into the
+  six-line witness format and then passed to the same rational-span verifier and
+  synchronous trace engine. The verifier feeds three evidence streams: the
+  exhaustive \(2\times 2\) corpus, the one-sided strip no-go atlas, and larger
+  exact searches on score-relevant strip families. The net effect is a narrowed
+  frontier: unilateral strip waves are ruled out in the audited classes, while
+  coupled and macrocell families remain open.}
   \label{fig:pipeline}
 \end{figure}
 
-The remainder of the paper is organized as follows. Section~2 positions the
-work against the real prior-art boundary rather than the malformed watchlist
-entries that initially appeared in the repository. Section~3 defines the exact
-witness problem and the CA representation used in the active lane. Section~4
-details the method, including pseudocode and complexity accounting.
-Section~5 states and proves the formal results that the repository supports.
-Section~6 documents the experimental setup actually present in the snapshot.
-Section~7 reports the negative empirical results and the bridge-triage output.
-Sections~8 and~9 discuss limitations, implications, and the correct next steps,
-followed by appendices that capture artifact provenance and reproducibility.
+The paper is organized as follows. Section~2 places the work against the real
+arithmetic-Kakeya, CA, and automated-discovery comparison classes. Section~3
+defines the witness object, the verifier-native forcing semantics, and the CA
+search language. Section~4 gives the algorithms, complexity bounds, and design
+rationale. Section~5 states the formal results and proofs. Section~6 documents
+the exact finite regimes, larger search families, hardware, and reproduction
+details. Section~7 reports the exact results. Sections~8 and~9 discuss
+limitations, remaining open directions, and conclusions, followed by appendices
+on provenance and reproduction.
 
 \section{Related Work}
 
-\subsection{Arithmetic-Kakeya mathematics}
+\subsection{Arithmetic Kakeya and adjacent formulations}
 
-The mathematical center of gravity is still Katz and Tao's arithmetic-projection
-program \citep{katz1999}. The repository prompt adopts this formulation and the
-associated witness-search interpretation. Green and Ruzsa study the arithmetic
-Kakeya conjecture directly and sharpen the finite-field boundary, which matters
-here because finite-state cellular automata naturally drift toward modular
-surrogates \citep{green2017}. Cowen-Breen \emph{et al.}\ show that nearby
-pattern problems can look very similar while not solving the exact forcing-pair
-problem; that is one reason the repository insists on decoding back to the
-original witness format \citep{cowenbreen2020}. Pohoata and Zakharov enlarge the
-space of generalized formulations, reinforcing the need to distinguish true
-progress on the original witness problem from progress on a neighboring
-relaxation \citep{pohoata2024}. Tao's 2025 work is treated in the repository as
-the sharpest warning against boundedly many slopes and low rational complexity,
-precisely the regime into which a small-alphabet CA could collapse
-\citep{tao2025}. Hickman and Wright supply the key modular/ring analogue that
-turns finite-state success into a potential mirage unless it honestly lifts back
-to \(\ZZ\) \citep{hickman2018}.
+The mathematical target is still the arithmetic-projection program of Katz and
+Tao \citep{katz1999}. Our work does not propose a new formulation of
+\(\AK(\alpha)\); it uses the repository's task-specific witness language as a
+search interface to that pre-existing target. Green and Ruzsa study the
+arithmetic Kakeya conjecture directly \citep{green2017}. Cowen-Breen
+\emph{et al.}\ analyze nearby pattern problems that are close enough to tempt
+proxy optimization but not identical to the forcing-pair task
+\citep{cowenbreen2020}. Pohoata and Zakharov broaden the arithmetic-Kakeya
+landscape further \citep{pohoata2024}. Tao's recent note on boundedly many
+slopes and rational complexity is especially relevant as a warning that small
+fixed alphabets can masquerade as progress \citep{tao2025}. Hickman and Wright
+provide the natural modular comparison class \citep{hickman2018}. We use these
+papers as the mathematical boundary of admissible claims, not as literal proofs
+of our failure modes.
 
-Our manuscript therefore does \emph{not} claim any new arithmetic-Kakeya
-theorem. The closest mathematical works define the target object and the
-objections the repository is trying not to violate. The repository's only safe
-mathematical statement is target-faithfulness: it kept the search on the exact
-witness representation rather than drifting to a proxy formulation.
+The present manuscript therefore differs from prior arithmetic-Kakeya work in a
+narrow way only. It does not improve an exponent, produce a new witness below
+\(67/40\), or derive a new Euclidean dimension bound. Its mathematical
+contribution is finite and local: exact classification of an audited micro-regime
+and exact obstructions for specific CA-style witness classes.
 
-\subsection{Cellular automata, abelian networks, and local dynamics}
+\subsection{Cellular automata, abelian networks, and local symbolic dynamics}
 
-The CA side of the repository is intentionally narrow. The design borrows the
-language of local state, finite alphabets, and lattice updates, but it is not a
-claim in classical CA theory by itself. The additive-CA reference point in the
-bibliography is Dennunzio, Formenti, and Margara, who analyze positive
-expansivity for additive CA over finite abelian groups \citep{dennunzio2023}.
-This is relevant because it anchors what ordinary additive-CA structure already
-looks like; the repository's intended distinction is not ``we used a CA,'' but
-``we used a CA whose state variables are witness-aware and decoder-coupled.''
+Our use of cellular automata is witness-faithful rather than generic. The
+closest methodological neighbors are works on additive or algebraic CA, abelian
+networks, and local search over dynamical media. Dennunzio, Formenti, and
+Margara study positive expansivity for additive cellular automata over finite
+abelian groups \citep{dennunzio2023}. Bond and Levine's abelian-network papers
+offer a rigorous language for commuting local updates, halting, and
+resource-like invariants \citep{bond2013,bond2014}. Faldor and Cully provide a
+modern CA-search comparison class via quality-diversity search in Lenia
+\citep{faldor2024}. None of these works searches arithmetic-Kakeya witnesses
+directly; conversely, our manuscript does not prove a new theorem in classical
+CA theory or abelian-network theory. The overlap is methodological and
+structural.
 
-Bond and Levine's abelian-network papers are treated similarly: they provide a
-structural analogy for local processing, halting, and invariant-carrying
-dynamics \citep{bond2013,bond2014}. However, the repository never proves that an
-abelian-network invariant predicts exact forcing success, so these sources stay
-at the level of adjacent method background rather than evidence of progress on
-the actual task.
-
-Faldor and Cully's quality-diversity study in Lenia is the relevant CA-search
-baseline \citep{faldor2024}. Its importance here is negative: a rich local-rule
-search process over an automaton is not novel by itself. The repository's only
-defensible methodological distinction is the fixed no-repair decoder and the
-fact that all claimed wins would have to survive exact witness scoring.
+The clearest connection is that our width-\(2\) obstruction admits an abelian
+coverability interpretation. What is new in that discussion is not abelian
+networks as a field, but the compiler from the witness verifier's quotient-span
+semantics to a column-wise symmetric/antisymmetric resource decomposition.
 
 \subsection{Automated mathematical discovery}
 
-The automated-discovery comparison class is represented by AlphaEvolve and the
-large-scale mathematical discovery work of Georgiev \emph{et al.}
-\citep{novikov2025,georgiev2025}. These systems make it impossible to claim
-novelty for the mere fact that an agent searched a mathematical object. The
-repository is explicit about this. Without a domain-specific evaluator contract,
-the project would collapse into ``generic search over a serialized witness
-space.'' The paper therefore frames its contribution, cautiously, as a
-domain-specific exact-decoding discipline rather than as a demonstrated search
-capability beyond these general systems.
+Automated-discovery systems now make it impossible to claim novelty merely by
+saying that an agent or a search policy explored a mathematical object.
+AlphaEvolve and the large-scale mathematical-discovery pipeline of Georgiev
+\emph{et al.}\ are the correct comparison class for that broader automation story
+\citep{novikov2025,georgiev2025}. Our work therefore does not claim novelty for
+``agentic search'' by itself. The distinct claim is more constrained: the search
+language is cellular and local, the state space is typed to the witness grammar,
+and every mathematical statement is tied to a single exact verifier rather than
+to a learned or permissive post-processor.
 
-\subsection{Watchlist cleanup and novelty boundary}
+\subsection{Prior-art boundary used in this paper}
 
-One unusual feature of the repository is that its initial watchlist was badly
-polluted by LaTeX-token collisions. Titles involving ``\(2\times2\),''
-``\(S^3\times S^3\),'' and ``\(A_2\)'' were surfaced despite having no genuine
-relationship to arithmetic Kakeya. The repository correctly classifies these as
-false overlaps rather than as real novelty constraints. That cleanup matters:
-the real novelty pressure comes from arithmetic-Kakeya papers and from CA or
-automated-discovery papers, not from token-collision artifacts.
-
-Table~\ref{tab:relatedwork} and Figure~\ref{fig:priorart} summarize the
-manuscript's actual prior-art boundary.
+One repository complication deserves a brief note. The automatically generated
+watchlist contained obvious false positives caused by LaTeX token collisions.
+Those entries are irrelevant to the actual science and are not used as
+comparison papers in this manuscript. Table~\ref{tab:relatedwork} records the
+real prior-art boundary we enforce.
 
 \begin{table}[t]
 \centering
 \small
-\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{2.1cm} X}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{2.2cm} X}
 \toprule
-Line of work & Overlap type & What it constrains in this manuscript \\
+Line of work & Overlap type & Role in this manuscript \\
 \midrule
-Katz--Tao; Green--Ruzsa; Tao & Mathematical direct & Define the exact target and the low-complexity objections that any future witness must overcome. \\
-Cowen-Breen et al.; Pohoata--Zakharov; Hickman--Wright & Mathematical adjacent & Warn against proxy pattern tasks, generalized formulations without transfer, and modular-only evidence. \\
-Bond--Levine; Dennunzio et al.; Faldor--Cully & Methodological adjacent & Show that local dynamics, additive CA, and automaton search already exist as mature literatures. \\
-AlphaEvolve; Georgiev et al. & Methodological direct & Remove any novelty claim based solely on automated search over mathematical objects. \\
-Malformed watchlist entries & False overlap & Contribute no scientific constraint and are used only as evidence of retrieval failure. \\
+Katz--Tao; Green--Ruzsa; Bourgain; Tao & Mathematical direct or near-direct & Define the arithmetic target, its Euclidean motivation, and the most relevant low-complexity cautionary regime. \\
+Cowen-Breen et al.; Pohoata--Zakharov; Hickman--Wright & Mathematical adjacent & Mark nearby pattern, generalized, or modular formulations that must not be misreported as progress on the original witness problem. \\
+Bond--Levine; Dennunzio et al.; Faldor--Cully & Methodological adjacent & Supply the local-dynamics and CA-search comparison class. \\
+AlphaEvolve; Georgiev et al. & Methodological direct & Set the novelty floor for generic automated discovery. \\
+Malformed watchlist hits & False overlap & Excluded from scientific comparison and retained only as evidence of retrieval failure. \\
 \bottomrule
 \end{tabularx}
-\caption{\textbf{Real prior-art boundary used in this paper.}
-The repository's strongest admissible contribution is methodological and
-disciplinary, not theorem-level. The table therefore distinguishes works that
-define the mathematical target from works that define the methodological
-novelty floor.}
+\caption{\textbf{Real comparison set used throughout the paper.}
+The manuscript claims neither a new arithmetic-Kakeya theorem nor a generic
+automation breakthrough. The only defensible novelty lies in exact local
+obstruction results and in a witness-faithful CA search discipline.}
 \label{tab:relatedwork}
 \end{table}
 
-\begin{figure}[t]
-  \centering
-  \includeorplaceholder{figures/fig_prior_art_map.pdf}
-  \caption{\textbf{Prior-art pressure map reconstructed from the repository's gap analysis.}
-  Rows identify the papers that actually constrain this manuscript. The heatmap
-  distinguishes mathematical-direct, mathematical-adjacent,
-  methodological-direct, methodological-adjacent, and false-overlap relations.
-  The watchlist entries are shown only to emphasize that the repository
-  ultimately rejected them as retrieval artifacts rather than as relevant prior
-  work.}
-  \label{fig:priorart}
-\end{figure}
-
 \section{Background and Preliminaries}
 
-\subsection{Arithmetic-Kakeya target}
+\subsection{Prompt-derived target}
 
-The external mathematical target is the arithmetic Kakeya problem of Katz and
-Tao \citep{katz1999}. The repository prompt uses the notation \(\AK(\alpha)\)
-for the assertion that for every \(\epsilon>0\) there exists a finite
-\(X\subset \ZZ^2\) with \(a+b\neq 0\) for each nonzero \((a,b)\in X\) such that
-for all finite \(G\subset \ZZ^2\),
-\[
-|(1,-1)\cdot G|
-\ll_\epsilon
-\max_{\mathbf{x}\in X} |\mathbf{x}\cdot G|^{\alpha+\epsilon},
-\qquad
-\mathbf{x}\cdot G=\{x_1g_1+x_2g_2:(g_1,g_2)\in G\}.
-\]
-The problem instance driving this repository is narrower and more operational:
-construct a legal witness \witness{} with score at most \(1.675\). The
-score-\(1.675\) threshold is task provenance supplied by the repository prompt,
-not a result established inside the repository itself.
+The repository prompt uses the notation \(\AK(\alpha)\) for an arithmetic
+projection inequality over finite subsets of \(\ZZ^2\) and then specializes the
+task to a witness search problem with score threshold \(67/40 = 1.675\)
+\citep{archivara2026task}. The operational challenge is:
 
-The geometric motivation remains classical. Bourgain's slicing method connects
-arithmetic-Kakeya bounds to dimension bounds for Euclidean Kakeya sets
-\citep{bourgain1999}; the prompt further cites recent progress of Leng, Sah, and
-Sawhney as part of the modern motivation for the Hausdorff-dimension upgrade
-\citep{leng2024}. This paper relies on that literature only for motivation, not
-for any new proof.
+\begin{quote}
+find a finite label set \(X\subset \ZZ^2\) with \((0,0)\in X\) and
+\(a+b\neq 0\) for every nonzero \((a,b)\in X\), together with constructible data
+\((G,R,T)\), such that the resulting witness has score at most \(67/40\).
+\end{quote}
 
-\subsection{Verifiable witness format}
+Everything in this paper is anchored to that exact target. No alternate
+objective, proxy loss, or repaired output is treated as success.
 
-The repository ultimately works with the explicit six-line witness format
-described in \tool{results/baselines/witness\_spec.md}. We now formalize that
-format independently.
+\subsection{Six-line witness representation}
+
+We use the verifiable product-grid form that the prompt and repository adopt.
 
 \begin{definition}[Product-grid vertex set]
-Let \(k\geq 1\) and let \(d=(d_1,\dots,d_k)\) be a list of positive integers.
-Define
+Let \(d=(d_1,\ldots,d_k)\) be a list of positive integers. Write
 \[
-\Vd=\{(e_1,\dots,e_k)\in \ZZ^k : 1\leq e_i\leq d_i \text{ for every } i\}.
+\Vd := \{(e_1,\ldots,e_k)\in \ZZ^k : 1\leq e_i \leq d_i \text{ for all } i\}.
 \]
 Its cardinality is
 \[
-n(G)=|\Vd|=\prod_{i=1}^k d_i.
+n(d) := |\Vd| = \prod_{i=1}^k d_i.
 \]
 \end{definition}
 
-\begin{definition}[Constructible graph in verifiable form]
-Let \(X\subset \ZZ^2\) be finite and contain \((0,0)\). A verifiable
-\(X\)-constructible graph is specified by \(d=(d_1,\dots,d_k)\) together with
-partial functions
+\begin{definition}[Verifiable constructible graph]
+Fix a finite label set \(X\subset \ZZ^2\) with \((0,0)\in X\). A witness graph
+in verifiable form is a tuple \((d,f)\) where \(d=(d_1,\ldots,d_k)\) and
 \[
-f_i:[d_1]\times\cdots\times[d_{i-1}]\times[d_i-1]\to X,
+f_i : [d_1]\times \cdots \times [d_{i-1}] \times [d_i-1] \to X,
 \qquad 1\leq i\leq k,
 \]
-where omitted keys are interpreted as \((0,0)\). The edge count is
+with omitted dictionary entries understood to have value \((0,0)\). The edge
+count is
 \[
-m(G)=\sum_{i=1}^k \sum_{\mathbf{a}} 1_{f_i(\mathbf{a})\neq (0,0)}
+m(d,f)
+=
+\sum_{i=1}^k
+\sum_{\mathbf{a}}
+1_{f_i(\mathbf{a})\neq (0,0)}
 \prod_{j=i+1}^k d_j.
 \]
 \end{definition}
 
-\begin{definition}[Initial forcing data]
-An \(X\)-set for \(G\) is a pair \((R,T)\) where \(T\subseteq \Vd\) and
-\(R\) is a finite list of partial maps \(r:\Vd\to X\) such that every
-\(r\in R\) has exactly one vertex \(e\in \Vd\) with \(r(e)\neq (0,0)\).
-\end{definition}
-
-\begin{definition}[Forcing closure]
-Starting from \((R,T)\), one may repeatedly perform the following operations.
-\begin{enumerate}[leftmargin=1.5em]
-\item If \(f_i(\mathbf{a})=x\neq (0,0)\) and \(e_1,e_2\in \Vd\) are the two
-  vertices whose first \(i\) coordinates are \((a_1,\dots,a_i)\) and
-  \((a_1,\dots,a_i+1)\), respectively, then add the two-support map sending
-  \(e_1\mapsto x\), \(e_2\mapsto -x\), and all other vertices to \((0,0)\).
-\item If there exist \(a\neq 0\) and \(e\in \Vd\) such that some
-  \(r\in R\) satisfies \(r(e)=(a,-a)\) and \(r(g)=(0,0)\) for every
-  \(g\notin T\cup\{e\}\), then add \(e\) to \(T\).
-\item If \(r,s\in R\), then add \(r-s\) to \(R\).
-\end{enumerate}
-The pair \((R,T)\) is \emph{forcing} if repeated use of these operations
-eventually yields \(T=\Vd\).
+\begin{definition}[Seed set and forced set]
+Let \(W=(X,d,f,T,R)\). The set \(T\subseteq \Vd\) is the initial forced set.
+The seed set \(R\) is a finite list of partial maps \(r:\Vd\to X\) such that
+each \(r\in R\) has exactly one vertex \(v\in \Vd\) with \(r(v)\neq (0,0)\).
 \end{definition}
 
 \begin{definition}[Witness score]
-For a legal witness \witness{}, define
+The score of \(W=(X,d,f,T,R)\) is
 \[
-\score=\frac{m(G)+|R|}{n(G)-|T|},
+S(W) := \frac{m(d,f)+|R|}{n(d)-|T|},
 \]
-provided that the denominator is positive.
+provided \(n(d)-|T|>0\).
 \end{definition}
 
-\subsection{The \Hone{} representation}
+In the original forcing-rule language, edge labels may be converted into
+two-support certificates, singleton \((a,-a)\) certificates may force a vertex,
+and integer linear combinations of known certificates remain admissible
+\citep{archivara2026task}. The executable verifier used in this paper implements
+that logic through a quotient-span test described next.
 
-The active CA lane uses a stage-indexed representation instead of a flat image
-lattice. That choice is central, so we formalize it.
+\subsection{Generator matrices and verifier-native exact forcing}
 
-\begin{definition}[\Hone{} candidate state]
-Fix a geometry \(d=(d_1,\dots,d_k)\). An \Hone{} candidate state \(C\) consists
-of the following typed fibers.
+\begin{definition}[Vertex-supported block vector]
+For \(v\in \Vd\) and \(x=(a,b)\in \ZZ^2\), let \(E_v(x)\in \ZZ^{2\Vd}\) denote
+the vector whose \(v\)-block equals \(x\) and whose other vertex blocks are
+zero.
+\end{definition}
+
+\begin{definition}[Actual edge set]
+Let \(W=(X,d,f,T,R)\). If \(f_i(\mathbf{a})=x\neq (0,0)\), then for each suffix
+\((s_{i+1},\ldots,s_k)\in [d_{i+1}]\times\cdots\times[d_k]\) there is an actual
+edge between the two vertices that agree on all coordinates except that the
+\(i\)-th coordinate is \(a_i\) in one copy and \(a_i+1\) in the other. Denote
+the set of all such labeled actual edges by \(\mathcal{E}(W)\).
+\end{definition}
+
+\begin{definition}[Verifier generator set]
+The verifier generator set \(\Pow(W)\subset \ZZ^{2\Vd}\) consists of:
 \begin{enumerate}[leftmargin=1.5em]
-\item A registry fiber storing a finite active label set
-  \(X_{\mathrm{act}}\subset \ZZ^2\) with \((0,0)\in X_{\mathrm{act}}\).
-\item For each stage \(i\), an edge fiber whose cells are indexed by legal
-  prefixes in \([d_1]\times\cdots\times[d_{i-1}]\times[d_i-1]\) and store an
-  \(\mathrm{edge\_label}\in X_{\mathrm{act}}\cup\{(0,0)\}\).
-\item A vertex fiber indexed by \(\Vd\), each cell storing four symbolic fields:
-  \(\mathrm{seed\_label}\), \(\mathrm{forced\_bit}\),
-  \(\mathrm{proof\_tag}\), and \(\mathrm{mask\_tag}\).
+\item all seed vectors \(E_v(x)\) arising from the singleton seeds in \(R\), and
+\item all edge-difference vectors \(E_u(x)-E_v(x)\) for
+  \((u,v,x)\in \mathcal{E}(W)\).
 \end{enumerate}
+For \(v\in \Vd\), define the diagonal target vector
+\[
+\delta_v := E_v(1,-1).
+\]
 \end{definition}
 
-\begin{definition}[No-repair decoder]
-The decoder \(D\) maps an \Hone{} candidate \(C\) to a witness
-\((X,d,f,T,R)\) by reading the registry fiber as \(X\), the edge fibers as the
-partial functions \(f_i\), the forced bits as \(T\), and the nonempty
-\(\mathrm{seed\_label}\) fields as singleton-supported seed maps in \(R\).
-The decoder \emph{rejects} rather than repairs any candidate that violates the
-legality rules of the witness format.
+\begin{definition}[Quotient projection and forceable vertex]
+Let \(F\subseteq \Vd\). Write
+\[
+\pi_F : \QQ^{2\Vd} \to \QQ^{2(\Vd\setminus F)}
+\]
+for the coordinate projection that deletes every block indexed by a vertex in
+\(F\). A vertex \(v\in \Vd\setminus F\) is \emph{forceable relative to \(F\)} if
+\[
+\pi_F(\delta_v) \in \Span\bigl(\pi_F(\Pow(W))\bigr).
+\]
 \end{definition}
 
-Figure~\ref{fig:architecture} illustrates this representation.
+\begin{definition}[Synchronous forcing trace normal form]
+For \(W=(X,d,f,T,R)\), define \(F_0:=T\) and recursively
+\[
+F_{s+1}
+:=
+F_s \cup
+\{v\in \Vd\setminus F_s : v \text{ is forceable relative to } F_s\}.
+\]
+Write \(\Delta_s := F_{s+1}\setminus F_s\). The \emph{synchronous forcing trace
+normal form} is
+\[
+\NF(W) := (F_0,\Delta_0,F_1,\Delta_1,\ldots).
+\]
+\end{definition}
+
+This quotient-span closure is exactly the semantics executed by
+\tool{tools/kakeya\_ca\_exact.py}. All theorem statements and all computational
+results in the sequel are with respect to this verifier-native forcing
+semantics.
+
+\subsection{The active cellular-automaton search language}
+
+The repository's active lane, \Hone{}, is a stage-indexed proof-carrying
+cellular automaton rather than a pixel-valued image CA. Its state space has
+three typed fibers:
+\begin{enumerate}[leftmargin=1.5em]
+\item a registry fiber storing the active label set \(X\);
+\item stage-indexed edge fibers storing the candidate nonzero entries of the
+  functions \(f_i\); and
+\item a vertex fiber storing singleton seed labels, forced bits, and symbolic
+  proof tags.
+\end{enumerate}
+The key methodological rule is \emph{no repair}: the decoder reads those fibers
+directly into a six-line witness and rejects any malformed candidate. Figure
+~\ref{fig:architecture} shows the architecture.
 
 \begin{figure}[t]
   \centering
   \includeorplaceholder{figures/fig_h1_architecture.pdf}
-  \caption{\textbf{\Hone{} representation and no-repair decoding.}
-  The active CA lane does not emit images or free-form graphs. It emits typed
-  symbolic fibers aligned with the witness grammar: a registry fiber for the
-  active alphabet \(X\), stage-indexed edge fibers for the dictionaries \(f_i\),
-  and a vertex fiber for \(T\) and singleton-supported \(R\) seeds. The decoder
-  is intentionally strict: any malformed label, key, or seed support causes
-  rejection rather than repair.}
+  \caption{\textbf{Witness-faithful architecture of the active \Hone{} lane.}
+  Registry, edge, and vertex fibers encode only data that already live in the
+  six-line witness grammar. The decoder performs no graph surgery and no label
+  repair. All accepted candidates flow into the same rational-span verifier,
+  which returns both a forcing verdict and a layered trace normal form.}
   \label{fig:architecture}
 \end{figure}
 
-\subsection{Evaluation metrics and gates}
+\subsection{Score-relevant strip families}
 
-If an exact verifier existed, the repository would report the following metrics
-for each family and baseline: legality hit rate, forcing hit rate, best
-verified score, median verified score, and full score distributions. The same
-artifacts also fix mandatory kill gates:
+The strip families studied later are not arbitrary. They are the first narrow
+families that would already beat the target score if a local forcing wave
+existed.
+
+\begin{lemma}[Full-support strip score formulas]\label{lem:stripscore}
+Let \(W=(X,d,f,T,R)\) be a full-support strip witness.
 \begin{enumerate}[leftmargin=1.5em]
-\item label-shuffle collapse at fixed geometry,
-\item decoder-matched baselines,
-\item held-out geometry and held-out alphabet checks,
-\item small/medium/unrestricted rational-complexity sweeps, and
-\item a hard stop if any decoder repair step is needed.
+\item If \(d=(2,N)\), then \(m(d,f)=3N-2\) and
+  \[
+  S(W)=\frac{3N-2+|R|}{2N-|T|}.
+  \]
+  In particular, \(S(W)\leq 67/40\) whenever
+  \[
+  14N \geq 40|R| + 67|T| - 80.
+  \]
+\item If \(d=(3,N)\), then \(m(d,f)=5N-3\) and
+  \[
+  S(W)=\frac{5N-3+|R|}{3N-|T|}.
+  \]
+  In particular, \(S(W)\leq 67/40\) whenever
+  \[
+  N \geq 40|R| + 67|T| - 120.
+  \]
 \end{enumerate}
-These gates are not empirical results in the current repository; they are part
-of the protocol that any future empirical claim would need to survive.
+\end{lemma}
+
+\begin{proof}
+For \(d=(2,N)\), stage \(1\) contributes \((2-1)N = N\) edges and stage \(2\)
+contributes \(2(N-1)\) edges, so \(m(d,f)=N+2(N-1)=3N-2\). Substituting into the
+score definition yields the displayed formula. The inequality
+\[
+\frac{3N-2+|R|}{2N-|T|}\leq \frac{67}{40}
+\]
+is equivalent, after cross-multiplication, to
+\[
+40(3N-2+|R|)\leq 67(2N-|T|),
+\]
+which simplifies to
+\[
+14N \geq 40|R| + 67|T| - 80.
+\]
+
+For \(d=(3,N)\), stage \(1\) contributes \((3-1)N = 2N\) edges and stage \(2\)
+contributes \(3(N-1)\) edges, so \(m(d,f)=2N+3(N-1)=5N-3\). Again substituting
+into the score formula gives the displayed expression. The inequality
+\[
+\frac{5N-3+|R|}{3N-|T|}\leq \frac{67}{40}
+\]
+is equivalent to
+\[
+40(5N-3+|R|)\leq 67(3N-|T|),
+\]
+which simplifies to
+\[
+N \geq 40|R| + 67|T| - 120.
+\]
+\end{proof}
+
+Lemma~\ref{lem:stripscore} explains the choice of larger search families: a full
+\(2\times N\) strip with three or four seed atoms, or a full \(3\times N\) strip
+with two seeds, already satisfies the score budget if it forces successfully.
 
 \section{Method}
 
-\subsection{Repository-first workflow}
+\subsection{Algorithm 1: exact verification and synchronous tracing}
 
-The repository contains two executable helpers:
-\tool{.archivara/concept\_evolve.py} and \tool{.archivara/semantic\_scholar.py}.
-There is no exact witness verifier and no separate CA experiment runner. The
-workflow reconstructed from the artifacts is therefore:
-\begin{enumerate}[leftmargin=1.5em]
-\item synchronize literature, prior-art, and novelty constraints;
-\item formalize the witness specification and benchmark matrix;
-\item choose a single active lane (\Hone{});
-\item run ConceptEvolve passes to refine the design vocabulary and bridge set;
-\item attempt phase-4 exact evaluation only if a shared exact decoder/verifier
-  exists;
-\item if the evaluator is absent, stop, preserve the negative result, and pivot
-  to verifier recovery.
-\end{enumerate}
-
-This workflow is conservative by design. The most important methodological
-decision is what it \emph{refuses} to do: it refuses to replace the absent exact
-verifier with proxy metrics such as local propagation speed, automaton entropy,
-current imbalance, or modular performance.
-
-\subsection{Algorithm 1: no-repair decoding}
-
-Algorithm~1 is the exact witness compiler implied by the repository's \Hone{}
-design notes. It is a decoder specification, not an implemented search loop.
+The core executable artifact is \tool{tools/kakeya\_ca\_exact.py}. Its verifier
+is exact in the sense relevant to this paper: it parses a six-line witness,
+builds the full seed-and-edge generator system, and computes the layered
+quotient-span closure by rational Gaussian elimination.
 
 \begin{center}
-\begin{minipage}{0.95\linewidth}
-\textbf{Algorithm 1.} No-repair decoding of an \Hone{} candidate \(C\)
+\begin{minipage}{0.96\linewidth}
+\textbf{Algorithm 1.} Exact verification and synchronous trace extraction
 \begin{enumerate}[leftmargin=1.5em]
-\item Read the active registry labels and form \(X:=X_{\mathrm{act}}\cup\{(0,0)\}\).
-\item If any nonzero \((a,b)\in X\) satisfies \(a+b=0\), reject \(C\).
-\item For each stage \(i\) and each legal prefix key, read the edge fiber cell.
-  If the stored label is nonzero, insert that key-value pair into \(f_i\).
-\item Set \(T:=\{e\in \Vd : \mathrm{forced\_bit}(e)=1\}\). If any marked
-  vertex lies outside \(\Vd\), reject \(C\).
-\item For each vertex \(e\in \Vd\) with \(\mathrm{seed\_label}(e)\neq\mathrm{none}\),
-  create a partial map \(r_e\) supported only at \(e\), with value
-  \(\mathrm{seed\_label}(e)\). If any \(r_e\) has more than one nonzero support
-  or uses a label outside \(X\), reject \(C\).
-\item Compute \(m(G)\), \(n(G)\), \(|R|\), and \(|T|\) from the decoded data. If
-  \(n(G)-|T|\leq 0\), reject \(C\).
-\item Output the witness \((X,d,f_1,\dots,f_k,T,R)\), where \(R=\{r_e\}\).
+\item Parse the six-line witness text into \((X,d,f,T,R)\).
+\item Validate the syntax and legality constraints:
+  \((0,0)\in X\), every nonzero label satisfies \(a+b\neq 0\), all dictionary
+  keys are in range, every seed is singleton-supported, and \(n(d)-|T|>0\).
+\item Unfold each nonzero \(f_i(\mathbf{a})\) into its actual edge set
+  \(\mathcal{E}(W)\), and build the generator set \(\Pow(W)\).
+\item Initialize \(F_0:=T\).
+\item For \(s=0,1,\ldots\):
+  \begin{enumerate}[leftmargin=1.5em]
+  \item for each active vertex \(v\in \Vd\setminus F_s\), test whether
+    \(\pi_{F_s}(\delta_v)\in \Span(\pi_{F_s}(\Pow(W)))\);
+  \item define \(\Delta_s\) as the set of active vertices passing the test;
+  \item if \(\Delta_s=\varnothing\), stop; otherwise set \(F_{s+1}:=F_s\cup\Delta_s\).
+  \end{enumerate}
+\item Output validity, the final forced set, the score, and the layered trace
+  normal form \((F_0,\Delta_0,F_1,\Delta_1,\ldots)\).
 \end{enumerate}
 \end{minipage}
 \end{center}
 
-The design rationale is straightforward. Step 1 prevents the decoder from
-inventing labels that the CA never represented. Step 2 enforces the arithmetic
-task's nonzero-label legality constraint. Steps 3--5 make the decoder a direct
-readout of fiber contents rather than a graph-reconstruction heuristic. Step 6
-ensures that score accounting uses the official denominator. None of these steps
-performs legalization, support merging, or inference.
+The design rationale is simple. Step 2 prevents the decoder from laundering
+illegal witnesses. Step 3 uses the exact actual-edge expansion rather than a
+compressed proxy graph. Step 5 makes the forcing history explicit, which is why
+the later \(2\times 2\) and strip results can be stated as trace-shape theorems
+rather than only as yes/no verdicts.
 
-\subsection{Algorithm 2: evaluator-coupled benchmark block}
+\subsection[Algorithm 2: exhaustive 2x2 corpus generation]{Algorithm 2: exhaustive \(2\times 2\) corpus generation}
 
-The repository also specifies how any future exact experiment must be run.
+The first finite audit is a complete scan of the smallest full-support regime
+that can already exhibit nontrivial coupling.
 
 \begin{center}
-\begin{minipage}{0.95\linewidth}
-\textbf{Algorithm 2.} Benchmark block for one CA family \(F\)
+\begin{minipage}{0.96\linewidth}
+\textbf{Algorithm 2.} Exhaustive audited \(2\times 2\) corpus
 \begin{enumerate}[leftmargin=1.5em]
-\item Check whether a shared exact integer decoder/verifier exists. If not,
-  record the block as \emph{blocked} and terminate.
-\item Fix a legal geometry block, an \(X\) budget (or explicit \(X\)), a density
-  band, and an exact-decode budget \(N\).
-\item Sample at most \(N\) candidates from the CA family \(F\). Decode each
-  candidate using Algorithm~1 and then apply exact forcing verification over
-  \(\ZZ\).
-\item Repeat Step 3 for three matched baselines: random local search,
-  whole-witness mutation, and decoder-matched non-CA search.
-\item Report legality hit rate, forcing hit rate, best verified score, median
-  verified score, score distribution, and failure-reason counts for every
-  family.
-\item Apply the mandatory controls: label shuffling, held-out geometry,
-  held-out legal alphabets, and the small/medium/unrestricted complexity sweep.
-\item Promote \(F\) only if its exact verified score distribution improves over
-  the matched baselines \emph{and} the signal collapses under label shuffling
-  while surviving the out-of-distribution and complexity gates.
+\item Fix the nonzero palette
+  \[
+  \mathcal{P}:=\{(1,0),(0,1),(1,1),(1,2)\}.
+  \]
+\item Fix \(d=(2,2)\), full support on all three edge slots, and \(T=\varnothing\).
+\item Enumerate all \(4^3\) assignments of labels from \(\mathcal{P}\) to the
+  three edge slots.
+\item Enumerate all seed sets of size \(0,1,2,\) or \(3\) from the \(16\)
+  available vertex-label atoms \(\Vd\times \mathcal{P}\).
+\item For each witness, run Algorithm 1. If the witness is exact-valid, record
+  its score and full trace.
+\item Canonicalize valid witnesses by row and column flips, and write a
+  machine-readable corpus together with a summary JSON file.
 \end{enumerate}
 \end{minipage}
 \end{center}
 
-The key methodological point is that the CA never gets special treatment. The
-same decoder, the same evaluator, the same budget, and the same edge-density
-band are shared across all baselines.
+This procedure is implemented in \tool{tools/kakeya\_trace\_corpus.py}. The
+choice of the palette \(\mathcal{P}\) is not arbitrary: it is the common
+audited palette used across the \(2\times 2\) regime and the strip-local atlas,
+and it already contains the nonzero labels of the exact-valid micro-gadgets that
+survive the audit.
 
-\subsection{Algorithm 3: ConceptEvolve narrowing}
+\subsection{Algorithm 3: one-sided local strip atlas}
 
-The repository did execute a ConceptEvolve program, but that program produced
-bridge ideas rather than exact witness evaluations. The audited sequence was:
-\tool{evolve} (completed), \tool{probe} (failed because of a stream
-disconnect), \tool{reframe} (completed), and \tool{iterate} (completed).
-Operationally, the pipeline did the following:
+The second finite audit tests whether a fresh column can ignite from one-sided
+boundary information alone.
+
+\begin{center}
+\begin{minipage}{0.96\linewidth}
+\textbf{Algorithm 3.} Exhaustive one-sided local strip atlas
 \begin{enumerate}[leftmargin=1.5em]
-\item generate a broad concept tree around CA-based witness search;
-\item probe one bottleneck around proof-carrying decodability;
-\item reframe the problem through additional domains such as proof labeling,
-  group testing, Petri-net coverability, and network coding;
-\item iterate the bridge set and explicitly promote, hold, or retire each
-  bridge according to the no-repair and exact-decoder discipline.
+\item Fix a height \(h\in\{2,3\}\) and the same palette \(\mathcal{P}\).
+\item Enumerate all internal vertical-label assignments of the fresh \(h\times 1\)
+  column; there are \(4^{h-1}\) choices.
+\item For each row, enumerate both
+  \begin{enumerate}[leftmargin=1.5em]
+  \item whether a row-singleton input from the left is present, and
+  \item if present, which of the \(4\) palette labels it carries.
+  \end{enumerate}
+  This contributes \(2^h 4^h\) one-sided boundary states.
+\item For each combined local state, build the corresponding \(h\times 1\)
+  witness and run Algorithm 1.
+\item Mark the state as a \emph{strict improvement} if some row that is not
+  already seeded becomes newly forced.
+\end{enumerate}
+\end{minipage}
+\end{center}
+
+The resulting state counts are \(4^{1}4^{2}2^{2}=256\) for height \(2\) and
+\(4^{2}4^{3}2^{3}=8{,}192\) for height \(3\). This is a complete finite audit,
+not a Monte Carlo sample.
+
+\subsection{Larger exact search families}
+
+The larger negative search results come from exact families chosen because they
+would already satisfy the score budget if they forced completely:
+\begin{enumerate}[leftmargin=1.5em]
+\item full \(2\times 8\) ladders with \(3\) or \(4\) seed atoms;
+\item full \(2\times 12\) ladders with \(4\) or \(5\) seed atoms;
+\item full \(3\times 6\), \(3\times 8\), and \(3\times 10\) strips with two
+  seed atoms; and
+\item auxiliary reduced-model searches on tiny rectangles and strips using the
+  Z3 back-end in the same toolchain \citep{moura2008}.
 \end{enumerate}
 
-This process did not solve the target. Its value is epistemic: it reduced the
-number of live hypotheses while keeping the restart agenda aligned with the same
-exact-decoder contract.
+Only the exact maxima summarized in
+\tool{results/experiments/h1\_exact\_advantage.md} are used in this paper. The
+repository does not preserve full run-by-run distributions or random seeds for
+those larger searches, so we treat them as existence-negative evidence rather
+than as benchmark-complete CA evaluations.
 
-\subsection{Complexity analysis}
+\subsection{Complexity and completeness}
 
-Let
-\[
-M(d)=\sum_{i=1}^k \prod_{j=1}^{i-1} d_j(d_i-1)
-\]
-denote the total number of edge-fiber slots, let
-\[
-N(d)=\prod_{i=1}^k d_i
-\]
-denote the number of vertex-fiber cells, and let \(q=|X_{\mathrm{act}}|\) be
-the number of active labels in the registry fiber. Then Algorithm~1 performs:
+Let \(n:=n(d)\) and let \(g:=|\Pow(W)|\) be the total number of generators after
+all nonzero \(f_i\)-entries are unfolded into actual edges.
+
 \begin{enumerate}[leftmargin=1.5em]
-\item one scan of the registry fiber, costing \(O(q)\);
-\item one scan of the edge-fiber slots, costing \(O(M(d))\);
-\item one scan of the vertex fiber, costing \(O(N(d))\);
-\item score bookkeeping, costing \(O(M(d)+N(d))\).
+\item Witness parsing and legality checks are linear in the serialized witness
+  size.
+\item Generator construction costs \(O(gn)\) in the straightforward dense
+  implementation used by the repository.
+\item One forceability query reduces to rational Gaussian elimination on a matrix
+  with at most \(2n\) rows and \(g\) columns. Let \(C_{\mathrm{span}}(n,g)\)
+  denote that cost.
+\item Since the synchronous trace has at most \(n\) nonempty layers and each
+  layer tests at most \(n\) active vertices, the total verification cost is
+  \[
+  O\!\bigl(n^2 C_{\mathrm{span}}(n,g)\bigr).
+  \]
 \end{enumerate}
-Therefore decoding and legality checking cost
-\[
-O\!\bigl(q+M(d)+N(d)\bigr)
-\]
-time and
-\[
-O\!\bigl(q+M(d)+N(d)\bigr)
-\]
-memory. This is the exact part of the pipeline that the repository does define.
 
-If an exact forcing verifier existed, the total cost of one benchmark block with
-budget \(B\) would be
-\[
-O\!\bigl(B\,(q+M(d)+N(d)+V_{\mathrm{exact}})\bigr),
-\]
-where \(V_{\mathrm{exact}}\) denotes the cost of exact forcing verification.
-Because the repository does not contain \(V_{\mathrm{exact}}\), this term is the
-dominant unresolved complexity. The explicit benchmark envelope is still finite:
-at most three \Hone{} families and at most \(10^3\) exact decodes per family,
-with the same budget repeated for each matched baseline. In other words, the
-unresolved issue is not asymptotic explosion; it is the absence of a valid
-exact evaluator.
+For the finite audits, the relevant cost is exact enumeration count rather than
+asymptotics:
+\begin{itemize}[leftmargin=1.5em]
+\item Algorithm 2 performs exactly \(44{,}608\) verifier calls.
+\item Algorithm 3 performs exactly \(256+8{,}192=8{,}448\) verifier calls.
+\end{itemize}
+
+Because these two audits are complete finite enumerations, their reported counts
+carry zero statistical uncertainty.
 
 \section{Theoretical Results and Proofs}
 
-This section states only claims that are fully supported by the repository's
-formal contracts. It does not claim a new arithmetic-Kakeya theorem or a solved
-witness.
+\subsection{Deterministic trace normal form}
 
-\begin{definition}[Accepted \Hone{} state]
-An \Hone{} candidate state \(C\) is \emph{accepted} if Algorithm~1 terminates
-without rejection.
+\begin{theorem}[Determinism of \(\NF(W)\)]\label{thm:determinism}
+For a fixed witness \(W\), the synchronous forcing trace normal form \(\NF(W)\)
+is uniquely determined.
+\end{theorem}
+
+\begin{proof}
+The witness \(W\) determines the generator set \(\Pow(W)\), the initial forced
+set \(F_0=T\), and the quotient projections \(\pi_{F_s}\) for every possible
+layer \(s\). For a given forced set \(F_s\), the definition of
+``forceable relative to \(F_s\)'' is a membership test in the uniquely
+determined vector space \(\Span(\pi_{F_s}(\Pow(W)))\). Therefore the set
+\[
+\Delta_s
+=
+\{v\in \Vd\setminus F_s : \pi_{F_s}(\delta_v)\in \Span(\pi_{F_s}(\Pow(W)))\}
+\]
+is uniquely determined by \(W\) and \(F_s\). Since \(F_{s+1}=F_s\cup \Delta_s\),
+the next forced set is also uniquely determined. Induction on \(s\) shows that
+every \(F_s\) and every \(\Delta_s\) is uniquely determined. Hence the entire
+sequence \(\NF(W)\) is unique.
+\end{proof}
+
+\subsection[A width-2 seedless-column obstruction]{A width-\(2\) seedless-column obstruction}
+
+We now formalize the obstruction stated informally in the repository's abelian
+coverability note.
+
+\begin{definition}[The class \(L_2(N)\)]
+Let \(L_2(N)\) denote the class of full-support witnesses with dimensions
+\((2,N)\), no initial forced vertices, arbitrary nonzero labels on every edge
+slot, and arbitrary singleton seed atoms.
 \end{definition}
 
-\begin{lemma}[Decoded alphabet legality]
-If \(C\) is an accepted \Hone{} state, then the decoded alphabet \(X\) contains
-\((0,0)\), and every nonzero \((a,b)\in X\) satisfies \(a+b\neq 0\).
-\end{lemma}
-
-\begin{proof}
-Algorithm~1 constructs \(X\) in Step 1 as
-\(X=X_{\mathrm{act}}\cup\{(0,0)\}\). Therefore \((0,0)\in X\). In Step 2,
-Algorithm~1 checks each nonzero \((a,b)\in X\). If there exists a nonzero label
-with \(a+b=0\), then the algorithm rejects \(C\). Because \(C\) is accepted,
-that rejection does not occur. Hence no nonzero element of \(X\) has coordinate
-sum \(0\). These are exactly the required alphabet legality conditions.
-\end{proof}
-
-\begin{lemma}[Decoded graph and seed legality]
-If \(C\) is an accepted \Hone{} state, then:
-\begin{enumerate}[leftmargin=1.5em]
-\item every decoded dictionary entry in every \(f_i\) has a legal key and a
-  value in \(X\);
-\item every vertex in \(T\) lies in \(\Vd\); and
-\item every seed \(r\in R\) has exactly one nonzero support vertex and uses a
-  label in \(X\).
-\end{enumerate}
-\end{lemma}
-
-\begin{proof}
-We prove the three claims in order.
-
-\emph{Claim 1.} By definition of an \Hone{} state, each edge-fiber cell is
-indexed by a legal prefix in the domain
-\([d_1]\times\cdots\times[d_{i-1}]\times[d_i-1]\). Step 3 of Algorithm~1 reads
-only those legal edge-fiber cells. Therefore every inserted key already has the
-required shape and range. Each such cell stores either a label in
-\(X_{\mathrm{act}}\) or \((0,0)\). By Step 1, \(X_{\mathrm{act}}\subseteq X\),
-so every nonzero inserted value belongs to \(X\).
-
-\emph{Claim 2.} Step 4 sets
-\[
-T=\{e\in \Vd:\mathrm{forced\_bit}(e)=1\}.
-\]
-Because the comprehension explicitly restricts to \(e\in \Vd\), every accepted
-vertex in \(T\) lies in \(\Vd\). The subsequent rejection clause in Step 4 rules
-out any out-of-range marked vertex.
-
-\emph{Claim 3.} Step 5 constructs one seed map \(r_e\) for each vertex
-\(e\in \Vd\) satisfying \(\mathrm{seed\_label}(e)\neq\mathrm{none}\). By
-construction, \(r_e\) is supported only at \(e\). If any seed had more than one
-nonzero support or used a label outside \(X\), then Step 5 would reject \(C\).
-Since \(C\) is accepted, neither failure occurs. Hence every seed map in \(R\)
-has exactly one nonzero support vertex and uses a label in \(X\).
-\end{proof}
-
-\begin{theorem}[Accepted states decode to legal witnesses]
-Let \(C\) be an accepted \Hone{} state. Then the decoder output
-\[
-D(C)=(X,d,f_1,\dots,f_k,T,R)
-\]
-is a legal six-line arithmetic-Kakeya witness in the sense of the repository's
-canonical witness specification.
+\begin{theorem}[Width-\(2\) seedless-column obstruction]\label{thm:width2}
+Let \(W\in L_2(N)\). If column \(j\) contains no seed atom, then no vertex in
+column \(j\) can ever become forced in the verifier-native synchronous trace.
 \end{theorem}
 
 \begin{proof}
-To prove legality we must check the conditions on \(X\), on the graph data
-\((d,f_1,\dots,f_k)\), on \(T\), on \(R\), and on the score denominator.
+Write the top and bottom vertices of column \(j\) as \(t_j\) and \(b_j\). Let
+\[
+S_j(u) := E_{t_j}(u) + E_{b_j}(u),
+\qquad
+A_j(u) := E_{t_j}(u) - E_{b_j}(u),
+\]
+for any \(u\in \QQ^2\). Thus \(S_j(u)\) is the column-symmetric mode and
+\(A_j(u)\) is the column-antisymmetric mode.
 
-\emph{Alphabet.} By Lemma~1, \(X\) contains \((0,0)\), and every nonzero
-\((a,b)\in X\) satisfies \(a+b\neq 0\). This matches the alphabet rules.
+We argue by contradiction. Assume some vertex in column \(j\) becomes forced.
+Let \(s\) be the first layer for which \(\Delta_s\) contains either \(t_j\) or
+\(b_j\). By minimality of \(s\), no vertex in column \(j\) lies in \(F_s\).
+Hence both blocks of column \(j\) survive the quotient projection \(\pi_{F_s}\).
 
-\emph{Graph data.} The geometry \(d=(d_1,\dots,d_k)\) is fixed by the benchmark
-condition and consists of positive integers by the definition of the product
-grid. For each \(i\), Algorithm~1 outputs the dictionary \(f_i\) using only
-legal stage-\(i\) prefix keys and values in \(X\), by Lemma~2(1). Because the
-decoder outputs exactly one dictionary for each stage \(i\in\{1,\dots,k\}\), the
-required number of dictionaries is correct.
+We now examine every possible projected generator whose support intersects column
+\(j\).
 
-\emph{Forced set.} Lemma~2(2) proves that every element of \(T\) lies in
-\(\Vd\), so \(T\) is a legal list of vertices.
+\textbf{1. Rail generators.}
+There are at most two rails incident to column \(j\): one from column \(j-1\) to
+column \(j\), labeled say by \(h_{j-1}\), and one from column \(j\) to
+column \(j+1\), labeled say by \(h_j\). Before quotienting, a rail generator has
+the form
+\[
+S_j(h) - S_{j+1}(h)
+\quad\text{or}\quad
+S_{j-1}(h) - S_j(h),
+\]
+for some nonzero label \(h\). After applying \(\pi_{F_s}\), any coordinates in
+previously forced columns may disappear, but the column-\(j\) contribution
+remains a scalar multiple of \(S_j(h)\). In particular, every rail contribution
+to column \(j\) is purely symmetric.
 
-\emph{Seed set.} Lemma~2(3) proves that every \(r\in R\) is a partial map from
-\(\Vd\) to \(X\) with exactly one nonzero supported vertex, which is exactly the
-required initial condition on \(R\).
+\textbf{2. The rung generator inside column \(j\).}
+Let the vertical label in column \(j\) be \(v_j\). The rung generator is exactly
+\[
+A_j(v_j).
+\]
+This is the only generator supported entirely inside column \(j\).
 
-\emph{Denominator.} Step 6 of Algorithm~1 computes \(n(G)-|T|\) and rejects the
-candidate if this quantity is nonpositive. Because \(C\) is accepted, the
-denominator is positive.
+\textbf{3. Seed generators.}
+By hypothesis, column \(j\) contains no seed atom. So no seed generator has any
+support in column \(j\).
 
-All required legality checks have therefore passed, and the output is a legal
-six-line witness.
+Combining these three cases, every vector in the projected span
+\(\Span(\pi_{F_s}(\Pow(W)))\), when restricted to column \(j\), has
+antisymmetric part lying in the one-dimensional space \(\Span\{A_j(v_j)\}\).
+Indeed, rail generators contribute only symmetric terms, and the rung
+contributes only multiples of \(A_j(v_j)\).
+
+Now consider the two possible forcing targets in column \(j\):
+\[
+\delta_{t_j}=E_{t_j}(1,-1),
+\qquad
+\delta_{b_j}=E_{b_j}(1,-1).
+\]
+These decompose as
+\[
+\delta_{t_j}
+=
+\frac{1}{2}S_j(1,-1) + \frac{1}{2}A_j(1,-1),
+\qquad
+\delta_{b_j}
+=
+\frac{1}{2}S_j(1,-1) - \frac{1}{2}A_j(1,-1).
+\]
+So any forceability of \(t_j\) or \(b_j\) would require the antisymmetric vector
+\(A_j(1,-1)\) to lie in \(\Span\{A_j(v_j)\}\). Because \(A_j\) is linear and
+injective in the label argument, that would imply
+\[
+(1,-1)\in \Span\{v_j\}.
+\]
+Equivalently, \(v_j\) would be a rational multiple of \((1,-1)\). But every
+nonzero label in the witness satisfies \(a+b\neq 0\), whereas every nonzero
+multiple of \((1,-1)\) has coordinate sum \(0\). So \(v_j\) cannot be parallel
+to \((1,-1)\).
+
+This contradiction shows that neither \(t_j\) nor \(b_j\) can lie in
+\(\Delta_s\). Since \(s\) was the first layer at which a vertex of column \(j\)
+was forced, no such layer exists. Therefore no vertex in column \(j\) can ever
+become forced.
 \end{proof}
 
-\begin{proposition}[No-repair score faithfulness]
-Let \(C\) be an accepted \Hone{} state and let \(D(C)\) be its decoded witness.
-Then the score computed by the pipeline is exactly
-\[
-\score=\frac{m(G)+|R|}{n(G)-|T|},
-\]
-where all terms are computed from the decoded witness itself. In particular, the
-pipeline cannot improve the score by hidden legalization or by trusting the
-human-readable first-line summary.
-\end{proposition}
+\begin{corollary}[No unilateral width-\(2\) strip wave]\label{cor:width2}
+No one-sided left-to-right cellular-automaton rule whose fresh column is
+seedless can propagate forcing through a full-support \(2\times N\) witness.
+\end{corollary}
 
 \begin{proof}
-Algorithm~1 computes \(m(G)\), \(n(G)\), \(|R|\), and \(|T|\) after decoding the
-registry, edge, and vertex fibers into \(X\), the functions \(f_i\), the forced
-set \(T\), and the seed set \(R\). The score formula used by the repository is
-exactly
-\[
-\score=\frac{m(G)+|R|}{n(G)-|T|}.
-\]
-No term in this expression refers to the advisory first line of the witness
-format. Moreover, by construction of Algorithm~1, there is no repair step that
-adds or removes edges, merges seed supports, or modifies \(T\) before score
-evaluation. Therefore the score is a pure function of the decoded witness. Since
-the pipeline never uses an alternative objective, it cannot obtain a lower score
-through hidden legalization or summary-line trust.
+In a unilateral fresh-column update, the next column receives information only
+from already processed columns and from its own internal edges; by definition it
+contains no initial seed atom. Theorem~\ref{thm:width2} therefore applies to
+every fresh column individually and forbids its first forced vertex. Without a
+first forced vertex, no unilateral wave can propagate.
 \end{proof}
 
-\begin{theorem}[Control suite excludes the named confounders]
-Assume a future empirical claim about a CA family is accepted only if the family
-passes the benchmark contract of Algorithm~2 together with the lane gates fixed
-in the repository. Then each of the following confounders is ruled out by the
-acceptance rule.
+\subsection[Computational classification of the audited 2x2 regime]{Computational classification of the audited \(2\times 2\) regime}
+
+\begin{proposition}[Exhaustive \(2\times 2\) rigidity]\label{prop:2x2}
+Fix the audited regime consisting of:
 \begin{enumerate}[leftmargin=1.5em]
-\item The apparent gain is geometry-only or label-insensitive.
-\item The apparent gain comes from decoder leakage or repair heuristics.
-\item The apparent gain exists only in the small-complexity regime.
-\item The apparent gain is memorization of one geometry or one legal alphabet.
+\item dimensions \(d=(2,2)\);
+\item full support on all three edge slots;
+\item nonzero palette \(\mathcal{P}=\{(1,0),(0,1),(1,1),(1,2)\}\);
+\item no initial forced vertices; and
+\item at most three seed atoms.
 \end{enumerate}
-\end{theorem}
-
-\begin{proof}
-We consider each confounder separately.
-
-\emph{Case 1: geometry-only or label-insensitive gain.}
-The benchmark contract requires a label-shuffle control at fixed geometry and
-fixed nonzero-label multiset. The lane gate kills \Hone{} if the shuffled runs
-retain either at least half of the unshuffled hit rate or at least three
-quarters of the unshuffled median-score gain. A geometry-only or label-
-insensitive explanation predicts precisely that the gain should survive such a
-shuffle, because the geometry is held fixed while the arithmetic labels are
-perturbed. Therefore any family that passes acceptance cannot still be explained
-by a geometry-only or label-insensitive mechanism above the repository's stated
-thresholds.
-
-\emph{Case 2: decoder leakage or repair heuristics.}
-There are two ways decoder leakage could occur. First, the decoder could repair
-malformed candidates. This is prohibited directly by Algorithm~1 and by the
-decoder-leakage gate: any such repair causes immediate rejection or lane death.
-Second, the decoder could contain the true source of gain even without explicit
-repair. To test that possibility, Algorithm~2 requires a decoder-matched
-baseline that keeps the same decoder but replaces the CA generator with non-CA
-proposal mechanisms. If the apparent gain were attributable only to the
-decoder, the decoder-matched baseline would reproduce it, and the CA-specific
-claim would fail. Hence accepted evidence cannot be due solely to decoder
-leakage or repair heuristics.
-
-\emph{Case 3: small-complexity-only gain.}
-The benchmark contract includes a small/medium/unrestricted rational-complexity
-sweep, and the lane gate kills \Hone{} if all improvements occur only in the
-small regime while the family fails to beat matched non-CA baselines in the
-medium or unrestricted regimes. A gain confined to the smallest-complexity
-regime therefore triggers rejection. Hence an accepted claim cannot be
-small-complexity-only under the repository's rule.
-
-\emph{Case 4: memorization of one geometry or one legal alphabet.}
-The benchmark plan and falsifier memo require held-out geometry checks and
-held-out legal alphabets. The out-of-distribution gate kills \Hone{} if the hit
-rate collapses below the specified threshold or if the median verified gain
-disappears on all held-out settings. Therefore a family that merely memorizes
-one geometry or one alphabet cannot satisfy the acceptance rule.
-
-Each confounder leads to a specific mandatory failure. Since accepted evidence
-is defined precisely by surviving all mandatory failures, none of the four
-confounders is consistent with accepted evidence.
-\end{proof}
-
-\begin{proposition}[Verified metrics are undefined without an exact verifier]
-Suppose the repository lacks a shared exact integer decoder/verifier that can
-check whether a decoded witness is forcing over \(\ZZ\). Then the quantities
-``verified hit rate,'' ``best verified score,'' and ``median verified score'' are
-undefined under the repository's protocol.
+Then:
+\begin{enumerate}[leftmargin=1.5em]
+\item exactly \(44{,}608\) raw witnesses are enumerated;
+\item exactly \(48\) witnesses are exact-valid;
+\item every exact-valid witness has score \(7/4\); and
+\item every exact-valid witness has a two-layer trace of the form
+  \(1+3\): one corner in \(\Delta_0\), followed by the remaining three vertices
+  in \(\Delta_1\). Each of the four choices of first corner occurs exactly
+  \(12\) times.
+\end{enumerate}
 \end{proposition}
 
 \begin{proof}
-By definition, a verified hit rate counts the fraction of proposals that decode
-to legal witnesses \emph{and} pass exact forcing verification over \(\ZZ\). If
-the exact verifier is absent, the second predicate cannot be evaluated. Hence
-the verified hit rate cannot be computed.
+There are three edge slots, each of which may take any of the four nonzero
+labels in \(\mathcal{P}\), so there are \(4^3=64\) edge-label assignments.
 
-Similarly, the best verified score is the minimum score among witnesses that
-have passed exact verification. Without a verifier, the set over which this
-minimum is taken is not known. The same issue applies to the median verified
-score: the multiset of verified scores does not exist as a well-defined object.
+There are \(4\) vertices and \(4\) nonzero labels, hence \(16\) possible
+seed atoms. The seed set may have size \(0,1,2,\) or \(3\), and repeated atoms
+are disallowed. Therefore the total number of seed sets is
+\[
+\binom{16}{0}+\binom{16}{1}+\binom{16}{2}+\binom{16}{3}
+=
+1+16+120+560
+=
+697.
+\]
+Algorithm 2 inspects every pair of an edge-label assignment and a seed set, so
+the total number of raw witnesses checked is
+\[
+64\cdot 697 = 44{,}608.
+\]
+This proves part (1).
 
-Because the protocol forbids substituting proxy verification, these quantities
-are not replaced by estimates. They remain undefined.
+The execution of Algorithm 2 is exhaustive, and each witness is evaluated by the
+exact verifier of Algorithm 1. The machine-readable summary produced by that run
+records:
+\begin{enumerate}[leftmargin=1.5em]
+\item \tool{exact\_valid\_witnesses} \(=48\),
+\item \tool{score\_histogram} \(=\{\texttt{7/4}:48\}\), and
+\item \tool{trace\_signature\_histogram}\ consisting of four signatures, each of
+  multiplicity \(12\), where the only variation is the identity of the first
+  forced corner.
+\end{enumerate}
+Because the enumeration is complete and the verifier is exact, these summary
+values are the theorem statement itself. This proves parts (2), (3), and (4).
 \end{proof}
 
-\begin{remark}[What remains unproven]
-The repository does \emph{not} prove the existence of a witness with
-\(\score\leq 1.675\). It also does not prove that \Hone{} has any evaluator-
-backed capability advantage over matched baselines. Those are precisely the
-claims blocked by Proposition~4's missing-verifier condition.
+\begin{corollary}[No audited \(2\times 2\) witness beats the prompt target]
+In the audited regime of Proposition~\ref{prop:2x2}, no witness has score
+\(\leq 67/40\).
+\end{corollary}
+
+\begin{proof}
+By Proposition~\ref{prop:2x2}, every exact-valid witness in the regime has score
+\(7/4\). Since \(7/4 = 1.75 > 1.675 = 67/40\), none reaches the target.
+\end{proof}
+
+\subsection{Computational no-go atlas for one-sided fresh columns}
+
+\begin{proposition}[Exhaustive one-sided no-go in heights \(2\) and \(3\)]\label{prop:nogo}
+Fix the one-sided local strip class over the palette \(\mathcal{P}\) in which a
+fresh \(h\times 1\) column, with \(h\in\{2,3\}\), may use only:
+\begin{enumerate}[leftmargin=1.5em]
+\item its internal vertical labels from \(\mathcal{P}\), and
+\item row-singleton inputs arriving from the column immediately to its left.
+\end{enumerate}
+Then the exhaustive verifier-native local atlas has:
+\begin{enumerate}[leftmargin=1.5em]
+\item \(256\) states when \(h=2\) and \(8{,}192\) states when \(h=3\); and
+\item zero strict-improvement states in both heights.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+For a fresh \(h\times 1\) column, there are \(h-1\) internal vertical edges, so
+there are \(4^{h-1}\) choices of internal labels from \(\mathcal{P}\). There are
+\(h\) potential row-singleton inputs from the left. For each row, one chooses
+whether an input is present and, if it is present, which of the \(4\) labels it
+carries. Therefore the total number of one-sided boundary states is \(2^h4^h\).
+Hence the total number of local states is
+\[
+4^{h-1}4^h2^h.
+\]
+For \(h=2\), this equals \(4^14^22^2 = 256\). For \(h=3\), this equals
+\(4^24^32^3 = 8{,}192\). This proves part (1).
+
+Algorithm 3 enumerates exactly those local states and runs the exact verifier on
+the corresponding \(h\times 1\) witness in each case. The resulting summary JSON
+records \tool{strict\_improvement\_cases} \(=0\) for both \(h=2\) and \(h=3\).
+Because the state spaces are finite and exhaustively enumerated, those counts
+prove part (2).
+\end{proof}
+
+\begin{corollary}[What remains open after the local audits]
+Any cellular-automaton witness family that beats the score target over the
+audited palette must leave the unilateral one-sided strip class of heights \(2\)
+and \(3\). In particular, it must use at least one of:
+\begin{enumerate}[leftmargin=1.5em]
+\item two-sided or multi-boundary coupling,
+\item internal seeds inside a target block, or
+\item a wider block or macrocell construction.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+By Corollary~\ref{cor:width2}, a unilateral seedless width-\(2\) wave is
+impossible. By Proposition~\ref{prop:nogo}, the audited one-sided fresh-column
+classes in heights \(2\) and \(3\) contain zero strict-improvement states.
+Therefore any successful family over the audited palette must leave those ruled
+out classes. The only remaining possibilities are the listed alternatives.
+\end{proof}
+
+\begin{remark}[Proof boundary]
+The theorem and propositions above are exact for the verifier-native semantics
+implemented by the repository. We do not prove here a full metatheorem equating
+that executable semantics with every formulation of the original forcing-pair
+definition. All positive and negative claims in this paper should therefore be
+read at the level of the repository's exact verifier.
 \end{remark}
 
 \section{Experimental Setup}
 
-\subsection{Artifact corpus}
+\subsection{Source-of-truth artifacts}
 
-This paper is an artifact-grounded reconstruction. The input corpus consists of:
+The repository contains \(263\) files under \tool{results/} and \(23\) files
+under \tool{figures/}. For the current paper, the source-of-truth artifacts are:
 \begin{enumerate}[leftmargin=1.5em]
-\item \tool{research\_rubric.json}, which records the pipeline's phase structure
-  and completion state;
-\item all files under \tool{results/}, including witness specifications,
-  benchmark plans, core design documents, experimental reports, verification
-  audits, ConceptEvolve outputs, and the final assessment;
-\item \tool{sources.bib}, which serves as the external bibliography;
-\item the helper scripts \tool{.archivara/concept\_evolve.py} and
-  \tool{.archivara/semantic\_scholar.py}; and
-\item the figure script added for this manuscript,
-  \tool{figures/generate\_paper\_figures.py}.
+\item \tool{tools/kakeya\_ca\_exact.py}, which implements exact verification and
+  synchronous tracing;
+\item \tool{tools/kakeya\_trace\_corpus.py}, which generates the finite audits;
+\item \tool{results/theory/forcing\_trace\_normal\_form.md} and the machine-readable
+  summaries under \tool{results/theory/forcing\_traces/};
+\item \tool{results/theory/local\_rule\_no\_go\_atlas.md} and
+  \tool{results/theory/abelian\_coverability\_duality.md};
+\item \tool{results/experiments/h1\_exact\_advantage.md},
+  \tool{results/experiments/macrocell\_scaling.md},
+  \tool{results/experiments/spatial\_coupling\_threshold.md}, and
+  \tool{results/experiments/arithmetic\_sensitivity\_phase\_transition.md}; and
+\item \tool{results/concept\_evolve/bridge\_candidates.json}, which supplies the
+  current bridge-status source of truth.
 \end{enumerate}
 
-No external dataset is used. The paper's ``dataset'' is the audited research
-workspace itself.
+Several older blocker-era files remain in the repository, including
+\tool{results/experiments/h1\_tiny\_grid\_report.md},
+\tool{results/experiments/h1\_controls.md}, and
+\tool{results/experiments/complexity\_sweep.md}. We retain them as historical
+artifacts and as pre-registered control criteria, but not as the current source
+of truth for exact evaluation, because they predate the exact-trace pivot.
 
-\subsection{Executed runs and provenance}
+\subsection{Exact finite regimes}
 
-The repository records four ConceptEvolve commands relevant to the CA narrative.
-\begin{enumerate}[leftmargin=1.5em]
-\item \tool{evolve}: completed on 2026-03-18 and materialized the concept cards,
-  semantic bridge, and steering directions.
-\item \tool{probe}: failed because of a stream disconnect and did not produce a
-  valid content-bearing probe artifact.
-\item \tool{reframe}: completed and expanded the analogy set to eleven reframing
-  domains.
-\item \tool{iterate}: completed and produced the final bridge-candidate ranking
-  together with the concept delta.
-\end{enumerate}
-These are provenance facts, not empirical CA evaluations. The latest run in the
-repository is the \tool{iterate} concept-search job, not a verifier-backed exact
-benchmark.
+Table~\ref{tab:finiteaudits} summarizes the exact finite regimes used in the
+current paper.
 
-\subsection{Planned exact benchmark envelope}
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{3.3cm} >{\centering\arraybackslash}p{1.8cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.6cm} X}
+\toprule
+Regime & States checked & Exact-valid / improving & Uncertainty & Key conclusion \\
+\midrule
+Full-support \(2\times 2\) corpus & \(44{,}608\) & \(48\) exact-valid & exact & Every exact-valid witness has score \(7/4\) and the same \(1+3\) trace shape up to the first corner. \\
+Coverability deficit on the same \(2\times 2\) corpus & \(44{,}608\) & \(20{,}032\) immediate failures with \(\Phi_{\mathrm{cov}}>0\) & exact & Missing an entire seeded row or column already certifies failure for \(44.9\%\) of the raw regime. \\
+One-sided fresh column, height \(2\) & \(256\) & \(0\) strict improvements & exact & No local state ignites a fresh column. \\
+One-sided fresh column, height \(3\) & \(8{,}192\) & \(0\) strict improvements & exact & The same no-go persists in the next nontrivial height. \\
+\bottomrule
+\end{tabularx}
+\caption{\textbf{Exact finite audits used in this manuscript.}
+All uncertainties are zero because each regime is a complete enumeration, not a
+sample. The coverability-deficit statistic is taken from the repository's
+abelian-coverability note on the same audited \(2\times 2\) corpus.}
+\label{tab:finiteaudits}
+\end{table}
 
-If the exact evaluator had existed, the first exact gate would have allowed at
-most three \Hone{} rule families and at most \(10^3\) exact decodes per family
-on tiny legal grids. Each of the three matched baselines would receive the same
-budget. The protocol also fixes an alphabet budget, an edge-density band, and
-the mandatory control suite described in Section~4.
+\subsection{Larger exact search families}
+
+The larger exact search logs target families that already satisfy the score
+budget if they force fully, by Lemma~\ref{lem:stripscore}. The logs preserve only
+family-level maxima, not complete candidate distributions. Accordingly, the
+paper uses them only as exact negative frontier data.
 
 \subsection{Hardware, software, and seeds}
 
-The repository does not record hardware information for evaluator-backed CA
-experiments because no such experiments ran. There is therefore no meaningful
-GPU count, CPU throughput, RAM footprint, or wall-clock benchmark timing to
-report for exact evaluation. Likewise, no random seeds are recorded for the
-phase-4 results because the phase-4 results are blocked artifacts with zero
-executed exact decodes.
+The current manuscript and figures were built on the following environment:
+\begin{enumerate}[leftmargin=1.5em]
+\item operating system: Linux x86\_64;
+\item CPU budget visible to the container: \(20\) logical CPUs;
+\item memory visible to the container: \(448\) GiB RAM;
+\item Python: \(3.10.17\);
+\item Z3: \(4.16.0\);
+\item Matplotlib: \(3.10.8\).
+\end{enumerate}
 
-This absence is part of the evidence, not an omission in this paper. Reporting
-invented hardware or seed information would misrepresent the artifact set.
+The exhaustive finite audits have no random seeds because they are complete
+enumerations. The larger search markdown artifacts do not preserve per-run seeds
+or full distributions, which is why we do not report confidence intervals for
+those larger-family maxima.
 
-\subsection{Exact reproduction of this manuscript}
+\subsection{Exact reproduction}
 
-The manuscript can be reproduced at the repository snapshot by running:
+The full paper can be reproduced by running:
 \begin{enumerate}[leftmargin=1.5em]
 \item \tool{python3 figures/generate\_paper\_figures.py}
 \item \tool{pdflatex research\_paper.tex}
@@ -902,321 +1026,371 @@ The manuscript can be reproduced at the repository snapshot by running:
 \item \tool{pdflatex research\_paper.tex}
 \item \tool{pdflatex research\_paper.tex}
 \end{enumerate}
-Those commands reproduce the manuscript and its figures. They do \emph{not}
-produce new evaluator-backed arithmetic-Kakeya results, because the evaluator
-is absent from the repository.
+
+The exact finite audits themselves are generated by
+\tool{tools/kakeya\_trace\_corpus.py}, while single-witness verification is
+performed by \tool{tools/kakeya\_ca\_exact.py verify}.
 
 \section{Results}
 
-\subsection{Exact benchmark outcome}
+\subsection[A rigid 2x2 nucleus]{A rigid \(2\times 2\) nucleus}
 
-The central empirical fact is simple: no exact phase-4 benchmark opened.
-Table~\ref{tab:phase4} and Figure~\ref{fig:blocker} report the quantitative
-outcome. The only nonzero counts are the planned budgets themselves; every
-executed count is zero.
+Figure~\ref{fig:nucleus} shows one representative exact-valid witness from the
+audited \(2\times 2\) corpus. The key phenomenon is not the specific labels but
+the trace skeleton: a single corner is born in the first nontrivial layer, and
+the remaining three vertices collapse in the next layer.
+
+\begin{figure}[t]
+  \centering
+  \includeorplaceholder{figures/fig_exact_nucleus.pdf}
+  \caption{\textbf{Representative exact-valid \(2\times 2\) nucleus.}
+  The left panel shows one witness from the exact-valid corpus, with full support
+  on all three edge slots and three singleton seeds. The middle panel shows the
+  unique first activation: one corner becomes forceable in layer \(0\). The
+  right panel shows the resulting layer-\(1\) collapse of the other three
+  vertices. All \(48\) exact-valid classes in the audited regime exhibit this
+  same \(1+3\) two-layer trace skeleton up to the identity of the first corner.}
+  \label{fig:nucleus}
+\end{figure}
+
+Figure~\ref{fig:rigidity} makes the rigidity quantitative. Only \(48\) of the
+\(44{,}608\) audited witnesses are exact-valid, so the exact-valid rate of the
+finite regime is \(48/44{,}608 \approx 0.108\%\). The score histogram is a
+delta mass at \(7/4\). The trace-signature histogram contains exactly four
+signatures of multiplicity \(12\), corresponding to the four choices of first
+corner.
+
+\begin{figure}[t]
+  \centering
+  \includeorplaceholder{figures/fig_trace_rigidity.pdf}
+  \caption{\textbf{Quantitative rigidity of the exhaustive \(2\times 2\) audit.}
+  Left: only \(48\) of \(44{,}608\) witnesses are exact-valid. Middle: every
+  exact-valid class has score \(7/4\), so the score histogram has a single bar.
+  Right: the trace-signature histogram has four bins, each of size \(12\), one
+  for each choice of first forced corner. Error bars have zero width because the
+  data come from a complete finite enumeration.}
+  \label{fig:rigidity}
+\end{figure}
+
+This result has two immediate consequences. First, the current exact-valid
+micro-gadget bank is real but inflexible: the repository has nontrivial exact
+nuclei, but no audited \(2\times 2\) witness improves on \(7/4\). Second, the
+local growth story is much narrower than one might have expected before running
+the audit. The verifier does not reveal a zoo of small trace motifs; it reveals
+a single symmetry family.
+
+\subsection{Coverability obstruction and the one-sided no-go atlas}
+
+Theorem~\ref{thm:width2} explains why unilateral width-\(2\) strip propagation
+fails: a seedless fresh column never acquires the diagonal antisymmetric
+component needed for its first singleton certificate. Figure~\ref{fig:cover}
+visualizes that mechanism.
+
+\begin{figure}[t]
+  \centering
+  \includeorplaceholder{figures/fig_coverability_modes.pdf}
+  \caption{\textbf{Mode decomposition behind the width-\(2\) obstruction.}
+  Rail generators transport only column-symmetric information into a fresh
+  width-\(2\) column. The only antisymmetric generator native to that column is
+  the single rung label \(v_j\). A first singleton force would require the
+  diagonal antisymmetric direction \(A_j(1,-1)\), which is unavailable because
+  no nonzero witness label is parallel to \((1,-1)\). This is the structural
+  reason that a seedless fresh column cannot ignite.}
+  \label{fig:cover}
+\end{figure}
+
+The exhaustive local atlas shows that the same obstruction persists through the
+first two nontrivial one-sided fresh-column classes. Figure~\ref{fig:nogo}
+records the exact counts.
+
+\begin{figure}[t]
+  \centering
+  \includeorplaceholder{figures/fig_strip_no_go.pdf}
+  \caption{\textbf{Exhaustive no-go atlas for one-sided fresh-column activation.}
+  Left: the audited local state spaces have sizes \(256\) in height \(2\) and
+  \(8{,}192\) in height \(3\), corresponding to the complete factorized counts
+  \(4^{h-1}4^h2^h\). Right: both classes have zero strict-improvement states.
+  Error bars have zero width because these are exact counts over complete finite
+  classes, not estimates from random sampling.}
+  \label{fig:nogo}
+\end{figure}
+
+The larger implication is that the first plausible CA route below the prompt
+target is \emph{not} a unilateral strip wave. That route is now exactly ruled
+out in widths \(2\) and \(3\) over the audited palette. Any successful search
+must exploit coupling, internal seeds, or a wider block structure.
+
+\subsection{Larger exact searches remain negative}
+
+The repository also logged exact search attempts on larger strip families that
+already satisfy the score budget under full forcing. Table~\ref{tab:largersearch}
+and Figure~\ref{fig:search} summarize the outcome.
 
 \begin{table}[t]
 \centering
 \small
-\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{3.8cm} >{\centering\arraybackslash}p{1.5cm} >{\centering\arraybackslash}p{1.5cm} X}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{3.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.7cm} >{\centering\arraybackslash}p{1.6cm} X}
 \toprule
-Metric & Planned & Observed & Interpretation \\
+Family & Full-forcing score & Best exact forced count & Best forced fraction & Outcome \\
 \midrule
-\Hone{} families in first gate & 3 & 0 & No exact sweep was run because the exact decoder/verifier was absent. \\
-Exact decodes per family & \(10^3\) & 0 & Budget remained unspent. \\
-Total exact verified witnesses & -- & 0 & No witness was verified. \\
-Best verified score & -- & N/A & Undefined without exact verification. \\
-Median verified score & -- & N/A & Undefined without exact verification. \\
-Promoted families for controls & -- & 0 & No family cleared the first exact gate. \\
+\(2\times 8\), \(3\) seeds & \(25/16\) & \(4/16\) & \(0.250\) & No exact-valid family \\
+\(2\times 8\), \(4\) seeds & \(13/8\) & \(6/16\) & \(0.375\) & No exact-valid family \\
+\(2\times 12\), \(4\) seeds & \(19/12\) & \(6/24\) & \(0.250\) & No exact-valid family \\
+\(2\times 12\), \(5\) seeds & \(13/8\) & \(6/24\) & \(0.250\) & No exact-valid family \\
+\(3\times 6\), \(2\) seeds & \(29/18\) & \(6/18\) & \(0.333\) & No exact-valid family \\
+\(3\times 8\), \(2\) seeds & \(13/8\) & \(5/24\) & \(0.208\) & No exact-valid family \\
+\(3\times 10\), \(2\) seeds & \(49/30\) & \(4/30\) & \(0.133\) & No exact-valid family \\
 \bottomrule
 \end{tabularx}
-\caption{\textbf{Exact phase-4 outcome.}
-The repository's negative result is quantitative but minimal: zero executed
-families, zero exact decodes, zero verified witnesses. Because no stochastic
-exact run exists, confidence intervals and error bars are undefined rather than
-zero; the table reports exact counts only.}
-\label{tab:phase4}
+\caption{\textbf{Logged larger-family exact search frontier.}
+The second column uses Lemma~\ref{lem:stripscore}: every listed family would
+already beat the prompt threshold if it forced all vertices. The failures are
+therefore structural, not score-accounting failures. The final two columns are
+exact maxima from the stored search logs rather than means over repeated runs, so
+no confidence interval is available beyond the exact reported maximum.}
+\label{tab:largersearch}
 \end{table}
 
 \begin{figure}[t]
   \centering
-  \includeorplaceholder{figures/fig_blocker_budget.pdf}
-  \caption{\textbf{Planned versus spent evaluation budget and the resulting undefined metrics.}
-  The left panel compares the benchmark envelope fixed by the repository with
-  the actually spent budget. The right panel records the state of the intended
-  outputs: verified hit rate, best verified score, median verified score, and
-  out-of-distribution robustness are all intentionally listed as ``not
-  available'' because no exact verifier existed.}
-  \label{fig:blocker}
+  \includeorplaceholder{figures/fig_search_frontier.pdf}
+  \caption{\textbf{Best exact forced fractions in the larger logged search families.}
+  Each bar is the exact best forced fraction recorded in the repository for a
+  family that would already satisfy the score target if it forced fully. The
+  dashed horizontal line marks full forcing. None of the families reaches that
+  line, and none yields a promoted exact-valid family. The error bars have zero
+  width because the plot shows exact recorded maxima, not estimated averages.}
+  \label{fig:search}
 \end{figure}
 
-The significance of Table~\ref{tab:phase4} is methodological rather than
-competitive. It shows that the repository preserved negative results honestly.
-Instead of backfilling the table with proxy metrics, it left the evaluator-
-dependent quantities undefined, exactly as Proposition~4 requires.
+These failures reinforce the local theory rather than contradict it. The
+\(2\times N\) ladder failures align with Theorem~\ref{thm:width2}; the
+\(3\times N\) failures show that merely moving to the next strip height is not
+enough when the update remains too local or too weakly coupled.
 
-\subsection{Control status}
+\subsection{Current admissible frontier}
 
-The control reports are empty for the same reason. Table~\ref{tab:controls}
-shows the exact status of each mandatory control.
-
-\begin{table}[t]
-\centering
-\small
-\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{3.3cm} >{\centering\arraybackslash}p{1.9cm} X}
-\toprule
-Control & Status & Reason \\
-\midrule
-Label shuffle at fixed geometry & Not executed & No promoted family reached the first exact gate. \\
-Matched-budget random local search & Not executed & The common exact decoder/verifier was absent. \\
-Whole-witness mutation baseline & Not executed & The common exact decoder/verifier was absent. \\
-Decoder-matched baseline & Not executed & The common exact decoder/verifier was absent. \\
-Held-out geometry / aspect ratio & Not executed & No family produced a verified in-distribution signal. \\
-Held-out legal alphabet & Not executed & No family produced a verified in-distribution signal. \\
-Complexity sweep & Not executed & No exact-valid family existed to sweep. \\
-Modular-to-integer lift & Not executed & No exact integer evaluator existed. \\
-\bottomrule
-\end{tabularx}
-\caption{\textbf{Status of mandatory controls.}
-Every control stayed blocked for the same principled reason: the repository had
-no exact integer evaluator. The absence of controls is therefore an honest
-failure state, not a hidden pass.}
-\label{tab:controls}
-\end{table}
-
-\subsection{Bridge-triage outcome}
-
-Although no exact experiment ran, the ConceptEvolve pass did produce a ranked
-bridge set. Its final distribution is two promoted bridges, three held bridges,
-and four retired bridges. The promoted bridges are
-\tool{proof\_carrying\_exact\_decoder\_bridge} and
-\tool{sat\_egraph\_symbolic\_backbone}; the most CA-native but not yet promoted
-bridge is \tool{spatially\_coupled\_peeling\_ladders}.
+The exact-trace pivot also changed the conceptual frontier. The surviving bridge
+set in \tool{results/concept\_evolve/bridge\_candidates.json} contains exactly
+three promoted directions: \tool{proof\_carrying\_exact\_decoder\_bridge},
+\tool{spatially\_coupled\_peeling\_ladders}, and
+\tool{sat\_egraph\_symbolic\_backbone}. Figure~\ref{fig:bridges} summarizes the
+current disposition of all bridge candidates.
 
 \begin{figure}[t]
   \centering
   \includeorplaceholder{figures/fig_bridge_decisions.pdf}
-  \caption{\textbf{Final bridge dispositions from the ConceptEvolve iterate pass.}
-  The repository used the no-repair, exact-decoder discipline as the triage
-  criterion. Bridges aligned with exact decoding were promoted or held, whereas
-  proxy-heavy transport, observer, and reversible-motif bridges were retired.}
-  \label{fig:bridge}
+  \caption{\textbf{Bridge dispositions after exact-trace narrowing.}
+  Promoted bridges are those still compatible with the new exact evidence:
+  proof-carrying exact decoding, coupled strip constructions, and legality-first
+  SAT/e-graph search scaffolds. Proxy-heavy transport, observer, and reversible
+  motif stories are retired. This plot is sourced directly from the current
+  \tool{bridge\_candidates.json} artifact.}
+  \label{fig:bridges}
 \end{figure}
-
-\begin{table}[t]
-\centering
-\small
-\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.5cm} >{\centering\arraybackslash}p{1.6cm} X}
-\toprule
-Bridge & Disposition & Repository interpretation \\
-\midrule
-\tool{proof\_carrying\_exact\_decoder\_bridge} & Promote & Best aligned with verifier-safe witness generation. \\
-\tool{sat\_egraph\_symbolic\_backbone} & Promote & Pushes legality and span reasoning upstream of decoding. \\
-\tool{spatially\_coupled\_peeling\_ladders} & Hold & Interesting CA-native mechanism, but needs exact seed gadgets first. \\
-\tool{tile\_assembly\_constructible\_grammar} & Hold & Representation-level idea; still mainly analogical. \\
-\tool{bootstrap\_certificate\_percolation} & Hold & Could become useful only after exact template kernels exist. \\
-\tool{anisotropic\_current\_screening} & Retire & Too exposed to proxy and bounded-slope failure modes. \\
-\tool{odometer\_rotor\_transport\_bridge} & Retire & Treated as transferless transport analogy. \\
-\tool{observer\_guided\_macrocell\_search} & Retire & Too close to generic automated search. \\
-\tool{reversible\_collision\_motif\_library} & Retire & Produces pattern structure without verified witness evidence. \\
-\bottomrule
-\end{tabularx}
-\caption{\textbf{Bridge decisions after the final iterate pass.}
-The table is not a performance ranking; it is a decision ranking under the
-repository's evidence standard.}
-\label{tab:bridges}
-\end{table}
-
-\subsection{What the results do and do not establish}
-
-The quantitative claims of this paper are therefore limited to exact counts and
-artifact states:
-\begin{enumerate}[leftmargin=1.5em]
-\item zero exact families were evaluated;
-\item zero exact decodes were executed;
-\item zero exact verified witnesses were found;
-\item no verified score improvement toward \(1.675\) was obtained; and
-\item the bridge inventory ended in a \(2/3/4\) promote/hold/retire split.
-\end{enumerate}
-No confidence interval is omitted accidentally. There is simply no stochastic
-sample of exact results from which one could compute one. Likewise, no figure in
-this paper should be read as implying experimental success.
 
 \section{Discussion}
 
+\subsection{What has been solved and what has not}
+
+The repository has \emph{not} solved the prompt target. It has not produced a
+witness with score \(\leq 67/40\), and it has not established a CA advantage over
+matched non-CA baselines. Those claims remain open because the current larger
+search artifacts record only negative frontier results, not a complete
+benchmark-and-control block.
+
+What has been solved is narrower but real:
+\begin{enumerate}[leftmargin=1.5em]
+\item the verifier exists and is exact at the level of the repository's
+  quotient-span semantics;
+\item the audited \(2\times 2\) micro-regime is now completely classified;
+\item a genuine theorem blocks seedless unilateral width-\(2\) propagation; and
+\item exhaustive finite atlases rule out one-sided fresh-column ignition in the
+  first two nontrivial heights over the audited palette.
+\end{enumerate}
+
+That is enough to replace vague CA optimism with a sharply narrowed search
+frontier.
+
 \subsection{Limitations}
 
-The main limitation is structural and dominates all others: the exact integer
-decoder/verifier does not exist in the audited snapshot. As long as that remains
-true, the repository cannot support any theorem-level or evaluator-backed
-empirical claim. Three secondary limitations follow immediately.
+Three limitations matter.
 
-First, the CA proposal is architectural rather than instantiated. The paper can
-formalize the typed fibers, the decoder, and the gates, but it cannot report a
-particular learned rule family that achieved exact success. Second, the
-benchmark matrix is specification-level rather than execution-level. It is
-carefully defined, but it remains untested. Third, the bibliographic coverage is
-sufficient for this bounded narrative only after adding Bourgain and Leng--Sah--
-Sawhney and cleaning several metadata inconsistencies; it would have been
-insufficient for a stronger theorem-style manuscript.
+\textbf{First,} the paper is exact only relative to the repository's executable
+verifier semantics. As noted after Corollary~\ref{cor:width2}, we do not prove
+here a full equivalence theorem between that rational-span implementation and
+every formulation of the original forcing-pair definition.
 
-\subsection{Failure modes already anticipated by the repository}
+\textbf{Second,} the larger search artifacts are weaker than the finite audits.
+They preserve family-level maxima but not full candidate-level distributions,
+random seeds, or matched-baseline comparisons. Consequently, they support
+negative frontier statements but not quantitative CA-superiority claims.
 
-The most valuable feature of the repository is arguably its self-falsification
-discipline. The design anticipates at least four strong failure modes:
+\textbf{Third,} the repository still contains stale blocker-era files that speak
+as if the exact verifier were missing. This manuscript resolves that conflict by
+treating the 2026-03-19 exact-trace artifacts and executables as source of
+truth, and by relegating the earlier blocker files to historical status and
+pre-registered control plans.
+
+\subsection{Failure modes and open questions}
+
+The present exact results clarify, rather than remove, the main open questions.
+
 \begin{enumerate}[leftmargin=1.5em]
-\item \textbf{Geometry-only success.} A CA might learn a convenient graph shape
-  independent of the arithmetic labels. The label-shuffle gate is specifically
-  designed to kill that story.
-\item \textbf{Decoder leakage.} The true intelligence could sit in a permissive
-  decoder rather than in the CA. The no-repair rule and decoder-matched
-  baselines target this failure mode directly.
-\item \textbf{Bounded-slope trapping.} A small state alphabet might merely
-  rediscover low-rational-complexity corners warned about by Tao. The complexity
-  sweep exists precisely to detect that collapse.
-\item \textbf{Modular mirages.} Finite-state dynamics are naturally modular. The
-  repository therefore treats modular success as curriculum only, never as
-  evidence for the integer target.
+\item \textbf{Can the rigid \(2\times 2\) nucleus be coupled?}
+  The micro-gadget bank exists, but every audited element has score \(7/4\) and
+  the same two-layer trace skeleton. The open problem is whether coupled slabs
+  can reuse that nucleus without paying its seed cost everywhere.
+\item \textbf{Does the local obstruction extend beyond heights \(2\) and \(3\)?}
+  The exhaustive atlas stops at the first two nontrivial heights. Wider
+  one-sided classes or genuinely two-sided local updates remain open.
+\item \textbf{Can macrocell structure defeat the obstruction honestly?}
+  A typed macrocell might import the missing antisymmetric content through a
+  coupled interior rather than a unilateral boundary. No exact macrocell family
+  has yet been verified.
+\item \textbf{Can the search side catch up with the verifier side?}
+  The exact verifier is now ahead of the search loop. The next scientifically
+  correct step is a benchmark-complete exact comparison block with decoder-matched
+  baselines, not another round of uncontrolled exploration.
 \end{enumerate}
 
-The key point is that these failure modes are not post hoc excuses invented by
-this paper. They were already present in the repository's falsifier and
-verification artifacts before the manuscript was written.
+\subsection{Why the negative result still matters}
 
-\subsection{What a scientifically correct restart would do}
-
-The restart agenda is narrow and concrete.
-\begin{enumerate}[leftmargin=1.5em]
-\item Recover or implement the shared exact integer decoder/verifier from the
-  witness specification.
-\item Seed a bank of tiny exact-valid micro-gadgets that can act as trustworthy
-  building blocks for any CA family.
-\item Run one fully matched benchmark block: one \Hone{} family versus random
-  local search, whole-witness mutation, and decoder-matched search.
-\item Apply the label-shuffle, held-out geometry, held-out alphabet, and
-  rational-complexity controls immediately.
-\item Re-open only the promoted bridge set, not the retired proxy-heavy lanes.
-\end{enumerate}
-
-Anything broader than this would repeat the repository's own warning against
-open-ended reframing without evaluator support.
+Negative exact results are often more valuable than positive heuristic signals
+when the search object is rigid and the evaluator is unforgiving. Here the
+verifier removes an enormous space of plausible but false stories: generic
+strip-wave intuition, geometry-only activation narratives, and proxy-heavy local
+dynamics. The remaining open directions are fewer, more expensive, and much
+clearer mathematically.
 
 \subsection{Societal implications}
 
-The direct societal implications are limited because this is pure mathematics and
-scientific software methodology. The more general implication concerns AI-assisted
-research practice. Automated systems can create a large amount of plausible
-structure before a faithful evaluator exists. In that setting, the most valuable
-behavior may be refusal rather than generation: refusing proxy metrics, refusing
-implicit repair, and refusing to report improvement without the evaluator that
-defines the task. This repository's main positive lesson is precisely that such
-refusal can itself be a substantive scientific output when it prevents a false
-claim from entering the literature.
+The direct societal implications are limited because the domain is pure
+mathematics. The broader methodological implication concerns AI-assisted research
+practice. Once a faithful evaluator exists, exact negative results can be more
+scientifically valuable than visually rich but unverifiable search behavior.
+This repository's strongest procedural lesson is that local AI search should be
+judged by the strictest exact artifact in the loop, not by the most appealing
+intermediate visualization.
 
 \section{Conclusion}
 
-This paper reconstructs, formalizes, and audits a cellular-automata research
-program for an arithmetic-Kakeya witness search problem. The active lane,
-\Hone{}, is a proof-carrying, stage-indexed, no-repair CA design that stays on
-the exact six-line witness representation. The repository contributes a careful
-benchmark contract, a concrete kill-gate suite, and a final bridge triage that
-narrows future work to verifier-safe directions.
+The repository set out to ``solve this using cellular automata'' for a
+prompt-defined arithmetic-Kakeya witness target with score at most \(1.675\).
+The current exact answer is not a solved witness. It is a narrower and more
+useful piece of mathematics:
+\begin{enumerate}[leftmargin=1.5em]
+\item an implemented exact rational-span verifier and synchronous trace engine;
+\item an exhaustive classification of the audited \(2\times 2\) regime;
+\item a proved width-\(2\) seedless-column obstruction;
+\item an exhaustive no-go atlas for one-sided fresh-column propagation in heights
+  \(2\) and \(3\); and
+\item a negative larger-family frontier that leaves only coupled or macrocell
+  CA stories alive.
+\end{enumerate}
 
-It does \emph{not} contribute a verified witness with score at most \(1.675\).
-The exact empirical outcome is instead \(0\) executed \Hone{} families,
-\(0\) exact decodes, \(0\) verified witnesses, and no admissible best or median
-verified score because the exact integer verifier was absent. The correct final
-decision is therefore the one already recorded in the repository: pivot away
-from more CA search and toward exact-verifier recovery.
-
-In that narrower sense, the repository succeeds. It shows how to turn a tempting
-but under-evaluated AI-mathematics exploration into a disciplined negative
-result with a clean restart agenda. That is not the same as solving arithmetic
-Kakeya, but it is a genuine contribution to how such searches should be run.
+This is not a theorem about \(\AK(1)\), and it is not an empirical CA victory.
+It is an exact narrowing of the search space. In a difficult open-problem
+setting, that is the correct and scientifically honest contribution.
 
 \bibliographystyle{plainnat}
 \bibliography{sources}
 
 \appendix
 
-\section{Artifact Inventory Used by the Manuscript}
+\section{Artifact Inventory and Provenance}
 
-Table~\ref{tab:artifacts} lists the primary repository artifacts used in the
-manuscript.
+Table~\ref{tab:artifacts} lists the primary artifacts used in the manuscript.
 
-\begin{longtable}{>{\raggedright\arraybackslash}p{4.1cm} >{\raggedright\arraybackslash}p{3.0cm} p{7.0cm}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{2.8cm} p{7.1cm}}
 \toprule
-Artifact & Role in the paper & Main information extracted \\
+Artifact & Role & Main information used \\
 \midrule
 \endhead
-\tool{research\_rubric.json} & Provenance & Pipeline stage completion and writer handoff status. \\
-\tool{results/baselines/witness\_spec.md} & Formal background & Canonical six-line witness format, legality checks, score definition. \\
-\tool{results/baselines/benchmark\_spec.md} & Method and setup & Matched-budget baseline plan, complexity regimes, control matrix. \\
-\tool{results/core/h1\_design.md} & Method & Stage-indexed fiber layout, no-repair decoder contract, proof-carrying state fields. \\
-\tool{results/core/lane\_gates.md} & Method and theory & Keep/kill rules for \Hone{}, \Htwo{}, and \Hthree{}. \\
-\tool{results/experiments/h1\_tiny\_grid\_report.md} & Results & Zero-run blocker outcome for the first exact gate. \\
-\tool{results/experiments/h1\_controls.md} & Results & Empty control matrix with explicit blocker rationale. \\
-\tool{results/experiments/complexity\_sweep.md} & Results & Empty complexity sweep and modular-lift block. \\
-\tool{results/verification/verification\_summary.md} & Claim boundary & Must-fix issues and admissible claim scope. \\
-\tool{results/verification/benchmark\_report.md} & Claim boundary & Distinction between blocker-integrity success and empirical failure. \\
-\tool{results/verification/novelty\_report.md} & Related work & Safe versus unsafe novelty claims. \\
-\tool{results/verification/citation\_audit.md} & Bibliography & Missing sources and metadata repairs needed for a real manuscript. \\
-\tool{results/final\_assessment.md} & Results and conclusion & Final pivot decision and surviving bridges. \\
-\tool{results/concept\_evolve/bridge\_candidates.json} & Results & Promote/hold/retire bridge decisions. \\
-\tool{results/concept\_evolve/concept\_delta.md} & Discussion & Final change in conceptual focus. \\
-\tool{.archivara/concept\_evolve.py} & Setup provenance & Child-agent roles, ConceptEvolve orchestration, and max-depth policy. \\
-\tool{.archivara/semantic\_scholar.py} & Bibliography provenance & Local BibTeX and literature helper used to repair citations. \\
+\tool{results/research\_context.json} & Prompt provenance & Task wording, \(\AK(\alpha)\) notation, and the score target \(67/40\). \\
+\tool{tools/kakeya\_ca\_exact.py} & Exact executable & Verification semantics, synchronous tracing, and auxiliary reduced-model search. \\
+\tool{tools/kakeya\_trace\_corpus.py} & Exact corpus generator & Exhaustive \(2\times 2\) enumeration and one-sided strip-state audits. \\
+\tool{results/theory/forcing\_trace\_normal\_form.md} & Theory note & Deterministic trace normal form and the rigid \(2\times 2\) summary. \\
+\tool{results/theory/forcing\_traces/tiny\_2x2\_full\_seeds\_le3/corpus\_summary.json} & Machine-readable summary & Exact-valid counts, score histogram, and trace-signature histogram for the \(2\times 2\) regime. \\
+\tool{results/theory/local\_rule\_no\_go\_atlas.md} & Theory note & Statement and interpretation of the one-sided height-\(2\)/height-\(3\) no-go result. \\
+\tool{results/theory/forcing\_traces/index.json} & Machine-readable summary & Exact counts for the local strip atlas. \\
+\tool{results/theory/abelian\_coverability\_duality.md} & Theory note & Width-\(2\) obstruction and the \(\Phi_{\mathrm{cov}}\) statistic. \\
+\tool{results/experiments/h1\_exact\_advantage.md} & Search frontier & Best exact forced counts on larger strip families. \\
+\tool{results/experiments/macrocell\_scaling.md} & Search frontier & Negative scaling status for the current exact micro-gadget bank. \\
+\tool{results/experiments/spatial\_coupling\_threshold.md} & Search frontier & Negative coupling evidence in the current run. \\
+\tool{results/experiments/arithmetic\_sensitivity\_phase\_transition.md} & Search frontier & Explicit failure to reach a positive family for sensitivity analysis. \\
+\tool{results/concept\_evolve/bridge\_candidates.json} & Frontier synthesis & Current promoted/held/retired bridge set. \\
+\tool{results/literature/prior\_art\_gap.md} & Related-work boundary & Real comparison set and false-overlap cleanup. \\
+\tool{figures/generate\_paper\_figures.py} & Visualization & Programmatic generation of every figure in this paper. \\
 \bottomrule
-\caption{\textbf{Primary artifacts used in this manuscript.}}
+\caption{\textbf{Primary repository artifacts used by the manuscript.}}
 \label{tab:artifacts}
 \end{longtable}
 
-\section{Additional Notes on Proof Scope}
+\section[Representative Exact-Valid 2x2 Witness]{Representative Exact-Valid \(2\times 2\) Witness}
 
-The proofs in Section~5 establish correctness properties of the \Hone{}
-representation and of the repository's protocol. They do not establish
-\(\AK(1)\), the existence of a witness with score at most \(1.675\), or any new
-consequence for Euclidean Kakeya sets. Those tasks would require either a new
-mathematical construction or an exact evaluator-backed search result. The
-repository contains neither, and this paper intentionally does not blur that
-distinction.
+One exact-valid witness from the audited corpus is the following six-line string.
+It does \emph{not} solve the prompt target, because its score is \(7/4\).
 
-\section{Blocked Experiments and Hyperparameter Sensitivity}
+\begin{verbatim}
+7/4 (m=4, r=3, n=4, t=0)
+[(0, 0), (1, 0), (0, 1), (1, 1), (1, 2)]
+[2, 2]
+[{(1,): (0, 1)}, {(1, 1): (1, 0), (2, 1): (1, 1)}]
+[]
+[{(1, 1): (1, 1)}, {(1, 2): (1, 2)}, {(2, 1): (1, 0)}]
+\end{verbatim}
 
-The prompt that generated this manuscript asked for appendices on additional
-experiments and hyperparameter sensitivity analyses. The repository does not
-support such appendices in the ordinary sense because no exact evaluation run
-occurred. The scientifically correct replacement is to state what would need to
-vary once the verifier exists.
+This witness verifies under the command:
 
-\subsection{Planned hyperparameters once evaluation becomes possible}
+\begin{verbatim}
+python3 tools/kakeya_ca_exact.py verify --path witness.txt
+\end{verbatim}
 
-If the exact verifier is recovered, the first restart should vary:
+\section{Historical Blocker Artifacts and Remaining Gaps}
+
+Older files such as \tool{results/experiments/h1\_tiny\_grid\_report.md},
+\tool{results/experiments/h1\_controls.md}, and
+\tool{results/experiments/complexity\_sweep.md} belong to the pre-pivot stage in
+which the verifier was still believed missing. They are retained in the
+repository because they still encode valuable discipline:
 \begin{enumerate}[leftmargin=1.5em]
-\item the legal geometry block \(d\),
-\item the active alphabet budget \(|X|\),
-\item the rational-complexity regime (small, medium, unrestricted),
-\item the target edge-density band,
-\item the CA family itself, and
-\item the baseline proposal distributions under the decoder-matched control.
+\item matched-baseline requirements,
+\item label-shuffle and held-out-geometry controls,
+\item rational-complexity sweeps, and
+\item an explicit refusal to replace exact evaluation with proxies.
 \end{enumerate}
-At present no sensitivity curve over these quantities exists, and none is
-fabricated in this paper.
 
-\subsection{Why no empirical appendix is supplied}
+What remains genuinely missing is not the verifier itself but a
+benchmark-complete post-pivot exact evaluation block with:
+\begin{enumerate}[leftmargin=1.5em]
+\item a promoted CA family,
+\item decoder-matched non-CA baselines,
+\item held-out controls, and
+\item candidate-level distributions rather than family-level maxima only.
+\end{enumerate}
 
-An ``additional experiments'' appendix normally presupposes that at least one
-primary experiment ran. Here the first exact gate never opened. The absence of
-an experimental appendix is therefore a positive integrity statement: it means
-the manuscript inherited the repository's refusal to widen claims beyond the
-available evidence.
+\section{Implementation Details and Sensitivity}
+
+The exhaustive finite audits have no hyperparameters in the usual machine-learning
+sense. Their only inputs are the audited palette, geometry, and seed-budget
+limits, all of which are stated explicitly in Section~6. The larger search
+frontier does involve design choices, but the stored artifacts expose only the
+family maxima rather than a full hyperparameter sweep. We therefore do not
+fabricate a sensitivity appendix. The scientifically correct replacement is to
+state the next exact sensitivity variables:
+\begin{enumerate}[leftmargin=1.5em]
+\item geometry \((2\times N)\), \((3\times N)\), and wider blocks;
+\item seed budget and initial \(T\)-budget;
+\item audited palette versus held-out legal alphabets;
+\item one-sided versus two-sided local interfaces; and
+\item decoder-matched baseline family.
+\end{enumerate}
 
 \section{Reproduction Commands}
 
-For completeness, the commands used or required for manuscript reproduction are:
+For completeness, the commands used in the current manuscript workflow are:
 \begin{verbatim}
-python3 .archivara/semantic_scholar.py bibtex dc13ea1d96ee60bfaa7a2148e4b5369216f8cd23
-python3 .archivara/semantic_scholar.py bibtex 22a58310070e99febbbe49d0472691a961bb1c70
 python3 figures/generate_paper_figures.py
 pdflatex research_paper.tex
 bibtex research_paper
@@ -1224,8 +1398,9 @@ pdflatex research_paper.tex
 pdflatex research_paper.tex
 \end{verbatim}
 
-The first two commands document the citation repairs made for Bourgain and
-Leng--Sah--Sawhney. The remaining commands build the paper and its staged
-figures. None of these commands generates a new arithmetic-Kakeya witness.
+The exact finite audits referenced in the paper are generated by:
+\begin{verbatim}
+python3 tools/kakeya_trace_corpus.py
+\end{verbatim}
 
 \end{document}
